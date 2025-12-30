@@ -1,4 +1,4 @@
-package com.nuvio.app
+package com.nuvio.app.tv
 
 import android.os.Build
 import android.os.Bundle

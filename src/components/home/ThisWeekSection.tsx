@@ -6,7 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -67,6 +68,8 @@ export const ThisWeekSection = React.memo(() => {
 
   // Determine device type based on width
   const getDeviceType = useCallback(() => {
+    // Always treat TV devices as 'tv' regardless of reported dp width
+    if (Platform.isTV) return 'tv';
     if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
     if (deviceWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
     if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';

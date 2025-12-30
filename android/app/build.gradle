@@ -90,9 +90,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.nuvio.app'
+    namespace 'com.nuvio.app.tv'
     defaultConfig {
-        applicationId 'com.nuvio.app'
+        applicationId 'com.nuvio.app.tv'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 26

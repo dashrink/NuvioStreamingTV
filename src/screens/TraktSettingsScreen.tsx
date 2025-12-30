@@ -39,9 +39,9 @@ const discovery = {
   tokenEndpoint: 'https://api.trakt.tv/oauth/token',
 };
 
-// For use with deep linking
+// For use with deep linking - use different scheme for TV
 const redirectUri = makeRedirectUri({
-  scheme: 'nuvio',
+  scheme: Platform.isTV ? 'nuvio-tv' : 'nuvio',
   path: 'auth/trakt',
 });
 
@@ -53,7 +53,7 @@ const TraktSettingsScreen: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState<TraktUser | null>(null);
   const { currentTheme } = useTheme();
-  
+
   const {
     settings: autosyncSettings,
     isSyncing,
@@ -74,6 +74,13 @@ const TraktSettingsScreen: React.FC = () => {
   const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
     { label: 'OK', onPress: () => setAlertVisible(false) },
   ]);
+
+  // TV Device Code Authentication State
+  const [deviceCode, setDeviceCode] = useState<string | null>(null);
+  const [userCode, setUserCode] = useState<string | null>(null);
+  const [verificationUrl, setVerificationUrl] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const openAlert = (
     title: string,
@@ -101,7 +108,7 @@ const TraktSettingsScreen: React.FC = () => {
     try {
       const authenticated = await traktService.isAuthenticated();
       setIsAuthenticated(authenticated);
-      
+
       if (authenticated) {
         const profile = await traktService.getUserProfile();
         setUserProfile(profile);
@@ -151,8 +158,8 @@ const TraktSettingsScreen: React.FC = () => {
                   'Successfully Connected',
                   'Your Trakt account has been connected successfully.',
                   [
-                    { 
-                      label: 'OK', 
+                    {
+                      label: 'OK',
                       onPress: () => navigation.goBack(),
                     }
                   ]
@@ -181,8 +188,99 @@ const TraktSettingsScreen: React.FC = () => {
     }
   }, [response, checkAuthStatus, request?.codeVerifier, navigation]);
 
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // TV Device Code Flow
+  const startDeviceCodeFlow = async () => {
+    setIsExchangingCode(true);
+    try {
+      const codeData = await traktService.getDeviceCode();
+      if (codeData) {
+        setDeviceCode(codeData.device_code);
+        setUserCode(codeData.user_code);
+        setVerificationUrl(codeData.verification_url);
+        setIsPolling(true);
+
+        // Start polling for token
+        const pollInterval = (codeData.interval || 5) * 1000;
+        pollingIntervalRef.current = setInterval(async () => {
+          const result = await traktService.pollDeviceToken(codeData.device_code);
+
+          if (result === 'success') {
+            // Stop polling
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+            }
+            setIsPolling(false);
+            setDeviceCode(null);
+            setUserCode(null);
+            setVerificationUrl(null);
+            setIsExchangingCode(false);
+
+            checkAuthStatus().then(() => {
+              openAlert(
+                'Successfully Connected',
+                'Your Trakt account has been connected successfully.',
+                [{ label: 'OK', onPress: () => navigation.goBack() }]
+              );
+            });
+          } else if (result === 'expired' || result === 'error') {
+            // Stop polling on error
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+            }
+            setIsPolling(false);
+            setDeviceCode(null);
+            setUserCode(null);
+            setVerificationUrl(null);
+            setIsExchangingCode(false);
+
+            openAlert(
+              'Authentication Failed',
+              result === 'expired'
+                ? 'The code has expired. Please try again.'
+                : 'An error occurred during authentication. Please try again.'
+            );
+          }
+          // If 'pending', continue polling
+        }, pollInterval);
+      } else {
+        setIsExchangingCode(false);
+        openAlert('Error', 'Failed to get device code. Please try again.');
+      }
+    } catch (error) {
+      setIsExchangingCode(false);
+      logger.error('[TraktSettingsScreen] Device code flow error:', error);
+      openAlert('Error', 'An error occurred. Please try again.');
+    }
+  };
+
+  const cancelDeviceCodeFlow = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+    setIsPolling(false);
+    setDeviceCode(null);
+    setUserCode(null);
+    setVerificationUrl(null);
+    setIsExchangingCode(false);
+  };
+
   const handleSignIn = () => {
-    promptAsync(); // Trigger the authentication flow
+    if (Platform.isTV) {
+      // Use device code flow for TV
+      startDeviceCodeFlow();
+    } else {
+      // Use standard OAuth flow for mobile
+      promptAsync();
+    }
   };
 
   const handleSignOut = async () => {
@@ -190,9 +288,9 @@ const TraktSettingsScreen: React.FC = () => {
       'Sign Out',
       'Are you sure you want to sign out of your Trakt account?',
       [
-        { label: 'Cancel', onPress: () => {} },
-        { 
-          label: 'Sign Out', 
+        { label: 'Cancel', onPress: () => { } },
+        {
+          label: 'Sign Out',
           onPress: async () => {
             setIsLoading(true);
             try {
@@ -224,26 +322,26 @@ const TraktSettingsScreen: React.FC = () => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark}
           />
           <Text style={[styles.backText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
+
       <Text style={[styles.headerTitle, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
         Trakt Settings
       </Text>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
@@ -259,8 +357,8 @@ const TraktSettingsScreen: React.FC = () => {
             <View style={styles.profileContainer}>
               <View style={styles.profileHeader}>
                 {userProfile.avatar ? (
-                  <FastImage 
-                    source={{ uri: userProfile.avatar }} 
+                  <FastImage
+                    source={{ uri: userProfile.avatar }}
                     style={styles.avatar}
                     resizeMode={FastImage.resizeMode.cover}
                   />
@@ -315,39 +413,91 @@ const TraktSettingsScreen: React.FC = () => {
             </View>
           ) : (
             <View style={styles.signInContainer}>
-              <TraktIcon 
+              <TraktIcon
                 width={120}
                 height={120}
                 style={styles.traktLogo}
               />
-              <Text style={[
-                styles.signInTitle,
-                { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
-              ]}>
-                Connect with Trakt
-              </Text>
-              <Text style={[
-                styles.signInDescription,
-                { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
-              ]}>
-                Sync your watch history, watchlist, and collection with Trakt.tv
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
-                ]}
-                onPress={handleSignIn}
-                disabled={!request || isExchangingCode} // Disable while waiting for response or exchanging code
-              >
-                {isExchangingCode ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text style={styles.buttonText}>
-                    Sign In with Trakt
+
+              {/* TV Device Code Display */}
+              {Platform.isTV && userCode && verificationUrl ? (
+                <>
+                  <Text style={[
+                    styles.signInTitle,
+                    { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
+                  ]}>
+                    Enter Code on Your Phone
                   </Text>
-                )}
-              </TouchableOpacity>
+                  <Text style={[
+                    styles.signInDescription,
+                    { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
+                  ]}>
+                    Visit the URL below on your phone or computer:
+                  </Text>
+                  <View style={[styles.codeContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
+                    <Text style={[styles.urlText, { color: currentTheme.colors.primary }]}>
+                      {verificationUrl}
+                    </Text>
+                    <Text style={[styles.codeLabel, { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }]}>
+                      Enter this code:
+                    </Text>
+                    <Text style={[styles.codeText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
+                      {userCode}
+                    </Text>
+                  </View>
+                  {isPolling && (
+                    <View style={styles.pollingContainer}>
+                      <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+                      <Text style={[styles.pollingText, { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }]}>
+                        Waiting for authentication...
+                      </Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: currentTheme.colors.error, marginTop: 16 }
+                    ]}
+                    onPress={cancelDeviceCodeFlow}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={[
+                    styles.signInTitle,
+                    { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
+                  ]}>
+                    Connect with Trakt
+                  </Text>
+                  <Text style={[
+                    styles.signInDescription,
+                    { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
+                  ]}>
+                    {Platform.isTV
+                      ? 'Sign in using a code on your phone or computer'
+                      : 'Sync your watch history, watchlist, and collection with Trakt.tv'
+                    }
+                  </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
+                    ]}
+                    onPress={handleSignIn}
+                    disabled={(!Platform.isTV && !request) || isExchangingCode}
+                  >
+                    {isExchangingCode ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Text style={styles.buttonText}>
+                        Sign In with Trakt
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           )}
         </View>
@@ -497,7 +647,7 @@ const TraktSettingsScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
-      
+
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -703,6 +853,39 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  // TV Device Code styles
+  codeContainer: {
+    width: '100%',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  urlText: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  codeLabel: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  codeText: {
+    fontSize: 36,
+    fontWeight: '800',
+    letterSpacing: 4,
+    textAlign: 'center',
+  },
+  pollingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  pollingText: {
+    marginLeft: 8,
+    fontSize: 14,
   },
 });
 

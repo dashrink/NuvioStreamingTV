@@ -4,6 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
+    "start:tv": "APP_VARIANT=tv npx expo start --clear",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "postinstall": "patch-package"
@@ -91,6 +92,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-tvos/config-tv": "^0.1.4",
     "@types/crypto-js": "^4.2.2",
     "@types/react": "~18.3.12",
     "@types/react-native": "^0.72.8",

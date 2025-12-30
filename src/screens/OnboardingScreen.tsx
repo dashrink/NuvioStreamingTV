@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  TouchableOpacity,
   StatusBar,
   Platform,
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -166,6 +166,12 @@ const OnboardingScreen = () => {
   const { currentTheme } = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  React.useEffect(() => {
+    console.log('[OnboardingScreen] Mounted');
+    return () => console.log('[OnboardingScreen] Unmounted');
+  }, []);
+
   const flatListRef = useRef<Animated.FlatList<OnboardingSlide>>(null);
   const scrollX = useSharedValue(0);
 
@@ -281,9 +287,13 @@ const OnboardingScreen = () => {
           entering={FadeIn.delay(300).duration(600)}
           style={styles.header}
         >
-          <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+          <Focusable
+            onPress={handleSkip}
+            style={styles.skipButton}
+            focusedStyle={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4 }}
+          >
             <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
+          </Focusable>
 
           {/* Smooth Progress Bar */}
           <View style={styles.progressContainer}>
@@ -322,18 +332,20 @@ const OnboardingScreen = () => {
           </View>
 
           {/* Animated Button */}
-          <TouchableOpacity
+          <Focusable
             onPress={handleNext}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
-            activeOpacity={1}
+            activeOpacity={1} // Only used by mobile fallback inside Focusable
+            style={{ borderRadius: 16 }} // Ensure external container has radius
+            focusedStyle={{ transform: [{ scale: 1.05 }] }}
           >
             <Animated.View style={[styles.button, buttonStyle]}>
               <Text style={styles.buttonText}>
                 {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Continue'}
               </Text>
             </Animated.View>
-          </TouchableOpacity>
+          </Focusable>
         </Animated.View>
       </View>
     </View>

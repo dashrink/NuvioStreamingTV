@@ -790,6 +790,111 @@ export class TraktService {
   }
 
   /**
+   * Device Code Flow for TV Authentication
+   * This is used on platforms like Android TV where a browser is not available.
+   * 
+   * Flow:
+   * 1. Call getDeviceCode() to get a code and verification URL
+   * 2. Display the code and URL to the user (they visit trakt.tv/activate)
+   * 3. Poll pollDeviceToken() until it returns success
+   */
+  public async getDeviceCode(): Promise<{
+    device_code: string;
+    user_code: string;
+    verification_url: string;
+    expires_in: number;
+    interval: number;
+  } | null> {
+    await this.ensureInitialized();
+
+    try {
+      const response = await fetch(`${TRAKT_API_URL}/oauth/device/code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: TRAKT_CLIENT_ID,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        logger.error('[TraktService] Device code error response:', errorBody);
+        throw new Error(`Failed to get device code: ${response.status}`);
+      }
+
+      const data = await response.json();
+      logger.log('[TraktService] Device code received:', {
+        user_code: data.user_code,
+        verification_url: data.verification_url,
+        expires_in: data.expires_in,
+      });
+      return data;
+    } catch (error) {
+      logger.error('[TraktService] Failed to get device code:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Poll for device token after user has entered the code
+   * Returns: 'pending' | 'success' | 'expired' | 'error'
+   */
+  public async pollDeviceToken(deviceCode: string): Promise<'pending' | 'success' | 'expired' | 'error'> {
+    await this.ensureInitialized();
+
+    try {
+      const response = await fetch(`${TRAKT_API_URL}/oauth/device/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: deviceCode,
+          client_id: TRAKT_CLIENT_ID,
+          client_secret: TRAKT_CLIENT_SECRET,
+        }),
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        await this.saveTokens(data.access_token, data.refresh_token, data.expires_in);
+        logger.log('[TraktService] Device authentication successful');
+        return 'success';
+      } else if (response.status === 400) {
+        // User has not yet entered the code - keep polling
+        return 'pending';
+      } else if (response.status === 404) {
+        // Invalid device code
+        logger.error('[TraktService] Invalid device code');
+        return 'error';
+      } else if (response.status === 409) {
+        // Code already used
+        logger.error('[TraktService] Device code already used');
+        return 'error';
+      } else if (response.status === 410) {
+        // Code expired
+        logger.error('[TraktService] Device code expired');
+        return 'expired';
+      } else if (response.status === 418) {
+        // User denied access
+        logger.error('[TraktService] User denied access');
+        return 'error';
+      } else if (response.status === 429) {
+        // Rate limited - treat as pending
+        return 'pending';
+      } else {
+        logger.error('[TraktService] Unexpected response:', response.status);
+        return 'error';
+      }
+    } catch (error) {
+      logger.error('[TraktService] Failed to poll device token:', error);
+      return 'error';
+    }
+  }
+
+  /**
    * Refresh the access token using the refresh token
    */
   private async refreshAccessToken(): Promise<void> {

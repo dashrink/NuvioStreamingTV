@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Nuvio",
-    "slug": "nuvio",
+    "name": "Nuvio TV",
+    "slug": "nuvio-tv",
     "version": "1.2.11",
-    "orientation": "default",
+    "orientation": "landscape",
     "backgroundColor": "#020404",
     "icon": "./assets/ios/AppIcon.appiconset/Icon-App-60x60@3x.png",
     "userInterfaceStyle": "dark",
-    "scheme": "nuvio",
+    "scheme": "nuvio-tv",
     "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/splash-icon-new.png",
@@ -15,6 +15,7 @@
       "backgroundColor": "#020404"
     },
     "ios": {
+      "supportsTV": true,
       "supportsTablet": true,
       "requireFullScreen": true,
       "icon": "./assets/ios/AppIcon.appiconset/Icon-App-60x60@3x.png",
@@ -26,27 +27,32 @@
         "NSBonjourServices": [
           "_http._tcp",
           "_googlecast._tcp",
-          "_CC1AD845._googlecast._tcp",
-          "_http._tcp",
-          "_googlecast._tcp",
           "_CC1AD845._googlecast._tcp"
         ],
         "NSLocalNetworkUsageDescription": "Nuvio uses the local network to discover Cast-enabled devices on your WiFi network and to connect to local media servers.",
         "NSMicrophoneUsageDescription": "This app does not require microphone access.",
         "UIBackgroundModes": [
-          "audio",
           "audio"
         ],
         "LSSupportsOpeningDocumentsInPlace": true,
-        "UIFileSharingEnabled": true,
-        "ITSAppUsesNonExemptEncryption": false
+        "UIFileSharingEnabled": true
       },
       "bundleIdentifier": "com.nuvio.app.tv",
       "associatedDomains": [],
-      "jsEngine": "hermes",
-      "supportsTV": true
+      "jsEngine": "hermes"
     },
     "android": {
+      "isTV": true,
+      "intentFilters": [
+        {
+          "action": "MAIN",
+          "data": {},
+          "category": [
+            "LEANBACK_LAUNCHER",
+            "LAUNCHER"
+          ]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/android/mipmap-xxxhdpi/ic_launcher_foreground.png",
         "backgroundColor": "#020404"
@@ -57,20 +63,17 @@
         "WAKE_LOCK",
         "android.permission.WRITE_SETTINGS"
       ],
-      "package": "com.nuvio.app",
+      "package": "com.nuvio.app.tv",
       "versionCode": 26,
       "architectures": [
-        "arm64-v8a",
         "armeabi-v7a",
-        "x86",
-        "x86_64"
+        "arm64-v8a"
       ],
+      "softwareKeyboard": true,
       "jsEngine": "hermes"
     },
     "extra": {
-      "eas": {
-        "projectId": "729065cb-4961-483c-aec6-dea93c598fd5"
-      }
+      "eas": {}
     },
     "owner": "dashrinko",
     "plugins": [
@@ -86,7 +89,7 @@
       [
         "expo-updates",
         {
-          "username": "nayifleo"
+          "username": "dashrinko"
         }
       ],
       [
@@ -96,12 +99,17 @@
           "supportsBackgroundPlayback": true
         }
       ],
-      "react-native-bottom-tabs",
       [
         "react-native-google-cast",
         {
           "receiverAppId": "CC1AD845",
           "iosStartDiscoveryAfterFirstTapOnCastButton": true
+        }
+      ],
+      [
+        "@react-native-tvos/config-tv",
+        {
+          "isTV": true
         }
       ]
     ],

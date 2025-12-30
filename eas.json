@@ -8,8 +8,26 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
-      "distribution": "internal"
+    "apple-tv": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "tv"
+      },
+      "ios": {
+        "simulator": false,
+        "image": "latest"
+      }
+    },
+    "android-tv": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "tv"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "image": "latest"
+      }
     },
     "production": {
       "autoIncrement": true,

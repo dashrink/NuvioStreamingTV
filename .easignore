@@ -1,17 +1,37 @@
-# General cleanup
+# EAS Build ignore file
+# Be careful - don't ignore assets folder or other required files
+
+# Dependencies (EAS installs fresh)
 node_modules
+
+# Expo cache
 .expo
-build
+
+# Build outputs (not source)
 dist
+
+# Logs
 *.log
 
-# Native directories (if you're not customizing them)
-ios
-android
-
-# Big assets (only if unused in app)
+# Large media files not needed
 *.mp4
 *.zip
 *.psd
 *.mov
-*.avi 
+*.avi
+
+# Backup and documentation
+backup_*/
+*.md
+.cursor/
+
+# Large directories not needed for build
+/ota-builds
+/nuvio-providers
+/KSPlayer
+/exobase
+/TrailerServices
+server/cache-server
+local-scrapers-repo
+trakt-docs
+trakt-docss

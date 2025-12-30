@@ -268,7 +268,7 @@ class NotificationService {
   private setupLibraryIntegration(): void {
     try {
       // Subscribe to library updates from catalog service
-      this.librarySubscription = catalogService.subscribeToLibraryUpdates(async (libraryItems) => {
+      const unsubUpdates = catalogService.subscribeToLibraryUpdates(async (libraryItems) => {
         if (!this.settings.enabled) return;
 
         const now = Date.now();
@@ -279,10 +279,44 @@ class NotificationService {
           // Reduced logging verbosity
           // logger.log('[NotificationService] Library updated, syncing notifications for', libraryItems.length, 'items');
           await this.syncNotificationsForLibrary(libraryItems);
-        } else {
-          // logger.log(`[NotificationService] Library updated, but skipping sync (last sync ${Math.round(timeSinceLastSync / 1000)}s ago)`);
         }
       });
+
+      // Subscribe to library add events
+      const unsubAdd = catalogService.subscribeToLibraryAdd(async (item) => {
+        if (item.type === 'series') {
+          try {
+            await this.updateNotificationsForSeries(item.id);
+            logger.log(`[NotificationService] Auto-setup notifications for series: ${item.name}`);
+          } catch (error) {
+            logger.error(`[NotificationService] Failed to setup notifications for ${item.name}:`, error);
+          }
+        }
+      });
+
+      // Subscribe to library remove events
+      const unsubRemove = catalogService.subscribeToLibraryRemove(async (type, id) => {
+        if (type === 'series') {
+          try {
+            // Cancel all notifications for this series
+            const scheduledNotifications = this.getScheduledNotifications();
+            const seriesToCancel = scheduledNotifications.filter(notification => notification.seriesId === id);
+            for (const notification of seriesToCancel) {
+              await this.cancelNotification(notification.id);
+            }
+            logger.log(`[NotificationService] Cancelled ${seriesToCancel.length} notifications for removed series: ${id}`);
+          } catch (error) {
+            logger.error(`[NotificationService] Failed to cancel notifications for removed series ${id}:`, error);
+          }
+        }
+      });
+
+      // Combine unsubscriptions
+      this.librarySubscription = () => {
+        unsubUpdates();
+        unsubAdd();
+        unsubRemove();
+      };
     } catch (error) {
       logger.error('[NotificationService] Error setting up library integration:', error);
     }

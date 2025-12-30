@@ -1,5 +1,5 @@
 import { stremioService, Meta, Manifest } from './stremioService';
-import { notificationService } from './notificationService';
+
 import { mmkvStorage } from './mmkvStorage';
 import axios from 'axios';
 import { TMDBService } from './tmdbService';
@@ -925,20 +925,29 @@ class CatalogService {
 
   private notifyLibrarySubscribers(): void {
     const items = Object.values(this.library);
-    this.librarySubscribers.forEach(callback => callback(items));
+    this.librarySubscribers.forEach(sub => sub(items));
   }
 
-  public onLibraryAdd(listener: (item: StreamingContent) => void): () => void {
-    this.libraryAddListeners.push(listener);
+  public subscribeToLibraryUpdates(callback: (items: StreamingContent[]) => void): () => void {
+    this.librarySubscribers.push(callback);
+    // Immediately call with current state
+    callback(Object.values(this.library));
     return () => {
-      this.libraryAddListeners = this.libraryAddListeners.filter(l => l !== listener);
+      this.librarySubscribers = this.librarySubscribers.filter(sub => sub !== callback);
     };
   }
 
-  public onLibraryRemove(listener: (type: string, id: string) => void): () => void {
-    this.libraryRemoveListeners.push(listener);
+  public subscribeToLibraryAdd(callback: (item: StreamingContent) => void): () => void {
+    this.libraryAddListeners.push(callback);
     return () => {
-      this.libraryRemoveListeners = this.libraryRemoveListeners.filter(l => l !== listener);
+      this.libraryAddListeners = this.libraryAddListeners.filter(l => l !== callback);
+    };
+  }
+
+  public subscribeToLibraryRemove(callback: (type: string, id: string) => void): () => void {
+    this.libraryRemoveListeners.push(callback);
+    return () => {
+      this.libraryRemoveListeners = this.libraryRemoveListeners.filter(l => l !== callback);
     };
   }
 
@@ -948,28 +957,6 @@ class CatalogService {
       await this.ensureInitialized();
     }
     return Object.values(this.library);
-  }
-
-  public subscribeToLibraryUpdates(callback: (items: StreamingContent[]) => void): () => void {
-    this.librarySubscribers.push(callback);
-    // Defer initial callback to next tick to avoid synchronous state updates during render
-    // This prevents infinite loops when the callback triggers setState in useEffect
-    Promise.resolve().then(() => {
-      this.getLibraryItems().then(items => {
-        // Only call if still subscribed (callback might have been unsubscribed)
-        if (this.librarySubscribers.includes(callback)) {
-          callback(items);
-        }
-      });
-    });
-
-    // Return unsubscribe function
-    return () => {
-      const index = this.librarySubscribers.indexOf(callback);
-      if (index > -1) {
-        this.librarySubscribers.splice(index, 1);
-      }
-    };
   }
 
   public async addToLibrary(content: StreamingContent): Promise<void> {
@@ -988,16 +975,6 @@ class CatalogService {
     logger.log(`[CatalogService] addToLibrary() completed for: ${content.type}:${content.id}`);
     this.notifyLibrarySubscribers();
     try { this.libraryAddListeners.forEach(l => l(content)); } catch { }
-
-    // Auto-setup notifications for series when added to library
-    if (content.type === 'series') {
-      try {
-        await notificationService.updateNotificationsForSeries(content.id);
-        console.log(`[CatalogService] Auto-setup notifications for series: ${content.name}`);
-      } catch (error) {
-        console.error(`[CatalogService] Failed to setup notifications for ${content.name}:`, error);
-      }
-    }
   }
 
   public async removeFromLibrary(type: string, id: string): Promise<void> {
@@ -1014,21 +991,6 @@ class CatalogService {
     logger.log(`[CatalogService] removeFromLibrary() completed for: ${type}:${id}`);
     this.notifyLibrarySubscribers();
     try { this.libraryRemoveListeners.forEach(l => l(type, id)); } catch { }
-
-    // Cancel notifications for series when removed from library
-    if (type === 'series') {
-      try {
-        // Cancel all notifications for this series
-        const scheduledNotifications = notificationService.getScheduledNotifications();
-        const seriesToCancel = scheduledNotifications.filter(notification => notification.seriesId === id);
-        for (const notification of seriesToCancel) {
-          await notificationService.cancelNotification(notification.id);
-        }
-        console.log(`[CatalogService] Cancelled ${seriesToCancel.length} notifications for removed series: ${id}`);
-      } catch (error) {
-        console.error(`[CatalogService] Failed to cancel notifications for removed series ${id}:`, error);
-      }
-    }
   }
 
   private addToRecentContent(content: StreamingContent): void {

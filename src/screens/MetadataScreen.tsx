@@ -6,12 +6,13 @@ import {
   StatusBar,
   ActivityIndicator,
   Dimensions,
-  TouchableOpacity,
   InteractionManager,
   BackHandler,
   Platform,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -865,19 +866,19 @@ const MetadataScreen: React.FC = () => {
               {metadataError}
             </Text>
           )}
-          <TouchableOpacity
+          <Focusable
             style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={loadMetadata}
+            onPress={() => loadMetadata()}
           >
             <MaterialIcons name="refresh" size={20} color={currentTheme.colors.white} style={{ marginRight: 8 }} />
             <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Focusable>
+          <Focusable
             style={[styles.backButton, { borderColor: currentTheme.colors.primary }]}
-            onPress={handleBack}
+            onPress={() => handleBack()}
           >
             <Text style={[styles.backButtonText, { color: currentTheme.colors.primary }]}>Go Back</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       </SafeAreaView>
     );
@@ -1031,15 +1032,21 @@ const MetadataScreen: React.FC = () => {
                       }
                     ]}>
                       {metadata.networks.slice(0, 6).map((net) => (
-                        <View key={String(net.id || net.name)} style={[
-                          styles.productionChip,
-                          {
-                            paddingVertical: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                            paddingHorizontal: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-                            minHeight: isTV ? 48 : isLargeTablet ? 44 : isTablet ? 40 : 36,
-                            borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-                          }
-                        ]}>
+                        <Focusable
+                          key={String(net.id || net.name)}
+                          style={[
+                            styles.productionChip,
+                            {
+                              paddingVertical: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                              paddingHorizontal: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                              minHeight: isTV ? 48 : isLargeTablet ? 44 : isTablet ? 40 : 36,
+                              borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
+                            }
+                          ]}
+                          onPress={() => {
+                            // Optional: Navigate to network specific content if implemented
+                          }}
+                        >
                           {net.logo ? (
                             <FastImage
                               source={{ uri: net.logo }}
@@ -1060,7 +1067,7 @@ const MetadataScreen: React.FC = () => {
                               }
                             ]}>{net.name}</Text>
                           )}
-                        </View>
+                        </Focusable>
                       ))}
                     </View>
                   </Animated.View>
@@ -1378,7 +1385,7 @@ const MetadataScreen: React.FC = () => {
                 {/* Backdrop Gallery section - shown after show details for TV shows when TMDB ID is available and enrichment is enabled */}
                 {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.tmdbId && settings.enrichMetadataWithTMDB && (
                   <View style={styles.backdropGalleryContainer}>
-                    <TouchableOpacity
+                    <Focusable
                       style={styles.backdropGalleryButton}
                       onPress={() => navigation.navigate('BackdropGallery' as any, {
                         tmdbId: metadata.tmdbId,
@@ -1388,7 +1395,7 @@ const MetadataScreen: React.FC = () => {
                     >
                       <Text style={[styles.backdropGalleryText, { color: currentTheme.colors.highEmphasis }]}>Backdrop Gallery</Text>
                       <MaterialIcons name="chevron-right" size={24} color={currentTheme.colors.highEmphasis} />
-                    </TouchableOpacity>
+                    </Focusable>
                   </View>
                 )}
 

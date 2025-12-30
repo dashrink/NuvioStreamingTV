@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable } from 'react-native';
+import Focusable from '../common/Focusable';
 import * as Haptics from 'expo-haptics';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -779,7 +780,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           ]}>Seasons</Text>
 
           {/* Dropdown Toggle Button */}
-          <TouchableOpacity
+          <Focusable
             style={[
               styles.seasonViewToggle,
               {
@@ -799,7 +800,6 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               updateViewMode(newMode);
               if (__DEV__) console.log('[SeriesContent] View mode changed to:', newMode, 'Current ref value:', seasonViewMode);
             }}
-            activeOpacity={0.7}
           >
             <Text style={[
               styles.seasonViewToggleText,
@@ -812,7 +812,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             ]}>
               {seasonViewMode === 'posters' ? 'Posters' : 'Text'}
             </Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
 
         <FlatList
@@ -850,7 +850,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   key={season}
                   style={{ opacity: textViewVisible ? 1 : 0 }}
                 >
-                  <TouchableOpacity
+                  <Focusable
                     style={[
                       styles.seasonTextButton,
                       {
@@ -876,7 +876,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     ]} numberOfLines={1}>
                       {season === 0 ? 'Specials' : `Season ${season}`}
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 </View>
               );
             }
@@ -888,7 +888,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 key={season}
                 style={{ opacity: posterViewVisible ? 1 : 0 }}
               >
-                <TouchableOpacity
+                <Focusable
                   style={[
                     styles.seasonButton,
                     {
@@ -939,7 +939,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   >
                     {season === 0 ? 'Specials' : `Season ${season}`}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               </View>
             );
           }}
@@ -1024,7 +1024,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     const showProgress = progress && progressPercent < 85;
 
     return (
-      <TouchableOpacity
+      <Focusable
         key={episode.id}
         style={[
           styles.episodeCardVertical,
@@ -1037,8 +1037,6 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
-        delayLongPress={400}
-        activeOpacity={0.7}
       >
         <View style={[
           styles.episodeImageContainer,
@@ -1229,7 +1227,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
           </Text>
         </View>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -1299,7 +1297,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     const showProgress = progress && progressPercent < 85;
 
     return (
-      <TouchableOpacity
+      <Focusable
         key={episode.id}
         style={[
           styles.episodeCardHorizontal,
@@ -1320,8 +1318,6 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
-        delayLongPress={400}
-        activeOpacity={0.85}
       >
         {/* Solid outline replaces gradient border */}
 
@@ -1522,7 +1518,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           )}
 
         </LinearGradient>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -1716,7 +1712,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               {/* Mark as Watched / Unwatched */}
               {selectedEpisodeForAction && (
                 isEpisodeWatched(selectedEpisodeForAction) ? (
-                  <TouchableOpacity
+                  <Focusable
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -1741,9 +1737,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     }}>
                       {markingAsWatched ? 'Removing...' : 'Mark as Unwatched'}
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 ) : (
-                  <TouchableOpacity
+                  <Focusable
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -1768,13 +1764,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     }}>
                       {markingAsWatched ? 'Marking...' : 'Mark as Watched'}
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 )
               )}
 
               {/* Mark Season as Watched / Unwatched */}
               {isSeasonWatched() ? (
-                <TouchableOpacity
+                <Focusable
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -1800,9 +1796,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   }} numberOfLines={1}>
                     {markingAsWatched ? 'Removing...' : `Unmark Season ${selectedSeason}`}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               ) : (
-                <TouchableOpacity
+                <Focusable
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -1828,11 +1824,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   }} numberOfLines={1}>
                     {markingAsWatched ? 'Marking...' : `Mark Season ${selectedSeason}`}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               )}
 
               {/* Cancel */}
-              <TouchableOpacity
+              <Focusable
                 style={{
                   alignItems: 'center',
                   padding: isTV ? 14 : 12,
@@ -1847,7 +1843,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 }}>
                   Cancel
                 </Text>
-              </TouchableOpacity>
+              </Focusable>
             </View>
           </Pressable>
         </Pressable>

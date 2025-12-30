@@ -18,6 +18,7 @@ import {
   Platform,
   Easing,
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
@@ -56,6 +57,8 @@ const BREAKPOINTS = {
 };
 
 const getDeviceType = (deviceWidth: number) => {
+  // Always treat TV devices as 'tv' regardless of reported dp width
+  if (Platform.isTV) return 'tv';
   if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
   if (deviceWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
   if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';
@@ -570,7 +573,7 @@ const SearchScreen = () => {
           Recent Searches
         </Text>
         {recentSearches.map((search, index) => (
-          <TouchableOpacity
+          <Focusable
             key={index}
             style={styles.recentSearchItem}
             onPress={() => {
@@ -587,7 +590,7 @@ const SearchScreen = () => {
             <Text style={[styles.recentSearchText, { color: currentTheme.colors.white }]}>
               {search}
             </Text>
-            <TouchableOpacity
+            <Focusable
               onPress={() => {
                 const newRecentSearches = [...recentSearches];
                 newRecentSearches.splice(index, 1);
@@ -598,8 +601,8 @@ const SearchScreen = () => {
               style={styles.recentSearchDeleteButton}
             >
               <MaterialIcons name="close" size={16} color={currentTheme.colors.lightGray} />
-            </TouchableOpacity>
-          </TouchableOpacity>
+            </Focusable>
+          </Focusable>
         ))}
       </View>
     );
@@ -651,7 +654,7 @@ const SearchScreen = () => {
     }, [item.id, item.type]);
 
     return (
-      <TouchableOpacity
+      <Focusable
         style={[styles.horizontalItem, { width: itemWidth }]}
         onPress={() => {
           navigation.navigate('Metadata', { id: item.id, type: item.type });
@@ -661,8 +664,6 @@ const SearchScreen = () => {
           setMenuVisible(true);
           // Do NOT toggle refreshFlag here
         }}
-        delayLongPress={300}
-        activeOpacity={0.7}
       >
         <View style={[styles.horizontalItemPosterContainer, {
           width: itemWidth,
@@ -716,7 +717,7 @@ const SearchScreen = () => {
             {item.year}
           </Text>
         )}
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -934,7 +935,7 @@ const SearchScreen = () => {
                 ref={inputRef}
               />
               {query.length > 0 && (
-                <TouchableOpacity
+                <Focusable
                   onPress={handleClearSearch}
                   style={styles.clearButton}
                   hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
@@ -944,7 +945,7 @@ const SearchScreen = () => {
                     size={20}
                     color={currentTheme.colors.lightGray}
                   />
-                </TouchableOpacity>
+                </Focusable>
               )}
             </View>
           </View>

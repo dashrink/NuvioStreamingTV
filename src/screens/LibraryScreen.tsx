@@ -9,7 +9,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   useColorScheme,
   useWindowDimensions,
   SafeAreaView,
@@ -20,6 +19,7 @@ import {
   ScrollView,
   BackHandler,
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -121,10 +121,9 @@ const TraktItem = React.memo(({
   }, [navigation, item.imdbId, item.type]);
 
   return (
-    <TouchableOpacity
+    <Focusable
       style={[styles.itemContainer, { width }]}
       onPress={handlePress}
-      activeOpacity={0.7}
     >
       <View>
         <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
@@ -146,7 +145,7 @@ const TraktItem = React.memo(({
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 });
 
@@ -386,14 +385,13 @@ const LibraryScreen = () => {
   }, [traktAuthenticated, watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
   const renderItem = ({ item }: { item: LibraryItem }) => (
-    <TouchableOpacity
+    <Focusable
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type })}
       onLongPress={() => {
         setSelectedItem(item);
         setMenuVisible(true);
       }}
-      activeOpacity={0.7}
     >
       <View>
         <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
@@ -424,17 +422,16 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktCollectionFolder = ({ folder }: { folder: TraktFolder }) => (
-    <TouchableOpacity
+    <Focusable
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         setSelectedTraktFolder(folder.id);
         loadAllCollections();
       }}
-      activeOpacity={0.7}
     >
       <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
         <View style={styles.folderGradient}>
@@ -452,11 +449,11 @@ const LibraryScreen = () => {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktFolder = () => (
-    <TouchableOpacity
+    <Focusable
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         if (!traktAuthenticated) {
@@ -467,7 +464,6 @@ const LibraryScreen = () => {
           loadAllCollections();
         }
       }}
-      activeOpacity={0.7}
     >
       <View>
         <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
@@ -489,7 +485,7 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktItem = useCallback(({ item }: { item: TraktDisplayItem }) => {
@@ -715,7 +711,7 @@ const LibraryScreen = () => {
             <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
               Your Trakt collections will appear here once you start using Trakt
             </Text>
-            <TouchableOpacity
+            <Focusable
               style={[styles.exploreButton, {
                 backgroundColor: currentTheme.colors.primary,
                 shadowColor: currentTheme.colors.black
@@ -723,10 +719,9 @@ const LibraryScreen = () => {
               onPress={() => {
                 loadAllCollections();
               }}
-              activeOpacity={0.7}
             >
               <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
-            </TouchableOpacity>
+            </Focusable>
           </View>
         );
       }
@@ -756,7 +751,7 @@ const LibraryScreen = () => {
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             This collection is empty
           </Text>
-          <TouchableOpacity
+          <Focusable
             style={[styles.exploreButton, {
               backgroundColor: currentTheme.colors.primary,
               shadowColor: currentTheme.colors.black
@@ -764,10 +759,9 @@ const LibraryScreen = () => {
             onPress={() => {
               loadAllCollections();
             }}
-            activeOpacity={0.7}
           >
             <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       );
     }
@@ -791,7 +785,7 @@ const LibraryScreen = () => {
     const isActive = filter === filterType;
 
     return (
-      <TouchableOpacity
+      <Focusable
         style={[
           styles.filterButton,
           isActive && { backgroundColor: currentTheme.colors.primary },
@@ -810,7 +804,6 @@ const LibraryScreen = () => {
           }
           setFilter(filterType);
         }}
-        activeOpacity={0.7}
       >
         {filterType === 'trakt' ? (
           <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -833,7 +826,7 @@ const LibraryScreen = () => {
         >
           {label}
         </Text>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -858,16 +851,15 @@ const LibraryScreen = () => {
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             {emptySubtitle}
           </Text>
-          <TouchableOpacity
+          <Focusable
             style={[styles.exploreButton, {
               backgroundColor: currentTheme.colors.primary,
               shadowColor: currentTheme.colors.black
             }]}
             onPress={() => navigation.navigate('Search')}
-            activeOpacity={0.7}
           >
             <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       );
     }

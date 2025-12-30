@@ -19,6 +19,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import CustomSwitch from '../components/common/CustomSwitch';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -166,21 +167,12 @@ const HomeScreenSettings: React.FC = () => {
   // Ensure carousel is the default hero layout on tablets for all users
   useEffect(() => {
     try {
-      if (isTabletDevice && settings.heroStyle !== 'carousel') {
+      // Don't force carousel on TV platforms - let user choose their preferred hero style
+      if (isTabletDevice && !Platform.isTV && settings.heroStyle !== 'carousel') {
         updateSetting('heroStyle', 'carousel' as any);
       }
     } catch {}
   }, [isTabletDevice, settings.heroStyle, updateSetting]);
-
-  const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      trackColor={{ false: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', true: colors.primary }}
-      thumbColor={Platform.OS === 'android' ? (value ? colors.white : colors.white) : ''}
-      ios_backgroundColor={isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
-    />
-  );
 
   // Radio button component for content source selection
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (

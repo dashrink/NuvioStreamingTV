@@ -45,6 +45,7 @@ import { useTraktContext } from '../../contexts/TraktContext';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
 import { streamCacheService } from '../../services/streamCacheService';
+import Focusable from '../common/Focusable';
 
 interface AppleTVHeroProps {
   featuredContent: StreamingContent | null;
@@ -59,8 +60,8 @@ const { width, height } = Dimensions.get('window');
 // Get status bar height
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
-// Calculate hero height - 85% of screen height
-const HERO_HEIGHT = height * 0.85;
+// Calculate hero height - 85% of screen height mobile, 75% for TV for better banner display
+const HERO_HEIGHT = Platform.isTV ? height * 0.75 : height * 0.85;
 
 // Animated Pagination Dot Component
 const PaginationDot: React.FC<{
@@ -182,6 +183,14 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   const lastInteractionRef = useRef<number>(Date.now());
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
+  // Refs for focus management on TV
+  const playButtonRef = useRef<any>(null);
+  const saveButtonRef = useRef<any>(null);
+  const leftArrowRef = useRef<any>(null);
+  const rightArrowRef = useRef<any>(null);
+  const leftTriggerRef = useRef<any>(null);
+  const rightTriggerRef = useRef<any>(null);
+
   // Trailer state
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [trailerLoading, setTrailerLoading] = useState(false);
@@ -269,7 +278,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     const scrollYValue = scrollY.value;
 
     // Disable parallax during drag to avoid transform conflicts
-    if (isDragging.value > 0) {
+    // Also disable on TV to prevent crop/zoom issues on 16:9 screens
+    if (isDragging.value > 0 || Platform.isTV) {
       return {
         transform: [
           { scale: 1.0 },
@@ -817,6 +827,24 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     setCurrentIndex((prev) => (prev + 1) % items.length);
   }, [items.length]);
 
+  // Handler for left arrow - go to previous image and focus Play
+  const handleLeftArrowPress = useCallback(() => {
+    goToPrevious();
+    // Delay focus to allow state update
+    setTimeout(() => {
+      playButtonRef.current?.focus?.();
+    }, 100);
+  }, [goToPrevious]);
+
+  // Handler for right arrow - go to next image and focus Play  
+  const handleRightArrowPress = useCallback(() => {
+    goToNext();
+    // Delay focus to allow state update
+    setTimeout(() => {
+      playButtonRef.current?.focus?.();
+    }, 100);
+  }, [goToNext]);
+
   // Callback for setting next preview index
   const setPreviewIndex = useCallback((index: number) => {
     setNextIndex(index);
@@ -1005,7 +1033,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     <GestureDetector gesture={panGesture}>
       <Animated.View
         entering={initialLoadComplete ? undefined : FadeIn.duration(600).delay(150)}
-        style={[styles.container, heroContainerStyle, { height: HERO_HEIGHT, marginTop: -insets.top }]}
+        style={[styles.container, heroContainerStyle, { height: HERO_HEIGHT }]}
       >
         {/* Background Images with Crossfade */}
         <View style={styles.backgroundContainer}>
@@ -1171,7 +1199,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         )}
 
         {/* Content Overlay */}
-        <View style={[styles.contentContainer, { paddingBottom: 0 + insets.bottom }]}>
+        <View style={[styles.contentContainer, { paddingBottom: Platform.isTV ? 40 : insets.bottom }]}>
           {/* Logo or Title with Fade Animation */}
           <Animated.View
             key={`logo-${currentIndex}`}
@@ -1252,32 +1280,97 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
           {/* Action Buttons - Play and Save buttons */}
           <View style={styles.buttonsContainer}>
-            {/* Play Button */}
-            <TouchableOpacity
-              style={[styles.playButton]}
-              onPress={handlePlayAction}
-              activeOpacity={0.85}
-            >
-              <MaterialIcons
-                name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
-                size={24}
-                color="#000"
-              />
-              <Text style={styles.playButtonText}>{playButtonText}</Text>
-            </TouchableOpacity>
+            {/* Left Trigger - Captures D-pad LEFT from Left Arrow */}
+            {Platform.isTV && items.length > 1 && (
+              <Focusable
+                ref={leftTriggerRef}
+                onFocus={handleLeftArrowPress}
+                style={styles.hiddenTrigger}
+              >
+                <View />
+              </Focusable>
+            )}
 
-            {/* Save Button */}
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSaveAction}
-              activeOpacity={0.85}
-            >
-              <MaterialIcons
-                name={inLibrary ? "bookmark" : "bookmark-outline"}
-                size={24}
-                color="white"
-              />
-            </TouchableOpacity>
+            {/* Left Arrow - TV Only */}
+            {Platform.isTV && items.length > 1 && (
+              <View style={styles.arrowButtonWrapper}>
+                <Focusable
+                  ref={leftArrowRef}
+                  onPress={handleLeftArrowPress}
+                  nextFocusLeft={leftTriggerRef}
+                  nextFocusRight={playButtonRef}
+                >
+                  <View style={styles.arrowButton}>
+                    <MaterialIcons name="chevron-left" size={32} color="white" />
+                  </View>
+                </Focusable>
+              </View>
+            )}
+
+            {/* Play Button - wrapped in sized container for TV */}
+            <View style={Platform.isTV ? styles.playButtonWrapper : undefined}>
+              <Focusable
+                ref={playButtonRef}
+                onPress={handlePlayAction}
+                hasTVPreferredFocus={Platform.isTV}
+                nextFocusLeft={items.length > 1 ? leftArrowRef : undefined}
+                nextFocusRight={saveButtonRef}
+              >
+                <View style={[styles.playButton]}>
+                  <MaterialIcons
+                    name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+                    size={24}
+                    color="#000"
+                  />
+                  <Text style={styles.playButtonText}>{playButtonText}</Text>
+                </View>
+              </Focusable>
+            </View>
+
+            {/* Save Button - wrapped in sized container for TV */}
+            <View style={Platform.isTV ? styles.saveButtonWrapper : undefined}>
+              <Focusable
+                ref={saveButtonRef}
+                onPress={handleSaveAction}
+                nextFocusLeft={playButtonRef}
+                nextFocusRight={items.length > 1 ? rightArrowRef : undefined}
+              >
+                <View style={styles.saveButton}>
+                  <MaterialIcons
+                    name={inLibrary ? "bookmark" : "bookmark-outline"}
+                    size={24}
+                    color="white"
+                  />
+                </View>
+              </Focusable>
+            </View>
+
+            {/* Right Arrow - TV Only */}
+            {Platform.isTV && items.length > 1 && (
+              <View style={styles.arrowButtonWrapper}>
+                <Focusable
+                  ref={rightArrowRef}
+                  onPress={handleRightArrowPress}
+                  nextFocusLeft={saveButtonRef}
+                  nextFocusRight={rightTriggerRef}
+                >
+                  <View style={styles.arrowButton}>
+                    <MaterialIcons name="chevron-right" size={32} color="white" />
+                  </View>
+                </Focusable>
+              </View>
+            )}
+
+            {/* Right Trigger - Captures D-pad RIGHT from Right Arrow */}
+            {Platform.isTV && items.length > 1 && (
+              <Focusable
+                ref={rightTriggerRef}
+                onFocus={handleRightArrowPress}
+                style={styles.hiddenTrigger}
+              >
+                <View />
+              </Focusable>
+            )}
           </View>
 
           {/* Pagination Dots */}
@@ -1322,20 +1415,21 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 1,
+    backgroundColor: '#000', // Prevent black bars from showing on TV when using contain mode
   },
   imageWrapper: {
     position: 'absolute',
     top: 0,
-    left: -50, // Extend 50px to left
-    right: -50, // Extend 50px to right
-    bottom: 0,
+    left: 0,
+    right: 0,
+    bottom: Platform.isTV ? -height * 0.25 : 0, // Extend beyond container on TV to show full top, crop from bottom
   },
   imageWrapperAbsolute: {
     position: 'absolute',
     top: 0,
-    left: -50, // Extend 50px to left
-    right: -50, // Extend 50px to right
-    bottom: 0,
+    left: 0,
+    right: 0,
+    bottom: Platform.isTV ? -height * 0.25 : 0, // Extend beyond container on TV to show full top, crop from bottom
   },
   backgroundImage: {
     width: '100%',
@@ -1350,7 +1444,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   contentContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 24,
@@ -1433,6 +1531,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.3)',
+  },
+  // Wrapper styles to constrain Focusable component on TV
+  playButtonWrapper: {
+    height: 46, // Match playButton height (paddingVertical: 11 * 2 + icon)
+    minWidth: 130,
+  },
+  saveButtonWrapper: {
+    width: 52,
+    height: 52,
+  },
+  arrowButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  arrowButtonWrapper: {
+    width: 48,
+    height: 48,
+  },
+  hiddenTrigger: {
+    width: 0,
+    height: 0,
+    opacity: 0,
   },
   paginationContainer: {
     flexDirection: 'row',

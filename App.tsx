@@ -5,13 +5,14 @@
  * @format
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
   I18nManager,
   Platform,
-  LogBox
+  LogBox,
+  Dimensions
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -42,6 +43,8 @@ import { AccountProvider, useAccount } from './src/contexts/AccountContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
+import { useTVMode } from './src/hooks/useTVMode';
+import { PostHogProvider } from 'posthog-react-native';
 
 Sentry.init({
   dsn: 'https://1a58bf436454d346e5852b7bfd3c95e8@o4509536317276160.ingest.de.sentry.io/4509536317734992',
@@ -79,16 +82,25 @@ enableFreeze(true);
 const ThemedApp = () => {
   // Log JS engine once at startup
   useEffect(() => {
+    console.log('[App] Starting up...');
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const engine = (global as any).HermesInternal ? 'Hermes' : 'JSC';
-      console.log('JS Engine:', engine);
+      console.log('[App] JS Engine:', engine);
+      console.log('[App] Platform:', Platform.OS, 'isTV:', Platform.isTV);
     } catch { }
   }, []);
   const { currentTheme } = useTheme();
   const [isAppReady, setIsAppReady] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
+
+  // Initialize TV mode events
+  useTVMode();
+
+  useEffect(() => {
+    console.log('[App] isAppReady:', isAppReady, 'hasCompletedOnboarding:', hasCompletedOnboarding);
+  }, [isAppReady, hasCompletedOnboarding]);
 
   // Update popup functionality
   const {
@@ -198,44 +210,52 @@ const ThemedApp = () => {
 
   return (
     <AccountProvider>
-      <PaperProvider theme={customDarkTheme}>
-        <NavigationContainer
-          ref={navigationRef}
-          theme={customNavigationTheme}
-          linking={undefined}
-        >
-          <DownloadsProvider>
-            <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-              <StatusBar style="light" />
-              {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
-              {shouldShowApp && <AppNavigator initialRouteName={initialRouteName} />}
-              <UpdatePopup
-                visible={showUpdatePopup}
-                updateInfo={updateInfo}
-                onUpdateNow={handleUpdateNow}
-                onUpdateLater={handleUpdateLater}
-                onDismiss={handleDismiss}
-                isInstalling={isInstalling}
-              />
-              <MajorUpdateOverlay
-                visible={githubUpdate.visible}
-                latestTag={githubUpdate.latestTag}
-                releaseNotes={githubUpdate.releaseNotes}
-                releaseUrl={githubUpdate.releaseUrl}
-                onDismiss={githubUpdate.onDismiss}
-                onLater={githubUpdate.onLater}
-              />
-              <AnnouncementOverlay
-                visible={showAnnouncement}
-                announcements={announcements}
-                onClose={handleAnnouncementClose}
-                onActionPress={handleNavigateToDebrid}
-                actionButtonText="Connect Now"
-              />
-            </View>
-          </DownloadsProvider>
-        </NavigationContainer>
-      </PaperProvider>
+      <PostHogProvider
+        apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
+        options={{
+          host: "https://us.i.posthog.com",
+        }}
+        autocapture={false}
+      >
+        <PaperProvider theme={customDarkTheme}>
+          <NavigationContainer
+            ref={navigationRef}
+            theme={customNavigationTheme}
+            linking={undefined}
+          >
+            <DownloadsProvider>
+              <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+                <StatusBar style="light" />
+                {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
+                {shouldShowApp && <AppNavigator initialRouteName={initialRouteName} />}
+                <UpdatePopup
+                  visible={showUpdatePopup}
+                  updateInfo={updateInfo}
+                  onUpdateNow={handleUpdateNow}
+                  onUpdateLater={handleUpdateLater}
+                  onDismiss={handleDismiss}
+                  isInstalling={isInstalling}
+                />
+                <MajorUpdateOverlay
+                  visible={githubUpdate.visible}
+                  latestTag={githubUpdate.latestTag}
+                  releaseNotes={githubUpdate.releaseNotes}
+                  releaseUrl={githubUpdate.releaseUrl}
+                  onDismiss={githubUpdate.onDismiss}
+                  onLater={githubUpdate.onLater}
+                />
+                <AnnouncementOverlay
+                  visible={showAnnouncement}
+                  announcements={announcements}
+                  onClose={handleAnnouncementClose}
+                  onActionPress={handleNavigateToDebrid}
+                  actionButtonText="Connect Now"
+                />
+              </View>
+            </DownloadsProvider>
+          </NavigationContainer>
+        </PaperProvider>
+      </PostHogProvider>
     </AccountProvider>
   );
 }

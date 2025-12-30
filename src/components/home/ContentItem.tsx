@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { DeviceEventEmitter } from 'react-native';
-import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
+import Focusable from '../common/Focusable';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -32,6 +33,8 @@ const BREAKPOINTS = {
 };
 
 const getDeviceType = (screenWidth: number) => {
+  // Always treat TV devices as 'tv' regardless of reported dp width
+  if (Platform.isTV) return 'tv';
   if (screenWidth >= BREAKPOINTS.tv) return 'tv';
   if (screenWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
   if (screenWidth >= BREAKPOINTS.tablet) return 'tablet';
@@ -39,25 +42,33 @@ const getDeviceType = (screenWidth: number) => {
 };
 
 // Dynamic poster calculation based on screen width - show 1/4 of next poster
-const calculatePosterLayout = (screenWidth: number) => {
-  const deviceType = getDeviceType(screenWidth);
+const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
+  // For TV, use forceTV parameter since Platform.isTV is available
+  const isTVDevice = forceTV || Platform.isTV;
+  const deviceType = isTVDevice ? 'tv' : getDeviceType(screenWidth);
 
   // Responsive sizing based on device type
-  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 180 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
-  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 220 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
-  const LEFT_PADDING = deviceType === 'tv' ? 32 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
-  const SPACING = deviceType === 'tv' ? 12 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
+  // TV uses smaller posters since actual dp is ~960, not 1440
+  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 120 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
+  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 160 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
+  const LEFT_PADDING = deviceType === 'tv' ? 24 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
+  const SPACING = deviceType === 'tv' ? 10 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
 
   // Try different numbers of full posters to find the best fit
+  // TV should show 5-6 posters to fit 960dp viewport
+  const defaultPosterWidth = deviceType === 'tv' ? 140 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120;
   let bestLayout = {
-    numFullPosters: 3,
-    posterWidth: deviceType === 'tv' ? 200 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120
+    numFullPosters: deviceType === 'tv' ? 5 : 3,
+    posterWidth: defaultPosterWidth
   };
 
-  for (let n = 3; n <= 6; n++) {
+  const minPosters = deviceType === 'tv' ? 5 : 3;
+  const maxPosters = deviceType === 'tv' ? 7 : 6;
+
+  for (let n = minPosters; n <= maxPosters; n++) {
     // Calculate poster width needed for N full posters + 0.25 partial poster
     // Formula: N * posterWidth + (N-1) * spacing + 0.25 * posterWidth = availableWidth - rightPadding
     // Simplified: posterWidth * (N + 0.25) + (N-1) * spacing = availableWidth - rightPadding
@@ -302,12 +313,10 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   return (
     <>
       <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
-        <TouchableOpacity
+        <Focusable
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
-          activeOpacity={0.7}
           onPress={handlePress}
           onLongPress={handleLongPress}
-          delayLongPress={300}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}
@@ -362,7 +371,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
               </View>
             )}
           </View>
-        </TouchableOpacity>
+        </Focusable>
         {settings.showPosterTitles && (
           <Text
             style={[

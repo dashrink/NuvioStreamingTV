@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
+import { useColorScheme, Platform, Animated, StatusBar, View, Text, AppState, Easing, Dimensions } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -15,7 +16,7 @@ import { HeaderVisibility } from '../contexts/HeaderVisibility';
 import { Stream } from '../types/streams';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { PostHogProvider } from 'posthog-react-native';
+
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback
 let GlassViewComp: any = null;
@@ -466,7 +467,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
   const isTablet = useMemo(() => {
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
-    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+    return (Platform.isTV || (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768));
   }, [dimensions]);
   const insets = useSafeAreaInsets();
   // Force consistent status bar settings
@@ -575,6 +576,8 @@ const MainTabs = () => {
   }, []);
   const { isHomeLoading } = useLoading();
   const isTablet = useMemo(() => {
+    // TV devices should use tablet layout (top nav instead of bottom tabs)
+    if (Platform.isTV) return true;
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
     return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
@@ -612,7 +615,7 @@ const MainTabs = () => {
         <Animated.View
           style={[{
             position: 'absolute',
-            top: insets.top + 12,
+            top: insets.top + 8,
             left: 0,
             right: 0,
             alignItems: 'center',
@@ -682,27 +685,26 @@ const MainTabs = () => {
               };
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={route.key}
-                  activeOpacity={0.8}
                   onPress={onPress}
                   style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    marginHorizontal: 2,
-                    borderRadius: 24,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    marginHorizontal: 4,
+                    borderRadius: 16,
                     backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
                   }}
                 >
                   <Text style={{
                     color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
                     fontWeight: '700',
-                    fontSize: 14,
+                    fontSize: 12,
                     letterSpacing: 0.2,
                   }}>
                     {typeof label === 'string' ? label : ''}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
           </View>
@@ -822,9 +824,8 @@ const MainTabs = () => {
               }
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={route.key}
-                  activeOpacity={0.7}
                   onPress={onPress}
                   style={{
                     flex: 1,
@@ -850,7 +851,7 @@ const MainTabs = () => {
                   >
                     {typeof label === 'string' ? label : ''}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
           </View>
@@ -1608,16 +1609,9 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
 };
 
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
-  <PostHogProvider
-    apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
-    options={{
-      host: "https://us.i.posthog.com",
-    }}
-  >
-    <LoadingProvider>
-      <InnerNavigator initialRouteName={initialRouteName} />
-    </LoadingProvider>
-  </PostHogProvider>
+  <LoadingProvider>
+    <InnerNavigator initialRouteName={initialRouteName} />
+  </LoadingProvider>
 );
 
 export default AppNavigator;

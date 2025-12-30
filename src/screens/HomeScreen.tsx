@@ -20,6 +20,7 @@ import {
   InteractionManager,
   AppState
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -686,8 +687,8 @@ const HomeScreen = () => {
   const memoizedFeaturedContent = useMemo(() => {
     const heroStyleToUse = settings.heroStyle;
 
-    // AppleTVHero is only available on mobile devices (not tablets)
-    if (heroStyleToUse === 'appletv' && !isTablet) {
+    // AppleTVHero available on phones and TV platforms (not regular tablets)
+    if (heroStyleToUse === 'appletv' && (Platform.isTV || !isTablet)) {
       return (
         <AppleTVHero
           featuredContent={featuredContent || null}
@@ -785,7 +786,7 @@ const HomeScreen = () => {
         return (
           <View>
             <View style={styles.loadMoreContainer}>
-              <TouchableOpacity
+              <Focusable
                 style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.primary }]}
                 onPress={handleLoadMoreCatalogs}
               >
@@ -793,7 +794,7 @@ const HomeScreen = () => {
                 <Text style={[styles.loadMoreText, { color: currentTheme.colors.white }]}>
                   Load More Catalogs
                 </Text>
-              </TouchableOpacity>
+              </Focusable>
             </View>
           </View>
         );
@@ -815,13 +816,13 @@ const HomeScreen = () => {
           <Text style={{ color: currentTheme.colors.textDark, marginTop: 8, fontSize: 16, textAlign: 'center' }}>
             No content available
           </Text>
-          <TouchableOpacity
+          <Focusable
             style={[styles.addCatalogButton, { backgroundColor: currentTheme.colors.primary }]}
             onPress={() => navigation.navigate('Settings')}
           >
             <MaterialIcons name="add-circle" size={20} color={currentTheme.colors.white} />
             <Text style={[styles.addCatalogButtonText, { color: currentTheme.colors.white }]}>Add Catalogs</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       )}
     </>

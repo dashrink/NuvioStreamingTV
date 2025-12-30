@@ -17,6 +17,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../hooks/useSettings';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import CustomSwitch from '../components/common/CustomSwitch';
 
 // TTL options in milliseconds - organized in rows
 const TTL_OPTIONS = [
@@ -86,16 +87,6 @@ const ContinueWatchingSettingsScreen: React.FC = () => {
     updateSetting(key, value);
     setShowSavedIndicator(true);
   }, [updateSetting]);
-
-  const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) => (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      trackColor={{ false: colors.elevation2, true: colors.primary }}
-      thumbColor={value ? colors.white : colors.mediumEmphasis}
-      ios_backgroundColor={colors.elevation2}
-    />
-  );
 
   const SettingItem = ({ 
     title, 
