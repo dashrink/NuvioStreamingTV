@@ -127,13 +127,13 @@ const PaginationDot: React.FC<{
     });
 
     return (
-      <TouchableOpacity
+      <Focusable
         onPress={onPress}
-        activeOpacity={0.7}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={[styles.paginationDot, { backgroundColor: 'transparent' }]} // Container style
+        scaleOnFocus={1.5} // Make dot grow when focused on TV
       >
         <Animated.View style={[styles.paginationDot, animatedStyle]} />
-      </TouchableOpacity>
+      </Focusable>
     );
   }
 );
@@ -449,10 +449,14 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           ? parseInt(currentItem.releaseInfo.split('-')[0], 10)
           : new Date().getFullYear();
 
-        // Extract TMDB ID if available
-        const tmdbId = currentItem.id?.startsWith('tmdb:')
-          ? currentItem.id.replace('tmdb:', '')
-          : undefined;
+        // Extract TMDB ID if available - ensure valid number
+        let tmdbId = undefined;
+        if (currentItem.id?.startsWith('tmdb:')) {
+          const idStr = currentItem.id.replace('tmdb:', '');
+          if (!isNaN(parseInt(idStr, 10))) {
+            tmdbId = idStr;
+          }
+        }
 
         const contentType = currentItem.type === 'series' ? 'tv' : 'movie';
 
@@ -699,15 +703,19 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         logger.info('[AppleTVHero] Passing resume data to Streams:', watchProgress.currentTime, watchProgress.duration);
       }
 
-      navigation.navigate('Streams', navigationParams);
 
+      // Add modal flag for provider popup
+      navigationParams.modal = true;
+
+      navigation.navigate('Streams', navigationParams);
     } catch (error) {
       logger.error('[AppleTVHero] Error handling play action:', error);
-      // Fallback to StreamsScreen on any error
+      // Fallback to StreamsScreen on any error - WITH MODAL
       navigation.navigate('Streams', {
         id: currentItem.id,
         type: currentItem.type,
         title: currentItem.name,
+        modal: true, // Use new modal transparent presentation
         metadata: {
           poster: currentItem.poster,
           banner: currentItem.banner,
@@ -1299,10 +1307,9 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                   onPress={handleLeftArrowPress}
                   nextFocusLeft={leftTriggerRef}
                   nextFocusRight={playButtonRef}
+                  style={[styles.arrowButton, { borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)' }]}
                 >
-                  <View style={styles.arrowButton}>
-                    <MaterialIcons name="chevron-left" size={32} color="white" />
-                  </View>
+                  <MaterialIcons name="chevron-left" size={32} color="white" />
                 </Focusable>
               </View>
             )}
@@ -1315,15 +1322,14 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                 hasTVPreferredFocus={Platform.isTV}
                 nextFocusLeft={items.length > 1 ? leftArrowRef : undefined}
                 nextFocusRight={saveButtonRef}
+                style={[styles.playButton, { borderWidth: 2, borderColor: 'transparent' }]}
               >
-                <View style={[styles.playButton]}>
-                  <MaterialIcons
-                    name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
-                    size={24}
-                    color="#000"
-                  />
-                  <Text style={styles.playButtonText}>{playButtonText}</Text>
-                </View>
+                <MaterialIcons
+                  name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+                  size={24}
+                  color="#000"
+                />
+                <Text style={styles.playButtonText}>{playButtonText}</Text>
               </Focusable>
             </View>
 
@@ -1334,14 +1340,13 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                 onPress={handleSaveAction}
                 nextFocusLeft={playButtonRef}
                 nextFocusRight={items.length > 1 ? rightArrowRef : undefined}
+                style={[styles.saveButton, { borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' }]}
               >
-                <View style={styles.saveButton}>
-                  <MaterialIcons
-                    name={inLibrary ? "bookmark" : "bookmark-outline"}
-                    size={24}
-                    color="white"
-                  />
-                </View>
+                <MaterialIcons
+                  name={inLibrary ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color="white"
+                />
               </Focusable>
             </View>
 
@@ -1353,10 +1358,9 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                   onPress={handleRightArrowPress}
                   nextFocusLeft={saveButtonRef}
                   nextFocusRight={rightTriggerRef}
+                  style={[styles.arrowButton, { borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)' }]}
                 >
-                  <View style={styles.arrowButton}>
-                    <MaterialIcons name="chevron-right" size={32} color="white" />
-                  </View>
+                  <MaterialIcons name="chevron-right" size={32} color="white" />
                 </Focusable>
               </View>
             )}
@@ -1529,8 +1533,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.3)',
   },
   // Wrapper styles to constrain Focusable component on TV
   playButtonWrapper: {
@@ -1548,8 +1550,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
   },
   arrowButtonWrapper: {
     width: 48,

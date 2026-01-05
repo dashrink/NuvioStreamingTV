@@ -4,9 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Switch,
   ActivityIndicator,
-  TouchableOpacity,
   SafeAreaView,
   StatusBar,
   Platform,
@@ -15,6 +13,8 @@ import {
   Pressable,
   Button,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
+import Focusable from '../components/common/Focusable';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -509,13 +509,14 @@ const CatalogSettingsScreen = () => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.header}>
-          <TouchableOpacity
+          <Focusable
             style={styles.backButton}
             onPress={() => navigation.goBack()}
+            hasTVPreferredFocus={true}
           >
             <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
             <Text style={styles.backText}>Settings</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
         <Text style={styles.headerTitle}>Catalogs</Text>
         <View style={styles.loadingContainer}>
@@ -529,13 +530,14 @@ const CatalogSettingsScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
-        <TouchableOpacity
+        <Focusable
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          hasTVPreferredFocus={true}
         >
           <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
           <Text style={styles.backText}>Settings</Text>
-        </TouchableOpacity>
+        </Focusable>
       </View>
       <Text style={styles.headerTitle}>Catalogs</Text>
 
@@ -551,7 +553,7 @@ const CatalogSettingsScreen = () => {
               </View>
               {/* Only show on phones (approx width < 600) */}
               <View style={styles.optionRow}>
-                <TouchableOpacity
+                <Focusable
                   style={[styles.optionChip, mobileColumns === 'auto' && styles.optionChipSelected]}
                   onPress={async () => {
                     try {
@@ -562,8 +564,8 @@ const CatalogSettingsScreen = () => {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.optionChipText, mobileColumns === 'auto' && styles.optionChipTextSelected]}>Auto</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Focusable>
+                <Focusable
                   style={[styles.optionChip, mobileColumns === 2 && styles.optionChipSelected]}
                   onPress={async () => {
                     try {
@@ -574,8 +576,8 @@ const CatalogSettingsScreen = () => {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.optionChipText, mobileColumns === 2 && styles.optionChipTextSelected]}>2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Focusable>
+                <Focusable
                   style={[styles.optionChip, mobileColumns === 3 && styles.optionChipSelected]}
                   onPress={async () => {
                     try {
@@ -586,7 +588,7 @@ const CatalogSettingsScreen = () => {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.optionChipText, mobileColumns === 3 && styles.optionChipTextSelected]}>3</Text>
-                </TouchableOpacity>
+                </Focusable>
               </View>
               <View style={styles.hintRow}>
                 <MaterialIcons name="info-outline" size={14} color={colors.mediumGray} />
@@ -599,17 +601,14 @@ const CatalogSettingsScreen = () => {
                   <Text style={styles.catalogName}>Show Poster Titles</Text>
                   <Text style={styles.catalogType}>Display title text below each poster</Text>
                 </View>
-                <Switch
+                                <CustomSwitch
                   value={showTitles}
-                  onValueChange={async (value) => {
+                  onValueChange={async (value: boolean) => {
                     try {
                       await mmkvStorage.setItem('catalog_show_titles', value ? 'true' : 'false');
                       setShowTitles(value);
                     } catch { }
                   }}
-                  trackColor={{ false: '#505050', true: colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? colors.white : undefined}
-                  ios_backgroundColor="#505050"
                 />
               </View>
             </View>
@@ -623,7 +622,7 @@ const CatalogSettingsScreen = () => {
             </Text>
 
             <View style={styles.card}>
-              <TouchableOpacity
+              <Focusable
                 style={styles.groupHeader}
                 onPress={() => toggleExpansion(addonId)}
                 activeOpacity={0.7}
@@ -639,7 +638,7 @@ const CatalogSettingsScreen = () => {
                     color={colors.mediumGray}
                   />
                 </View>
-              </TouchableOpacity>
+              </Focusable>
 
               {group.expanded && (
                 <>
@@ -664,12 +663,9 @@ const CatalogSettingsScreen = () => {
                           {setting.type.charAt(0).toUpperCase() + setting.type.slice(1)}
                         </Text>
                       </View>
-                      <Switch
+                                            <CustomSwitch
                         value={setting.enabled}
                         onValueChange={() => toggleCatalog(addonId, index)}
-                        trackColor={{ false: '#505050', true: colors.primary }}
-                        thumbColor={Platform.OS === 'android' ? colors.white : undefined}
-                        ios_backgroundColor="#505050"
                       />
                     </Pressable>
                   ))}

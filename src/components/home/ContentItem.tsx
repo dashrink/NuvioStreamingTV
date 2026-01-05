@@ -18,6 +18,8 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 interface ContentItemProps {
   item: StreamingContent;
   onPress: (id: string, type: string) => void;
+  index?: number;
+  onItemFocus?: (index: number) => void;
   shouldLoadImage?: boolean;
   deferMs?: number;
 }
@@ -92,7 +94,7 @@ const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
-const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, deferMs = 0 }: ContentItemProps) => {
+const ContentItem = ({ item, onPress, index, onItemFocus, shouldLoadImage: shouldLoadImageProp, deferMs = 0 }: ContentItemProps) => {
   // Track inLibrary status locally to force re-render
   const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
 
@@ -187,6 +189,13 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
       onPress(item.id, item.type);
     }
   }, [item.id, item.type, onPress]);
+
+  // Handle focus event for TV D-pad navigation - notify parent to scroll
+  const handleFocus = useCallback(() => {
+    if (index !== undefined && onItemFocus) {
+      onItemFocus(index);
+    }
+  }, [index, onItemFocus]);
 
   const handleOptionSelect = useCallback(async (option: string) => {
     switch (option) {
@@ -317,6 +326,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
           onPress={handlePress}
           onLongPress={handleLongPress}
+          onFocus={handleFocus}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}

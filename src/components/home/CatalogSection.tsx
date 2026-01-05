@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, FlatList, FlatListProps } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -75,6 +75,7 @@ const separatorWidth = isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8;
 const CatalogSection = ({ catalog }: CatalogSectionProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
+  const flatListRef = useRef<FlatList<StreamingContent>>(null);
 
   // Debug: log catalog name to understand what's happening
   const catalogTitle = catalog.name || catalog.id || 'Movies';
@@ -86,14 +87,42 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
     navigation.navigate('Metadata', { id, type, addonId: catalog.addon });
   }, [navigation, catalog.addon]);
 
-  const renderContentItem = useCallback(({ item }: { item: StreamingContent, index: number }) => {
+  // Handle focus change on TV - scroll to bring focused item into view
+  const handleItemFocus = useCallback((index: number) => {
+    if (Platform.isTV && flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.15, // Slight offset so item is not at edge
+      });
+    }
+  }, []);
+
+  // Provide accurate item layout for smooth scrolling
+  const getItemLayout = useCallback((_data: ArrayLike<StreamingContent> | null | undefined, index: number) => ({
+    length: POSTER_WIDTH + separatorWidth,
+    offset: (POSTER_WIDTH + separatorWidth) * index,
+    index,
+  }), []);
+
+  // Handle scroll to index failures gracefully
+  const onScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    flatListRef.current?.scrollToOffset({
+      offset: info.averageItemLength * info.index,
+      animated: true,
+    });
+  }, []);
+
+  const renderContentItem = useCallback(({ item, index }: { item: StreamingContent, index: number }) => {
     return (
       <ContentItem
         item={item}
+        index={index}
         onPress={handleContentPress}
+        onItemFocus={handleItemFocus}
       />
     );
-  }, [handleContentPress]);
+  }, [handleContentPress, handleItemFocus]);
 
   // Memoize the ItemSeparatorComponent to prevent re-creation (responsive spacing)
   const ItemSeparator = useCallback(() => <View style={{ width: separatorWidth }} />, []);
@@ -167,6 +196,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={catalog.items}
         renderItem={renderContentItem}
         keyExtractor={keyExtractor}
@@ -176,8 +206,10 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
         decelerationRate="fast"
         snapToInterval={POSTER_WIDTH + separatorWidth}
         snapToAlignment="start"
-        scrollEnabled={true}
+        scrollEnabled={!Platform.isTV}
         nestedScrollEnabled={true}
+        getItemLayout={getItemLayout}
+        onScrollToIndexFailed={onScrollToIndexFailed}
         contentContainerStyle={StyleSheet.flatten([
           styles.catalogList,
           {

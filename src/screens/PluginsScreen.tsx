@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Switch,
   TextInput,
   ScrollView,
   RefreshControl,
@@ -16,6 +15,7 @@ import {
   Animated,
   Image,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import CustomAlert from '../components/CustomAlert';
 import FastImage from '@d11/react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -1423,11 +1423,9 @@ const PluginsScreen: React.FC = () => {
                 Allow the app to use installed plugins for finding streams
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.enableLocalScrapers}
               onValueChange={handleToggleLocalScrapers}
-              trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
             />
           </View>
         </CollapsibleSection>
@@ -1657,11 +1655,9 @@ const PluginsScreen: React.FC = () => {
                       </View>
                       <Text style={styles.scraperDescription}>{scraper.description}</Text>
                     </View>
-                    <Switch
+                                        <CustomSwitch
                       value={scraper.enabled && settings.enableLocalScrapers}
-                      onValueChange={(enabled) => handleToggleScraper(scraper.id, enabled)}
-                      trackColor={{ false: colors.elevation3, true: colors.primary }}
-                      thumbColor={scraper.enabled && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
+                      onValueChange={(enabled: boolean) => handleToggleScraper(scraper.id, enabled)}
                       disabled={!settings.enableLocalScrapers || scraper.manifestEnabled === false || (scraper.disabledPlatforms && scraper.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
                     />
                   </View>
@@ -1769,11 +1765,9 @@ const PluginsScreen: React.FC = () => {
                 Validate streaming URLs before returning them (may slow down results but improves reliability)
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.enableScraperUrlValidation && settings.enableLocalScrapers}
               onValueChange={handleToggleUrlValidation}
-              trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.enableScraperUrlValidation && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
               disabled={!settings.enableLocalScrapers}
             />
           </View>
@@ -1785,17 +1779,15 @@ const PluginsScreen: React.FC = () => {
                 When enabled, all plugin streams are grouped under "{pluginService.getRepositoryName()}". When disabled, each plugin shows as a separate provider.
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.streamDisplayMode === 'grouped'}
-              onValueChange={(value) => {
+              onValueChange={(value: boolean) => {
                 updateSetting('streamDisplayMode', value ? 'grouped' : 'separate');
                 // Auto-disable quality sorting when grouping is disabled
                 if (!value && settings.streamSortMode === 'quality-then-scraper') {
                   updateSetting('streamSortMode', 'scraper-then-quality');
                 }
               }}
-              trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.streamDisplayMode === 'grouped' ? colors.white : '#f4f3f4'}
               disabled={!settings.enableLocalScrapers}
             />
           </View>
@@ -1807,11 +1799,9 @@ const PluginsScreen: React.FC = () => {
                 When enabled, streams are sorted by quality first, then by scraper. When disabled, streams are sorted by scraper first, then by quality. Only available when grouping is enabled.
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.streamSortMode === 'quality-then-scraper'}
-              onValueChange={(value) => updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality')}
-              trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.streamSortMode === 'quality-then-scraper' ? colors.white : '#f4f3f4'}
+              onValueChange={(value: boolean) => updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality')}
               disabled={!settings.enableLocalScrapers || settings.streamDisplayMode !== 'grouped'}
             />
           </View>
@@ -1823,11 +1813,9 @@ const PluginsScreen: React.FC = () => {
                 Display scraper logos next to streaming links on the streams screen.
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.showScraperLogos && settings.enableLocalScrapers}
-              onValueChange={(value) => updateSetting('showScraperLogos', value)}
-              trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.showScraperLogos && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
+              onValueChange={(value: boolean) => updateSetting('showScraperLogos', value)}
               disabled={!settings.enableLocalScrapers}
             />
           </View>

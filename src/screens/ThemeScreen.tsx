@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Switch,
   ScrollView,
   Platform,
   TextInput,
@@ -14,6 +13,7 @@ import {
   SafeAreaView,
   BackHandler,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -615,11 +615,9 @@ const ThemeScreen: React.FC = () => {
           <Text style={[styles.optionLabel, { color: currentTheme.colors.text }]}>
             Use Dominant Color from Artwork
           </Text>
-          <Switch
+          <CustomSwitch
             value={settings.useDominantBackgroundColor}
-            onValueChange={(value) => updateSetting('useDominantBackgroundColor', value)}
-            trackColor={{ false: '#767577', true: currentTheme.colors.primary }}
-            thumbColor={Platform.OS === 'android' ? currentTheme.colors.primary : '#f4f3f4'}
+            onValueChange={(value: boolean) => updateSetting('useDominantBackgroundColor', value)}
           />
         </View>
       </ScrollView>

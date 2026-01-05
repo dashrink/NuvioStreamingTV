@@ -111,7 +111,8 @@
         {
           "isTV": true
         }
-      ]
+      ],
+      "./plugins/withAndroidProjectFixes"
     ],
     "updates": {
       "enabled": true,

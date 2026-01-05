@@ -95,8 +95,7 @@ const ThemedApp = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
 
-  // Initialize TV mode events
-  useTVMode();
+
 
   useEffect(() => {
     console.log('[App] isAppReady:', isAppReady, 'hasCompletedOnboarding:', hasCompletedOnboarding);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { memoryManager } from '../../utils/memoryManager';
 import { tmdbService } from '../../services/tmdbService';
+import Focusable from '../common/Focusable';
 
 // Compute base sizes; actual tablet sizes will be adjusted inside component for responsiveness
 const { width } = Dimensions.get('window');
@@ -61,6 +62,7 @@ export const ThisWeekSection = React.memo(() => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const { calendarData, loading } = useCalendarData();
+  const flatListRef = useRef<FlatList<ThisWeekEpisode>>(null);
 
   // Enhanced responsive sizing for tablets and TV screens
   const deviceWidth = Dimensions.get('window').width;
@@ -231,6 +233,25 @@ export const ThisWeekSection = React.memo(() => {
     navigation.navigate('Calendar' as any);
   };
 
+  // Handle focus change on TV - scroll to bring focused item into view
+  const handleItemFocus = useCallback((index: number) => {
+    if (Platform.isTV && flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.15, // Slight offset so item is not at edge
+      });
+    }
+  }, []);
+
+  // Handle scroll to index failures gracefully
+  const onScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    flatListRef.current?.scrollToOffset({
+      offset: info.averageItemLength * info.index,
+      animated: true,
+    });
+  }, []);
+
   if (thisWeekEpisodes.length === 0) {
     return null;
   }
@@ -259,16 +280,17 @@ export const ThisWeekSection = React.memo(() => {
             }
           ]} />
         )}
-        <TouchableOpacity
+        <Focusable
           style={[
             styles.episodeItem,
             {
               backgroundColor: currentTheme.colors.background,
-              borderColor: 'rgba(255,255,255,0.08)',
-              borderWidth: 1,
+              borderWidth: 2, // Base border width for smooth focus transition
+              borderColor: 'transparent', // Transparent when not focused
             }
           ]}
           onPress={() => handleEpisodePress(item)}
+          onFocus={() => handleItemFocus(index)}
           activeOpacity={0.7}
         >
           <View style={styles.imageContainer}>
@@ -338,7 +360,7 @@ export const ThisWeekSection = React.memo(() => {
               </View>
             </LinearGradient>
           </View>
-        </TouchableOpacity>
+        </Focusable>
       </View>
     );
   };
@@ -389,11 +411,13 @@ export const ThisWeekSection = React.memo(() => {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={thisWeekEpisodes}
         keyExtractor={(item) => item.id}
         renderItem={renderEpisodeItem}
         horizontal
         showsHorizontalScrollIndicator={false}
+        scrollEnabled={!Platform.isTV}
         contentContainerStyle={[
           styles.listContent,
           {
@@ -413,6 +437,7 @@ export const ThisWeekSection = React.memo(() => {
           const offset = length * index;
           return { length, offset, index };
         }}
+        onScrollToIndexFailed={onScrollToIndexFailed}
         ItemSeparatorComponent={() => <View style={{ width: itemSpacing }} />}
       />
     </Animated.View>

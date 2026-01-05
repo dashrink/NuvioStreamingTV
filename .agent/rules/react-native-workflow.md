@@ -5,9 +5,9 @@ trigger: always_on
 # Antigravity Agent: Multi-Platform Development Rules
 
 ## 1. Context & Scope
-This project is a high-performance fork of the Antigravity library, built with **React Native + Expo**. While the upstream source supports iOS, Android, and Tablets (including Landscape), this fork specifically targets the expansion into **tvOS** and **Android TV**. 
+This project is a fork of NuvioStreaming github repo, built with **React Native + Expo**. While the upstream source supports iOS, Android, and Tablets (including Landscape), this fork specifically targets the expansion into **tvOS** and **Android TV**. 
 
-The primary mission is to implement **Focus Management** and **Remote Control Support** which are currently missing from the base architecture.
+The primary mission is to implement **Focus Management** and **Remote Control Support** as well as **Responsive UI components** which are currently missing from the base architecture.
 
 ---
 

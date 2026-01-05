@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     TextInput,
-    TouchableOpacity,
     SafeAreaView,
     StatusBar,
     Platform,
@@ -12,11 +11,12 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Image,
-    Switch,
     ActivityIndicator,
     RefreshControl,
     Dimensions
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
+import Focusable from '../components/common/Focusable';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -1122,17 +1122,14 @@ const DebridIntegrationScreen = () => {
 
                         <View style={styles.statusRow}>
                             <Text style={styles.statusLabel}>Enable Addon</Text>
-                            <Switch
+                            <CustomSwitch
                                 value={config.isEnabled}
                                 onValueChange={handleToggleEnabled}
-                                trackColor={{ false: colors.elevation2, true: colors.primary }}
-                                thumbColor={config.isEnabled ? colors.white : colors.mediumEmphasis}
-                                ios_backgroundColor={colors.elevation2}
                             />
                         </View>
                     </View>
 
-                    <TouchableOpacity
+                    <Focusable
                         style={[styles.actionButton, styles.dangerButton, loading && styles.disabledButton]}
                         onPress={handleDisconnect}
                         disabled={loading}
@@ -1140,7 +1137,7 @@ const DebridIntegrationScreen = () => {
                         <Text style={styles.buttonText}>
                             {loading ? 'Disconnecting...' : 'Disconnect & Remove'}
                         </Text>
-                    </TouchableOpacity>
+                    </Focusable>
 
                     {userData && (
                         <View style={styles.userDataCard}>
@@ -1213,12 +1210,12 @@ const DebridIntegrationScreen = () => {
                         <Text style={styles.sectionText}>
                             Customize your streaming experience. Sort by quality, filter file sizes, and manage other integration settings.
                         </Text>
-                        <TouchableOpacity
+                        <Focusable
                             style={styles.subscribeButton}
                             onPress={() => Linking.openURL('https://torbox.app/settings?section=integration-settings')}
                         >
                             <Text style={styles.subscribeButtonText}>Open Settings</Text>
-                        </TouchableOpacity>
+                        </Focusable>
                     </View>
                 </>
             ) : (
@@ -1227,9 +1224,9 @@ const DebridIntegrationScreen = () => {
                         Unlock 4K high-quality streams and lightning-fast speeds by integrating Torbox. Enter your API Key below to instantly upgrade your streaming experience.
                     </Text>
 
-                    <TouchableOpacity onPress={() => Linking.openURL('https://guides.viren070.me/stremio/technical-details#debrid-services')} style={styles.guideLink}>
+                    <Focusable onPress={() => Linking.openURL('https://guides.viren070.me/stremio/technical-details#debrid-services')} style={styles.guideLink}>
                         <Text style={styles.guideLinkText}>What is a Debrid Service?</Text>
-                    </TouchableOpacity>
+                    </Focusable>
 
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>Torbox API Key</Text>
@@ -1245,7 +1242,7 @@ const DebridIntegrationScreen = () => {
                         />
                     </View>
 
-                    <TouchableOpacity
+                    <Focusable
                         style={[styles.connectButton, loading && styles.disabledButton]}
                         onPress={handleConnect}
                         disabled={loading}
@@ -1253,16 +1250,16 @@ const DebridIntegrationScreen = () => {
                         <Text style={styles.connectButtonText}>
                             {loading ? 'Connecting...' : 'Connect & Install'}
                         </Text>
-                    </TouchableOpacity>
+                    </Focusable>
 
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Unlock Premium Speeds</Text>
                         <Text style={styles.sectionText}>
                             Get a Torbox subscription to access cached high-quality streams with zero buffering.
                         </Text>
-                        <TouchableOpacity style={styles.subscribeButton} onPress={openSubscription}>
+                        <Focusable style={styles.subscribeButton} onPress={openSubscription}>
                             <Text style={styles.subscribeButtonText}>Get Subscription</Text>
-                        </TouchableOpacity>
+                        </Focusable>
                     </View>
                 </>
             )}
@@ -1306,12 +1303,12 @@ const DebridIntegrationScreen = () => {
                     <Text style={styles.promoText}>
                         Get TorBox for lightning-fast 4K streaming with zero buffering. Premium cached torrents and instant downloads.
                     </Text>
-                    <TouchableOpacity
+                    <Focusable
                         style={styles.promoButton}
                         onPress={() => Linking.openURL('https://torbox.app/subscription?referral=493192f2-6403-440f-b414-768f72222ec7')}
                     >
                         <Text style={styles.promoButtonText}>Get TorBox Subscription</Text>
-                    </TouchableOpacity>
+                    </Focusable>
                 </View>
             )}
 
@@ -1320,7 +1317,7 @@ const DebridIntegrationScreen = () => {
                 <Text style={styles.configSectionTitle}>Debrid Service *</Text>
                 <View style={styles.pickerContainer}>
                     {TORRENTIO_DEBRID_SERVICES.map((service: any) => (
-                        <TouchableOpacity
+                        <Focusable
                             key={service.id}
                             style={[
                                 styles.pickerItem,
@@ -1334,7 +1331,7 @@ const DebridIntegrationScreen = () => {
                             ]}>
                                 {service.name}
                             </Text>
-                        </TouchableOpacity>
+                        </Focusable>
                     ))}
                 </View>
             </View>
@@ -1355,7 +1352,7 @@ const DebridIntegrationScreen = () => {
             </View>
 
             {/* Sorting - Accordion */}
-            <TouchableOpacity
+            <Focusable
                 style={[styles.accordionHeader, expandedSections.sorting && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }]}
                 onPress={() => toggleSection('sorting')}
             >
@@ -1366,12 +1363,12 @@ const DebridIntegrationScreen = () => {
                     </Text>
                 </View>
                 <Feather name={expandedSections.sorting ? 'chevron-up' : 'chevron-down'} size={20} color={colors.mediumEmphasis} />
-            </TouchableOpacity>
+            </Focusable>
             {expandedSections.sorting && (
                 <View style={styles.accordionContent}>
                     <View style={styles.pickerContainer}>
                         {TORRENTIO_SORT_OPTIONS.map(option => (
-                            <TouchableOpacity
+                            <Focusable
                                 key={option.id}
                                 style={[styles.pickerItem, torrentioConfig.sort === option.id && styles.pickerItemSelected]}
                                 onPress={() => setTorrentioConfig(prev => ({ ...prev, sort: option.id }))}
@@ -1379,14 +1376,14 @@ const DebridIntegrationScreen = () => {
                                 <Text style={[styles.pickerItemText, torrentioConfig.sort === option.id && styles.pickerItemTextSelected]}>
                                     {option.name}
                                 </Text>
-                            </TouchableOpacity>
+                            </Focusable>
                         ))}
                     </View>
                 </View>
             )}
 
             {/* Quality Filter - Accordion */}
-            <TouchableOpacity
+            <Focusable
                 style={[styles.accordionHeader, expandedSections.qualityFilter && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }]}
                 onPress={() => toggleSection('qualityFilter')}
             >
@@ -1397,12 +1394,12 @@ const DebridIntegrationScreen = () => {
                     </Text>
                 </View>
                 <Feather name={expandedSections.qualityFilter ? 'chevron-up' : 'chevron-down'} size={20} color={colors.mediumEmphasis} />
-            </TouchableOpacity>
+            </Focusable>
             {expandedSections.qualityFilter && (
                 <View style={styles.accordionContent}>
                     <View style={styles.chipContainer}>
                         {TORRENTIO_QUALITY_FILTERS.map(quality => (
-                            <TouchableOpacity
+                            <Focusable
                                 key={quality.id}
                                 style={[styles.chip, torrentioConfig.qualityFilter.includes(quality.id) && styles.chipSelected]}
                                 onPress={() => toggleQualityFilter(quality.id)}
@@ -1410,14 +1407,14 @@ const DebridIntegrationScreen = () => {
                                 <Text style={[styles.chipText, torrentioConfig.qualityFilter.includes(quality.id) && styles.chipTextSelected]}>
                                     {quality.name}
                                 </Text>
-                            </TouchableOpacity>
+                            </Focusable>
                         ))}
                     </View>
                 </View>
             )}
 
             {/* Priority Languages - Accordion */}
-            <TouchableOpacity
+            <Focusable
                 style={[styles.accordionHeader, expandedSections.languages && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }]}
                 onPress={() => toggleSection('languages')}
             >
@@ -1428,12 +1425,12 @@ const DebridIntegrationScreen = () => {
                     </Text>
                 </View>
                 <Feather name={expandedSections.languages ? 'chevron-up' : 'chevron-down'} size={20} color={colors.mediumEmphasis} />
-            </TouchableOpacity>
+            </Focusable>
             {expandedSections.languages && (
                 <View style={styles.accordionContent}>
                     <View style={styles.chipContainer}>
                         {TORRENTIO_LANGUAGES.map(lang => (
-                            <TouchableOpacity
+                            <Focusable
                                 key={lang.id}
                                 style={[styles.chip, torrentioConfig.priorityLanguages.includes(lang.id) && styles.chipSelected]}
                                 onPress={() => toggleLanguage(lang.id)}
@@ -1441,14 +1438,14 @@ const DebridIntegrationScreen = () => {
                                 <Text style={[styles.chipText, torrentioConfig.priorityLanguages.includes(lang.id) && styles.chipTextSelected]}>
                                     {lang.name}
                                 </Text>
-                            </TouchableOpacity>
+                            </Focusable>
                         ))}
                     </View>
                 </View>
             )}
 
             {/* Max Results - Accordion */}
-            <TouchableOpacity
+            <Focusable
                 style={[styles.accordionHeader, expandedSections.maxResults && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }]}
                 onPress={() => toggleSection('maxResults')}
             >
@@ -1459,12 +1456,12 @@ const DebridIntegrationScreen = () => {
                     </Text>
                 </View>
                 <Feather name={expandedSections.maxResults ? 'chevron-up' : 'chevron-down'} size={20} color={colors.mediumEmphasis} />
-            </TouchableOpacity>
+            </Focusable>
             {expandedSections.maxResults && (
                 <View style={styles.accordionContent}>
                     <View style={styles.pickerContainer}>
                         {TORRENTIO_MAX_RESULTS.map(option => (
-                            <TouchableOpacity
+                            <Focusable
                                 key={option.id || 'all'}
                                 style={[styles.pickerItem, torrentioConfig.maxResults === option.id && styles.pickerItemSelected]}
                                 onPress={() => setTorrentioConfig(prev => ({ ...prev, maxResults: option.id }))}
@@ -1472,14 +1469,14 @@ const DebridIntegrationScreen = () => {
                                 <Text style={[styles.pickerItemText, torrentioConfig.maxResults === option.id && styles.pickerItemTextSelected]}>
                                     {option.name}
                                 </Text>
-                            </TouchableOpacity>
+                            </Focusable>
                         ))}
                     </View>
                 </View>
             )}
 
             {/* Additional Options - Accordion */}
-            <TouchableOpacity
+            <Focusable
                 style={[styles.accordionHeader, expandedSections.options && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }]}
                 onPress={() => toggleSection('options')}
             >
@@ -1488,25 +1485,21 @@ const DebridIntegrationScreen = () => {
                     <Text style={styles.accordionSubtext}>Catalog & download settings</Text>
                 </View>
                 <Feather name={expandedSections.options ? 'chevron-up' : 'chevron-down'} size={20} color={colors.mediumEmphasis} />
-            </TouchableOpacity>
+            </Focusable>
             {expandedSections.options && (
                 <View style={styles.accordionContent}>
                     <View style={styles.switchRow}>
                         <Text style={styles.switchLabel}>Don't show download links</Text>
-                        <Switch
+                        <CustomSwitch
                             value={torrentioConfig.noDownloadLinks}
-                            onValueChange={(val) => setTorrentioConfig(prev => ({ ...prev, noDownloadLinks: val }))}
-                            trackColor={{ false: colors.elevation3, true: colors.primary }}
-                            thumbColor={colors.white}
+                            onValueChange={(val: boolean) => setTorrentioConfig(prev => ({ ...prev, noDownloadLinks: val }))}
                         />
                     </View>
                     <View style={styles.switchRow}>
                         <Text style={styles.switchLabel}>Don't show debrid catalog</Text>
-                        <Switch
+                        <CustomSwitch
                             value={torrentioConfig.noCatalog}
-                            onValueChange={(val) => setTorrentioConfig(prev => ({ ...prev, noCatalog: val }))}
-                            trackColor={{ false: colors.elevation3, true: colors.primary }}
-                            thumbColor={colors.white}
+                            onValueChange={(val: boolean) => setTorrentioConfig(prev => ({ ...prev, noCatalog: val }))}
                         />
                     </View>
                 </View>
@@ -1526,7 +1519,7 @@ const DebridIntegrationScreen = () => {
             <View style={{ marginTop: 8 }}>
                 {torrentioConfig.isInstalled ? (
                     <>
-                        <TouchableOpacity
+                        <Focusable
                             style={[styles.connectButton, torrentioLoading && styles.disabledButton]}
                             onPress={handleInstallTorrentio}
                             disabled={torrentioLoading}
@@ -1534,17 +1527,17 @@ const DebridIntegrationScreen = () => {
                             <Text style={styles.connectButtonText}>
                                 {torrentioLoading ? 'Updating...' : 'Update Configuration'}
                             </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                        </Focusable>
+                        <Focusable
                             style={[styles.actionButton, styles.dangerButton, torrentioLoading && styles.disabledButton]}
                             onPress={handleRemoveTorrentio}
                             disabled={torrentioLoading}
                         >
                             <Text style={styles.buttonText}>Remove Torrentio</Text>
-                        </TouchableOpacity>
+                        </Focusable>
                     </>
                 ) : (
-                    <TouchableOpacity
+                    <Focusable
                         style={[styles.connectButton, torrentioLoading && styles.disabledButton]}
                         onPress={handleInstallTorrentio}
                         disabled={torrentioLoading}
@@ -1552,7 +1545,7 @@ const DebridIntegrationScreen = () => {
                         <Text style={styles.connectButtonText}>
                             {torrentioLoading ? 'Installing...' : 'Install Torrentio'}
                         </Text>
-                    </TouchableOpacity>
+                    </Focusable>
                 )}
             </View>
 
@@ -1578,33 +1571,34 @@ const DebridIntegrationScreen = () => {
             <StatusBar barStyle="light-content" backgroundColor={colors.darkBackground} />
 
             <View style={styles.header}>
-                <TouchableOpacity
+                <Focusable
                     onPress={() => navigation.goBack()}
                     style={styles.backButton}
+                    hasTVPreferredFocus={true}
                 >
                     <Feather name="arrow-left" size={24} color={colors.white} />
-                </TouchableOpacity>
+                </Focusable>
                 <Text style={styles.headerTitle}>Debrid Integration</Text>
             </View>
 
             {/* Tab Selector */}
             <View style={styles.tabContainer}>
-                <TouchableOpacity
+                <Focusable
                     style={[styles.tab, activeTab === 'torbox' && styles.activeTab]}
                     onPress={() => setActiveTab('torbox')}
                 >
                     <Text style={[styles.tabText, activeTab === 'torbox' && styles.activeTabText]}>
                         TorBox
                     </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Focusable>
+                <Focusable
                     style={[styles.tab, activeTab === 'torrentio' && styles.activeTab]}
                     onPress={() => setActiveTab('torrentio')}
                 >
                     <Text style={[styles.tabText, activeTab === 'torrentio' && styles.activeTabText]}>
                         Torrentio
                     </Text>
-                </TouchableOpacity>
+                </Focusable>
             </View>
 
             <KeyboardAvoidingView

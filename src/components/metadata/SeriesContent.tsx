@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable, Platform } from 'react-native';
 import Focusable from '../common/Focusable';
 import * as Haptics from 'expo-haptics';
 import FastImage from '@d11/react-native-fast-image';
@@ -746,6 +746,41 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     );
   }
 
+  // Handle season focus on TV - auto-select season and scroll to it
+  const handleSeasonFocus = useCallback((season: number, index: number) => {
+    if (Platform.isTV) {
+      // Auto-select the season when focused via D-pad navigation
+      onSeasonChange(season);
+      // Scroll to make the focused season visible
+      if (seasonScrollViewRef.current) {
+        try {
+          (seasonScrollViewRef.current as any).scrollToIndex({
+            index,
+            animated: true,
+            viewPosition: 0.15,
+          });
+        } catch (e) {
+          // Fallback to scrollToOffset
+          const itemSize = seasonPosterWidth + seasonButtonSpacing;
+          (seasonScrollViewRef.current as any).scrollToOffset({
+            offset: itemSize * index,
+            animated: true,
+          });
+        }
+      }
+    }
+  }, [onSeasonChange, seasonPosterWidth, seasonButtonSpacing]);
+
+  // Handle scroll to index failures gracefully
+  const onSeasonScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    if (seasonScrollViewRef.current) {
+      (seasonScrollViewRef.current as any).scrollToOffset({
+        offset: info.averageItemLength * info.index,
+        animated: true,
+      });
+    }
+  }, []);
+
   const renderSeasonSelector = () => {
     // Show selector if we have grouped episodes data or can derive from episodes
     if (!groupedEpisodes || Object.keys(groupedEpisodes).length <= 1) {
@@ -830,7 +865,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           initialNumToRender={5}
           maxToRenderPerBatch={5}
           windowSize={3}
-          renderItem={({ item: season }) => {
+          getItemLayout={(data, index) => ({
+            length: seasonPosterWidth + seasonButtonSpacing,
+            offset: (seasonPosterWidth + seasonButtonSpacing) * index,
+            index,
+          })}
+          onScrollToIndexFailed={onSeasonScrollToIndexFailed}
+          renderItem={({ item: season, index }) => {
             const seasonEpisodes = groupedEpisodes[season] || [];
 
             // Get season poster URL (needed for both views)
@@ -858,11 +899,14 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                         width: isTV ? 150 : isLargeTablet ? 140 : isTablet ? 130 : 110,
                         paddingVertical: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
                         paddingHorizontal: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
+                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                        borderWidth: 2,
+                        borderColor: 'transparent',
                       },
                       selectedSeason === season && styles.selectedSeasonTextButton
                     ]}
                     onPress={() => onSeasonChange(season)}
+                    onFocus={() => handleSeasonFocus(season, index)}
                   >
                     <Text style={[
                       styles.seasonTextButtonText,
@@ -893,10 +937,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     styles.seasonButton,
                     {
                       marginRight: seasonButtonSpacing,
-                      width: seasonPosterWidth
+                      width: seasonPosterWidth,
+                      borderWidth: 2,
+                      borderColor: 'transparent'
                     },
                     selectedSeason === season && [styles.selectedSeasonButton, { borderColor: currentTheme.colors.primary }]
                   ]}
+                  onFocus={() => handleSeasonFocus(season, index)}
                   onPress={() => onSeasonChange(season)}
                 >
                   <View style={[

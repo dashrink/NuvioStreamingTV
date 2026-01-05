@@ -124,7 +124,7 @@ export const StreamsScreen = () => {
   const insets = useSafeAreaInsets();
   const route = useRoute<RouteProp<RootStackParamList, 'Streams'>>();
   const navigation = useNavigation<RootStackNavigationProp>();
-  const { id, type, episodeId, episodeThumbnail, fromPlayer } = route.params;
+  const { id, type, episodeId, episodeThumbnail, fromPlayer, modal } = route.params;
   const { settings } = useSettings();
   const { currentTheme } = useTheme();
   const { colors } = currentTheme;
@@ -494,7 +494,7 @@ export const StreamsScreen = () => {
 
           // Reset autoplay state when content changes
           setAutoplayTriggered(false);
-          if (settings.autoplayBestStream && !fromPlayer) {
+          if (settings.autoplayBestStream && !fromPlayer && !modal) {
             setIsAutoplayWaiting(true);
             logger.log('🔄 Autoplay enabled, waiting for best stream...');
           } else {
@@ -1173,7 +1173,8 @@ export const StreamsScreen = () => {
     if (
       settings.autoplayBestStream &&
       !autoplayTriggered &&
-      isAutoplayWaiting
+      isAutoplayWaiting &&
+      !modal
     ) {
       const streams = metadata?.videos && metadata.videos.length > 1 && selectedEpisode ? episodeStreams : groupedStreams;
 
@@ -1908,6 +1909,7 @@ export const StreamsScreen = () => {
             loadingStreams={loadingStreams}
             loadingEpisodeStreams={loadingEpisodeStreams}
             hasStremioStreamProviders={hasStremioStreamProviders}
+            modal={modal}
           />
         ) : (
           // PHONE LAYOUT (existing structure)
@@ -1946,7 +1948,7 @@ export const StreamsScreen = () => {
                   ]} />
                 )}
               </View>
-            ) : (
+            ) : !modal && (
               <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.darkBackground }]} />
             )}
 

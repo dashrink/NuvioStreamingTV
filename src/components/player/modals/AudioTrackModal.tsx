@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -8,6 +8,7 @@ import Animated, {
   SlideOutRight,
 } from 'react-native-reanimated';
 import { getTrackDisplayName } from '../utils/playerUtils';
+import Focusable from '../../common/Focusable';
 
 interface AudioTrackModalProps {
   showAudioModal: boolean;
@@ -33,9 +34,9 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose}>
+      <Focusable style={StyleSheet.absoluteFill} onPress={handleClose}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </TouchableOpacity>
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -62,12 +63,13 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
           contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
         >
           <View style={{ gap: 8 }}>
-            {ksAudioTracks.map((track) => {
+            {ksAudioTracks.map((track, index) => {
               const isSelected = selectedAudioTrack === track.id;
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={track.id}
+                  hasTVPreferredFocus={Platform.isTV && index === 0}
                   onPress={() => {
                     selectAudioTrack(track.id);
                     setTimeout(handleClose, 200);
@@ -94,7 +96,7 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                     </Text>
                   </View>
                   {isSelected && <MaterialIcons name="check" size={18} color="black" />}
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
 

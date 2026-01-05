@@ -18,6 +18,7 @@ import { useTraktAutosyncSettings } from '../../hooks/useTraktAutosyncSettings';
 import { useMetadata } from '../../hooks/useMetadata';
 import { useSettings } from '../../hooks/useSettings';
 import { usePlayerGestureControls } from '../../hooks/usePlayerGestureControls';
+import { useTVEventHandler } from '../../hooks/useTVEventHandler';
 
 import {
   DEFAULT_SUBTITLE_SIZE,
@@ -35,6 +36,11 @@ import {
 
 // Speed settings storage key
 const SPEED_SETTINGS_KEY = '@nuvio_speed_settings';
+
+// TV Remote seek settings storage key
+const TV_SEEK_SETTINGS_KEY = '@nuvio_tv_seek_settings';
+const DEFAULT_TV_SEEK_SECONDS = 10;
+const TV_HOLD_SEEK_INTERVAL_MS = 200; // How often to seek when holding direction
 import { safeDebugLog, parseSRT, DEBUG_MODE, formatTime } from './utils/playerUtils';
 import { styles } from './utils/playerStyles';
 import { SubtitleModals } from './modals/SubtitleModals';
@@ -47,6 +53,7 @@ import CustomSubtitles from './subtitles/CustomSubtitles';
 import { SourcesModal } from './modals/SourcesModal';
 import { EpisodesModal } from './modals/EpisodesModal';
 import UpNextButton from './common/UpNextButton';
+import Focusable from '../common/Focusable';
 import { EpisodeStreamsModal } from './modals/EpisodeStreamsModal';
 import VlcVideoPlayer, { VlcPlayerRef } from './VlcVideoPlayer';
 import { stremioService } from '../../services/stremioService';
@@ -254,6 +261,13 @@ const AndroidVideoPlayer: React.FC = () => {
   const [holdToSpeedEnabled, setHoldToSpeedEnabled] = useState(true);
   const [holdToSpeedValue, setHoldToSpeedValue] = useState(2.0);
 
+  // TV Remote seek state
+  const [tvSeekSeconds, setTvSeekSeconds] = useState(DEFAULT_TV_SEEK_SECONDS);
+  const [tvSeekIndicator, setTvSeekIndicator] = useState<string | null>(null);
+  const tvSeekIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tvHoldSeekIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const tvHoldSeekActiveRef = useRef<'left' | 'right' | null>(null);
+
   // Load speed settings from storage
   const loadSpeedSettings = useCallback(async () => {
     try {
@@ -294,6 +308,27 @@ const AndroidVideoPlayer: React.FC = () => {
   useEffect(() => {
     saveSpeedSettings();
   }, [saveSpeedSettings]);
+
+  // Load TV seek settings from storage
+  const loadTVSeekSettings = useCallback(async () => {
+    if (!Platform.isTV) return;
+    try {
+      const saved = await mmkvStorage.getItem(TV_SEEK_SETTINGS_KEY);
+      if (saved) {
+        const settings = JSON.parse(saved);
+        if (typeof settings.tvSeekSeconds === 'number') {
+          setTvSeekSeconds(settings.tvSeekSeconds);
+        }
+      }
+    } catch (error) {
+      logger.warn('[AndroidVideoPlayer] Error loading TV seek settings:', error);
+    }
+  }, []);
+
+  // Load TV seek settings on mount
+  useEffect(() => {
+    loadTVSeekSettings();
+  }, [loadTVSeekSettings]);
 
   // Debounce track updates to prevent excessive processing
   const trackUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1680,6 +1715,85 @@ const AndroidVideoPlayer: React.FC = () => {
     seekToTime(newTime);
   }, [currentTime, duration]);
 
+  // TV Remote: Show seek indicator overlay
+  const showTVSeekIndicator = useCallback((direction: 'forward' | 'backward', seconds: number) => {
+    const indicator = direction === 'forward' ? `+${seconds}s` : `-${seconds}s`;
+    setTvSeekIndicator(indicator);
+
+    // Clear any existing timeout
+    if (tvSeekIndicatorTimeoutRef.current) {
+      clearTimeout(tvSeekIndicatorTimeoutRef.current);
+    }
+
+    // Hide indicator after delay
+    tvSeekIndicatorTimeoutRef.current = setTimeout(() => {
+      setTvSeekIndicator(null);
+      tvSeekIndicatorTimeoutRef.current = null;
+    }, 800);
+  }, []);
+
+  // TV Remote: Handle seek with visual feedback
+  const handleTVSeek = useCallback((direction: 'forward' | 'backward') => {
+    const seekAmount = direction === 'forward' ? tvSeekSeconds : -tvSeekSeconds;
+    skip(seekAmount);
+    showTVSeekIndicator(direction, tvSeekSeconds);
+
+    // Show controls and reset timeout
+    if (!showControls) {
+      setShowControls(true);
+      fadeAnim.setValue(1);
+    }
+    if (controlsTimeout.current) {
+      clearTimeout(controlsTimeout.current);
+    }
+    controlsTimeout.current = setTimeout(hideControls, 5000);
+  }, [tvSeekSeconds, skip, showTVSeekIndicator, showControls, fadeAnim, hideControls]);
+
+  // TV Remote: Start continuous seek on hold
+  const startTVHoldSeek = useCallback((direction: 'left' | 'right') => {
+    if (tvHoldSeekActiveRef.current) return; // Already seeking
+    tvHoldSeekActiveRef.current = direction;
+
+    // Perform initial seek
+    handleTVSeek(direction === 'right' ? 'forward' : 'backward');
+
+    // Start interval for continuous seeking
+    tvHoldSeekIntervalRef.current = setInterval(() => {
+      if (tvHoldSeekActiveRef.current === direction) {
+        handleTVSeek(direction === 'right' ? 'forward' : 'backward');
+      }
+    }, TV_HOLD_SEEK_INTERVAL_MS);
+  }, [handleTVSeek]);
+
+  // TV Remote: Stop continuous seek
+  const stopTVHoldSeek = useCallback(() => {
+    tvHoldSeekActiveRef.current = null;
+    if (tvHoldSeekIntervalRef.current) {
+      clearInterval(tvHoldSeekIntervalRef.current);
+      tvHoldSeekIntervalRef.current = null;
+    }
+  }, []);
+
+  // TV Remote: Reset controls timeout helper
+  const resetTVControlsTimeout = useCallback(() => {
+    if (controlsTimeout.current) {
+      clearTimeout(controlsTimeout.current);
+    }
+    controlsTimeout.current = setTimeout(hideControls, 5000);
+  }, [hideControls]);
+
+  // Cleanup TV hold seek interval on unmount
+  useEffect(() => {
+    return () => {
+      if (tvHoldSeekIntervalRef.current) {
+        clearInterval(tvHoldSeekIntervalRef.current);
+      }
+      if (tvSeekIndicatorTimeoutRef.current) {
+        clearTimeout(tvSeekIndicatorTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const cycleAspectRatio = useCallback(() => {
     // Prevent rapid successive resize operations
     if (resizeTimeoutRef.current) {
@@ -2581,6 +2695,96 @@ const AndroidVideoPlayer: React.FC = () => {
       traktAutosync.handleProgressUpdate(currentTime, duration, true);
     }
   }, [paused, currentTime, duration, traktAutosync]);
+
+  // TV Remote Event Handler - handles all D-pad and media button events
+  // Must be placed after togglePlayback and handleClose are defined
+  useTVEventHandler(useCallback((evt: any) => {
+    if (!Platform.isTV) return;
+    if (!evt || !evt.eventType) return;
+
+    const eventType = evt.eventType;
+
+    switch (eventType) {
+      case 'playPause':
+        // Media play/pause button
+        togglePlayback();
+        break;
+
+      case 'select':
+        // Center/OK button - toggle play/pause when controls visible, otherwise show controls
+        if (showControls) {
+          togglePlayback();
+        } else {
+          setShowControls(true);
+          fadeAnim.setValue(1);
+          resetTVControlsTimeout();
+        }
+        break;
+
+      case 'left':
+        // D-pad left - seek backward
+        handleTVSeek('backward');
+        break;
+
+      case 'right':
+        // D-pad right - seek forward
+        handleTVSeek('forward');
+        break;
+
+      case 'up':
+        // D-pad up - show controls
+        if (!showControls) {
+          setShowControls(true);
+          fadeAnim.setValue(1);
+        }
+        resetTVControlsTimeout();
+        break;
+
+      case 'down':
+        // D-pad down - show controls
+        if (!showControls) {
+          setShowControls(true);
+          fadeAnim.setValue(1);
+        }
+        resetTVControlsTimeout();
+        break;
+
+      case 'longLeft':
+        // Long press left - start continuous seek backward
+        startTVHoldSeek('left');
+        break;
+
+      case 'longRight':
+        // Long press right - start continuous seek forward
+        startTVHoldSeek('right');
+        break;
+
+      case 'blur':
+        // Focus lost or button released - stop continuous seek
+        stopTVHoldSeek();
+        break;
+
+      case 'menu':
+        // Menu/Back button - close player
+        handleClose();
+        break;
+
+      case 'swipeLeft':
+      case 'swipeRight':
+        // Swipe gestures (if supported) - map to seek
+        handleTVSeek(eventType === 'swipeRight' ? 'forward' : 'backward');
+        break;
+    }
+  }, [
+    showControls,
+    fadeAnim,
+    togglePlayback,
+    handleTVSeek,
+    startTVHoldSeek,
+    stopTVHoldSeek,
+    resetTVControlsTimeout,
+    handleClose,
+  ]));
 
   // Handle next episode button press
   const handlePlayNextEpisode = useCallback(async () => {
@@ -3495,6 +3699,20 @@ const AndroidVideoPlayer: React.FC = () => {
             </View>
           )}
 
+          {/* TV Remote Seek Indicator Overlay */}
+          {Platform.isTV && tvSeekIndicator && (
+            <View style={localStyles.tvSeekIndicatorContainer}>
+              <View style={localStyles.tvSeekIndicatorPill}>
+                <MaterialIcons
+                  name={tvSeekIndicator.startsWith('+') ? 'fast-forward' : 'fast-rewind'}
+                  size={28}
+                  color="#FFFFFF"
+                />
+                <Text style={localStyles.tvSeekIndicatorText}>{tvSeekIndicator}</Text>
+              </View>
+            </View>
+          )}
+
           {showPauseOverlay && (
             <TouchableOpacity
               activeOpacity={1}
@@ -4015,9 +4233,9 @@ const AndroidVideoPlayer: React.FC = () => {
                   color: '#ffffff',
                   flex: 1
                 }}>Playback Error</Text>
-                <TouchableOpacity onPress={handleErrorExit}>
+                <Focusable onPress={handleErrorExit}>
                   <MaterialIcons name="close" size={24} color="#ffffff" />
-                </TouchableOpacity>
+                </Focusable>
               </View>
 
               <Text style={{
@@ -4045,7 +4263,7 @@ const AndroidVideoPlayer: React.FC = () => {
                 flexDirection: 'row',
                 justifyContent: 'flex-end'
               }}>
-                <TouchableOpacity
+                <Focusable
                   style={{
                     backgroundColor: '#ff4444',
                     borderRadius: 8,
@@ -4053,13 +4271,14 @@ const AndroidVideoPlayer: React.FC = () => {
                     paddingHorizontal: 20
                   }}
                   onPress={handleErrorExit}
+                  hasTVPreferredFocus={Platform.isTV}
                 >
                   <Text style={{
                     color: '#ffffff',
                     fontWeight: '600',
                     fontSize: 16
                   }}>Exit Player</Text>
-                </TouchableOpacity>
+                </Focusable>
               </View>
 
               <Text style={{
@@ -4105,6 +4324,30 @@ const localStyles = StyleSheet.create({
     fontWeight: 'normal',
     minWidth: 35,
     textAlign: 'right',
+  },
+  // TV Remote Seek Indicator styles
+  tvSeekIndicatorContainer: {
+    position: 'absolute',
+    top: '50%',
+    alignSelf: 'center',
+    transform: [{ translateY: -30 }],
+    zIndex: 2001,
+  },
+  tvSeekIndicatorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    borderRadius: 40,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  tvSeekIndicatorText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '600',
+    marginLeft: 12,
   },
 });
 

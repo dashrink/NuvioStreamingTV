@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Switch,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import CustomAlert from '../components/CustomAlert';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -300,11 +300,9 @@ const NotificationSettingsScreen = () => {
                 <MaterialIcons name="notifications" size={24} color={currentTheme.colors.text} />
                 <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Enable Notifications</Text>
               </View>
-              <Switch
+                            <CustomSwitch
                 value={settings.enabled}
-                onValueChange={(value) => updateSetting('enabled', value)}
-                trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
-                thumbColor={settings.enabled ? currentTheme.colors.primary : currentTheme.colors.lightGray}
+                onValueChange={(value: boolean) => updateSetting('enabled', value)}
               />
             </View>
           </View>
@@ -319,11 +317,9 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="new-releases" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>New Episodes</Text>
                   </View>
-                  <Switch
+                                    <CustomSwitch
                     value={settings.newEpisodeNotifications}
-                    onValueChange={(value) => updateSetting('newEpisodeNotifications', value)}
-                    trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
-                    thumbColor={settings.newEpisodeNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
+                    onValueChange={(value: boolean) => updateSetting('newEpisodeNotifications', value)}
                   />
                 </View>
                 
@@ -332,11 +328,9 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="event" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Upcoming Shows</Text>
                   </View>
-                  <Switch
+                                    <CustomSwitch
                     value={settings.upcomingShowsNotifications}
-                    onValueChange={(value) => updateSetting('upcomingShowsNotifications', value)}
-                    trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
-                    thumbColor={settings.upcomingShowsNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
+                    onValueChange={(value: boolean) => updateSetting('upcomingShowsNotifications', value)}
                   />
                 </View>
                 
@@ -345,11 +339,9 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="alarm" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Reminders</Text>
                   </View>
-                  <Switch
+                                    <CustomSwitch
                     value={settings.reminderNotifications}
-                    onValueChange={(value) => updateSetting('reminderNotifications', value)}
-                    trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
-                    thumbColor={settings.reminderNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
+                    onValueChange={(value: boolean) => updateSetting('reminderNotifications', value)}
                   />
                 </View>
               </View>

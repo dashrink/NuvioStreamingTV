@@ -10,8 +10,8 @@ import {
   Platform,
   Dimensions,
   Linking,
-  Switch
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import { useToast } from '../contexts/ToastContext';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -653,12 +653,9 @@ const UpdateScreen: React.FC = () => {
                   Show notifications for over-the-air updates
                 </Text>
               </View>
-              <Switch
+                            <CustomSwitch
                 value={otaAlertsEnabled}
                 onValueChange={handleOtaAlertsToggle}
-                trackColor={{ false: '#505050', true: currentTheme.colors.primary }}
-                thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
-                ios_backgroundColor="#505050"
               />
             </View>
 
@@ -672,12 +669,9 @@ const UpdateScreen: React.FC = () => {
                   Show notifications for new app versions on GitHub
                 </Text>
               </View>
-              <Switch
+                            <CustomSwitch
                 value={majorAlertsEnabled}
                 onValueChange={handleMajorAlertsToggle}
-                trackColor={{ false: '#505050', true: currentTheme.colors.primary }}
-                thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
-                ios_backgroundColor="#505050"
               />
             </View>
 

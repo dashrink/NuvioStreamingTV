@@ -34,8 +34,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="nuvio"/>
-        <data android:scheme="exp+nuvio"/>
         <data android:scheme="nuvio-tv"/>
         <data android:scheme="exp+nuvio-tv"/>
       </intent-filter>

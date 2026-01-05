@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
     Pressable,
     Platform,
@@ -13,16 +13,17 @@ import Animated, {
     withSpring,
     useSharedValue,
 } from 'react-native-reanimated';
+import { useTheme } from '../../contexts/ThemeContext';
+
+// Create an Animated version of Pressable for TV scale animations
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 // Configurable focus style constants - can be themed
+// Using clean border-based focus indicator that works across all themes
 export const TV_FOCUS_STYLES = {
-    borderColor: '#FFFFFF',
-    borderWidth: 1.5,
-    shadowColor: '#FFFFFF',
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 8,
-    scaleDefault: 1.05,
+    borderWidth: 2, // Clean visible border for TV
+    scaleDefault: 1.02, // Subtle scale for focus feedback
+    fallbackColor: '#2d9cdb', // Fallback if theme not available
 };
 
 interface FocusableProps {
@@ -82,12 +83,19 @@ const Focusable = React.forwardRef<any, FocusableProps>(({
     testID,
     hitSlop,
 }, ref) => {
+    const { currentTheme } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
     const scale = useSharedValue(1);
     const pressableRef = useRef<any>(null);
 
     // Expose ref for external use
     React.useImperativeHandle(ref, () => pressableRef.current);
+
+    // Default border-based focus style using theme color
+    const defaultFocusedStyle = useMemo(() => ({
+        borderWidth: TV_FOCUS_STYLES.borderWidth,
+        borderColor: currentTheme?.colors?.primary || TV_FOCUS_STYLES.fallbackColor,
+    }), [currentTheme?.colors?.primary]);
 
     const animatedStyle = useAnimatedStyle(() => {
         // Only apply scaling animations if we are on a TV platform
@@ -146,10 +154,11 @@ const Focusable = React.forwardRef<any, FocusableProps>(({
         );
     }
 
-    // TV implementation: Animated scaling and focus ring
+    // TV implementation: Animated scaling and subtle glow - no wrapper to preserve flex layout
     return (
-        <Pressable
+        <AnimatedPressable
             ref={pressableRef}
+            focusable={Platform.isTV} // explicit focusable prop
             onPress={onPress}
             onPressIn={onPressIn}
             onPressOut={onPressOut}
@@ -177,33 +186,20 @@ const Focusable = React.forwardRef<any, FocusableProps>(({
             }}
             style={[
                 style,
-                isFocused && styles.tvFocused,
+                animatedStyle,
+                // Apply default border-based focus style only if no custom focusedStyle provided
+                isFocused && !focusedStyle && defaultFocusedStyle,
                 isFocused && focusedStyle,
                 disabled && { opacity: 0.5 }
             ]}
         >
-            <Animated.View style={[styles.container, animatedStyle]}>
-                {children}
-            </Animated.View>
-        </Pressable>
+            {children}
+        </AnimatedPressable>
     );
 });
 
 const styles = StyleSheet.create({
-    container: {
-        // Removed width/height constraints to prevent expansion in flex layouts
-    },
-    tvFocused: {
-        // Subtle white glow for TV focus
-        shadowColor: TV_FOCUS_STYLES.shadowColor,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: TV_FOCUS_STYLES.shadowOpacity,
-        shadowRadius: TV_FOCUS_STYLES.shadowRadius,
-        elevation: TV_FOCUS_STYLES.elevation,
-        borderColor: TV_FOCUS_STYLES.borderColor,
-        borderWidth: TV_FOCUS_STYLES.borderWidth,
-        zIndex: 99,
-    },
+    // Styles can be extended here if needed
 });
 
 Focusable.displayName = 'Focusable';

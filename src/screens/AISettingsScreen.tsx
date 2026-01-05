@@ -7,12 +7,12 @@ import {
   SafeAreaView,
   StatusBar,
   TextInput,
-  TouchableOpacity,
   Linking,
   Platform,
   Dimensions,
-  Switch,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
+import Focusable from '../components/common/Focusable';
 import CustomAlert from '../components/CustomAlert';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
@@ -147,9 +147,10 @@ const AISettingsScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <Focusable 
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          hasTVPreferredFocus={true}
         >
           <MaterialIcons 
             name="arrow-back" 
@@ -159,7 +160,7 @@ const AISettingsScreen: React.FC = () => {
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
             Settings
           </Text>
-        </TouchableOpacity>
+        </Focusable>
         
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
@@ -253,7 +254,7 @@ const AISettingsScreen: React.FC = () => {
 
             <View style={styles.buttonContainer}>
               {!isKeySet ? (
-                <TouchableOpacity
+                <Focusable
                   style={[styles.saveButton, { backgroundColor: currentTheme.colors.primary }]}
                   onPress={handleSaveApiKey}
                   disabled={loading}
@@ -267,10 +268,10 @@ const AISettingsScreen: React.FC = () => {
                   <Text style={styles.saveButtonText}>
                     {loading ? 'Saving...' : 'Save API Key'}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               ) : (
                 <View style={styles.buttonRow}>
-                  <TouchableOpacity
+                  <Focusable
                     style={[styles.updateButton, { backgroundColor: currentTheme.colors.primary }]}
                     onPress={handleSaveApiKey}
                     disabled={loading}
@@ -282,9 +283,9 @@ const AISettingsScreen: React.FC = () => {
                       style={{ marginRight: 8 }}
                     />
                     <Text style={styles.updateButtonText}>Update</Text>
-                  </TouchableOpacity>
+                  </Focusable>
                   
-                  <TouchableOpacity
+                  <Focusable
                     style={[styles.removeButton, { borderColor: currentTheme.colors.error }]}
                     onPress={handleRemoveApiKey}
                   >
@@ -297,12 +298,12 @@ const AISettingsScreen: React.FC = () => {
                     <Text style={[styles.removeButtonText, { color: currentTheme.colors.error }]}>
                       Remove
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 </View>
               )}
             </View>
 
-            <TouchableOpacity
+            <Focusable
               style={[styles.getKeyButton, { backgroundColor: currentTheme.colors.elevation2 }]}
               onPress={handleGetApiKey}
             >
@@ -315,7 +316,7 @@ const AISettingsScreen: React.FC = () => {
               <Text style={[styles.getKeyButtonText, { color: currentTheme.colors.primary }]}>
                 Get Free API Key from OpenRouter
               </Text>
-            </TouchableOpacity>
+            </Focusable>
           </View>
         </View>
 
@@ -323,12 +324,9 @@ const AISettingsScreen: React.FC = () => {
         <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}> 
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>Enable AI Chat</Text>
-            <Switch
+                        <CustomSwitch
               value={!!settings.aiChatEnabled}
-              onValueChange={(v) => updateSetting('aiChatEnabled', v)}
-              trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
-              thumbColor={settings.aiChatEnabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
-              ios_backgroundColor={currentTheme.colors.elevation2}
+              onValueChange={(v: boolean) => updateSetting('aiChatEnabled', v)}
             />
           </View>
           <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis, marginTop: 8 }]}>When enabled, the Ask AI button will appear on content pages.</Text>

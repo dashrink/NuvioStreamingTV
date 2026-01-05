@@ -46,6 +46,7 @@ import PlayerControls from './controls/PlayerControls';
 import CustomSubtitles from './subtitles/CustomSubtitles';
 import { SourcesModal } from './modals/SourcesModal';
 import UpNextButton from './common/UpNextButton';
+import Focusable from '../common/Focusable';
 import { EpisodesModal } from './modals/EpisodesModal';
 import LoadingOverlay from './modals/LoadingOverlay';
 import { EpisodeStreamsModal } from './modals/EpisodeStreamsModal';
@@ -3420,9 +3421,9 @@ const KSPlayerCore: React.FC = () => {
                 color: '#ffffff',
                 flex: 1
               }}>Playback Error</Text>
-              <TouchableOpacity onPress={handleErrorExit}>
+              <Focusable onPress={handleErrorExit}>
                 <MaterialIcons name="close" size={24} color="#ffffff" />
-              </TouchableOpacity>
+              </Focusable>
             </View>
 
             <Text style={{
@@ -3450,7 +3451,7 @@ const KSPlayerCore: React.FC = () => {
               flexDirection: 'row',
               justifyContent: 'flex-end'
             }}>
-              <TouchableOpacity
+              <Focusable
                 style={{
                   backgroundColor: '#ff4444',
                   borderRadius: 8,
@@ -3458,13 +3459,14 @@ const KSPlayerCore: React.FC = () => {
                   paddingHorizontal: 20
                 }}
                 onPress={handleErrorExit}
+                hasTVPreferredFocus={Platform.isTV}
               >
                 <Text style={{
                   color: '#ffffff',
                   fontWeight: '600',
                   fontSize: 16
                 }}>Exit Player</Text>
-              </TouchableOpacity>
+              </Focusable>
             </View>
 
             <Text style={{

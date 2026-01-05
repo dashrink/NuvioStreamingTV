@@ -3,7 +3,14 @@ import { View, Text, StyleSheet, ActivityIndicator, Image, Animated, Dimensions 
 import { useTheme } from '../../contexts/ThemeContext';
 import { useMDBListRatings } from '../../hooks/useMDBListRatings';
 import { mmkvStorage } from '../../services/mmkvStorage';
-import { isMDBListEnabled, RATING_PROVIDERS_STORAGE_KEY } from '../../screens/MDBListSettingsScreen';
+import {
+  isMDBListEnabled,
+  RATING_PROVIDERS_STORAGE_KEY,
+  RATING_PROVIDERS
+} from '../../constants/mdblistConstants';
+
+// Re-export for backward compatibility
+export { RATING_PROVIDERS };
 
 // Import SVG icons
 import LetterboxdIcon from '../../../assets/rating-icons/letterboxd.svg';
@@ -20,37 +27,6 @@ const BREAKPOINTS = {
   largeTablet: 1024,
   tv: 1440,
 };
-
-export const RATING_PROVIDERS = {
-  imdb: {
-    name: 'IMDb',
-    color: '#F5C518',
-  },
-  tmdb: {
-    name: 'TMDB',
-    color: '#01B4E4',
-  },
-  trakt: {
-    name: 'Trakt',
-    color: '#ED1C24',
-  },
-  letterboxd: {
-    name: 'Letterboxd',
-    color: '#00E054',
-  },
-  tomatoes: {
-    name: 'Rotten Tomatoes',
-    color: '#FA320A',
-  },
-  audience: {
-    name: 'Audience Score',
-    color: '#FA320A',
-  },
-  metacritic: {
-    name: 'Metacritic',
-    color: '#FFCC33',
-  }
-} as const;
 
 interface RatingsSectionProps {
   imdbId: string;
@@ -204,15 +180,15 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
   // Priority: IMDB, TMDB, Tomatoes, Metacritic 
   const priorityOrder = ['imdb', 'tmdb', 'tomatoes', 'metacritic', 'trakt', 'letterboxd', 'audience'];
   const displayRatings = priorityOrder
-    .filter(source => 
-      source in ratings && 
+    .filter(source =>
+      source in ratings &&
       ratings[source as keyof typeof ratings] !== undefined &&
       (enabledProviders[source] ?? true) // Show by default if setting not found
     )
     .map(source => [source, ratings[source as keyof typeof ratings]!]);
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
         styles.container,
         {
@@ -231,11 +207,11 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
         {displayRatings.map(([source, value]) => {
           const config = ratingConfig[source as keyof typeof ratingConfig];
           const displayValue = config.transform(parseFloat(value as string));
-          
+
           return (
             <View key={source} style={[styles.compactRatingItem, { marginRight: itemSpacing }]}>
               {config.isImage ? (
-                <Image 
+                <Image
                   source={config.icon as any}
                   style={[styles.compactRatingIcon, { width: iconSize, height: iconSize, marginRight: iconTextGap }]}
                   resizeMode="contain"

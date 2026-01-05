@@ -3,15 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StatusBar,
   Platform,
   Linking,
-  Switch,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+import CustomSwitch from '../components/common/CustomSwitch';
+import Focusable from '../components/common/Focusable';
 import { useNavigation } from '@react-navigation/native';
 import { makeRedirectUri, useAuthRequest, ResponseType, Prompt, CodeChallengeMethod } from 'expo-auth-session';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -318,9 +319,10 @@ const TraktSettingsScreen: React.FC = () => {
     ]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
-        <TouchableOpacity
+        <Focusable
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          hasTVPreferredFocus={true}
         >
           <MaterialIcons
             name="arrow-back"
@@ -330,7 +332,7 @@ const TraktSettingsScreen: React.FC = () => {
           <Text style={[styles.backText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
             Settings
           </Text>
-        </TouchableOpacity>
+        </Focusable>
 
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
@@ -400,7 +402,7 @@ const TraktSettingsScreen: React.FC = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity
+              <Focusable
                 style={[
                   styles.button,
                   styles.signOutButton,
@@ -409,7 +411,7 @@ const TraktSettingsScreen: React.FC = () => {
                 onPress={handleSignOut}
               >
                 <Text style={styles.buttonText}>Sign Out</Text>
-              </TouchableOpacity>
+              </Focusable>
             </View>
           ) : (
             <View style={styles.signInContainer}>
@@ -432,8 +434,19 @@ const TraktSettingsScreen: React.FC = () => {
                     styles.signInDescription,
                     { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
                   ]}>
-                    Visit the URL below on your phone or computer:
+                    Scan the QR code or visit the URL below on your phone or computer:
                   </Text>
+
+                  {/* QR Code */}
+                  <View style={styles.qrContainer}>
+                    <QRCode
+                      value={verificationUrl}
+                      size={250}
+                      backgroundColor="white"
+                      color="black"
+                    />
+                  </View>
+
                   <View style={[styles.codeContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
                     <Text style={[styles.urlText, { color: currentTheme.colors.primary }]}>
                       {verificationUrl}
@@ -453,7 +466,7 @@ const TraktSettingsScreen: React.FC = () => {
                       </Text>
                     </View>
                   )}
-                  <TouchableOpacity
+                  <Focusable
                     style={[
                       styles.button,
                       { backgroundColor: currentTheme.colors.error, marginTop: 16 }
@@ -461,7 +474,7 @@ const TraktSettingsScreen: React.FC = () => {
                     onPress={cancelDeviceCodeFlow}
                   >
                     <Text style={styles.buttonText}>Cancel</Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 </>
               ) : (
                 <>
@@ -480,7 +493,7 @@ const TraktSettingsScreen: React.FC = () => {
                       : 'Sync your watch history, watchlist, and collection with Trakt.tv'
                     }
                   </Text>
-                  <TouchableOpacity
+                  <Focusable
                     style={[
                       styles.button,
                       { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
@@ -495,7 +508,7 @@ const TraktSettingsScreen: React.FC = () => {
                         Sign In with Trakt
                       </Text>
                     )}
-                  </TouchableOpacity>
+                  </Focusable>
                 </>
               )}
             </View>
@@ -542,14 +555,9 @@ const TraktSettingsScreen: React.FC = () => {
                     </Text>
                   </View>
                   <View style={styles.settingToggleContainer}>
-                    <Switch
+                    <CustomSwitch
                       value={autosyncSettings.enabled}
                       onValueChange={setAutosyncEnabled}
-                      trackColor={{
-                        false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary + '80'
-                      }}
-                      thumbColor={autosyncSettings.enabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
                     />
                   </View>
                 </View>
@@ -572,7 +580,7 @@ const TraktSettingsScreen: React.FC = () => {
                   </View>
                 </View>
               </View>
-              <TouchableOpacity
+              <Focusable
                 style={[
                   styles.button,
                   {
@@ -602,7 +610,7 @@ const TraktSettingsScreen: React.FC = () => {
                     Sync Now
                   </Text>
                 )}
-              </TouchableOpacity>
+              </Focusable>
 
               {/* Display Settings Section */}
               <Text style={[
@@ -629,14 +637,9 @@ const TraktSettingsScreen: React.FC = () => {
                     </Text>
                   </View>
                   <View style={styles.settingToggleContainer}>
-                    <Switch
+                    <CustomSwitch
                       value={settings.showTraktComments}
-                      onValueChange={(value) => updateSetting('showTraktComments', value)}
-                      trackColor={{
-                        false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary + '80'
-                      }}
-                      thumbColor={settings.showTraktComments ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+                      onValueChange={(value: boolean) => updateSetting('showTraktComments', value)}
                     />
                   </View>
                 </View>
@@ -886,6 +889,13 @@ const styles = StyleSheet.create({
   pollingText: {
     marginLeft: 8,
     fontSize: 14,
+  },
+  qrContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    alignItems: 'center',
   },
 });
 

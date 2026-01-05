@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, useWindowDimensions, StyleSheet, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -12,6 +12,7 @@ import { EpisodeCard } from '../cards/EpisodeCard';
 import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
 import { logger } from '../../../utils/logger';
+import Focusable from '../../common/Focusable';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -95,9 +96,9 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowEpisodesModal(false)}>
+      <Focusable style={StyleSheet.absoluteFill} onPress={() => setShowEpisodesModal(false)}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </TouchableOpacity>
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -119,9 +120,10 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 15, gap: 8 }}>
-            {seasons.map((season) => (
-              <TouchableOpacity
+            {seasons.map((season, index) => (
+              <Focusable
                 key={season}
+                hasTVPreferredFocus={Platform.isTV && season === selectedSeason}
                 onPress={() => setSelectedSeason(season)}
                 style={{
                   paddingHorizontal: 16,
@@ -138,7 +140,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                 }}>
                   Season {season}
                 </Text>
-              </TouchableOpacity>
+              </Focusable>
             ))}
           </ScrollView>
         </View>

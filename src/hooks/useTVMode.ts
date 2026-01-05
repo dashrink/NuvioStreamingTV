@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Platform, DeviceEventEmitter, BackHandler } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useTVEventHandler } from './useTVEventHandler';
 
 /**
  * Hook to detect and manage TV-specific behaviors and events.
@@ -41,23 +42,25 @@ export const useTVMode = () => {
             backAction
         );
 
-        // 2. Generic HW Key Event Handling (useful for Play/Pause/Menu)
-        const subscription = DeviceEventEmitter.addListener('onHWKeyEvent', (evt: any) => {
-            if (__DEV__) {
-                console.log('[TVEvent] onHWKeyEvent', evt);
-            }
-
-            // Apple TV 'menu' button usually maps to back
-            if (Platform.OS === 'ios' && evt.eventType === 'menu') {
-                backAction();
-            }
-        });
-
         return () => {
             backHandler.remove();
-            subscription.remove();
         };
     }, [isTV, backAction]);
+
+    // 2. Standard TV Remote Event Handling
+    // Using the new cross-platform hook
+    useTVEventHandler((evt) => {
+        if (!isTV) return;
+
+        if (__DEV__) {
+            console.log('[TVEvent]', evt.eventType);
+        }
+
+        // Apple TV 'menu' button usually maps to back
+        if (Platform.OS === 'ios' && evt.eventType === 'menu') {
+            backAction();
+        }
+    });
 
     return {
         isTV,

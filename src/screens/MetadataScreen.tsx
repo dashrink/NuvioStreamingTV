@@ -662,7 +662,7 @@ const MetadataScreen: React.FC = () => {
           normalizedEpisodeId = `${id}:${epParts[0]}:${epParts[1]}`;
         }
         if (__DEV__) console.log(`[MetadataScreen] Navigating to streams with episodeId: ${normalizedEpisodeId}`);
-        navigation.navigate('Streams', { id, type, episodeId: normalizedEpisodeId });
+        navigation.navigate('Streams', { id, type, episodeId: normalizedEpisodeId, modal: true });
         return;
       }
     }
@@ -674,7 +674,7 @@ const MetadataScreen: React.FC = () => {
       fallbackEpisodeId = `${id}:${p[0]}:${p[1]}`;
     }
     if (__DEV__) console.log(`[MetadataScreen] Navigating with fallback episodeId: ${fallbackEpisodeId}`);
-    navigation.navigate('Streams', { id, type, episodeId: fallbackEpisodeId });
+    navigation.navigate('Streams', { id, type, episodeId: fallbackEpisodeId, modal: true });
   }, [navigation, id, type, episodes, episodeId, watchProgressData.watchProgress]);
 
   const handleEpisodeSelect = useCallback((episode: Episode) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { mdblistService, MDBListRatings } from '../services/mdblistService';
 import { logger } from '../utils/logger';
-import { isMDBListEnabled } from '../screens/MDBListSettingsScreen';
+import { isMDBListEnabled } from '../constants/mdblistConstants';
 
 export const useMDBListRatings = (imdbId: string, mediaType: 'movie' | 'show') => {
   const [ratings, setRatings] = useState<MDBListRatings | null>(null);
@@ -14,7 +14,7 @@ export const useMDBListRatings = (imdbId: string, mediaType: 'movie' | 'show') =
         logger.warn('[useMDBListRatings] No IMDB ID provided');
         return;
       }
-      
+
       // Check if MDBList is enabled before proceeding
       const enabled = await isMDBListEnabled();
       if (!enabled) {
@@ -23,11 +23,11 @@ export const useMDBListRatings = (imdbId: string, mediaType: 'movie' | 'show') =
         setLoading(false);
         return;
       }
-      
+
       logger.log(`[useMDBListRatings] Starting to fetch ratings for ${mediaType}:`, imdbId);
       setLoading(true);
       setError(null);
-      
+
       try {
         const data = await mdblistService.getRatings(imdbId, mediaType);
         logger.log('[useMDBListRatings] Received ratings:', data);

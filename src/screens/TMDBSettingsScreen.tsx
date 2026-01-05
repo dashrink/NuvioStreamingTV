@@ -13,11 +13,11 @@ import {
   ScrollView,
   Keyboard,
   Clipboard,
-  Switch,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { mmkvStorage } from '../services/mmkvStorage';
@@ -552,12 +552,9 @@ const TMDBSettingsScreen = () => {
                 Augments addon metadata with TMDb for cast, certification, logos/posters, and episode fallback.
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={settings.enrichMetadataWithTMDB}
-              onValueChange={(v) => updateSetting('enrichMetadataWithTMDB', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-              thumbColor={Platform.OS === 'android' ? (settings.enrichMetadataWithTMDB ? currentTheme.colors.white : currentTheme.colors.white) : ''}
-              ios_backgroundColor={'rgba(255,255,255,0.1)'}
+              onValueChange={(v: boolean) => updateSetting('enrichMetadataWithTMDB', v)}
             />
           </View>
 
@@ -572,12 +569,9 @@ const TMDBSettingsScreen = () => {
                     Fetch titles and descriptions in your preferred language from TMDb.
                   </Text>
                 </View>
-                <Switch
+                                <CustomSwitch
                   value={settings.useTmdbLocalizedMetadata}
-                  onValueChange={(v) => updateSetting('useTmdbLocalizedMetadata', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? (settings.useTmdbLocalizedMetadata ? currentTheme.colors.white : currentTheme.colors.white) : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
+                  onValueChange={(v: boolean) => updateSetting('useTmdbLocalizedMetadata', v)}
                 />
               </View>
 
@@ -672,12 +666,9 @@ const TMDBSettingsScreen = () => {
                 Use your own TMDb API key for better performance and dedicated rate limits.
               </Text>
             </View>
-            <Switch
+                        <CustomSwitch
               value={useCustomKey}
               onValueChange={toggleUseCustomKey}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-              thumbColor={Platform.OS === 'android' ? (useCustomKey ? currentTheme.colors.white : currentTheme.colors.white) : ''}
-              ios_backgroundColor={'rgba(255,255,255,0.1)'}
             />
           </View>
 

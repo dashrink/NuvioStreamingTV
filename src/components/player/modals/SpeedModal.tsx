@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -7,6 +7,8 @@ import Animated, {
   SlideInRight,
   SlideOutRight,
 } from 'react-native-reanimated';
+import Focusable from '../../common/Focusable';
+import TVModalWrapper from '../../common/TVModalWrapper';
 
 interface SpeedModalProps {
   showSpeedModal: boolean;
@@ -31,6 +33,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
 }) => {
   const { width } = useWindowDimensions();
   const MENU_WIDTH = Math.min(width * 0.85, 400);
+  const firstSpeedRef = useRef<any>(null);
 
   const speedPresets = [0.5, 1.0, 1.5, 2.0, 2.5];
   const holdSpeedOptions = [1.5, 2.0];
@@ -51,9 +54,9 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose}>
+      <Focusable style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} disabled={Platform.isTV}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </TouchableOpacity>
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -115,11 +118,13 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
             </Text>
 
             <View style={{ gap: 8 }}>
-              {speedPresets.map((speed) => {
+              {speedPresets.map((speed, index) => {
                 const isSelected = currentSpeed === speed;
                 return (
-                  <TouchableOpacity
+                  <Focusable
                     key={speed}
+                    ref={index === 0 ? firstSpeedRef : undefined}
+                    hasTVPreferredFocus={Platform.isTV && index === 0}
                     onPress={() => handleSpeedSelect(speed)}
                     style={{
                       paddingHorizontal: 16,
@@ -132,7 +137,6 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                       justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
-                    activeOpacity={0.7}
                   >
                     <Text style={{
                       color: isSelected ? 'black' : 'white',
@@ -142,7 +146,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                       {speed}x
                     </Text>
                     {isSelected && <MaterialIcons name="check" size={18} color="black" />}
-                  </TouchableOpacity>
+                  </Focusable>
                 );
               })}
             </View>
@@ -160,7 +164,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
             {/* Enable Toggle */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <Text style={{ color: 'white', fontWeight: '600', fontSize: 15 }}>Enable Hold Speed</Text>
-              <TouchableOpacity
+              <Focusable
                 style={{
                   width: 54,
                   height: 30,
@@ -173,7 +177,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                 onPress={() => setHoldToSpeedEnabled(!holdToSpeedEnabled)}
               >
                 <View style={{ width: 24, height: 24, backgroundColor: 'white', borderRadius: 12 }} />
-              </TouchableOpacity>
+              </Focusable>
             </View>
 
             {/* Hold Speed Selector */}
@@ -184,7 +188,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                   {holdSpeedOptions.map((speed) => {
                     const isSelected = holdToSpeedValue === speed;
                     return (
-                      <TouchableOpacity
+                      <Focusable
                         key={speed}
                         onPress={() => handleHoldSpeedSelect(speed)}
                         style={{
@@ -195,7 +199,6 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                           borderWidth: 1,
                           borderColor: isSelected ? 'white' : 'rgba(255,255,255,0.1)',
                         }}
-                        activeOpacity={0.7}
                       >
                         <Text style={{
                           color: isSelected ? 'black' : 'white',
@@ -204,7 +207,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                         }}>
                           {speed}x
                         </Text>
-                      </TouchableOpacity>
+                      </Focusable>
                     );
                   })}
                 </ScrollView>

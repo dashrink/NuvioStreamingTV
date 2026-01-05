@@ -13,6 +13,7 @@ import {
   SectionList,
   Platform
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { InteractionManager } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -129,21 +130,19 @@ const CalendarScreen = () => {
     
     return (
       <Animated.View entering={FadeIn.duration(300).delay(100)}>
-        <TouchableOpacity 
+        <Focusable 
           style={[styles.episodeItem, { borderBottomColor: currentTheme.colors.border + '20' }]}
           onPress={() => handleEpisodePress(item)}
-          activeOpacity={0.7}
         >
-          <TouchableOpacity
+          <Focusable
             onPress={() => handleSeriesPress(item.seriesId, item)}
-            activeOpacity={0.7}
           >
             <FastImage
               source={{ uri: imageUrl || '' }}
               style={styles.poster}
               resizeMode={FastImage.resizeMode.cover}
             />
-          </TouchableOpacity>
+          </Focusable>
           
           <View style={styles.episodeDetails}>
             <Text style={[styles.seriesName, { color: currentTheme.colors.text }]} numberOfLines={1}>
@@ -202,7 +201,7 @@ const CalendarScreen = () => {
               </>
             )}
           </View>
-        </TouchableOpacity>
+        </Focusable>
       </Animated.View>
     );
   };
@@ -287,12 +286,13 @@ const CalendarScreen = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-        <TouchableOpacity 
+        <Focusable 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          hasTVPreferredFocus={Platform.isTV}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
-        </TouchableOpacity>
+        </Focusable>
         <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Calendar</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -302,9 +302,9 @@ const CalendarScreen = () => {
           <Text style={[styles.filterInfoText, { color: currentTheme.colors.text }]}>
             Showing episodes for {format(selectedDate, 'MMMM d, yyyy')}
           </Text>
-          <TouchableOpacity onPress={clearDateFilter} style={styles.clearFilterButton}>
+          <Focusable onPress={clearDateFilter} style={styles.clearFilterButton}>
             <MaterialIcons name="close" size={18} color={currentTheme.colors.text} />
-          </TouchableOpacity>
+          </Focusable>
         </View>
       )}
       
@@ -339,14 +339,15 @@ const CalendarScreen = () => {
           <Text style={[styles.emptyFilterText, { color: currentTheme.colors.text }]}>
             No episodes for {format(selectedDate, 'MMMM d, yyyy')}
           </Text>
-          <TouchableOpacity 
+          <Focusable 
             style={[styles.clearFilterButtonLarge, { backgroundColor: currentTheme.colors.primary }]}
             onPress={clearDateFilter}
+            hasTVPreferredFocus={Platform.isTV}
           >
             <Text style={[styles.clearFilterButtonText, { color: currentTheme.colors.text }]}>
               Show All Episodes
             </Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       ) : calendarData.length > 0 ? (
         <SectionList

@@ -19,6 +19,7 @@ import {
   Easing,
 } from 'react-native';
 import Focusable from '../components/common/Focusable';
+import TVTextInput from '../components/common/TVTextInput';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
@@ -921,7 +922,7 @@ const SearchScreen = () => {
                 color={currentTheme.colors.lightGray}
                 style={styles.searchIcon}
               />
-              <TextInput
+              <TVTextInput
                 style={[
                   styles.searchInput,
                   { color: currentTheme.colors.white }

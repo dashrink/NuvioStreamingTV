@@ -202,8 +202,9 @@ export class TrailerService {
       if (error instanceof Error && error.name === 'AbortError') {
         logger.warn('TrailerService', `XPrime request timed out after ${this.TIMEOUT}ms`);
       } else {
+        // Use warn instead of error since trailer failures are non-critical
         const msg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-        logger.error('TrailerService', `Error fetching from XPrime: ${msg}`);
+        logger.warn('TrailerService', `XPrime unavailable: ${msg}`);
       }
       return null;
     }

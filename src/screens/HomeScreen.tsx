@@ -447,7 +447,8 @@ const HomeScreen = () => {
       statusBarConfig();
 
       // Unlock orientation to allow free rotation
-      ScreenOrientation.unlockAsync().catch(() => { });
+      // Lock orientation to landscape
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => { });
 
       return () => {
         // Stop trailer when screen loses focus (navigating to other screens)
@@ -679,9 +680,7 @@ const HomeScreen = () => {
 
   // Use reactive window dimensions that update on orientation changes
   const { width: windowWidth } = useWindowDimensions();
-  const isTablet = useMemo(() => {
-    return windowWidth >= 768;
-  }, [windowWidth]);
+  const isTablet = true; // Use Tablet/TV layout logic always
 
   // Memoize individual section components to prevent re-renders
   const memoizedFeaturedContent = useMemo(() => {

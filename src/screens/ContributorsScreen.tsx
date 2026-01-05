@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -91,14 +92,13 @@ const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentT
   }, [contributor.html_url]);
 
   return (
-    <TouchableOpacity
+    <Focusable
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
         isTablet && styles.tabletContributorCard
       ]}
       onPress={handlePress}
-      activeOpacity={0.7}
     >
       <FastImage
         source={{ uri: contributor.avatar_url }}
@@ -130,7 +130,7 @@ const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentT
         color={currentTheme.colors.mediumEmphasis}
         style={styles.externalIcon}
       />
-    </TouchableOpacity>
+    </Focusable>
   );
 };
 
@@ -164,14 +164,13 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
   const defaultAvatar = `https://cdn.discordapp.com/embed/avatars/0.png`;
 
   return (
-    <TouchableOpacity
+    <Focusable
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
         isTablet && styles.tabletContributorCard
       ]}
       onPress={handlePress}
-      activeOpacity={0.7}
     >
       {/* Avatar with Discord badge */}
       <View style={styles.specialAvatarContainer}>
@@ -230,7 +229,7 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
         color={currentTheme.colors.mediumEmphasis}
         style={styles.externalIcon}
       />
-    </TouchableOpacity>
+    </Focusable>
   );
 };
 
@@ -422,13 +421,13 @@ const ContributorsScreen: React.FC = () => {
         <StatusBar barStyle={'light-content'} />
         <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
           <View style={styles.header}>
-            <TouchableOpacity
+            <Focusable
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
               <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
               <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-            </TouchableOpacity>
+            </Focusable>
           </View>
           <Text style={[
             styles.headerTitle,
@@ -457,13 +456,14 @@ const ContributorsScreen: React.FC = () => {
 
       <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
         <View style={styles.header}>
-          <TouchableOpacity
+          <Focusable
             style={styles.backButton}
             onPress={() => navigation.goBack()}
+            hasTVPreferredFocus={Platform.isTV}
           >
             <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
         <Text style={[
           styles.headerTitle,
@@ -480,14 +480,13 @@ const ContributorsScreen: React.FC = () => {
         { backgroundColor: currentTheme.colors.elevation1 },
         isTablet && styles.tabletTabSwitcher
       ]}>
-        <TouchableOpacity
+        <Focusable
           style={[
             styles.tab,
             activeTab === 'contributors' && { backgroundColor: currentTheme.colors.primary },
             isTablet && styles.tabletTab
           ]}
           onPress={() => setActiveTab('contributors')}
-          activeOpacity={0.7}
         >
           <Text style={[
             styles.tabText,
@@ -496,15 +495,14 @@ const ContributorsScreen: React.FC = () => {
           ]}>
             Contributors
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Focusable>
+        <Focusable
           style={[
             styles.tab,
             activeTab === 'special' && { backgroundColor: currentTheme.colors.primary },
             isTablet && styles.tabletTab
           ]}
           onPress={() => setActiveTab('special')}
-          activeOpacity={0.7}
         >
           <Text style={[
             styles.tabText,
@@ -513,7 +511,7 @@ const ContributorsScreen: React.FC = () => {
           ]}>
             Special Mentions
           </Text>
-        </TouchableOpacity>
+        </Focusable>
       </View>
 
       <View style={styles.content}>
@@ -530,14 +528,15 @@ const ContributorsScreen: React.FC = () => {
                   <Text style={[styles.errorSubtext, { color: currentTheme.colors.mediumEmphasis }]}>
                     GitHub API rate limit exceeded. Please try again later or pull to refresh.
                   </Text>
-                  <TouchableOpacity
+                  <Focusable
                     style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
                     onPress={() => loadContributors()}
+                    hasTVPreferredFocus={Platform.isTV}
                   >
                     <Text style={[styles.retryText, { color: currentTheme.colors.white }]}>
                       Try Again
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 </View>
               ) : contributors.length === 0 ? (
                 <View style={styles.emptyContainer}>

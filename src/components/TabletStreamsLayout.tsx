@@ -13,9 +13,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BlurView as ExpoBlurView } from 'expo-blur';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
   withDelay,
   Easing
@@ -45,36 +45,36 @@ interface TabletStreamsLayoutProps {
   metadata?: any;
   type: string;
   currentEpisode?: any;
-  
+
   // Movie logo props
   movieLogoError: boolean;
   setMovieLogoError: (error: boolean) => void;
-  
+
   // Stream-related props
   streamsEmpty: boolean;
   selectedProvider: string;
   filterItems: Array<{ id: string; name: string; }>;
   handleProviderChange: (provider: string) => void;
   activeFetchingScrapers: string[];
-  
+
   // Loading states
   isAutoplayWaiting: boolean;
   autoplayTriggered: boolean;
   showNoSourcesError: boolean;
   showInitialLoading: boolean;
   showStillFetching: boolean;
-  
+
   // Stream rendering props
   sections: Array<{ title: string; addonId: string; data: Stream[]; isEmptyDueToQualityFilter?: boolean } | null>;
   renderSectionHeader: ({ section }: { section: { title: string; addonId: string; isEmptyDueToQualityFilter?: boolean } }) => React.ReactElement;
   handleStreamPress: (stream: Stream) => void;
   openAlert: (title: string, message: string) => void;
-  
+
   // Settings and theme
   settings: any;
   currentTheme: any;
   colors: any;
-  
+
   // Other props
   navigation: RootStackNavigationProp;
   insets: any;
@@ -85,6 +85,7 @@ interface TabletStreamsLayoutProps {
   loadingStreams: boolean;
   loadingEpisodeStreams: boolean;
   hasStremioStreamProviders: boolean;
+  modal?: boolean;
 }
 
 const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
@@ -121,21 +122,22 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
   loadingStreams,
   loadingEpisodeStreams,
   hasStremioStreamProviders,
+  modal = false,
 }) => {
   const styles = React.useMemo(() => createStyles(colors), [colors]);
-  
+
   // Animation values for backdrop entrance
   const backdropOpacity = useSharedValue(0);
   const backdropScale = useSharedValue(1.05);
   const [backdropLoaded, setBackdropLoaded] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
-  
+
   // Animation values for content panels
   const leftPanelOpacity = useSharedValue(0);
   const leftPanelTranslateX = useSharedValue(-30);
   const rightPanelOpacity = useSharedValue(0);
   const rightPanelTranslateX = useSharedValue(30);
-  
+
   // Get the backdrop source - prioritize episode thumbnail, then show backdrop, then poster
   // For episodes without thumbnails, use show's backdrop instead of poster
   const backdropSource = React.useMemo(() => {
@@ -149,34 +151,34 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
         backdropError
       });
     }
-    
+
     // If episodeImage failed to load, skip it and use backdrop
-    if (backdropError && episodeImage && episodeImage !== metadata?.poster) {
+    if (!modal && backdropError && episodeImage && episodeImage !== metadata?.poster) {
       if (__DEV__) console.log('[TabletStreamsLayout] Episode thumbnail failed, falling back to backdrop');
       if (bannerImage) {
         if (__DEV__) console.log('[TabletStreamsLayout] Using show backdrop (episode failed):', bannerImage);
         return { uri: bannerImage };
       }
     }
-    
+
     // If episodeImage exists and is not the same as poster, use it (real episode thumbnail)
-    if (episodeImage && episodeImage !== metadata?.poster && !backdropError) {
+    if (!modal && episodeImage && episodeImage !== metadata?.poster && !backdropError) {
       if (__DEV__) console.log('[TabletStreamsLayout] Using episode thumbnail:', episodeImage);
       return { uri: episodeImage };
     }
-    
+
     // If episodeImage is the same as poster (fallback case), prioritize backdrop
-    if (bannerImage) {
+    if (!modal && bannerImage) {
       if (__DEV__) console.log('[TabletStreamsLayout] Using show backdrop:', bannerImage);
       return { uri: bannerImage };
     }
-    
+
     // No fallback to poster images
-    
+
     if (__DEV__) console.log('[TabletStreamsLayout] No backdrop source found');
     return undefined;
   }, [episodeImage, bannerImage, metadata?.poster, backdropError]);
-  
+
   // Animate backdrop when it loads, or animate content immediately if no backdrop
   useEffect(() => {
     if (backdropSource?.uri && backdropLoaded) {
@@ -189,7 +191,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
         duration: 1000,
         easing: Easing.out(Easing.cubic)
       });
-      
+
       // Animate content panels with delay after backdrop starts loading
       leftPanelOpacity.value = withDelay(300, withTiming(1, {
         duration: 600,
@@ -199,7 +201,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
         duration: 600,
         easing: Easing.out(Easing.cubic)
       }));
-      
+
       rightPanelOpacity.value = withDelay(500, withTiming(1, {
         duration: 600,
         easing: Easing.out(Easing.cubic)
@@ -218,7 +220,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
         duration: 600,
         easing: Easing.out(Easing.cubic)
       });
-      
+
       rightPanelOpacity.value = withDelay(200, withTiming(1, {
         duration: 600,
         easing: Easing.out(Easing.cubic)
@@ -229,7 +231,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
       }));
     }
   }, [backdropSource?.uri, backdropLoaded, backdropError]);
-  
+
   // Reset animation when episode changes
   useEffect(() => {
     backdropOpacity.value = 0;
@@ -241,28 +243,28 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
     setBackdropLoaded(false);
     setBackdropError(false);
   }, [episodeImage]);
-  
+
   // Animated styles for backdrop
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
     opacity: backdropOpacity.value,
     transform: [{ scale: backdropScale.value }],
   }));
-  
+
   // Animated styles for content panels
   const leftPanelAnimatedStyle = useAnimatedStyle(() => ({
     opacity: leftPanelOpacity.value,
     transform: [{ translateX: leftPanelTranslateX.value }],
   }));
-  
+
   const rightPanelAnimatedStyle = useAnimatedStyle(() => ({
     opacity: rightPanelOpacity.value,
     transform: [{ translateX: rightPanelTranslateX.value }],
   }));
-  
+
   const handleBackdropLoad = () => {
     setBackdropLoaded(true);
   };
-  
+
   const handleBackdropError = () => {
     if (__DEV__) console.log('[TabletStreamsLayout] Backdrop image failed to load:', backdropSource?.uri);
     setBackdropError(true);
@@ -295,8 +297,8 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.loadingText}>
               {isAutoplayWaiting ? 'Finding best stream for autoplay...' :
-               showStillFetching ? 'Still fetching streams…' :
-               'Finding available streams...'}
+                showStillFetching ? 'Still fetching streams…' :
+                  'Finding available streams...'}
             </Text>
           </View>
         );
@@ -322,10 +324,10 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
         overScrollMode="never"
         scrollEventThrottle={16}
       >
-        {sections.filter(Boolean).map((section, sectionIndex) => (
+        {!modal && sections.filter(Boolean).map((section, sectionIndex) => (
           <View key={section!.addonId || sectionIndex}>
             {renderSectionHeader({ section: section! })}
-            
+
             {section!.data && section!.data.length > 0 ? (
               <FlatList
                 data={section!.data}
@@ -374,6 +376,52 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
             ) : null}
           </View>
         ))}
+        {modal && (
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            {sections.filter(Boolean).map((section, sectionIndex) => (
+              <View key={section!.addonId || sectionIndex} style={{ width: '100%' }}>
+                {renderSectionHeader({ section: section! })}
+                {section!.data && section!.data.length > 0 ? (
+                  <FlatList
+                    data={section!.data}
+                    keyExtractor={(item, index) => `${item.url}-${sectionIndex}-${index}`}
+                    renderItem={({ item, index }) => (
+                      <View>
+                        <StreamCard
+                          stream={item}
+                          onPress={() => handleStreamPress(item)}
+                          index={index}
+                          isLoading={false}
+                          statusMessage={undefined}
+                          theme={currentTheme}
+                          showLogos={settings.showScraperLogos}
+                          scraperLogo={(item.addonId && scraperLogos[item.addonId]) || (item as any).addon ? scraperLogos[(item.addonId || (item as any).addon) as string] || null : null}
+                          showAlert={(t: string, m: string) => openAlert(t, m)}
+                          // ... pass other props ...
+                          parentTitle={metadata?.name}
+                          parentType={type as 'movie' | 'series'}
+                          parentSeason={(type === 'series' || type === 'other') ? currentEpisode?.season_number : undefined}
+                          parentEpisode={(type === 'series' || type === 'other') ? currentEpisode?.episode_number : undefined}
+                          parentEpisodeTitle={(type === 'series' || type === 'other') ? currentEpisode?.name : undefined}
+                          parentPosterUrl={episodeImage || metadata?.poster || undefined}
+                          providerName={streams && Object.keys(streams).find(pid => (streams as any)[pid]?.streams?.includes?.(item))}
+                          parentId={id}
+                          parentImdbId={imdbId || undefined}
+                        />
+                      </View>
+                    )}
+                    scrollEnabled={false}
+                    initialNumToRender={6}
+                    maxToRenderPerBatch={2}
+                    windowSize={3}
+                    removeClippedSubviews={true}
+                    showsVerticalScrollIndicator={false}
+                  />
+                ) : null}
+              </View>
+            ))}
+          </View>
+        )}
 
         {(loadingStreams || loadingEpisodeStreams) && hasStremioStreamProviders && (
           <View style={styles.footerLoading}>
@@ -388,7 +436,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
   return (
     <View style={styles.tabletLayout}>
       {/* Full Screen Background with Entrance Animation */}
-      {backdropSource?.uri ? (
+      {!modal && backdropSource?.uri ? (
         <Animated.View style={[styles.tabletFullScreenBackground, backdropAnimatedStyle]}>
           <FastImage
             source={backdropSource}
@@ -403,48 +451,57 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
           <View style={styles.tabletNoBackdropBackground} />
         </View>
       )}
-      <LinearGradient
-        colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)']}
-        locations={[0, 0.5, 1]}
-        style={styles.tabletFullScreenGradient}
-      />
-      
-      {/* Left Panel: Movie Logo/Episode Info */}
-      <Animated.View style={[styles.tabletLeftPanel, leftPanelAnimatedStyle]}>
-        {type === 'movie' && metadata ? (
-          <View style={styles.tabletMovieLogoContainer}>
-            {metadata.logo && !movieLogoError ? (
-              <FastImage
-                source={{ uri: metadata.logo }}
-                style={styles.tabletMovieLogo}
-                resizeMode={FastImage.resizeMode.contain}
-                onError={() => setMovieLogoError(true)}
-              />
-            ) : (
-              <Text style={styles.tabletMovieTitle}>{metadata.name}</Text>
-            )}
-          </View>
-        ) : type === 'series' && currentEpisode ? (
-          <View style={styles.tabletEpisodeInfo}>
-            <Text style={[styles.streamsHeroEpisodeNumber, styles.tabletEpisodeText, styles.tabletEpisodeNumber]}>{currentEpisode.episodeString}</Text>
-            <Text style={[styles.streamsHeroTitle, styles.tabletEpisodeText, styles.tabletEpisodeTitle]} numberOfLines={2}>{currentEpisode.name}</Text>
-            {currentEpisode.overview && (
-              <Text style={[styles.streamsHeroOverview, styles.tabletEpisodeText, styles.tabletEpisodeOverview]} numberOfLines={4}>{currentEpisode.overview}</Text>
-            )}
-          </View>
-        ) : (
-          <View style={styles.tabletEmptyLeftPanel}>
-            <Text style={styles.tabletEmptyLeftPanelText}>No content information available</Text>
-          </View>
-        )}
-      </Animated.View>
+
+      {!modal && (
+        <LinearGradient
+          colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.6)']}
+          locations={[0, 0.5, 1]}
+          style={styles.tabletFullScreenGradient}
+        />
+      )}
+
+      {/* Left Panel: Movie Logo/Episode Info - Hide if modal */}
+      {!modal && (
+        <Animated.View style={[styles.tabletLeftPanel, leftPanelAnimatedStyle]}>
+          {type === 'movie' && metadata ? (
+            <View style={styles.tabletMovieLogoContainer}>
+              {metadata.logo && !movieLogoError ? (
+                <FastImage
+                  source={{ uri: metadata.logo }}
+                  style={styles.tabletMovieLogo}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onError={() => setMovieLogoError(true)}
+                />
+              ) : (
+                <Text style={styles.tabletMovieTitle}>{metadata.name}</Text>
+              )}
+            </View>
+          ) : type === 'series' && currentEpisode ? (
+            <View style={styles.tabletEpisodeInfo}>
+              <Text style={[styles.streamsHeroEpisodeNumber, styles.tabletEpisodeText, styles.tabletEpisodeNumber]}>{currentEpisode.episodeString}</Text>
+              <Text style={[styles.streamsHeroTitle, styles.tabletEpisodeText, styles.tabletEpisodeTitle]} numberOfLines={2}>{currentEpisode.name}</Text>
+              {currentEpisode.overview && (
+                <Text style={[styles.streamsHeroOverview, styles.tabletEpisodeText, styles.tabletEpisodeOverview]} numberOfLines={4}>{currentEpisode.overview}</Text>
+              )}
+            </View>
+          ) : (
+            <View style={styles.tabletEmptyLeftPanel}>
+              <Text style={styles.tabletEmptyLeftPanelText}>No content information available</Text>
+            </View>
+          )}
+        </Animated.View>
+      )}
 
       {/* Right Panel: Streams List */}
-      <Animated.View style={[styles.tabletRightPanel, rightPanelAnimatedStyle]}>
+      <Animated.View style={[
+        modal ? styles.tabletModalPanel : styles.tabletRightPanel,
+        rightPanelAnimatedStyle
+      ]}>
         {Platform.OS === 'android' && AndroidBlurView ? (
           <View style={[
             styles.streamsMainContent,
             styles.tabletStreamsContent,
+            modal && styles.tabletModalContent,
             type === 'movie' && styles.streamsMainContentMovie
           ]}>
             <AndroidBlurView
@@ -501,6 +558,7 @@ const TabletStreamsLayout: React.FC<TabletStreamsLayoutProps> = ({
             style={[
               styles.streamsMainContent,
               styles.tabletStreamsContent,
+              modal && styles.tabletModalContent,
               type === 'movie' && styles.streamsMainContentMovie
             ]}
           >
@@ -788,11 +846,27 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 60 : 20,
     zIndex: 2,
   },
+  tabletModalPanel: {
+    width: '100%',
+    flex: 1,
+    paddingTop: 80, // Moved down for popup feel
+    paddingHorizontal: '20%', // Center horizontally
+    alignItems: 'center',
+    zIndex: 2,
+  },
   tabletStreamsContent: {
     backgroundColor: 'rgba(0,0,0,0.2)',
     borderRadius: 24,
     margin: 12,
+
     overflow: 'hidden', // Ensures content respects rounded corners
+  },
+  tabletModalContent: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 600, // Limit width for popup
+    alignSelf: 'center',
   },
   tabletBlurContent: {
     flex: 1,

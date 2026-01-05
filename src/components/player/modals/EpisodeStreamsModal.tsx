@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -11,6 +11,7 @@ import { Episode } from '../../../types/metadata';
 import { Stream } from '../../../types/streams';
 import { stremioService } from '../../../services/stremioService';
 import { logger } from '../../../utils/logger';
+import Focusable from '../../common/Focusable';
 
 interface EpisodeStreamsModalProps {
   visible: boolean;
@@ -163,9 +164,9 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose}>
+      <Focusable style={StyleSheet.absoluteFill} onPress={onClose}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </TouchableOpacity>
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -236,10 +237,13 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
                 <View style={{ gap: 8 }}>
                   {providerData.streams.map((stream, index) => {
                     const quality = getQualityFromTitle(stream.title) || stream.quality;
+                    // First stream of first provider gets TV focus
+                    const isFirstFocusable = Platform.isTV && sortedProviders[0][0] === providerId && index === 0;
 
                     return (
-                      <TouchableOpacity
+                      <Focusable
                         key={`${providerId}-${index}`}
+                        hasTVPreferredFocus={isFirstFocusable}
                         style={{
                           backgroundColor: 'rgba(255,255,255,0.06)',
                           borderRadius: 12,
@@ -248,7 +252,6 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
                           borderColor: 'rgba(255,255,255,0.1)',
                         }}
                         onPress={() => onSelectStream(stream)}
-                        activeOpacity={0.7}
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                           <View style={{ flex: 1 }}>
@@ -305,7 +308,7 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
                             <MaterialIcons name="play-arrow" size={20} color="rgba(255,255,255,0.4)" />
                           </View>
                         </View>
-                      </TouchableOpacity>
+                      </Focusable>
                     );
                   })}
                 </View>

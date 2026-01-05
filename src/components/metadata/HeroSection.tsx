@@ -60,6 +60,9 @@ import { HERO_HEIGHT, SCREEN_WIDTH as width, IS_TABLET as isTablet } from '../..
 
 const { height } = Dimensions.get('window');
 
+// TV detection for button sizing
+const isTV = Platform.isTV;
+
 // Ultra-optimized animation constants
 const SCALE_FACTOR = 1.02;
 const FADE_THRESHOLD = 200;
@@ -2047,20 +2050,22 @@ const styles = StyleSheet.create({
   },
   singleRowLayout: {
     flexDirection: 'row',
-    gap: 4,
+    gap: isTV ? 12 : 4,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
-    maxWidth: isTablet ? 600 : '100%',
+    width: isTV ? 'auto' : '100%',
+    maxWidth: isTV ? 420 : isTablet ? 600 : '100%',
     alignSelf: 'center',
   },
   singleRowPlayButton: {
-    flex: 2,
-    maxWidth: isTablet ? 200 : 150,
+    flex: isTV ? 0 : 2,
+    maxWidth: isTV ? 160 : isTablet ? 200 : 150,
+    minWidth: isTV ? 140 : undefined,
   },
   singleRowSaveButton: {
-    flex: 2,
-    maxWidth: isTablet ? 200 : 150,
+    flex: isTV ? 0 : 2,
+    maxWidth: isTV ? 140 : isTablet ? 200 : 150,
+    minWidth: isTV ? 120 : undefined,
   },
   singleRowIconButton: {
     width: isTablet ? 50 : 44,
@@ -2069,10 +2074,14 @@ const styles = StyleSheet.create({
     flex: 0,
   },
   singleRowPlayButtonFullWidth: {
-    flex: 1,
+    flex: isTV ? 0 : 1,
+    minWidth: isTV ? 140 : undefined,
+    maxWidth: isTV ? 180 : undefined,
   },
   singleRowSaveButtonFullWidth: {
-    flex: 1,
+    flex: isTV ? 0 : 1,
+    minWidth: isTV ? 120 : undefined,
+    maxWidth: isTV ? 160 : undefined,
   },
   primaryActionRow: {
     flexDirection: 'row',
@@ -2082,8 +2091,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   primaryActionButton: {
-    flex: 1,
-    maxWidth: '48%',
+    flex: isTV ? 0 : 1,
+    maxWidth: isTV ? 160 : '48%',
+    minWidth: isTV ? 130 : undefined,
   },
   playButtonRow: {
     flexDirection: 'row',

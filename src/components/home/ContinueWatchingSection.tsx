@@ -27,6 +27,7 @@ import { stremioService } from '../../services/stremioService';
 import { streamCacheService } from '../../services/streamCacheService';
 import { useSettings } from '../../hooks/useSettings';
 import CustomAlert from '../../components/CustomAlert';
+import Focusable from '../common/Focusable';
 
 // Define interface for continue watching items
 interface ContinueWatchingItem extends StreamingContent {
@@ -107,6 +108,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const flashListRef = useRef<any>(null);
 
   // Enhanced responsive sizing for tablets and TV screens
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -1025,6 +1027,17 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
     }
   }, [navigation, settings.useCachedStreams, settings.openMetadataScreenWhenCacheDisabled]);
 
+  // Handle focus change on TV - scroll to bring focused item into view
+  const handleItemFocus = useCallback((index: number) => {
+    if (Platform.isTV && flashListRef.current) {
+      flashListRef.current.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.15, // Slight offset so item is not at edge
+      });
+    }
+  }, []);
+
   // Handle long press to delete (moved before renderContinueWatchingItem)
   const handleLongPress = useCallback((item: ContinueWatchingItem) => {
     try {
@@ -1081,14 +1094,14 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   }, [currentTheme.colors.error]);
 
   // Memoized render function for continue watching items
-  const renderContinueWatchingItem = useCallback(({ item }: { item: ContinueWatchingItem }) => (
-    <TouchableOpacity
+  const renderContinueWatchingItem = useCallback(({ item, index }: { item: ContinueWatchingItem; index: number }) => (
+    <Focusable
       style={[
         styles.wideContentItem,
         {
           backgroundColor: currentTheme.colors.elevation1,
-          borderColor: currentTheme.colors.border,
-          shadowColor: currentTheme.colors.black,
+          borderWidth: 2, // Base border width for smooth focus transition
+          borderColor: 'transparent', // Transparent when not focused
           width: computedItemWidth,
           height: computedItemHeight
         }
@@ -1096,7 +1109,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       activeOpacity={0.8}
       onPress={() => handleContentPress(item)}
       onLongPress={() => handleLongPress(item)}
-      delayLongPress={800}
+      onFocus={() => handleItemFocus(index)}
     >
       {/* Poster Image */}
       <View style={[
@@ -1243,8 +1256,8 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           </View>
         )}
       </View>
-    </TouchableOpacity>
-  ), [currentTheme.colors, handleContentPress, handleLongPress, deletingItemId, computedItemWidth, computedItemHeight, isTV, isLargeTablet, isTablet]);
+    </Focusable>
+  ), [currentTheme.colors, handleContentPress, handleLongPress, handleItemFocus, deletingItemId, computedItemWidth, computedItemHeight, isTV, isLargeTablet, isTablet]);
 
   // Memoized key extractor
   const keyExtractor = useCallback((item: ContinueWatchingItem) => `continue-${item.id}-${item.type}`, []);
@@ -1282,11 +1295,13 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       </View>
 
       <FlashList
+        ref={flashListRef}
         data={continueWatchingItems}
         renderItem={renderContinueWatchingItem}
         keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
+        scrollEnabled={!Platform.isTV}
         contentContainerStyle={[
           styles.wideList,
           {
@@ -1355,7 +1370,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    borderWidth: 1,
+    // borderWidth removed - now set inline for TV focus transition
   },
   posterContainer: {
     width: 80,

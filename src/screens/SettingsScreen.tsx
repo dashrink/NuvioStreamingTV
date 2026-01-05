@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Switch,
   ScrollView,
   SafeAreaView,
   StatusBar,
@@ -137,6 +136,10 @@ const SettingItem: React.FC<SettingItemProps> = ({
   return (
     <Focusable
       onPress={onPress}
+      focusedStyle={{
+        backgroundColor: currentTheme.colors.primary + '25', // Slightly more opaque for visibility
+        borderRadius: 10,
+      }}
       style={[
         styles.settingItem,
         !isLast && styles.settingItemBorder,
@@ -237,7 +240,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
               ]
             ]}
             onPress={() => onCategorySelect(category.id)}
-            hasTVPreferredFocus={category.id === 'account'}
           >
             <View style={[
               styles.sidebarItemIconContainer,
@@ -689,11 +691,9 @@ const SettingsScreen: React.FC = () => {
               description="Display trailers in hero section"
               icon="film"
               renderControl={() => (
-                <Switch
+                <CustomSwitch
                   value={settings?.showTrailers ?? true}
-                  onValueChange={(value) => updateSetting('showTrailers', value)}
-                  trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
-                  thumbColor={settings?.showTrailers ? '#fff' : '#f4f3f4'}
+                  onValueChange={(value: boolean) => updateSetting('showTrailers', value)}
                 />
               )}
               isTablet={isTablet}
@@ -703,11 +703,9 @@ const SettingsScreen: React.FC = () => {
               description="Show Downloads tab and enable saving streams"
               icon="download"
               renderControl={() => (
-                <Switch
+                <CustomSwitch
                   value={settings?.enableDownloads ?? false}
-                  onValueChange={(value) => updateSetting('enableDownloads', value)}
-                  trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
-                  thumbColor={settings?.enableDownloads ? '#fff' : '#f4f3f4'}
+                  onValueChange={(value: boolean) => updateSetting('enableDownloads', value)}
                 />
               )}
               isTablet={isTablet}

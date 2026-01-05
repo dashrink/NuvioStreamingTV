@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Nuvio.app"
-               BlueprintName = "Nuvio"
-               ReferencedContainer = "container:Nuvio.xcodeproj">
+               BuildableName = "NuvioTV.app"
+               BlueprintName = "NuvioTV"
+               ReferencedContainer = "container:NuvioTV.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "NuvioTests.xctest"
-               BlueprintName = "NuvioTests"
-               ReferencedContainer = "container:Nuvio.xcodeproj">
+               BuildableName = "NuvioTVTests.xctest"
+               BlueprintName = "NuvioTVTests"
+               ReferencedContainer = "container:NuvioTV.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Nuvio.app"
-            BlueprintName = "Nuvio"
-            ReferencedContainer = "container:Nuvio.xcodeproj">
+            BuildableName = "NuvioTV.app"
+            BlueprintName = "NuvioTV"
+            ReferencedContainer = "container:NuvioTV.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Nuvio.app"
-            BlueprintName = "Nuvio"
-            ReferencedContainer = "container:Nuvio.xcodeproj">
+            BuildableName = "NuvioTV.app"
+            BlueprintName = "NuvioTV"
+            ReferencedContainer = "container:NuvioTV.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -70,7 +70,10 @@ import BackdropGalleryScreen from '../screens/BackdropGalleryScreen';
 import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
+
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
+import { useTVMode } from '../hooks/useTVMode';
+import { useSettings } from '../hooks/useSettings';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -114,6 +117,7 @@ export type RootStackParamList = {
     };
     resumeTime?: number;
     duration?: number;
+    modal?: boolean;
   };
   PlayerIOS: {
     uri: string;
@@ -476,6 +480,9 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
       StatusBar.setBarStyle('light-content');
       StatusBar.setTranslucent(true);
       StatusBar.setBackgroundColor('transparent');
+      if (Platform.OS === 'android') {
+        StatusBar.setHidden(true);
+      }
     };
 
     applyStatusBarConfig();
@@ -504,7 +511,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
     }}>
       {/* Reserve consistent space for the header area on all screens */}
       <View style={{
-        height: isTablet ? (insets.top + 64) : (Platform.OS === 'android' ? 80 : 60),
+        height: (insets.top + 64),
         width: '100%',
         backgroundColor: colors.darkBackground,
         position: 'absolute',
@@ -530,9 +537,7 @@ const WrappedScreen: React.FC<{ Screen: React.ComponentType<any> }> = ({ Screen 
 // Tab Navigator
 const MainTabs = () => {
   const { currentTheme } = useTheme();
-  const { settings } = require('../hooks/useSettings');
-  const { useSettings: useSettingsHook } = require('../hooks/useSettings');
-  const { settings: appSettings } = useSettingsHook();
+  const { settings: appSettings } = useSettings();
   const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
 
@@ -576,12 +581,9 @@ const MainTabs = () => {
   }, []);
   const { isHomeLoading } = useLoading();
   const isTablet = useMemo(() => {
-    // TV devices should use tablet layout (top nav instead of bottom tabs)
-    if (Platform.isTV) return true;
-    const { width, height } = dimensions;
-    const smallestDimension = Math.min(width, height);
-    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
-  }, [dimensions]);
+    // Force true for TV-first unification across all devices
+    return true;
+  }, []);
   const insets = useSafeAreaInsets();
   const isIosTablet = Platform.OS === 'ios' && isTablet;
   const [hidden, setHidden] = React.useState(HeaderVisibility.isHidden());
@@ -609,332 +611,112 @@ const MainTabs = () => {
     const currentRoute = props.state.routes[props.state.index]?.name;
     const shouldKeepFixed = currentRoute === 'Search' || currentRoute === 'Library';
 
-    if (isTablet) {
-      // Top floating, text-only pill nav for tablets
-      return (
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            top: insets.top + 8,
-            left: 0,
-            right: 0,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-            zIndex: 100,
-          }, shouldKeepFixed ? {} : {
-            transform: [{ translateY }],
-            opacity: fade,
-          }]}>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderRadius: 28,
-            overflow: 'hidden',
-            padding: 4,
-            position: 'relative',
-            backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)'
-          }}>
-            {isIosTablet && (
-              GlassViewComp && liquidGlassAvailable ? (
-                <GlassViewComp
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    borderRadius: 28,
-                  }}
-                  glassEffectStyle="clear"
-                />
-              ) : (
-                <BlurView
-                  tint="dark"
-                  intensity={75}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    borderRadius: 28,
-                  }}
-                />
-              )
-            )}
-            {props.state.routes.map((route, index) => {
-              const { options } = props.descriptors[route.key];
-              const label =
-                options.tabBarLabel !== undefined
-                  ? options.tabBarLabel
-                  : options.title !== undefined
-                    ? options.title
-                    : route.name;
-
-              const isFocused = props.state.index === index;
-
-              const onPress = () => {
-                const event = props.navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!isFocused && !event.defaultPrevented) {
-                  props.navigation.navigate(route.name);
-                }
-              };
-
-              return (
-                <Focusable
-                  key={route.key}
-                  onPress={onPress}
-                  style={{
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    marginHorizontal: 4,
-                    borderRadius: 16,
-                    backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
-                  }}
-                >
-                  <Text style={{
-                    color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                    fontWeight: '700',
-                    fontSize: 12,
-                    letterSpacing: 0.2,
-                  }}>
-                    {typeof label === 'string' ? label : ''}
-                  </Text>
-                </Focusable>
-              );
-            })}
-          </View>
-        </Animated.View>
-      );
-    }
-
-    // Default bottom tab for phones
+    // Always return the Top Navigation (TV/Tablet style)
     return (
-      <View style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: Platform.OS === 'android' ? 70 + insets.bottom : 85 + insets.bottom,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-      }}>
-        {Platform.OS === 'ios' ? (
-          GlassViewComp && liquidGlassAvailable ? (
-            <GlassViewComp
-              style={{
-                position: 'absolute',
-                height: '100%',
-                width: '100%',
-              }}
-              glassEffectStyle="clear"
-            />
-          ) : (
-            <BlurView
-              tint="dark"
-              intensity={75}
-              style={{
-                position: 'absolute',
-                height: '100%',
-                width: '100%',
-                borderTopColor: currentTheme.colors.border,
-                borderTopWidth: 0.5,
-                shadowColor: currentTheme.colors.black,
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-              }}
-            />
-          )
-        ) : (
-          <LinearGradient
-            colors={[
-              'rgba(0, 0, 0, 0)',
-              'rgba(0, 0, 0, 0.65)',
-              'rgba(0, 0, 0, 0.85)',
-              'rgba(0, 0, 0, 0.98)',
-            ]}
-            locations={[0, 0.2, 0.4, 0.8]}
-            style={{
-              position: 'absolute',
-              height: '100%',
-              width: '100%',
-            }}
-          />
-        )}
-        <View
-          style={{
-            height: '100%',
-            paddingBottom: Platform.OS === 'android' ? 15 + insets.bottom : 20 + insets.bottom,
-            paddingTop: Platform.OS === 'android' ? 8 : 12,
-            backgroundColor: 'transparent',
-          }}
-        >
-          <View style={{ flexDirection: 'row', paddingTop: 4 }}>
-            {props.state.routes.map((route, index) => {
-              const { options } = props.descriptors[route.key];
-              const label =
-                options.tabBarLabel !== undefined
-                  ? options.tabBarLabel
-                  : options.title !== undefined
-                    ? options.title
-                    : route.name;
+      <Animated.View
+        style={[{
+          position: 'absolute',
+          top: insets.top + 8,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+          backgroundColor: 'transparent',
+          zIndex: 100,
+        }, shouldKeepFixed ? {} : {
+          transform: [{ translateY }],
+          opacity: fade,
+        }]}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 28,
+          overflow: 'hidden',
+          padding: 4,
+          position: 'relative',
+          backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)'
+        }}>
+          {isIosTablet && (
+            GlassViewComp && liquidGlassAvailable ? (
+              <GlassViewComp
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: 28,
+                }}
+                glassEffectStyle="clear"
+              />
+            ) : (
+              <BlurView
+                tint="dark"
+                intensity={75}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: 28,
+                }}
+              />
+            )
+          )}
+          {props.state.routes.map((route, index) => {
+            const { options } = props.descriptors[route.key];
+            const label =
+              options.tabBarLabel !== undefined
+                ? options.tabBarLabel
+                : options.title !== undefined
+                  ? options.title
+                  : route.name;
 
-              const isFocused = props.state.index === index;
+            const isFocused = props.state.index === index;
 
-              const onPress = () => {
-                const event = props.navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-
-                if (!isFocused && !event.defaultPrevented) {
-                  props.navigation.navigate(route.name);
-                }
-              };
-
-              let iconName: IconNameType = 'home';
-              let iconLibrary: 'material' | 'feather' | 'ionicons' = 'material';
-              switch (route.name) {
-                case 'Home':
-                  iconName = 'home';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Library':
-                  iconName = 'library';
-                  iconLibrary = 'ionicons';
-                  break;
-                case 'Search':
-                  iconName = 'search';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Downloads':
-                  iconName = 'download';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Settings':
-                  iconName = 'settings';
-                  iconLibrary = 'feather';
-                  break;
+            const onPress = () => {
+              const event = props.navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                props.navigation.navigate(route.name);
               }
+            };
 
-              return (
-                <Focusable
-                  key={route.key}
-                  onPress={onPress}
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                >
-                  <TabIcon
-                    focused={isFocused}
-                    color={isFocused ? currentTheme.colors.primary : currentTheme.colors.white}
-                    iconName={iconName}
-                    iconLibrary={iconLibrary}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      marginTop: 4,
-                      color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                      opacity: isFocused ? 1 : 0.7,
-                    }}
-                  >
-                    {typeof label === 'string' ? label : ''}
-                  </Text>
-                </Focusable>
-              );
-            })}
-          </View>
+            return (
+              <Focusable
+                key={route.key}
+                onPress={onPress}
+                hasTVPreferredFocus={index === 0}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  marginHorizontal: 4,
+                  borderRadius: 16,
+                  backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
+                }}
+              >
+                <Text style={{
+                  color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
+                  fontWeight: '700',
+                  fontSize: 12,
+                  letterSpacing: 0.2,
+                }}>
+                  {typeof label === 'string' ? label : ''}
+                </Text>
+              </Focusable>
+            );
+          })}
         </View>
-      </View>
+      </Animated.View>
     );
   };
 
-  // iOS: Use native bottom tabs (@bottom-tabs/react-navigation)
-  if (Platform.OS === 'ios') {
-    // Dynamically require to avoid impacting Android bundle
-    const { createNativeBottomTabNavigator } = require('@bottom-tabs/react-navigation');
-    const IOSTab = createNativeBottomTabNavigator();
-    const downloadsEnabled = appSettings?.enableDownloads !== false;
 
-    return (
-      <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
-        <StatusBar
-          translucent
-          barStyle="light-content"
-          backgroundColor="transparent"
-        />
-        <IOSTab.Navigator
-          key={`ios-tabs-${downloadsEnabled ? 'with-dl' : 'no-dl'}`}
-          initialRouteName="Home"
-          // Native tab bar handles its own visuals; keep options minimal
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: currentTheme.colors.primary,
-            tabBarInactiveTintColor: currentTheme.colors.white,
-            translucent: true,
-            // Prefer native lazy/freeze when available; still pass for parity
-            lazy: true,
-            freezeOnBlur: true,
-          }}
-        >
-          <IOSTab.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{
-              title: 'Home',
-              tabBarIcon: () => ({ sfSymbol: 'house' }),
-              freezeOnBlur: true,
-            }}
-          />
-          <IOSTab.Screen
-            name="Library"
-            component={LibraryScreen}
-            options={{
-              title: 'Library',
-              tabBarIcon: () => ({ sfSymbol: 'heart' }),
-            }}
-          />
-          <IOSTab.Screen
-            name="Search"
-            component={SearchScreen}
-            options={{
-              title: 'Search',
-              tabBarIcon: () => ({ sfSymbol: 'magnifyingglass' }),
-            }}
-          />
-          {downloadsEnabled && (
-            <IOSTab.Screen
-              name="Downloads"
-              component={DownloadsScreen}
-              options={{
-                title: 'Downloads',
-                tabBarIcon: () => ({ sfSymbol: 'arrow.down.circle' }),
-              }}
-            />
-          )}
-          <IOSTab.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{
-              title: 'Settings',
-              tabBarIcon: () => ({ sfSymbol: 'gear' }),
-            }}
-          />
-        </IOSTab.Navigator>
-      </View>
-    );
-  }
+
+
 
   return (
     <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
@@ -1079,6 +861,7 @@ const customFadeInterpolator = ({ current, layouts }: any) => {
 const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
   const { currentTheme } = useTheme();
   const { user, loading } = useAccount();
+  useTVMode();
   const insets = useSafeAreaInsets();
 
   // Handle Android-specific optimizations
@@ -1214,14 +997,8 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
               component={StreamsScreen as any}
               options={{
                 headerShown: false,
-                animation: Platform.OS === 'ios' ? 'slide_from_bottom' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 200 : 300,
-                gestureEnabled: true,
-                gestureDirection: Platform.OS === 'ios' ? 'vertical' : 'horizontal',
-                ...(Platform.OS === 'ios' && { presentation: 'modal' }),
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
+                presentation: 'transparentModal',
+                animation: 'fade',
                 // Freeze when blurred to stop timers/network without full unmount
                 freezeOnBlur: true,
               }}

@@ -8,8 +8,8 @@ import {
   Platform,
   TouchableOpacity,
   StatusBar,
-  Switch,
 } from 'react-native';
+import CustomSwitch from '../components/common/CustomSwitch';
 import { useNavigation } from '@react-navigation/native';
 import { useSettings, AppSettings } from '../hooks/useSettings';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -277,10 +277,9 @@ const PlayerSettingsScreen: React.FC = () => {
                     Automatically start the highest quality stream available.
                   </Text>
                 </View>
-                <Switch
+                                <CustomSwitch
                   value={settings.autoplayBestStream}
-                  onValueChange={(value) => updateSetting('autoplayBestStream', value)}
-                  thumbColor={settings.autoplayBestStream ? currentTheme.colors.primary : undefined}
+                  onValueChange={(value: boolean) => updateSetting('autoplayBestStream', value)}
                 />
               </View>
             </View>
@@ -315,10 +314,9 @@ const PlayerSettingsScreen: React.FC = () => {
                     Skip the resume prompt and automatically continue where you left off (if less than 85% watched).
                   </Text>
                 </View>
-                <Switch
+                                <CustomSwitch
                   value={settings.alwaysResume}
-                  onValueChange={(value) => updateSetting('alwaysResume', value)}
-                  thumbColor={settings.alwaysResume ? currentTheme.colors.primary : undefined}
+                  onValueChange={(value: boolean) => updateSetting('alwaysResume', value)}
                 />
               </View>
             </View>
@@ -356,10 +354,9 @@ const PlayerSettingsScreen: React.FC = () => {
                         Play downloaded content in your preferred external player.
                       </Text>
                     </View>
-                    <Switch
+                                        <CustomSwitch
                       value={settings.useExternalPlayerForDownloads}
-                      onValueChange={(value) => updateSetting('useExternalPlayerForDownloads', value)}
-                      thumbColor={settings.useExternalPlayerForDownloads ? currentTheme.colors.primary : undefined}
+                      onValueChange={(value: boolean) => updateSetting('useExternalPlayerForDownloads', value)}
                     />
                   </View>
                 </View>

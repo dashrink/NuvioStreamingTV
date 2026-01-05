@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Platform, Dimensions } from 'react-native';
 import Focusable from '../../common/Focusable';
 import { Ionicons } from '@expo/vector-icons';
@@ -128,6 +128,19 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   const playPressAnim = React.useRef(new Animated.Value(0)).current;
   const playIconScale = React.useRef(new Animated.Value(1)).current;
   const playIconOpacity = React.useRef(new Animated.Value(1)).current;
+
+  /* TV Navigation Refs - for D-pad focus navigation */
+  const closeButtonRef = useRef<any>(null);
+  const backwardSeekRef = useRef<any>(null);
+  const playPauseRef = useRef<any>(null);
+  const forwardSeekRef = useRef<any>(null);
+  const aspectRatioRef = useRef<any>(null);
+  const subtitleRef = useRef<any>(null);
+  const sourcesRef = useRef<any>(null);
+  const speedRef = useRef<any>(null);
+  const audioRef = useRef<any>(null);
+  const episodesRef = useRef<any>(null);
+  const airplayRef = useRef<any>(null);
 
   /* Handle Seek with Animation */
   const handleSeekWithAnimation = (seconds: number) => {
@@ -327,8 +340,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               {/* AirPlay Button - iOS only, KSAVPlayer only */}
               {Platform.OS === 'ios' && onAirPlayPress && playerBackend === 'KSAVPlayer' && (
                 <Focusable
+                  ref={airplayRef}
                   style={{ padding: 8 }}
                   onPress={onAirPlayPress}
+                  nextFocusDown={playPauseRef}
+                  nextFocusLeft={closeButtonRef}
                 >
                   <Feather
                     name="airplay"
@@ -337,7 +353,13 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                   />
                 </Focusable>
               )}
-              <Focusable style={styles.closeButton} onPress={handleClose}>
+              <Focusable
+                ref={closeButtonRef}
+                style={styles.closeButton}
+                onPress={handleClose}
+                nextFocusDown={playPauseRef}
+                nextFocusRight={airplayRef}
+              >
                 <Ionicons name="close" size={closeIconSize} color="white" />
               </Focusable>
             </View>
@@ -352,7 +374,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
           {/* Backward Seek Button (-10s) */}
           <Focusable
+            ref={backwardSeekRef}
             onPress={() => handleSeekWithAnimation(-10)}
+            nextFocusUp={closeButtonRef}
+            nextFocusDown={aspectRatioRef}
+            nextFocusRight={playPauseRef}
           >
             <Animated.View style={[
               styles.seekButtonContainer,
@@ -421,8 +447,14 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
           {/* Play/Pause Button */}
           <Focusable
+            ref={playPauseRef}
             onPress={handlePlayPauseWithAnimation}
             style={{ marginHorizontal: buttonSpacing }}
+            hasTVPreferredFocus={Platform.isTV}
+            nextFocusUp={closeButtonRef}
+            nextFocusDown={speedRef}
+            nextFocusLeft={backwardSeekRef}
+            nextFocusRight={forwardSeekRef}
           >
             <View style={[styles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}>
               <Animated.View style={[
@@ -449,7 +481,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
           {/* Forward Seek Button (+10s) */}
           <Focusable
+            ref={forwardSeekRef}
             onPress={() => handleSeekWithAnimation(10)}
+            nextFocusUp={closeButtonRef}
+            nextFocusDown={audioRef}
+            nextFocusLeft={playPauseRef}
           >
             <Animated.View style={[
               styles.seekButtonContainer,
@@ -531,33 +567,58 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             {/* Center Buttons Container with rounded background - wraps all buttons */}
             <View style={styles.centerControlsContainer} pointerEvents="box-none">
               {/* Left Side: Aspect Ratio Button */}
-              <Focusable style={styles.iconButton} onPress={cycleAspectRatio}>
+              <Focusable
+                ref={aspectRatioRef}
+                style={styles.iconButton}
+                onPress={cycleAspectRatio}
+                nextFocusUp={backwardSeekRef}
+                nextFocusRight={subtitleRef}
+              >
                 <Ionicons name="expand-outline" size={24} color="white" />
               </Focusable>
               <Focusable
+                ref={subtitleRef}
                 style={styles.iconButton}
                 onPress={() => setShowSubtitleModal(!isSubtitleModalOpen)}
+                nextFocusUp={backwardSeekRef}
+                nextFocusLeft={aspectRatioRef}
+                nextFocusRight={setShowSourcesModal ? sourcesRef : speedRef}
               >
                 <Ionicons name="text" size={24} color="white" />
               </Focusable>
 
               {setShowSourcesModal && (
                 <Focusable
+                  ref={sourcesRef}
                   style={styles.iconButton}
                   onPress={() => setShowSourcesModal(true)}
+                  nextFocusUp={playPauseRef}
+                  nextFocusLeft={subtitleRef}
+                  nextFocusRight={speedRef}
                 >
                   <Ionicons name="cloud-outline" size={24} color="white" />
                 </Focusable>
               )}
 
-              <Focusable style={styles.iconButton} onPress={() => setShowSpeedModal(true)}>
+              <Focusable
+                ref={speedRef}
+                style={styles.iconButton}
+                onPress={() => setShowSpeedModal(true)}
+                nextFocusUp={playPauseRef}
+                nextFocusLeft={setShowSourcesModal ? sourcesRef : subtitleRef}
+                nextFocusRight={audioRef}
+              >
                 <Ionicons name="speedometer-outline" size={24} color="white" />
               </Focusable>
 
               <Focusable
+                ref={audioRef}
                 style={styles.iconButton}
                 onPress={() => setShowAudioModal(true)}
                 disabled={ksAudioTracks.length <= 1}
+                nextFocusUp={forwardSeekRef}
+                nextFocusLeft={speedRef}
+                nextFocusRight={setShowEpisodesModal ? episodesRef : undefined}
               >
                 <Ionicons
                   name="musical-notes-outline"
@@ -568,8 +629,11 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
               {setShowEpisodesModal && (
                 <Focusable
+                  ref={episodesRef}
                   style={styles.iconButton}
                   onPress={() => setShowEpisodesModal(true)}
+                  nextFocusUp={forwardSeekRef}
+                  nextFocusLeft={audioRef}
                 >
                   <Ionicons name="list" size={24} color="white" />
                 </Focusable>

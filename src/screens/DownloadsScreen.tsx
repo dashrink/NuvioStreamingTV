@@ -13,6 +13,7 @@ import {
   Clipboard,
   Linking,
 } from 'react-native';
+import Focusable from '../components/common/Focusable';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -80,16 +81,17 @@ const EmptyDownloadsState: React.FC<{ navigation: NavigationProp<RootStackParamL
       <Text style={[styles.emptySubtitle, { color: currentTheme.colors.mediumEmphasis }]}>
         Downloaded content will appear here for offline viewing
       </Text>
-      <TouchableOpacity
+      <Focusable
         style={[styles.exploreButton, { backgroundColor: currentTheme.colors.primary }]}
         onPress={() => {
           navigation.navigate('Search');
         }}
+        hasTVPreferredFocus={Platform.isTV}
       >
         <Text style={[styles.exploreButtonText, { color: currentTheme.colors.background }]}>
           Explore Content
         </Text>
-      </TouchableOpacity>
+      </Focusable>
     </View>
   );
 };
@@ -204,11 +206,10 @@ const DownloadItemComponent: React.FC<{
   };
 
   return (
-    <TouchableOpacity
+    <Focusable
       style={[styles.downloadItem, { backgroundColor: currentTheme.colors.elevation2 }]}
       onPress={() => onPress(item)}
       onLongPress={handleLongPress}
-      activeOpacity={0.8}
     >
       {/* Poster */}
       <View style={styles.posterContainer}>
@@ -314,32 +315,30 @@ const DownloadItemComponent: React.FC<{
       {/* Action buttons */}
       <View style={styles.actionContainer}>
         {getActionIcon() && (
-          <TouchableOpacity
+          <Focusable
             style={[styles.actionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
             onPress={handleActionPress}
-            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name={getActionIcon() as any}
               size={20}
               color={currentTheme.colors.primary}
             />
-          </TouchableOpacity>
+          </Focusable>
         )}
 
-        <TouchableOpacity
+        <Focusable
           style={[styles.actionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
           onPress={() => onRequestRemove(item)}
-          activeOpacity={0.7}
         >
           <MaterialCommunityIcons
             name="delete-outline"
             size={20}
             color={currentTheme.colors.error}
           />
-        </TouchableOpacity>
+        </Focusable>
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 });
 
@@ -569,7 +568,7 @@ const DownloadsScreen: React.FC = () => {
   );
 
   const renderFilterButton = (filter: typeof selectedFilter, label: string, count: number) => (
-    <TouchableOpacity
+    <Focusable
       key={filter}
       style={[
         styles.filterButton,
@@ -580,7 +579,6 @@ const DownloadsScreen: React.FC = () => {
         }
       ]}
       onPress={() => handleFilterPress(filter)}
-      activeOpacity={0.8}
     >
       <Text style={[
         styles.filterButtonText,
@@ -613,7 +611,7 @@ const DownloadsScreen: React.FC = () => {
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Focusable>
   );
 
   return (
@@ -628,17 +626,16 @@ const DownloadsScreen: React.FC = () => {
       <ScreenHeader
         title="Downloads"
         rightActionComponent={
-          <TouchableOpacity
+          <Focusable
             style={styles.helpButton}
             onPress={showDownloadHelp}
-            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name="help-circle-outline"
               size={24}
               color={currentTheme.colors.mediumEmphasis}
             />
-          </TouchableOpacity>
+          </Focusable>
         }
         isTablet={isTablet}
       >

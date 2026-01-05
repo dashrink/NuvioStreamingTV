@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { View, Animated, ActivityIndicator, StyleSheet, Image, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Reanimated, {
@@ -12,6 +12,7 @@ import Reanimated, {
   withDelay
 } from 'react-native-reanimated';
 import { styles } from '../utils/playerStyles';
+import Focusable from '../../common/Focusable';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -118,13 +119,13 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         style={StyleSheet.absoluteFill}
       />
       
-      <TouchableOpacity 
+      <Focusable 
         style={styles.loadingCloseButton}
         onPress={onClose}
-        activeOpacity={0.7}
+        hasTVPreferredFocus={Platform.isTV}
       >
         <MaterialIcons name="close" size={24} color="#ffffff" />
-      </TouchableOpacity>
+      </Focusable>
       
       <View style={styles.openingContent}>
         {hasLogo && logo ? (
