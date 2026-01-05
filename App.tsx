@@ -44,12 +44,8 @@ import { AccountProvider, useAccount } from './src/contexts/AccountContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
-<<<<<<< HEAD
 import { useTVMode } from './src/hooks/useTVMode';
-import { PostHogProvider } from 'posthog-react-native';
-=======
 import { CampaignManager } from './src/components/promotions/CampaignManager';
->>>>>>> origin/main
 
 Sentry.init({
   dsn: 'https://1a58bf436454d346e5852b7bfd3c95e8@o4509536317276160.ingest.de.sentry.io/4509536317734992',
@@ -214,54 +210,6 @@ const ThemedApp = () => {
 
   return (
     <AccountProvider>
-<<<<<<< HEAD
-      <PostHogProvider
-        apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
-        options={{
-          host: "https://us.i.posthog.com",
-        }}
-        autocapture={false}
-      >
-        <PaperProvider theme={customDarkTheme}>
-          <NavigationContainer
-            ref={navigationRef}
-            theme={customNavigationTheme}
-            linking={undefined}
-          >
-            <DownloadsProvider>
-              <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-                <StatusBar style="light" />
-                {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
-                {shouldShowApp && <AppNavigator initialRouteName={initialRouteName} />}
-                <UpdatePopup
-                  visible={showUpdatePopup}
-                  updateInfo={updateInfo}
-                  onUpdateNow={handleUpdateNow}
-                  onUpdateLater={handleUpdateLater}
-                  onDismiss={handleDismiss}
-                  isInstalling={isInstalling}
-                />
-                <MajorUpdateOverlay
-                  visible={githubUpdate.visible}
-                  latestTag={githubUpdate.latestTag}
-                  releaseNotes={githubUpdate.releaseNotes}
-                  releaseUrl={githubUpdate.releaseUrl}
-                  onDismiss={githubUpdate.onDismiss}
-                  onLater={githubUpdate.onLater}
-                />
-                <AnnouncementOverlay
-                  visible={showAnnouncement}
-                  announcements={announcements}
-                  onClose={handleAnnouncementClose}
-                  onActionPress={handleNavigateToDebrid}
-                  actionButtonText="Connect Now"
-                />
-              </View>
-            </DownloadsProvider>
-          </NavigationContainer>
-        </PaperProvider>
-      </PostHogProvider>
-=======
       <PaperProvider theme={customDarkTheme}>
         <NavigationContainer
           ref={navigationRef}
@@ -301,7 +249,6 @@ const ThemedApp = () => {
           </DownloadsProvider>
         </NavigationContainer>
       </PaperProvider>
->>>>>>> origin/main
     </AccountProvider>
   );
 }
