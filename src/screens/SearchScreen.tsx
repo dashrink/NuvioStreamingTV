@@ -17,6 +17,7 @@ import {
   Pressable,
   Platform,
   Easing,
+  Modal,
 } from 'react-native';
 import Focusable from '../components/common/Focusable';
 import TVTextInput from '../components/common/TVTextInput';
@@ -46,9 +47,35 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ScreenHeader from '../components/common/ScreenHeader';
+import { useScrollToTop } from '../contexts/ScrollToTopContext';
+import { BottomSheetModal, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { useSettings } from '../hooks/useSettings';
+
+// Import extracted search components
+import {
+  DiscoverCatalog,
+  BREAKPOINTS,
+  getDeviceType,
+  isTablet,
+  isLargeTablet,
+  isTV,
+  TAB_BAR_HEIGHT,
+  RECENT_SEARCHES_KEY,
+  MAX_RECENT_SEARCHES,
+  PLACEHOLDER_POSTER,
+  HORIZONTAL_ITEM_WIDTH,
+  HORIZONTAL_POSTER_HEIGHT,
+  POSTER_WIDTH,
+  POSTER_HEIGHT,
+} from '../components/search/searchUtils';
+import { SearchSkeletonLoader } from '../components/search/SearchSkeletonLoader';
+import { SearchAnimation } from '../components/search/SearchAnimation';
+import { SearchResultItem } from '../components/search/SearchResultItem';
+import { RecentSearches } from '../components/search/RecentSearches';
 
 const { width, height } = Dimensions.get('window');
 
+<<<<<<< HEAD
 // Enhanced responsive breakpoints
 const BREAKPOINTS = {
   phone: 0,
@@ -66,162 +93,21 @@ const getDeviceType = (deviceWidth: number) => {
   return 'phone';
 };
 
+=======
+// Re-export for local use (backward compatibility)
+>>>>>>> origin/main
 const deviceType = getDeviceType(width);
-const isTablet = deviceType === 'tablet';
-const isLargeTablet = deviceType === 'largeTablet';
-const isTV = deviceType === 'tv';
-const TAB_BAR_HEIGHT = 85;
-
-// Responsive poster sizes
-const HORIZONTAL_ITEM_WIDTH = isTV ? width * 0.14 : isLargeTablet ? width * 0.16 : isTablet ? width * 0.18 : width * 0.3;
-const HORIZONTAL_POSTER_HEIGHT = HORIZONTAL_ITEM_WIDTH * 1.5;
-const POSTER_WIDTH = isTV ? 90 : isLargeTablet ? 80 : isTablet ? 70 : 90;
-const POSTER_HEIGHT = POSTER_WIDTH * 1.5;
-const RECENT_SEARCHES_KEY = 'recent_searches';
-const MAX_RECENT_SEARCHES = 10;
-
-const PLACEHOLDER_POSTER = 'https://placehold.co/300x450/222222/CCCCCC?text=No+Poster';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-const SkeletonLoader = () => {
-  const pulseAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { currentTheme } = useTheme();
-
-  React.useEffect(() => {
-    const pulse = RNAnimated.loop(
-      RNAnimated.sequence([
-        RNAnimated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        RNAnimated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const opacity = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-
-  const renderSkeletonItem = () => (
-    <View style={styles.skeletonVerticalItem}>
-      <RNAnimated.View style={[
-        styles.skeletonPoster,
-        { opacity, backgroundColor: currentTheme.colors.darkBackground }
-      ]} />
-      <View style={styles.skeletonItemDetails}>
-        <RNAnimated.View style={[
-          styles.skeletonTitle,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]} />
-        <View style={styles.skeletonMetaRow}>
-          <RNAnimated.View style={[
-            styles.skeletonMeta,
-            { opacity, backgroundColor: currentTheme.colors.darkBackground }
-          ]} />
-          <RNAnimated.View style={[
-            styles.skeletonMeta,
-            { opacity, backgroundColor: currentTheme.colors.darkBackground }
-          ]} />
-        </View>
-      </View>
-    </View>
-  );
-
-  return (
-    <View style={styles.skeletonContainer}>
-      {[...Array(5)].map((_, index) => (
-        <View key={index}>
-          {index === 0 && (
-            <RNAnimated.View style={[
-              styles.skeletonSectionHeader,
-              { opacity, backgroundColor: currentTheme.colors.darkBackground }
-            ]} />
-          )}
-          {renderSkeletonItem()}
-        </View>
-      ))}
-    </View>
-  );
-};
+// Alias imported components for backward compatibility with existing code
+const SkeletonLoader = SearchSkeletonLoader;
+const SimpleSearchAnimation = SearchAnimation;
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
-// Create a simple, elegant animation component
-const SimpleSearchAnimation = () => {
-  // Simple animation values that work reliably
-  const spinAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const fadeAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { currentTheme } = useTheme();
-
-  React.useEffect(() => {
-    // Rotation animation
-    const spin = RNAnimated.loop(
-      RNAnimated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-
-    // Fade animation
-    const fade = RNAnimated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    });
-
-    // Start animations
-    spin.start();
-    fade.start();
-
-    // Clean up
-    return () => {
-      spin.stop();
-    };
-  }, [spinAnim, fadeAnim]);
-
-  // Simple rotation interpolation
-  const spin = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <RNAnimated.View
-      style={[
-        styles.simpleAnimationContainer,
-        { opacity: fadeAnim }
-      ]}
-    >
-      <View style={styles.simpleAnimationContent}>
-        <RNAnimated.View style={[
-          styles.spinnerContainer,
-          { transform: [{ rotate: spin }], backgroundColor: currentTheme.colors.primary }
-        ]}>
-          <MaterialIcons
-            name="search"
-            size={32}
-            color={currentTheme.colors.white}
-          />
-        </RNAnimated.View>
-        <Text style={[styles.simpleAnimationText, { color: currentTheme.colors.white }]}>Searching</Text>
-      </View>
-    </RNAnimated.View>
-  );
-};
-
 const SearchScreen = () => {
+  const { settings } = useSettings();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const isDarkMode = true;
   const [query, setQuery] = useState('');
@@ -241,6 +127,37 @@ const SearchScreen = () => {
   const isInitialMount = useRef(true);
   // Track mount status for async operations
   const isMounted = useRef(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Discover section state
+  const [discoverCatalogs, setDiscoverCatalogs] = useState<DiscoverCatalog[]>([]);
+  const [selectedCatalog, setSelectedCatalog] = useState<DiscoverCatalog | null>(null);
+  const [selectedDiscoverType, setSelectedDiscoverType] = useState<'movie' | 'series'>('movie');
+  const [selectedDiscoverGenre, setSelectedDiscoverGenre] = useState<string | null>(null);
+  // Discover pagination state
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [discoverResults, setDiscoverResults] = useState<StreamingContent[]>([]);
+  const [pendingDiscoverResults, setPendingDiscoverResults] = useState<StreamingContent[]>([]);
+
+  const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [discoverInitialized, setDiscoverInitialized] = useState(false);
+
+  // Bottom sheet refs and state
+  const typeSheetRef = useRef<BottomSheetModal>(null);
+  const catalogSheetRef = useRef<BottomSheetModal>(null);
+  const genreSheetRef = useRef<BottomSheetModal>(null);
+  const typeSnapPoints = useMemo(() => ['25%'], []);
+  const catalogSnapPoints = useMemo(() => ['50%'], []);
+  const genreSnapPoints = useMemo(() => ['50%'], []);
+
+  // Scroll to top handler
+  const scrollToTop = useCallback(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+
+  useScrollToTop('Search', scrollToTop);
 
   useEffect(() => {
     isMounted.current = true;
@@ -248,6 +165,137 @@ const SearchScreen = () => {
       isMounted.current = false;
     };
   }, []);
+
+  const handleShowMore = () => {
+    if (pendingDiscoverResults.length === 0) return;
+
+    // Show next batch of 300 items
+    const batchSize = 300;
+    const nextBatch = pendingDiscoverResults.slice(0, batchSize);
+    const remaining = pendingDiscoverResults.slice(batchSize);
+
+    setDiscoverResults(prev => [...prev, ...nextBatch]);
+    setPendingDiscoverResults(remaining);
+  };
+
+  // Load discover catalogs on mount
+  useEffect(() => {
+    const loadDiscoverCatalogs = async () => {
+      try {
+        const filters = await catalogService.getDiscoverFilters();
+        if (isMounted.current) {
+          // Flatten catalogs from all types into a single array
+          const allCatalogs: DiscoverCatalog[] = [];
+          for (const [type, catalogs] of Object.entries(filters.catalogsByType)) {
+            // Only include movie and series types
+            if (type === 'movie' || type === 'series') {
+              for (const catalog of catalogs) {
+                allCatalogs.push({
+                  ...catalog,
+                  type,
+                });
+              }
+            }
+          }
+          setDiscoverCatalogs(allCatalogs);
+          // Auto-select first catalog if available
+          if (allCatalogs.length > 0) {
+            setSelectedCatalog(allCatalogs[0]);
+          }
+          setDiscoverInitialized(true);
+        }
+      } catch (error) {
+        logger.error('Failed to load discover catalogs:', error);
+        if (isMounted.current) {
+          setDiscoverInitialized(true);
+        }
+      }
+    };
+    loadDiscoverCatalogs();
+  }, []);
+
+  // Fetch discover content when catalog or genre changes
+  useEffect(() => {
+    if (!discoverInitialized || !selectedCatalog || query.trim().length > 0) return;
+
+    const fetchDiscoverContent = async () => {
+      if (!isMounted.current) return;
+      setDiscoverLoading(true);
+      setPage(1); // Reset page on new filter
+      setHasMore(true);
+      setPendingDiscoverResults([]);
+      try {
+        const results = await catalogService.discoverContentFromCatalog(
+          selectedCatalog.addonId,
+          selectedCatalog.catalogId,
+          selectedCatalog.type,
+          selectedDiscoverGenre || undefined,
+          1 // page 1
+        );
+        if (isMounted.current) {
+          if (results.length > 300) {
+            setDiscoverResults(results.slice(0, 300));
+            setPendingDiscoverResults(results.slice(300));
+            setHasMore(true);
+          } else {
+            setDiscoverResults(results);
+            setPendingDiscoverResults([]);
+            setHasMore(results.length > 0);
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to fetch discover content:', error);
+        if (isMounted.current) {
+          setDiscoverResults([]);
+        }
+      } finally {
+        if (isMounted.current) {
+          setDiscoverLoading(false);
+        }
+      }
+    };
+
+    fetchDiscoverContent();
+  }, [discoverInitialized, selectedCatalog, selectedDiscoverGenre, query]);
+
+  // Load more content for pagination
+  const loadMoreDiscoverContent = async () => {
+    if (!hasMore || loadingMore || discoverLoading || !selectedCatalog || pendingDiscoverResults.length > 0) return;
+
+    setLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      const moreResults = await catalogService.discoverContentFromCatalog(
+        selectedCatalog.addonId,
+        selectedCatalog.catalogId,
+        selectedCatalog.type,
+        selectedDiscoverGenre || undefined,
+        nextPage
+      );
+
+      if (isMounted.current) {
+        if (moreResults.length > 0) {
+          if (moreResults.length > 300) {
+            setDiscoverResults(prev => [...prev, ...moreResults.slice(0, 300)]);
+            setPendingDiscoverResults(moreResults.slice(300));
+          } else {
+            setDiscoverResults(prev => [...prev, ...moreResults]);
+          }
+          setPage(nextPage);
+        } else {
+          setHasMore(false);
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to load more discover content:', error);
+    } finally {
+      if (isMounted.current) {
+        setLoadingMore(false);
+      }
+    }
+  };
+
   // DropUpMenu state
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<StreamingContent | null>(null);
@@ -609,13 +657,219 @@ const SearchScreen = () => {
     );
   };
 
-  const SearchResultItem = ({ item, index, navigation, setSelectedItem, setMenuVisible, currentTheme }: {
+  // Get available genres for the selected catalog
+  const availableGenres = useMemo(() => {
+    if (!selectedCatalog) return [];
+    return selectedCatalog.genres;
+  }, [selectedCatalog]);
+
+  // Get catalogs filtered by selected type
+  const filteredCatalogs = useMemo(() => {
+    return discoverCatalogs.filter(catalog => catalog.type === selectedDiscoverType);
+  }, [discoverCatalogs, selectedDiscoverType]);
+
+  // Handle type selection
+  const handleTypeSelect = (type: 'movie' | 'series') => {
+    setSelectedDiscoverType(type);
+
+    // Auto-select first catalog for the new type
+    const catalogsForType = discoverCatalogs.filter(c => c.type === type);
+    if (catalogsForType.length > 0) {
+      const firstCatalog = catalogsForType[0];
+      setSelectedCatalog(firstCatalog);
+
+      // Auto-select first genre if available
+      if (firstCatalog.genres.length > 0) {
+        setSelectedDiscoverGenre(firstCatalog.genres[0]);
+      } else {
+        setSelectedDiscoverGenre(null);
+      }
+    } else {
+      setSelectedCatalog(null);
+      setSelectedDiscoverGenre(null);
+    }
+
+    typeSheetRef.current?.dismiss();
+  };
+
+  // Handle catalog selection
+  const handleCatalogSelect = (catalog: DiscoverCatalog) => {
+    setSelectedCatalog(catalog);
+    setSelectedDiscoverGenre(null); // Reset genre when catalog changes
+    catalogSheetRef.current?.dismiss();
+  };
+
+  // Handle genre selection
+  const handleGenreSelect = (genre: string | null) => {
+    setSelectedDiscoverGenre(genre);
+    genreSheetRef.current?.dismiss();
+  };
+
+  // Render backdrop for bottom sheets
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
+
+  // Render discover section with catalog and genre selector chips
+  const renderDiscoverSection = () => {
+    if (query.trim().length > 0) return null;
+
+    return (
+      <View style={styles.discoverContainer}>
+        {/* Section Header */}
+        <View style={styles.discoverHeader}>
+          <Text style={[styles.discoverTitle, { color: currentTheme.colors.white }]}>
+            Discover
+          </Text>
+        </View>
+
+        {/* Filter Chips Row */}
+        {/* Filter Chips Row */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.discoverChipsScroll}
+          contentContainerStyle={styles.discoverChipsContent}
+        >
+          {/* Type Selector Chip (Movie/TV Show) */}
+          <TouchableOpacity
+            style={[styles.discoverSelectorChip, { backgroundColor: currentTheme.colors.elevation2 }]}
+            onPress={() => typeSheetRef.current?.present()}
+          >
+            <Text style={[styles.discoverSelectorText, { color: currentTheme.colors.white }]} numberOfLines={1}>
+              {selectedDiscoverType === 'movie' ? 'Movies' : 'TV Shows'}
+            </Text>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={currentTheme.colors.lightGray} />
+          </TouchableOpacity>
+
+          {/* Catalog Selector Chip */}
+          <TouchableOpacity
+            style={[styles.discoverSelectorChip, { backgroundColor: currentTheme.colors.elevation2 }]}
+            onPress={() => catalogSheetRef.current?.present()}
+          >
+            <Text style={[styles.discoverSelectorText, { color: currentTheme.colors.white }]} numberOfLines={1}>
+              {selectedCatalog ? selectedCatalog.catalogName : 'Select Catalog'}
+            </Text>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={currentTheme.colors.lightGray} />
+          </TouchableOpacity>
+
+          {/* Genre Selector Chip - only show if catalog has genres */}
+          {availableGenres.length > 0 && (
+            <TouchableOpacity
+              style={[styles.discoverSelectorChip, { backgroundColor: currentTheme.colors.elevation2 }]}
+              onPress={() => genreSheetRef.current?.present()}
+            >
+              <Text style={[styles.discoverSelectorText, { color: currentTheme.colors.white }]} numberOfLines={1}>
+                {selectedDiscoverGenre || 'All Genres'}
+              </Text>
+              <MaterialIcons name="keyboard-arrow-down" size={20} color={currentTheme.colors.lightGray} />
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+
+        {/* Selected filters summary */}
+        {selectedCatalog && (
+          <View style={styles.discoverFilterSummary}>
+            <Text style={[styles.discoverFilterSummaryText, { color: currentTheme.colors.lightGray }]}>
+              {selectedCatalog.addonName} • {selectedCatalog.type === 'movie' ? 'Movies' : 'TV Shows'}
+              {selectedDiscoverGenre ? ` • ${selectedDiscoverGenre}` : ''}
+            </Text>
+          </View>
+        )}
+
+        {/* Discover Results */}
+        {discoverLoading ? (
+          <View style={styles.discoverLoadingContainer}>
+            <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+            <Text style={[styles.discoverLoadingText, { color: currentTheme.colors.lightGray }]}>
+              Discovering content...
+            </Text>
+          </View>
+        ) : discoverResults.length > 0 ? (
+          <FlatList
+            data={discoverResults}
+            keyExtractor={(item, index) => `discover-${item.id}-${index}`}
+            numColumns={isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3}
+            key={isTV ? 'tv-6' : isLargeTablet ? 'ltab-5' : isTablet ? 'tab-4' : 'phone-3'}
+            columnWrapperStyle={styles.discoverGridRow}
+            contentContainerStyle={styles.discoverGridContent}
+            renderItem={({ item, index }) => (
+              <SearchResultItem
+                key={`discover-${item.id}-${index}`}
+                item={item}
+                index={index}
+                navigation={navigation}
+                setSelectedItem={setSelectedItem}
+                setMenuVisible={setMenuVisible}
+                currentTheme={currentTheme}
+                isGrid={true}
+              />
+            )}
+            initialNumToRender={9}
+            maxToRenderPerBatch={6}
+            windowSize={5}
+            removeClippedSubviews={true}
+            scrollEnabled={false}
+            ListFooterComponent={
+              pendingDiscoverResults.length > 0 ? (
+                <TouchableOpacity
+                  style={styles.showMoreButton}
+                  onPress={handleShowMore}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.showMoreButtonText, { color: currentTheme.colors.white }]}>
+                    Show More ({pendingDiscoverResults.length})
+                  </Text>
+                  <MaterialIcons name="expand-more" size={20} color={currentTheme.colors.white} />
+                </TouchableOpacity>
+              ) : loadingMore ? (
+                <View style={styles.loadingMoreContainer}>
+                  <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+                </View>
+              ) : null
+            }
+          />
+        ) : discoverInitialized && !discoverLoading && selectedCatalog ? (
+          <View style={styles.discoverEmptyContainer}>
+            <MaterialIcons name="movie-filter" size={48} color={currentTheme.colors.lightGray} />
+            <Text style={[styles.discoverEmptyText, { color: currentTheme.colors.lightGray }]}>
+              No content found
+            </Text>
+            <Text style={[styles.discoverEmptySubtext, { color: currentTheme.colors.mediumGray }]}>
+              Try a different genre or catalog
+            </Text>
+          </View>
+        ) : !selectedCatalog && discoverInitialized ? (
+          <View style={styles.discoverEmptyContainer}>
+            <MaterialIcons name="touch-app" size={48} color={currentTheme.colors.lightGray} />
+            <Text style={[styles.discoverEmptyText, { color: currentTheme.colors.lightGray }]}>
+              Select a catalog to discover
+            </Text>
+            <Text style={[styles.discoverEmptySubtext, { color: currentTheme.colors.mediumGray }]}>
+              Tap the catalog chip above to get started
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const SearchResultItem = ({ item, index, navigation, setSelectedItem, setMenuVisible, currentTheme, isGrid = false }: {
     item: StreamingContent;
     index: number;
     navigation: any;
     setSelectedItem: (item: StreamingContent) => void;
     setMenuVisible: (visible: boolean) => void;
     currentTheme: any;
+    isGrid?: boolean;
   }) => {
     const [inLibrary, setInLibrary] = React.useState(!!item.inLibrary);
     const [watched, setWatched] = React.useState(false);
@@ -628,15 +882,27 @@ const SearchScreen = () => {
       let w = HORIZONTAL_ITEM_WIDTH;
       let r = 2 / 3;
 
-      if (shape === 'landscape') {
-        r = 16 / 9;
-        w = baseHeight * r;
-      } else if (shape === 'square') {
-        r = 1;
-        w = baseHeight;
+      if (isGrid) {
+        // Grid Calculation: (Window Width - Padding) / Columns
+        // Padding: 16 (left) + 16 (right) = 32
+        // Gap: 12 (between items) * (columns - 1)
+        // Ensure minimum 3 columns on all devices
+        const columns = isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3;
+        const totalPadding = 32;
+        const totalGap = 12 * (Math.max(3, columns) - 1);
+        const availableWidth = width - totalPadding - totalGap;
+        w = availableWidth / Math.max(3, columns);
+      } else {
+        if (shape === 'landscape') {
+          r = 16 / 9;
+          w = baseHeight * r;
+        } else if (shape === 'square') {
+          r = 1;
+          w = baseHeight;
+        }
       }
       return { itemWidth: w, aspectRatio: r };
-    }, [item.posterShape]);
+    }, [item.posterShape, isGrid]);
 
     React.useEffect(() => {
       const updateWatched = () => {
@@ -655,10 +921,23 @@ const SearchScreen = () => {
     }, [item.id, item.type]);
 
     return (
+<<<<<<< HEAD
       <Focusable
         style={[styles.horizontalItem, { width: itemWidth }]}
+=======
+      <TouchableOpacity
+        style={[
+          styles.horizontalItem,
+          { width: itemWidth },
+          isGrid && styles.discoverGridItem
+        ]}
+>>>>>>> origin/main
         onPress={() => {
-          navigation.navigate('Metadata', { id: item.id, type: item.type });
+          navigation.navigate('Metadata', { 
+            id: item.id, 
+            type: item.type,
+            addonId: item.addonId 
+          });
         }}
         onLongPress={() => {
           setSelectedItem(item);
@@ -668,16 +947,18 @@ const SearchScreen = () => {
       >
         <View style={[styles.horizontalItemPosterContainer, {
           width: itemWidth,
-          height: undefined, // Let aspect ratio control height or keep fixed height with width? 
-          // Actually, since we derived width from fixed height, we can keep height fixed or use aspect.
-          // Using aspect ratio is safer if baseHeight changes.
+          height: undefined, // Let aspect ratio control height
           aspectRatio: aspectRatio,
           backgroundColor: currentTheme.colors.darkBackground,
-          borderColor: 'rgba(255,255,255,0.05)'
+          borderRadius: settings.posterBorderRadius ?? 12,
         }]}>
           <FastImage
-            source={{ uri: item.poster || PLACEHOLDER_POSTER }}
-            style={styles.horizontalItemPoster}
+            source={{
+              uri: item.poster || PLACEHOLDER_POSTER,
+              priority: FastImage.priority.low,
+              cache: FastImage.cacheControl.immutable,
+            }}
+            style={[styles.horizontalItemPoster, { borderRadius: settings.posterBorderRadius ?? 12 }]}
             resizeMode={FastImage.resizeMode.cover}
           />
           {/* Bookmark and watched icons top right, bookmark to the left of watched */}
@@ -691,14 +972,7 @@ const SearchScreen = () => {
               <MaterialIcons name="check-circle" size={20} color={currentTheme.colors.success || '#4CAF50'} />
             </View>
           )}
-          {item.imdbRating && (
-            <View style={styles.ratingContainer}>
-              <MaterialIcons name="star" size={12} color="#FFC107" />
-              <Text style={[styles.ratingText, { color: currentTheme.colors.white }]}>
-                {item.imdbRating}
-              </Text>
-            </View>
-          )}
+          {/* Rating removed per user request */}
         </View>
         <Text
           style={[
@@ -996,13 +1270,28 @@ const SearchScreen = () => {
           </View>
         ) : (
           <ScrollView
+            ref={scrollViewRef}
             style={styles.scrollView}
             contentContainerStyle={styles.scrollViewContent}
             keyboardShouldPersistTaps="handled"
             onScrollBeginDrag={Keyboard.dismiss}
             showsVerticalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={({ nativeEvent }) => {
+              // Only paginate if query is empty (Discover mode)
+              if (query.trim().length > 0 || !settings.showDiscover || pendingDiscoverResults.length > 0) return;
+
+              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+              const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 500;
+
+              if (isCloseToBottom) {
+                loadMoreDiscoverContent();
+              }
+            }}
           >
             {!query.trim() && renderRecentSearches()}
+            {!query.trim() && settings.showDiscover && renderDiscoverSection()}
+
             {/* Render results grouped by addon using memoized component */}
             {results.byAddon.map((addonGroup, addonIndex) => (
               <AddonSection
@@ -1057,6 +1346,214 @@ const SearchScreen = () => {
           }}
         />
       )}
+
+      {/* Catalog Selection Bottom Sheet */}
+      <BottomSheetModal
+        ref={catalogSheetRef}
+        index={0}
+        snapPoints={catalogSnapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+        android_keyboardInputMode="adjustResize"
+        animateOnMount={true}
+        backgroundStyle={{
+          backgroundColor: currentTheme.colors.darkGray || '#0A0C0C',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: currentTheme.colors.mediumGray,
+        }}
+      >
+        <View style={[styles.bottomSheetHeader, { backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }]}>
+          <Text style={[styles.bottomSheetTitle, { color: currentTheme.colors.white }]}>
+            Select Catalog
+          </Text>
+          <TouchableOpacity onPress={() => catalogSheetRef.current?.dismiss()}>
+            <MaterialIcons name="close" size={24} color={currentTheme.colors.lightGray} />
+          </TouchableOpacity>
+        </View>
+        <BottomSheetScrollView
+          style={{ backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }}
+          contentContainerStyle={styles.bottomSheetContent}
+        >
+          {filteredCatalogs.map((catalog, index) => (
+            <TouchableOpacity
+              key={`${catalog.addonId}-${catalog.catalogId}-${index}`}
+              style={[
+                styles.bottomSheetItem,
+                selectedCatalog?.catalogId === catalog.catalogId &&
+                selectedCatalog?.addonId === catalog.addonId &&
+                styles.bottomSheetItemSelected
+              ]}
+              onPress={() => handleCatalogSelect(catalog)}
+            >
+              <View style={styles.bottomSheetItemContent}>
+                <Text style={[styles.bottomSheetItemTitle, { color: currentTheme.colors.white }]}>
+                  {catalog.catalogName}
+                </Text>
+                <Text style={[styles.bottomSheetItemSubtitle, { color: currentTheme.colors.lightGray }]}>
+                  {catalog.addonName} • {catalog.type === 'movie' ? 'Movies' : 'TV Shows'}
+                  {catalog.genres.length > 0 ? ` • ${catalog.genres.length} genres` : ''}
+                </Text>
+              </View>
+              {selectedCatalog?.catalogId === catalog.catalogId &&
+                selectedCatalog?.addonId === catalog.addonId && (
+                  <MaterialIcons name="check" size={24} color={currentTheme.colors.primary} />
+                )}
+            </TouchableOpacity>
+          ))}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
+      {/* Genre Selection Bottom Sheet */}
+      <BottomSheetModal
+        ref={genreSheetRef}
+        index={0}
+        snapPoints={genreSnapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+        android_keyboardInputMode="adjustResize"
+        animateOnMount={true}
+        backgroundStyle={{
+          backgroundColor: currentTheme.colors.darkGray || '#0A0C0C',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: currentTheme.colors.mediumGray,
+        }}
+      >
+        <View style={[styles.bottomSheetHeader, { backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }]}>
+          <Text style={[styles.bottomSheetTitle, { color: currentTheme.colors.white }]}>
+            Select Genre
+          </Text>
+          <TouchableOpacity onPress={() => genreSheetRef.current?.dismiss()}>
+            <MaterialIcons name="close" size={24} color={currentTheme.colors.lightGray} />
+          </TouchableOpacity>
+        </View>
+        <BottomSheetScrollView
+          style={{ backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }}
+          contentContainerStyle={styles.bottomSheetContent}
+        >
+          {/* All Genres option */}
+          <TouchableOpacity
+            style={[
+              styles.bottomSheetItem,
+              !selectedDiscoverGenre && styles.bottomSheetItemSelected
+            ]}
+            onPress={() => handleGenreSelect(null)}
+          >
+            <View style={styles.bottomSheetItemContent}>
+              <Text style={[styles.bottomSheetItemTitle, { color: currentTheme.colors.white }]}>
+                All Genres
+              </Text>
+              <Text style={[styles.bottomSheetItemSubtitle, { color: currentTheme.colors.lightGray }]}>
+                Show all content
+              </Text>
+            </View>
+            {!selectedDiscoverGenre && (
+              <MaterialIcons name="check" size={24} color={currentTheme.colors.primary} />
+            )}
+          </TouchableOpacity>
+
+          {/* Genre options */}
+          {availableGenres.map((genre, index) => (
+            <TouchableOpacity
+              key={`${genre}-${index}`}
+              style={[
+                styles.bottomSheetItem,
+                selectedDiscoverGenre === genre && styles.bottomSheetItemSelected
+              ]}
+              onPress={() => handleGenreSelect(genre)}
+            >
+              <View style={styles.bottomSheetItemContent}>
+                <Text style={[styles.bottomSheetItemTitle, { color: currentTheme.colors.white }]}>
+                  {genre}
+                </Text>
+              </View>
+              {selectedDiscoverGenre === genre && (
+                <MaterialIcons name="check" size={24} color={currentTheme.colors.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
+      {/* Type Selection Bottom Sheet */}
+      <BottomSheetModal
+        ref={typeSheetRef}
+        index={0}
+        snapPoints={typeSnapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{
+          backgroundColor: currentTheme.colors.darkGray || '#0A0C0C',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: currentTheme.colors.mediumGray,
+        }}
+      >
+        <View style={[styles.bottomSheetHeader, { backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }]}>
+          <Text style={[styles.bottomSheetTitle, { color: currentTheme.colors.white }]}>
+            Select Type
+          </Text>
+          <TouchableOpacity onPress={() => typeSheetRef.current?.dismiss()}>
+            <MaterialIcons name="close" size={24} color={currentTheme.colors.lightGray} />
+          </TouchableOpacity>
+        </View>
+        <BottomSheetScrollView
+          style={{ backgroundColor: currentTheme.colors.darkGray || '#0A0C0C' }}
+          contentContainerStyle={styles.bottomSheetContent}
+        >
+          {/* Movies option */}
+          <TouchableOpacity
+            style={[
+              styles.bottomSheetItem,
+              selectedDiscoverType === 'movie' && styles.bottomSheetItemSelected
+            ]}
+            onPress={() => handleTypeSelect('movie')}
+          >
+            <View style={styles.bottomSheetItemContent}>
+              <Text style={[styles.bottomSheetItemTitle, { color: currentTheme.colors.white }]}>
+                Movies
+              </Text>
+              <Text style={[styles.bottomSheetItemSubtitle, { color: currentTheme.colors.lightGray }]}>
+                Browse movie catalogs
+              </Text>
+            </View>
+            {selectedDiscoverType === 'movie' && (
+              <MaterialIcons name="check" size={24} color={currentTheme.colors.primary} />
+            )}
+          </TouchableOpacity>
+
+          {/* TV Shows option */}
+          <TouchableOpacity
+            style={[
+              styles.bottomSheetItem,
+              selectedDiscoverType === 'series' && styles.bottomSheetItemSelected
+            ]}
+            onPress={() => handleTypeSelect('series')}
+          >
+            <View style={styles.bottomSheetItemContent}>
+              <Text style={[styles.bottomSheetItemTitle, { color: currentTheme.colors.white }]}>
+                TV Shows
+              </Text>
+              <Text style={[styles.bottomSheetItemSubtitle, { color: currentTheme.colors.lightGray }]}>
+                Browse TV series catalogs
+              </Text>
+            </View>
+            {selectedDiscoverType === 'series' && (
+              <MaterialIcons name="check" size={24} color={currentTheme.colors.primary} />
+            )}
+          </TouchableOpacity>
+        </BottomSheetScrollView>
+      </BottomSheetModal>
     </View>
   );
 };
@@ -1156,20 +1653,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   horizontalListContent: {
-    paddingHorizontal: isTablet ? 16 : 12,
-    paddingRight: isTablet ? 12 : 8,
+    paddingHorizontal: 16,
   },
   horizontalItem: {
     width: HORIZONTAL_ITEM_WIDTH,
-    marginRight: isTablet ? 16 : 12,
+    marginRight: 16,
   },
   horizontalItemPosterContainer: {
     width: HORIZONTAL_ITEM_WIDTH,
     height: HORIZONTAL_POSTER_HEIGHT,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 8,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    // Consistent shadow/elevation matching ContentItem
+    elevation: Platform.OS === 'android' ? 1 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
   },
   horizontalItemPoster: {
     width: '100%',
@@ -1351,6 +1854,235 @@ const styles = StyleSheet.create({
     padding: 4,
     zIndex: 2,
     backgroundColor: 'transparent',
+  },
+  // Discover section styles
+  discoverContainer: {
+    paddingTop: isTablet ? 16 : 12,
+    paddingBottom: isTablet ? 24 : 16,
+  },
+  discoverHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: 8,
+  },
+  discoverTitle: {
+    fontSize: isTablet ? 22 : 20,
+    fontWeight: '700',
+  },
+  discoverTypeContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginBottom: isTablet ? 16 : 12,
+    gap: 12,
+  },
+  discoverTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    gap: 6,
+  },
+  discoverTypeText: {
+    fontSize: isTablet ? 15 : 14,
+    fontWeight: '600',
+  },
+  discoverGenreScroll: {
+    marginBottom: isTablet ? 20 : 16,
+  },
+  discoverGenreContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  discoverGenreChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginRight: 8,
+  },
+  discoverGenreChipActive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  discoverGenreText: {
+    fontSize: isTablet ? 14 : 13,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.7)',
+  },
+  discoverGenreTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  discoverLoadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  discoverLoadingText: {
+    marginTop: 12,
+    fontSize: 14,
+  },
+  discoverAddonSection: {
+    marginBottom: isTablet ? 28 : 20,
+  },
+  discoverAddonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: isTablet ? 12 : 8,
+  },
+  discoverAddonName: {
+    fontSize: isTablet ? 16 : 15,
+    fontWeight: '600',
+    flex: 1,
+  },
+  discoverAddonBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  discoverAddonBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  discoverEmptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  discoverEmptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  discoverEmptySubtext: {
+    fontSize: 14,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  discoverGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 12, // vertical and horizontal gap
+  },
+  discoverGridRow: {
+    justifyContent: 'flex-start',
+    gap: 12,
+  },
+  discoverGridContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  discoverGridItem: {
+    marginRight: 0, // Override horizontalItem margin
+    marginBottom: 12,
+  },
+  loadingMoreContainer: {
+    width: '100%',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // New chip-based discover styles
+  discoverChipsScroll: {
+    marginBottom: isTablet ? 12 : 10,
+    flexGrow: 0,
+  },
+  discoverChipsContent: {
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  discoverSelectorChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  discoverSelectorText: {
+    fontSize: isTablet ? 14 : 13,
+    fontWeight: '600',
+  },
+  discoverFilterSummary: {
+    paddingHorizontal: 16,
+    marginBottom: isTablet ? 16 : 12,
+  },
+  discoverFilterSummaryText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  // Bottom sheet styles
+  bottomSheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  bottomSheetContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 40,
+  },
+  bottomSheetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginVertical: 2,
+  },
+  bottomSheetItemSelected: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  bottomSheetItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  bottomSheetItemContent: {
+    flex: 1,
+  },
+  bottomSheetItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bottomSheetItemSubtitle: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    marginVertical: 20,
+    alignSelf: 'center',
+  },
+  showMoreButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 8,
   },
 });
 

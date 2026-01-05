@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ import type { DownloadItem } from '../contexts/DownloadsContext';
 import { useToast } from '../contexts/ToastContext';
 import CustomAlert from '../components/CustomAlert';
 import ScreenHeader from '../components/common/ScreenHeader';
+import { useScrollToTop } from '../contexts/ScrollToTopContext';
 
 const { height, width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -104,8 +105,10 @@ const DownloadItemComponent: React.FC<{
   onRequestRemove: (item: DownloadItem) => void;
 }> = React.memo(({ item, onPress, onAction, onRequestRemove }) => {
   const { currentTheme } = useTheme();
+  const { settings } = useSettings();
   const { showSuccess, showInfo } = useToast();
   const [posterUrl, setPosterUrl] = useState<string | null>(item.posterUrl || null);
+  const borderRadius = settings.posterBorderRadius ?? 12;
 
   // Try to fetch poster if not available
   useEffect(() => {
@@ -212,10 +215,10 @@ const DownloadItemComponent: React.FC<{
       onLongPress={handleLongPress}
     >
       {/* Poster */}
-      <View style={styles.posterContainer}>
+      <View style={[styles.posterContainer, { borderRadius }]}>
         <FastImage
           source={{ uri: optimizePosterUrl(posterUrl) }}
-          style={styles.poster}
+          style={[styles.poster, { borderRadius }]}
           resizeMode={FastImage.resizeMode.cover}
         />
         {/* Status indicator overlay */}
@@ -354,6 +357,14 @@ const DownloadsScreen: React.FC = () => {
   const [showHelpAlert, setShowHelpAlert] = useState(false);
   const [showRemoveAlert, setShowRemoveAlert] = useState(false);
   const [pendingRemoveItem, setPendingRemoveItem] = useState<DownloadItem | null>(null);
+  const flatListRef = useRef<FlatList>(null);
+
+  // Scroll to top handler
+  const scrollToTop = useCallback(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+
+  useScrollToTop('Downloads', scrollToTop);
 
   // Filter downloads based on selected filter
   const filteredDownloads = useMemo(() => {
@@ -524,7 +535,6 @@ const DownloadsScreen: React.FC = () => {
         streamProvider: 'Downloads',
         streamName: item.providerName || 'Offline',
         headers: undefined,
-        forceVlc: Platform.OS === 'android' ? isMkv : false,
         id: item.contentId, // Use contentId (base ID) instead of compound id for progress tracking
         type: item.type,
         episodeId: episodeId, // Pass episodeId for series progress tracking
@@ -654,6 +664,7 @@ const DownloadsScreen: React.FC = () => {
         <EmptyDownloadsState navigation={navigation} />
       ) : (
         <FlatList
+          ref={flatListRef}
           data={filteredDownloads}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -778,16 +789,25 @@ const styles = StyleSheet.create({
   posterContainer: {
     width: POSTER_WIDTH,
     height: POSTER_HEIGHT,
-    borderRadius: 8,
+    borderRadius: 12,
     marginRight: isTablet ? 20 : 16,
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#333',
+    // Consistent border styling matching ContentItem
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    // Consistent shadow/elevation
+    elevation: Platform.OS === 'android' ? 1 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
   },
   poster: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   statusOverlay: {
     position: 'absolute',

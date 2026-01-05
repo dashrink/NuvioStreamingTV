@@ -23,6 +23,7 @@ import AppNavigator, {
   CustomNavigationDarkTheme,
   CustomDarkTheme
 } from './src/navigation/AppNavigator';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import 'react-native-reanimated';
 import { CatalogProvider } from './src/contexts/CatalogContext';
 import { GenreProvider } from './src/contexts/GenreContext';
@@ -43,8 +44,12 @@ import { AccountProvider, useAccount } from './src/contexts/AccountContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
+<<<<<<< HEAD
 import { useTVMode } from './src/hooks/useTVMode';
 import { PostHogProvider } from 'posthog-react-native';
+=======
+import { CampaignManager } from './src/components/promotions/CampaignManager';
+>>>>>>> origin/main
 
 Sentry.init({
   dsn: 'https://1a58bf436454d346e5852b7bfd3c95e8@o4509536317276160.ingest.de.sentry.io/4509536317734992',
@@ -209,6 +214,7 @@ const ThemedApp = () => {
 
   return (
     <AccountProvider>
+<<<<<<< HEAD
       <PostHogProvider
         apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
         options={{
@@ -255,6 +261,47 @@ const ThemedApp = () => {
           </NavigationContainer>
         </PaperProvider>
       </PostHogProvider>
+=======
+      <PaperProvider theme={customDarkTheme}>
+        <NavigationContainer
+          ref={navigationRef}
+          theme={customNavigationTheme}
+          linking={undefined}
+        >
+          <DownloadsProvider>
+            <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+              <StatusBar style="light" />
+              {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
+              {shouldShowApp && <AppNavigator initialRouteName={initialRouteName} />}
+              <UpdatePopup
+                visible={showUpdatePopup}
+                updateInfo={updateInfo}
+                onUpdateNow={handleUpdateNow}
+                onUpdateLater={handleUpdateLater}
+                onDismiss={handleDismiss}
+                isInstalling={isInstalling}
+              />
+              <MajorUpdateOverlay
+                visible={githubUpdate.visible}
+                latestTag={githubUpdate.latestTag}
+                releaseNotes={githubUpdate.releaseNotes}
+                releaseUrl={githubUpdate.releaseUrl}
+                onDismiss={githubUpdate.onDismiss}
+                onLater={githubUpdate.onLater}
+              />
+              <AnnouncementOverlay
+                visible={showAnnouncement}
+                announcements={announcements}
+                onClose={handleAnnouncementClose}
+                onActionPress={handleNavigateToDebrid}
+                actionButtonText="Connect Now"
+              />
+              <CampaignManager />
+            </View>
+          </DownloadsProvider>
+        </NavigationContainer>
+      </PaperProvider>
+>>>>>>> origin/main
     </AccountProvider>
   );
 }
@@ -262,19 +309,21 @@ const ThemedApp = () => {
 function App(): React.JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <GenreProvider>
-        <CatalogProvider>
-          <TraktProvider>
-            <ThemeProvider>
-              <TrailerProvider>
-                <ToastProvider>
-                  <ThemedApp />
-                </ToastProvider>
-              </TrailerProvider>
-            </ThemeProvider>
-          </TraktProvider>
-        </CatalogProvider>
-      </GenreProvider>
+      <BottomSheetModalProvider>
+        <GenreProvider>
+          <CatalogProvider>
+            <TraktProvider>
+              <ThemeProvider>
+                <TrailerProvider>
+                  <ToastProvider>
+                    <ThemedApp />
+                  </ToastProvider>
+                </TrailerProvider>
+              </ThemeProvider>
+            </TraktProvider>
+          </CatalogProvider>
+        </GenreProvider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

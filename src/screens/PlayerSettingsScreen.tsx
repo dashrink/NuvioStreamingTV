@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSettings, AppSettings } from '../hooks/useSettings';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts/ThemeContext';
+import CustomAlert from '../components/CustomAlert';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -94,6 +95,17 @@ const PlayerSettingsScreen: React.FC = () => {
   const { settings, updateSetting } = useSettings();
   const { currentTheme } = useTheme();
   const navigation = useNavigation();
+
+  // CustomAlert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const openAlert = (title: string, message: string) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const playerOptions = [
     {
@@ -321,6 +333,200 @@ const PlayerSettingsScreen: React.FC = () => {
               </View>
             </View>
 
+            {/* Video Player Engine for Android */}
+            {Platform.OS === 'android' && !settings.useExternalPlayer && (
+              <>
+                <View style={[styles.settingItem, styles.settingItemBorder, { borderTopColor: 'rgba(255,255,255,0.08)', borderTopWidth: 1 }]}>
+                  <View style={styles.settingContent}>
+                    <View style={[
+                      styles.settingIconContainer,
+                      { backgroundColor: 'rgba(255,255,255,0.1)' }
+                    ]}>
+                      <MaterialIcons
+                        name="play-circle-filled"
+                        size={20}
+                        color={currentTheme.colors.primary}
+                      />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text
+                        style={[
+                          styles.settingTitle,
+                          { color: currentTheme.colors.text },
+                        ]}
+                      >
+                        Video Player Engine
+                      </Text>
+                      <Text
+                        style={[
+                          styles.settingDescription,
+                          { color: currentTheme.colors.textMuted },
+                        ]}
+                      >
+                        Auto uses ExoPlayer with MPV fallback. Some formats like Dolby Vision and HDR may not be supported by MPV, so Auto is recommended for best compatibility.
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.optionButtonsRow}>
+                    {([
+                      { id: 'auto', label: 'Auto', desc: 'ExoPlayer + MPV fallback' },
+                      { id: 'mpv', label: 'MPV', desc: 'MPV only' },
+                    ] as const).map((option) => (
+                      <TouchableOpacity
+                        key={option.id}
+                        onPress={() => updateSetting('videoPlayerEngine', option.id)}
+                        style={[
+                          styles.optionButton,
+                          styles.optionButtonWide,
+                          settings.videoPlayerEngine === option.id && { backgroundColor: currentTheme.colors.primary },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.optionButtonText,
+                            { color: settings.videoPlayerEngine === option.id ? '#fff' : currentTheme.colors.text },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Decoder Mode for Android Internal Player */}
+                <View style={[styles.settingItem, styles.settingItemBorder, { borderTopColor: 'rgba(255,255,255,0.08)', borderTopWidth: 1 }]}>
+                  <View style={styles.settingContent}>
+                    <View style={[
+                      styles.settingIconContainer,
+                      { backgroundColor: 'rgba(255,255,255,0.1)' }
+                    ]}>
+                      <MaterialIcons
+                        name="memory"
+                        size={20}
+                        color={currentTheme.colors.primary}
+                      />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text
+                        style={[
+                          styles.settingTitle,
+                          { color: currentTheme.colors.text },
+                        ]}
+                      >
+                        Decoder Mode
+                      </Text>
+                      <Text
+                        style={[
+                          styles.settingDescription,
+                          { color: currentTheme.colors.textMuted },
+                        ]}
+                      >
+                        How video is decoded. Auto is recommended for best balance.
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.optionButtonsRow}>
+                    {([
+                      { id: 'auto', label: 'Auto', desc: 'Best balance' },
+                      { id: 'sw', label: 'SW', desc: 'Software' },
+                      { id: 'hw', label: 'HW', desc: 'Hardware' },
+                      { id: 'hw+', label: 'HW+', desc: 'Full HW' },
+                    ] as const).map((option) => (
+                      <TouchableOpacity
+                        key={option.id}
+                        onPress={() => {
+                          updateSetting('decoderMode', option.id);
+                          openAlert(
+                            'Restart Required',
+                            'Please restart the app for the decoder change to take effect.'
+                          );
+                        }}
+                        style={[
+                          styles.optionButton,
+                          settings.decoderMode === option.id && { backgroundColor: currentTheme.colors.primary },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.optionButtonText,
+                            { color: settings.decoderMode === option.id ? '#fff' : currentTheme.colors.text },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* GPU Mode for Android Internal Player */}
+                <View style={[styles.settingItem, styles.settingItemBorder, { borderTopColor: 'rgba(255,255,255,0.08)', borderTopWidth: 1 }]}>
+                  <View style={styles.settingContent}>
+                    <View style={[
+                      styles.settingIconContainer,
+                      { backgroundColor: 'rgba(255,255,255,0.1)' }
+                    ]}>
+                      <MaterialIcons
+                        name="videocam"
+                        size={20}
+                        color={currentTheme.colors.primary}
+                      />
+                    </View>
+                    <View style={styles.settingText}>
+                      <Text
+                        style={[
+                          styles.settingTitle,
+                          { color: currentTheme.colors.text },
+                        ]}
+                      >
+                        GPU Rendering
+                      </Text>
+                      <Text
+                        style={[
+                          styles.settingDescription,
+                          { color: currentTheme.colors.textMuted },
+                        ]}
+                      >
+                        GPU-Next offers better HDR and color management.
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.optionButtonsRow}>
+                    {([
+                      { id: 'gpu', label: 'GPU', desc: 'Standard' },
+                      { id: 'gpu-next', label: 'GPU-Next', desc: 'Advanced' },
+                    ] as const).map((option) => (
+                      <TouchableOpacity
+                        key={option.id}
+                        onPress={() => {
+                          updateSetting('gpuMode', option.id);
+                          openAlert(
+                            'Restart Required',
+                            'Please restart the app for the GPU mode change to take effect.'
+                          );
+                        }}
+                        style={[
+                          styles.optionButton,
+                          styles.optionButtonWide,
+                          settings.gpuMode === option.id && { backgroundColor: currentTheme.colors.primary },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.optionButtonText,
+                            { color: settings.gpuMode === option.id ? '#fff' : currentTheme.colors.text },
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
+
             {/* External Player for Downloads */}
             {((Platform.OS === 'android' && settings.useExternalPlayer) ||
               (Platform.OS === 'ios' && settings.preferredPlayer !== 'internal')) && (
@@ -364,6 +570,13 @@ const PlayerSettingsScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -462,6 +675,28 @@ const styles = StyleSheet.create({
   },
   checkIcon: {
     marginLeft: 16,
+  },
+  optionButtonsRow: {
+    flexDirection: 'row',
+    marginTop: 12,
+    paddingHorizontal: 52,
+    gap: 8,
+  },
+  optionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionButtonWide: {
+    flex: 1.5,
+  },
+  optionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
 

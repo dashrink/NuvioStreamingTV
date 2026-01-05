@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import Focusable from './common/Focusable';
 
 interface ProviderFilterProps {
   selectedProvider: string;
@@ -8,16 +9,16 @@ interface ProviderFilterProps {
   theme: any;
 }
 
-const ProviderFilter = memo(({ 
-  selectedProvider, 
-  providers, 
+const ProviderFilter = memo(({
+  selectedProvider,
+  providers,
   onSelect,
   theme
 }: ProviderFilterProps) => {
   const styles = React.useMemo(() => createStyles(theme.colors), [theme.colors]);
-  
+
   const renderItem = useCallback(({ item, index }: { item: { id: string; name: string }; index: number }) => (
-    <TouchableOpacity
+    <Focusable
       style={[
         styles.filterChip,
         selectedProvider === item.id && styles.filterChipSelected
@@ -30,7 +31,7 @@ const ProviderFilter = memo(({
       ]}>
         {item.name}
       </Text>
-    </TouchableOpacity>
+    </Focusable>
   ), [selectedProvider, onSelect, styles]);
 
   return (

@@ -663,7 +663,6 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           streamProvider: cachedStream.stream.addonId || cachedStream.stream.addonName || cachedStream.stream.name,
           streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
           headers: cachedStream.stream.headers || undefined,
-          forceVlc: false,
           id: currentItem.id,
           type: currentItem.type,
           episodeId: episodeId,
@@ -687,6 +686,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         id: currentItem.id,
         type: currentItem.type,
         title: currentItem.name,
+        addonId: currentItem.addonId,
         metadata: {
           poster: currentItem.poster,
           banner: currentItem.banner,
@@ -715,7 +715,11 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         id: currentItem.id,
         type: currentItem.type,
         title: currentItem.name,
+<<<<<<< HEAD
         modal: true, // Use new modal transparent presentation
+=======
+        addonId: currentItem.addonId,
+>>>>>>> origin/main
         metadata: {
           poster: currentItem.poster,
           banner: currentItem.banner,
@@ -1221,6 +1225,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
                       type: currentItem.type,
+                      addonId: currentItem.addonId,
                     });
                   }
                 }}
@@ -1257,6 +1262,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
                       type: currentItem.type,
+                      addonId: currentItem.addonId,
                     });
                   }
                 }}

@@ -17,6 +17,8 @@ import { Stream } from '../types/streams';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 
+import { PostHogProvider } from 'posthog-react-native';
+import { ScrollToTopProvider, useScrollToTopEmitter } from '../contexts/ScrollToTopContext';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback
 let GlassViewComp: any = null;
@@ -46,7 +48,7 @@ import AddonsScreen from '../screens/AddonsScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ShowRatingsScreen from '../screens/ShowRatingsScreen';
 import CatalogSettingsScreen from '../screens/CatalogSettingsScreen';
-import StreamsScreen from '../screens/StreamsScreen';
+import StreamsScreen from '../screens/streams/StreamsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import MDBListSettingsScreen from '../screens/MDBListSettingsScreen';
@@ -74,6 +76,14 @@ import ContributorsScreen from '../screens/ContributorsScreen';
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
 import { useTVMode } from '../hooks/useTVMode';
 import { useSettings } from '../hooks/useSettings';
+import {
+  ContentDiscoverySettingsScreen,
+  AppearanceSettingsScreen,
+  IntegrationsSettingsScreen,
+  PlaybackSettingsScreen,
+  AboutSettingsScreen,
+  DeveloperSettingsScreen,
+} from '../screens/settings';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -117,6 +127,7 @@ export type RootStackParamList = {
     };
     resumeTime?: number;
     duration?: number;
+    addonId?: string;
     modal?: boolean;
   };
   PlayerIOS: {
@@ -130,7 +141,6 @@ export type RootStackParamList = {
     streamProvider?: string;
     streamName?: string;
     headers?: { [key: string]: string };
-    forceVlc?: boolean;
     id?: string;
     type?: string;
     episodeId?: string;
@@ -151,7 +161,6 @@ export type RootStackParamList = {
     streamProvider?: string;
     streamName?: string;
     headers?: { [key: string]: string };
-    forceVlc?: boolean;
     id?: string;
     type?: string;
     episodeId?: string;
@@ -205,7 +214,15 @@ export type RootStackParamList = {
   ContinueWatchingSettings: undefined;
   Contributors: undefined;
   DebridIntegration: undefined;
+  // New organized settings screens
+  ContentDiscoverySettings: undefined;
+  AppearanceSettings: undefined;
+  IntegrationsSettings: undefined;
+  PlaybackSettings: undefined;
+  AboutSettings: undefined;
+  DeveloperSettings: undefined;
 };
+
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -538,6 +555,7 @@ const WrappedScreen: React.FC<{ Screen: React.ComponentType<any> }> = ({ Screen 
 const MainTabs = () => {
   const { currentTheme } = useTheme();
   const { settings: appSettings } = useSettings();
+  const downloadsEnabled = appSettings.enableDownloads ?? true;
   const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
 
@@ -588,6 +606,7 @@ const MainTabs = () => {
   const isIosTablet = Platform.OS === 'ios' && isTablet;
   const [hidden, setHidden] = React.useState(HeaderVisibility.isHidden());
   React.useEffect(() => HeaderVisibility.subscribe(setHidden), []);
+  const emitScrollToTop = useScrollToTopEmitter();
   // Smooth animate header hide/show
   const headerAnim = React.useRef(new Animated.Value(0)).current; // 0: shown, 1: hidden
   React.useEffect(() => {
@@ -611,7 +630,114 @@ const MainTabs = () => {
     const currentRoute = props.state.routes[props.state.index]?.name;
     const shouldKeepFixed = currentRoute === 'Search' || currentRoute === 'Library';
 
-    // Always return the Top Navigation (TV/Tablet style)
+    if (isTablet) {
+      // Top floating, text-only pill nav for tablets
+      return (
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            top: insets.top + 12,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+            zIndex: 100,
+          }, shouldKeepFixed ? {} : {
+            transform: [{ translateY }],
+            opacity: fade,
+          }]}>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 28,
+            overflow: 'hidden',
+            padding: 4,
+            position: 'relative',
+            backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)'
+          }}>
+            {isIosTablet && (
+              GlassViewComp && liquidGlassAvailable ? (
+                <GlassViewComp
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: 28,
+                  }}
+                  glassEffectStyle="clear"
+                />
+              ) : (
+                <BlurView
+                  tint="dark"
+                  intensity={75}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: 28,
+                  }}
+                />
+              )
+            )}
+            {props.state.routes.map((route, index) => {
+              const { options } = props.descriptors[route.key];
+              const label =
+                options.tabBarLabel !== undefined
+                  ? options.tabBarLabel
+                  : options.title !== undefined
+                    ? options.title
+                    : route.name;
+
+              const isFocused = props.state.index === index;
+
+              const onPress = () => {
+                const event = props.navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (isFocused) {
+                  // Same tab pressed - emit scroll to top
+                  emitScrollToTop(route.name);
+                } else if (!event.defaultPrevented) {
+                  props.navigation.navigate(route.name);
+                }
+              };
+
+              return (
+                <Focusable
+                  key={route.key}
+                  activeOpacity={0.8}
+                  onPress={onPress}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    marginHorizontal: 2,
+                    borderRadius: 24,
+                    backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  }}
+                >
+                  <Text style={{
+                    color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
+                    fontWeight: '700',
+                    fontSize: 14,
+                    letterSpacing: 0.2,
+                  }}>
+                    {typeof label === 'string' ? label : ''}
+                  </Text>
+                </Focusable>
+              );
+            })}
+          </View>
+        </Animated.View>
+      );
+    }
+
+    // Default bottom tab for phones
     return (
       <Animated.View
         style={[{
@@ -680,10 +806,40 @@ const MainTabs = () => {
                 target: route.key,
                 canPreventDefault: true,
               });
-              if (!isFocused && !event.defaultPrevented) {
+
+              if (isFocused) {
+                // Same tab pressed - emit scroll to top
+                emitScrollToTop(route.name);
+              } else if (!event.defaultPrevented) {
                 props.navigation.navigate(route.name);
               }
             };
+
+            let iconName: IconNameType = 'home';
+            let iconLibrary: 'material' | 'feather' | 'ionicons' = 'material';
+            switch (route.name) {
+              case 'Home':
+                iconName = 'home';
+                iconLibrary = 'feather';
+                break;
+              case 'Library':
+                iconName = 'library';
+                iconLibrary = 'ionicons';
+                break;
+              case 'Search':
+                iconName = 'search';
+                iconLibrary = 'feather';
+                break;
+              case 'Downloads':
+                iconName = 'download';
+                iconLibrary = 'feather';
+                break;
+              case 'Settings':
+                iconName = 'settings';
+                iconLibrary = 'feather';
+                break;
+            }
+
 
             return (
               <Focusable
@@ -713,9 +869,6 @@ const MainTabs = () => {
       </Animated.View>
     );
   };
-
-
-
 
 
   return (
@@ -827,7 +980,7 @@ const MainTabs = () => {
           }}
         />
       </Tab.Navigator>
-    </View>
+    </View >
   );
 };
 
@@ -1378,6 +1531,96 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
                 },
               }}
             />
+            <Stack.Screen
+              name="ContentDiscoverySettings"
+              component={ContentDiscoverySettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="AppearanceSettings"
+              component={AppearanceSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="IntegrationsSettings"
+              component={IntegrationsSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="PlaybackSettings"
+              component={PlaybackSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="AboutSettings"
+              component={AboutSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="DeveloperSettings"
+              component={DeveloperSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
           </Stack.Navigator>
         </View>
       </PaperProvider>
@@ -1386,9 +1629,18 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
 };
 
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
-  <LoadingProvider>
-    <InnerNavigator initialRouteName={initialRouteName} />
-  </LoadingProvider>
+  <PostHogProvider
+    apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
+    options={{
+      host: "https://us.i.posthog.com",
+    }}
+  >
+    <ScrollToTopProvider>
+      <LoadingProvider>
+        <InnerNavigator initialRouteName={initialRouteName} />
+      </LoadingProvider>
+    </ScrollToTopProvider>
+  </PostHogProvider>
 );
 
 export default AppNavigator;

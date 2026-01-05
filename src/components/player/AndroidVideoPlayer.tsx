@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, Animated, ActivityIndicator, Platform, NativeModules, StatusBar, Text, StyleSheet, Modal, AppState, Image, InteractionManager } from 'react-native';
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react';
+import { View, StyleSheet, Platform, Animated, ToastAndroid } from 'react-native';
+import { toast } from '@backpackapp-io/react-native-toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Video, { VideoRef, SelectedTrack, SelectedTrackType, BufferingStrategyType, ViewType } from 'react-native-video';
-import FastImage from '@d11/react-native-fast-image';
-import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+<<<<<<< HEAD
 import { PinchGestureHandler, PanGestureHandler, TapGestureHandler, LongPressGestureHandler, State, PinchGestureHandlerGestureEvent, PanGestureHandlerGestureEvent, TapGestureHandlerGestureEvent, LongPressGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import RNImmersiveMode from 'react-native-immersive-mode';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -19,21 +19,19 @@ import { useMetadata } from '../../hooks/useMetadata';
 import { useSettings } from '../../hooks/useSettings';
 import { usePlayerGestureControls } from '../../hooks/usePlayerGestureControls';
 import { useTVEventHandler } from '../../hooks/useTVEventHandler';
+=======
+>>>>>>> origin/main
 
+// Shared Hooks (cross-platform)
 import {
-  DEFAULT_SUBTITLE_SIZE,
-  getDefaultSubtitleSize,
-  AudioTrack,
-  TextTrack,
-  ResizeModeType,
-  WyzieSubtitle,
-  SubtitleCue,
-  SubtitleSegment,
-  RESUME_PREF_KEY,
-  RESUME_PREF,
-  SUBTITLE_SIZE_KEY
-} from './utils/playerTypes';
+  usePlayerState,
+  usePlayerModals,
+  useSpeedControl,
+  useOpeningAnimation,
+  useWatchProgress
+} from './hooks';
 
+<<<<<<< HEAD
 // Speed settings storage key
 const SPEED_SETTINGS_KEY = '@nuvio_speed_settings';
 
@@ -45,149 +43,186 @@ import { safeDebugLog, parseSRT, DEBUG_MODE, formatTime } from './utils/playerUt
 import { styles } from './utils/playerStyles';
 import { SubtitleModals } from './modals/SubtitleModals';
 import { AudioTrackModal } from './modals/AudioTrackModal';
+=======
+// Android-specific hooks
+import { usePlayerSetup } from './android/hooks/usePlayerSetup';
+import { usePlayerTracks } from './android/hooks/usePlayerTracks';
+
+import { usePlayerControls } from './android/hooks/usePlayerControls';
+import { useNextEpisode } from './android/hooks/useNextEpisode';
+
+// App-level Hooks
+import { useTraktAutosync } from '../../hooks/useTraktAutosync';
+import { useMetadata } from '../../hooks/useMetadata';
+import { usePlayerGestureControls } from '../../hooks/usePlayerGestureControls';
+import { useSettings } from '../../hooks/useSettings';
+
+// Shared Components
+import { GestureControls, PauseOverlay, SpeedActivatedOverlay } from './components';
+>>>>>>> origin/main
 import LoadingOverlay from './modals/LoadingOverlay';
-import SpeedModal from './modals/SpeedModal';
-// Removed ResumeOverlay usage when alwaysResume is enabled
 import PlayerControls from './controls/PlayerControls';
-import CustomSubtitles from './subtitles/CustomSubtitles';
+import { AudioTrackModal } from './modals/AudioTrackModal';
+import { SubtitleModals } from './modals/SubtitleModals';
+import { SubtitleSyncModal } from './modals/SubtitleSyncModal';
+import SpeedModal from './modals/SpeedModal';
 import { SourcesModal } from './modals/SourcesModal';
 import { EpisodesModal } from './modals/EpisodesModal';
+<<<<<<< HEAD
 import UpNextButton from './common/UpNextButton';
 import Focusable from '../common/Focusable';
+=======
+>>>>>>> origin/main
 import { EpisodeStreamsModal } from './modals/EpisodeStreamsModal';
-import VlcVideoPlayer, { VlcPlayerRef } from './VlcVideoPlayer';
-import { stremioService } from '../../services/stremioService';
-import { Episode } from '../../types/metadata';
-import { shouldUseKSPlayer } from '../../utils/playerSelection';
-import axios from 'axios';
-import * as Brightness from 'expo-brightness';
-// Do not statically import Android-only native modules; resolve at runtime on Android
+import { ErrorModal } from './modals/ErrorModal';
+import { CustomSubtitles } from './subtitles/CustomSubtitles';
+import ParentalGuideOverlay from './overlays/ParentalGuideOverlay';
+import SkipIntroButton from './overlays/SkipIntroButton';
+import UpNextButton from './common/UpNextButton';
+import { CustomAlert } from '../CustomAlert';
 
-// Map VLC resize modes to react-native-video resize modes
-const getVideoResizeMode = (resizeMode: ResizeModeType) => {
-  switch (resizeMode) {
-    case 'contain': return 'contain';
-    case 'cover': return 'cover';
-    case 'none': return 'contain';
-    default: return 'contain';
-  }
-};
+
+// Android-specific components
+import { VideoSurface } from './android/components/VideoSurface';
+import { MpvPlayerRef } from './android/MpvPlayer';
+
+// Utils
+import { logger } from '../../utils/logger';
+import { styles } from './utils/playerStyles';
+import { formatTime, isHlsStream, getHlsHeaders, defaultAndroidHeaders, parseSRT } from './utils/playerUtils';
+import { storageService } from '../../services/storageService';
+import stremioService from '../../services/stremioService';
+import { WyzieSubtitle, SubtitleCue } from './utils/playerTypes';
+import { findBestSubtitleTrack, findBestAudioTrack } from './utils/trackSelectionUtils';
+import { useTheme } from '../../contexts/ThemeContext';
+import axios from 'axios';
+
+const DEBUG_MODE = false;
 
 const AndroidVideoPlayer: React.FC = () => {
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
   const route = useRoute<RouteProp<RootStackParamList, 'PlayerAndroid'>>();
+  const insets = useSafeAreaInsets();
+  const { currentTheme } = useTheme();
 
   const {
-    uri,
-    title = 'Episode Name',
-    season,
-    episode,
-    episodeTitle,
-    quality,
-    year,
-    streamProvider,
-    streamName,
-    headers,
-    id,
-    type,
-    episodeId,
-    imdbId,
-    availableStreams: passedAvailableStreams,
-    backdrop,
-    groupedEpisodes
+    uri, title = 'Episode Name', season, episode, episodeTitle, quality, year,
+    streamProvider, streamName, headers, id, type, episodeId, imdbId,
+    availableStreams: passedAvailableStreams, backdrop, groupedEpisodes
   } = route.params;
 
-  // Opt-in flag to use VLC backend
-  const forceVlc = useMemo(() => {
-    const rp: any = route.params || {};
-    const v = rp.forceVlc !== undefined ? rp.forceVlc : rp.forceVLC;
-    return typeof v === 'string' ? v.toLowerCase() === 'true' : Boolean(v);
-  }, [route.params]);
-  // TEMP: force React Native Video for testing (disable VLC)
-  const TEMP_FORCE_RNV = false;
-  const TEMP_FORCE_VLC = false;
-  const useVLC = Platform.OS === 'android' && !TEMP_FORCE_RNV && (TEMP_FORCE_VLC || forceVlc);
+  // --- State & Custom Hooks ---
 
-  // Log player selection
+  const playerState = usePlayerState();
+  const modals = usePlayerModals();
+  const speedControl = useSpeedControl();
+  const { settings } = useSettings();
+
+  const videoRef = useRef<any>(null);
+  const mpvPlayerRef = useRef<MpvPlayerRef>(null);
+  const exoPlayerRef = useRef<any>(null);
+  const pinchRef = useRef(null);
+  const tracksHook = usePlayerTracks();
+
+  const [currentStreamUrl, setCurrentStreamUrl] = useState<string>(uri);
+  const [currentVideoType, setCurrentVideoType] = useState<string | undefined>((route.params as any).videoType);
+
+  const [availableStreams, setAvailableStreams] = useState<any>(passedAvailableStreams || {});
+  const [currentQuality, setCurrentQuality] = useState(quality);
+  const [currentStreamProvider, setCurrentStreamProvider] = useState(streamProvider);
+  const [currentStreamName, setCurrentStreamName] = useState(streamName);
+
+  // State to force unmount VideoSurface during stream transitions
+  const [isTransitioningStream, setIsTransitioningStream] = useState(false);
+
+  // Dual video engine state: ExoPlayer primary, MPV fallback
+  // If videoPlayerEngine is 'mpv', always use MPV; otherwise use auto behavior
+  const shouldUseMpvOnly = settings.videoPlayerEngine === 'mpv';
+  const [useExoPlayer, setUseExoPlayer] = useState(!shouldUseMpvOnly);
+  const hasExoPlayerFailed = useRef(false);
+  const [showMpvSwitchAlert, setShowMpvSwitchAlert] = useState(false);
+
+
+  // Sync useExoPlayer with settings when videoPlayerEngine is set to 'mpv'
+  // Only run once on mount to avoid re-render loops
+  const hasAppliedEngineSettingRef = useRef(false);
   useEffect(() => {
-    const playerType = useVLC ? 'VLC (expo-libvlc-player)' : 'React Native Video';
-    const reason = useVLC
-      ? (TEMP_FORCE_VLC ? 'TEMP_FORCE_VLC=true' : `forceVlc=${forceVlc} from route params`)
-      : (TEMP_FORCE_RNV ? 'TEMP_FORCE_RNV=true' : 'default react-native-video');
-    logger.log(`[AndroidVideoPlayer] Player selection: ${playerType} (${reason})`);
-  }, [useVLC, forceVlc]);
-
-
-
-  // Check if the stream is HLS (m3u8 playlist)
-  const isHlsStream = (url: string) => {
-    return url.includes('.m3u8') || url.includes('m3u8') ||
-      url.includes('hls') || url.includes('playlist') ||
-      (currentVideoType && currentVideoType.toLowerCase() === 'm3u8');
-  };
-
-  // HLS-specific headers for better ExoPlayer compatibility
-  const getHlsHeaders = () => {
-    return {
-      'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-      'Accept': 'application/vnd.apple.mpegurl, application/x-mpegurl, application/vnd.apple.mpegurl, video/mp2t, video/mp4, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Accept-Encoding': 'identity',
-      'Connection': 'keep-alive',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache'
-    } as any;
-  };
-
-  // Helper to get dynamic volume icon
-  const getVolumeIcon = (value: number) => {
-    if (value === 0) return 'volume-off';
-    if (value < 0.3) return 'volume-mute';
-    if (value < 0.6) return 'volume-down';
-    return 'volume-up';
-  };
-
-  // Helper to get dynamic brightness icon
-  const getBrightnessIcon = (value: number) => {
-    if (value < 0.3) return 'brightness-low';
-    if (value < 0.7) return 'brightness-medium';
-    return 'brightness-high';
-  };
-
-  // Get appropriate headers based on stream type
-  const getStreamHeaders = () => {
-    // Use HLS headers for HLS streams, default headers for everything else
-    if (isHlsStream(currentStreamUrl)) {
-      logger.log('[AndroidVideoPlayer] Detected HLS stream, applying HLS headers');
-      return getHlsHeaders();
+    if (!hasAppliedEngineSettingRef.current && settings.videoPlayerEngine === 'mpv') {
+      hasAppliedEngineSettingRef.current = true;
+      setUseExoPlayer(false);
     }
-    return Platform.OS === 'android' ? defaultAndroidHeaders() : defaultIosHeaders();
-  };
+  }, [settings.videoPlayerEngine]);
 
-  // Optional hint not yet in typed navigator params
-  const videoType = (route.params as any).videoType as string | undefined;
+  // Subtitle addon state
+  const [availableSubtitles, setAvailableSubtitles] = useState<WyzieSubtitle[]>([]);
+  const [isLoadingSubtitleList, setIsLoadingSubtitleList] = useState(false);
+  const [isLoadingSubtitles, setIsLoadingSubtitles] = useState(false);
+  const [useCustomSubtitles, setUseCustomSubtitles] = useState(false);
+  const [customSubtitles, setCustomSubtitles] = useState<SubtitleCue[]>([]);
+  const [currentSubtitle, setCurrentSubtitle] = useState<string>('');
+  const [selectedExternalSubtitleId, setSelectedExternalSubtitleId] = useState<string | null>(null);
 
-  const defaultAndroidHeaders = () => {
-    if (Platform.OS !== 'android') return {} as any;
-    return {
-      'User-Agent': 'ExoPlayerLib/2.19.1 (Linux;Android) Nuvio/1.0',
-      'Accept': '*/*',
-      'Connection': 'keep-alive',
-    } as any;
-  };
+  // Subtitle customization state
+  const [subtitleSize, setSubtitleSize] = useState(28);
+  const [subtitleBackground, setSubtitleBackground] = useState(false);
+  const [subtitleTextColor, setSubtitleTextColor] = useState('#FFFFFF');
+  const [subtitleBgOpacity, setSubtitleBgOpacity] = useState(0.7);
+  const [subtitleTextShadow, setSubtitleTextShadow] = useState(true);
+  const [subtitleOutline, setSubtitleOutline] = useState(true);
+  const [subtitleOutlineColor, setSubtitleOutlineColor] = useState('#000000');
+  const [subtitleOutlineWidth, setSubtitleOutlineWidth] = useState(3);
+  const [subtitleAlign, setSubtitleAlign] = useState<'center' | 'left' | 'right'>('center');
+  const [subtitleBottomOffset, setSubtitleBottomOffset] = useState(20);
+  const [subtitleLetterSpacing, setSubtitleLetterSpacing] = useState(0);
+  const [subtitleLineHeightMultiplier, setSubtitleLineHeightMultiplier] = useState(1.2);
+  const [subtitleOffsetSec, setSubtitleOffsetSec] = useState(0);
 
-  const defaultIosHeaders = () => {
-    if (Platform.OS !== 'ios') return {} as any;
-    return {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 Nuvio/1.0',
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Connection': 'keep-alive',
-    } as any;
-  };
+  // Subtitle sync modal state
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
-  // Initialize Trakt autosync
+  // Track auto-selection ref to prevent duplicate selections
+  const hasAutoSelectedTracks = useRef(false);
+
+  // Track previous video session to reset subtitle offset only when video actually changes
+  const previousVideoRef = useRef<{ uri?: string; episodeId?: string }>({});
+  
+  // Reset subtitle offset when starting a new video session
+  useEffect(() => {
+    const currentVideo = { uri, episodeId };
+    const previousVideo = previousVideoRef.current;
+    
+    // Only reset if this is actually a new video (uri or episodeId changed)
+    if (previousVideo.uri !== undefined && 
+        (previousVideo.uri !== currentVideo.uri || previousVideo.episodeId !== currentVideo.episodeId)) {
+      setSubtitleOffsetSec(0);
+    }
+    
+    // Update the ref for next comparison
+    previousVideoRef.current = currentVideo;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri, episodeId]);
+
+  const metadataResult = useMetadata({ id: id || 'placeholder', type: (type as any) });
+  const { metadata, cast } = Boolean(id && type) ? (metadataResult as any) : { metadata: null, cast: [] };
+  const hasLogo = metadata && metadata.logo;
+  const openingAnimation = useOpeningAnimation(backdrop, metadata);
+
+  const [volume, setVolume] = useState(1.0);
+  const [brightness, setBrightness] = useState(1.0);
+  const setupHook = usePlayerSetup(playerState.setScreenDimensions, setVolume, setBrightness, playerState.paused);
+
+  const controlsHook = usePlayerControls(
+    mpvPlayerRef,
+    playerState.paused,
+    playerState.setPaused,
+    playerState.currentTime,
+    playerState.duration,
+    playerState.isSeeking,
+    playerState.isMounted,
+    exoPlayerRef,
+    useExoPlayer
+  );
+
   const traktAutosync = useTraktAutosync({
     id: id || '',
     type: type === 'series' ? 'series' : 'movie',
@@ -202,6 +237,7 @@ const AndroidVideoPlayer: React.FC = () => {
     episodeId: episodeId
   });
 
+<<<<<<< HEAD
   // Get the Trakt autosync settings to use the user-configured sync frequency
   const { settings: traktSettings } = useTraktAutosyncSettings();
 
@@ -400,242 +436,18 @@ const AndroidVideoPlayer: React.FC = () => {
   const ksAudioTracks = useMemo(() =>
     useVLC ? vlcAudioTracks : rnVideoAudioTracks,
     [useVLC, vlcAudioTracks, rnVideoAudioTracks]
+=======
+  const watchProgress = useWatchProgress(
+    id, type, episodeId,
+    playerState.currentTime,
+    playerState.duration,
+    playerState.paused,
+    traktAutosync,
+    controlsHook.seekToTime,
+    currentStreamProvider
+>>>>>>> origin/main
   );
 
-  const computedSelectedAudioTrack = useMemo(() =>
-    useVLC
-      ? (vlcSelectedAudioTrack ?? null)
-      : (selectedAudioTrack?.type === SelectedTrackType.INDEX && selectedAudioTrack.value !== undefined
-        ? Number(selectedAudioTrack.value)
-        : null),
-    [useVLC, vlcSelectedAudioTrack, selectedAudioTrack]
-  );
-
-  const ksTextTracks = useMemo(() =>
-    useVLC ? vlcSubtitleTracks : rnVideoTextTracks,
-    [useVLC, vlcSubtitleTracks, rnVideoTextTracks]
-  );
-
-  const computedSelectedTextTrack = useMemo(() =>
-    useVLC ? (vlcSelectedSubtitleTrack ?? -1) : selectedTextTrack,
-    [useVLC, vlcSelectedSubtitleTrack, selectedTextTrack]
-  );
-
-  // Clean up timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (trackUpdateTimeoutRef.current) {
-        clearTimeout(trackUpdateTimeoutRef.current);
-        trackUpdateTimeoutRef.current = null;
-      }
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-        resizeTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
-  // Reset forceVlcRemount when VLC becomes inactive
-  useEffect(() => {
-    if (!useVLC && forceVlcRemount) {
-      setForceVlcRemount(false);
-    }
-  }, [useVLC, forceVlcRemount]);
-
-  // VLC track selection handlers
-  const selectVlcAudioTrack = useCallback((trackId: number | null) => {
-    setVlcSelectedAudioTrack(trackId ?? undefined);
-    logger.log('[AndroidVideoPlayer][VLC] Audio track selected:', trackId);
-  }, []);
-
-  const selectVlcSubtitleTrack = useCallback((trackId: number | null) => {
-    setVlcSelectedSubtitleTrack(trackId ?? undefined);
-    logger.log('[AndroidVideoPlayer][VLC] Subtitle track selected:', trackId);
-  }, []);
-
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
-  // Removed progressAnim and progressBarRef - no longer needed with React Native Community Slider
-  const [isDragging, setIsDragging] = useState(false);
-  const isSeeking = useRef(false);
-  const seekDebounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const pendingSeekValue = useRef<number | null>(null);
-  const lastSeekTime = useRef<number>(0);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
-  const [is16by9Content, setIs16by9Content] = useState(false);
-
-  const calculateVideoStyles = (videoWidth: number, videoHeight: number, screenWidth: number, screenHeight: number) => {
-    return {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: screenWidth,
-      height: screenHeight,
-    };
-  };
-
-  // Memoize expensive video style calculations
-  const videoStyles = useMemo(() => {
-    if (videoAspectRatio && screenDimensions.width > 0 && screenDimensions.height > 0) {
-      return calculateVideoStyles(
-        videoAspectRatio * 1000,
-        1000,
-        screenDimensions.width,
-        screenDimensions.height
-      );
-    }
-    return {};
-  }, [videoAspectRatio, screenDimensions.width, screenDimensions.height]);
-
-  // Memoize zoom factor calculations to prevent expensive recalculations
-  const zoomFactor = useMemo(() => {
-    // Zoom disabled
-    return 1;
-  }, [resizeMode, videoAspectRatio, screenDimensions.width, screenDimensions.height]);
-  const [customVideoStyles, setCustomVideoStyles] = useState<any>({});
-  const [zoomScale, setZoomScale] = useState(1);
-  const [zoomTranslateX, setZoomTranslateX] = useState(0);
-  const [zoomTranslateY, setZoomTranslateY] = useState(0);
-  const [lastZoomScale, setLastZoomScale] = useState(1);
-  const [lastTranslateX, setLastTranslateX] = useState(0);
-  const [lastTranslateY, setLastTranslateY] = useState(0);
-  const pinchRef = useRef<PinchGestureHandler>(null);
-  const [customSubtitles, setCustomSubtitles] = useState<SubtitleCue[]>([]);
-  const [currentSubtitle, setCurrentSubtitle] = useState<string>('');
-  const [currentFormattedSegments, setCurrentFormattedSegments] = useState<SubtitleSegment[][]>([]);
-  const [customSubtitleVersion, setCustomSubtitleVersion] = useState<number>(0);
-  const [subtitleSize, setSubtitleSize] = useState<number>(DEFAULT_SUBTITLE_SIZE);
-  const [subtitleBackground, setSubtitleBackground] = useState<boolean>(false);
-  // iOS seeking helpers
-  const iosWasPausedDuringSeekRef = useRef<boolean | null>(null);
-  const wasPlayingBeforeDragRef = useRef<boolean>(false);
-  // External subtitle customization
-  const [subtitleTextColor, setSubtitleTextColor] = useState<string>('#FFFFFF');
-  const [subtitleBgOpacity, setSubtitleBgOpacity] = useState<number>(0.7);
-  const [subtitleTextShadow, setSubtitleTextShadow] = useState<boolean>(true);
-  const [subtitleOutline, setSubtitleOutline] = useState<boolean>(true);
-  const [subtitleOutlineColor, setSubtitleOutlineColor] = useState<string>('#000000');
-  const [subtitleOutlineWidth, setSubtitleOutlineWidth] = useState<number>(4);
-  const [subtitleAlign, setSubtitleAlign] = useState<'center' | 'left' | 'right'>('center');
-  const [subtitleBottomOffset, setSubtitleBottomOffset] = useState<number>(10);
-  const [subtitleLetterSpacing, setSubtitleLetterSpacing] = useState<number>(0);
-  const [subtitleLineHeightMultiplier, setSubtitleLineHeightMultiplier] = useState<number>(1.2);
-  const [subtitleOffsetSec, setSubtitleOffsetSec] = useState<number>(0);
-  const [useCustomSubtitles, setUseCustomSubtitles] = useState<boolean>(false);
-  const [isLoadingSubtitles, setIsLoadingSubtitles] = useState<boolean>(false);
-  const [availableSubtitles, setAvailableSubtitles] = useState<WyzieSubtitle[]>([]);
-  const [showSubtitleLanguageModal, setShowSubtitleLanguageModal] = useState<boolean>(false);
-  const [isLoadingSubtitleList, setIsLoadingSubtitleList] = useState<boolean>(false);
-  const [showSourcesModal, setShowSourcesModal] = useState<boolean>(false);
-  const [showEpisodesModal, setShowEpisodesModal] = useState(false);
-  const [showEpisodeStreamsModal, setShowEpisodeStreamsModal] = useState(false);
-  const [selectedEpisodeForStreams, setSelectedEpisodeForStreams] = useState<Episode | null>(null);
-  const [availableStreams, setAvailableStreams] = useState<{ [providerId: string]: { streams: any[]; addonName: string } }>(passedAvailableStreams || {});
-  const [currentStreamUrl, setCurrentStreamUrl] = useState<string>(uri);
-  const [currentVideoType, setCurrentVideoType] = useState<string | undefined>(videoType);
-
-  // Memoized processed URL for VLC to prevent infinite loops
-  const processedStreamUrl = useMemo(() => {
-    return useVLC ? processUrlForVLC(currentStreamUrl) : currentStreamUrl;
-  }, [currentStreamUrl, useVLC, processUrlForVLC]);
-  // Track a single silent retry per source to avoid loops
-  const retryAttemptRef = useRef<number>(0);
-  const [currentQuality, setCurrentQuality] = useState<string | undefined>(quality);
-  const [currentStreamProvider, setCurrentStreamProvider] = useState<string | undefined>(streamProvider);
-  const [currentStreamName, setCurrentStreamName] = useState<string | undefined>(streamName);
-  const isMounted = useRef(true);
-  const isAppBackgrounded = useRef(false); // Track if app is backgrounded to prevent prop updates on detached views
-  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [isSyncingBeforeClose, setIsSyncingBeforeClose] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorDetails, setErrorDetails] = useState<string>('');
-  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const vlcFallbackAttemptedRef = useRef(false);
-
-  // VLC key for forcing remounts
-  const [vlcKey, setVlcKey] = useState('vlc-initial'); // Force remount key
-
-  // Handler for VLC track updates
-  const handleVlcTracksUpdate = useCallback((tracks: { audio: any[], subtitle: any[] }) => {
-    if (!tracks) return;
-
-    // Clear any pending updates
-    if (trackUpdateTimeoutRef.current) {
-      clearTimeout(trackUpdateTimeoutRef.current);
-    }
-
-    // Debounce track updates to prevent excessive processing
-    trackUpdateTimeoutRef.current = setTimeout(() => {
-      const { audio = [], subtitle = [] } = tracks;
-      let hasUpdates = false;
-
-      // Process audio tracks
-      if (Array.isArray(audio) && audio.length > 0) {
-        const formattedAudio = audio.map(track => ({
-          id: track.id,
-          name: track.name || `Track ${track.id + 1}`,
-          language: track.language
-        }));
-
-        // Simple comparison - check if tracks changed
-        const audioChanged = formattedAudio.length !== vlcAudioTracks.length ||
-          formattedAudio.some((track, index) => {
-            const existing = vlcAudioTracks[index];
-            return !existing || track.id !== existing.id || track.name !== existing.name;
-          });
-
-        if (audioChanged) {
-          setVlcAudioTracks(formattedAudio);
-          hasUpdates = true;
-          if (DEBUG_MODE) {
-            logger.log(`[VLC] Audio tracks updated:`, formattedAudio.length);
-          }
-        }
-      }
-
-      // Process subtitle tracks
-      if (Array.isArray(subtitle) && subtitle.length > 0) {
-        const formattedSubs = subtitle.map(track => ({
-          id: track.id,
-          name: track.name || `Track ${track.id + 1}`,
-          language: track.language
-        }));
-
-        const subsChanged = formattedSubs.length !== vlcSubtitleTracks.length ||
-          formattedSubs.some((track, index) => {
-            const existing = vlcSubtitleTracks[index];
-            return !existing || track.id !== existing.id || track.name !== existing.name;
-          });
-
-        if (subsChanged) {
-          setVlcSubtitleTracks(formattedSubs);
-          hasUpdates = true;
-          if (DEBUG_MODE) {
-            logger.log(`[VLC] Subtitle tracks updated:`, formattedSubs.length);
-          }
-        }
-      }
-
-      if (hasUpdates && DEBUG_MODE) {
-        logger.log(`[AndroidVideoPlayer][VLC] Track processing complete. Audio: ${vlcAudioTracks.length}, Subs: ${vlcSubtitleTracks.length}`);
-      }
-
-      trackUpdateTimeoutRef.current = null;
-    }, 100); // 100ms debounce
-  }, [vlcAudioTracks, vlcSubtitleTracks]);
-
-
-  // Volume and brightness controls
-  const [volume, setVolume] = useState(1.0);
-  const [brightness, setBrightness] = useState(1.0);
-  // Store Android system brightness state to restore on exit/unmount
-  const originalSystemBrightnessRef = useRef<number | null>(null);
-  const originalSystemBrightnessModeRef = useRef<number | null>(null);
-  const [subtitleSettingsLoaded, setSubtitleSettingsLoaded] = useState(false);
-  const lastVolumeChange = useRef<number>(0);
-  const lastBrightnessChange = useRef<number>(0);
-
-  // Use reusable gesture controls hook
   const gestureControls = usePlayerGestureControls({
     volume,
     setVolume,
@@ -647,725 +459,41 @@ const AndroidVideoPlayer: React.FC = () => {
     debugMode: DEBUG_MODE,
   });
 
-  // iOS startup timing diagnostics
-  const loadStartAtRef = useRef<number | null>(null);
-  const firstFrameAtRef = useRef<number | null>(null);
+  const nextEpisodeHook = useNextEpisode(type, season, episode, groupedEpisodes, (metadataResult as any)?.groupedEpisodes, episodeId);
 
-  // iOS playback state tracking for system interruptions
-  const wasPlayingBeforeIOSInterruptionRef = useRef<boolean>(false);
-
-  // Pause overlay state
-  const [showPauseOverlay, setShowPauseOverlay] = useState(false);
-  const pauseOverlayTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pauseOverlayOpacity = useRef(new Animated.Value(0)).current;
-  const pauseOverlayTranslateY = useRef(new Animated.Value(12)).current;
-  const metadataOpacity = useRef(new Animated.Value(1)).current;
-  const metadataScale = useRef(new Animated.Value(1)).current;
-
-  // Next episode loading state
-  const [isLoadingNextEpisode, setIsLoadingNextEpisode] = useState(false);
-  const [nextLoadingProvider, setNextLoadingProvider] = useState<string | null>(null);
-  const [nextLoadingQuality, setNextLoadingQuality] = useState<string | null>(null);
-  const [nextLoadingTitle, setNextLoadingTitle] = useState<string | null>(null);
-
-  // Cast display state
-  const [selectedCastMember, setSelectedCastMember] = useState<any>(null);
-  const [showCastDetails, setShowCastDetails] = useState(false);
-  const castDetailsOpacity = useRef(new Animated.Value(0)).current;
-  const castDetailsScale = useRef(new Animated.Value(0.95)).current;
-
-  // Get metadata to access logo (only if we have a valid id)
-  const shouldLoadMetadata = Boolean(id && type);
-  const metadataResult = useMetadata({ id: id || 'placeholder', type: (type as any) });
-  const { settings: appSettings } = useSettings();
-  const { metadata, loading: metadataLoading, groupedEpisodes: metadataGroupedEpisodes, cast, loadCast } = shouldLoadMetadata ? (metadataResult as any) : { metadata: null, loading: false, groupedEpisodes: {}, cast: [], loadCast: () => { } };
-
-  // Logo animation values
-  const logoScaleAnim = useRef(new Animated.Value(0.8)).current;
-  const logoOpacityAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Check if we have a logo to show
-  const hasLogo = metadata && metadata.logo && !metadataLoading;
-
-  // Prefetch backdrop and title logo for faster loading screen appearance
-  useEffect(() => {
-    // Defer prefetching until after navigation animation completes
-    const task = InteractionManager.runAfterInteractions(() => {
-      if (backdrop && typeof backdrop === 'string') {
-        // Reset loading state
-        setIsBackdropLoaded(false);
-        backdropImageOpacityAnim.setValue(0);
-
-        // Prefetch the image
-        try {
-          FastImage.preload([{ uri: backdrop }]);
-          // Image prefetch initiated, fade it in smoothly
-          setIsBackdropLoaded(true);
-          Animated.timing(backdropImageOpacityAnim, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }).start();
-        } catch (error) {
-          // If prefetch fails, still show the image but without animation
-          if (__DEV__) logger.warn('[AndroidVideoPlayer] Backdrop prefetch failed, showing anyway:', error);
-          setIsBackdropLoaded(true);
-          backdropImageOpacityAnim.setValue(1);
-        }
-      } else {
-        // No backdrop provided, consider it "loaded"
-        setIsBackdropLoaded(true);
-        backdropImageOpacityAnim.setValue(0);
-      }
-    });
-    return () => task.cancel();
-  }, [backdrop]);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Defer logo prefetch until after navigation animation
-    const task = InteractionManager.runAfterInteractions(() => {
-      const logoUrl = (metadata && (metadata as any).logo) as string | undefined;
-      if (logoUrl && typeof logoUrl === 'string') {
-        try {
-          FastImage.preload([{ uri: logoUrl }]);
-        } catch (error) {
-          // Silently ignore logo prefetch errors
-        }
-      }
-    });
-    return () => task.cancel();
-  }, [metadata]);
-
-  // Resolve current episode description for series
-  const currentEpisodeDescription = useMemo(() => {
-    try {
-      if ((type as any) !== 'series') return '';
-      const allEpisodes = Object.values(groupedEpisodes || {}).flat() as any[];
-      if (!allEpisodes || allEpisodes.length === 0) return '';
-      let match: any | null = null;
-      if (episodeId) {
-        match = allEpisodes.find(ep => ep?.stremioId === episodeId || String(ep?.id) === String(episodeId));
-      }
-      if (!match && season && episode) {
-        match = allEpisodes.find(ep => ep?.season_number === season && ep?.episode_number === episode);
-      }
-      return (match?.overview || '').trim();
-    } catch {
-      return '';
-    }
-  }, [type, groupedEpisodes, episodeId, season, episode]);
-
-  // Find next episode for series (use groupedEpisodes or fallback to metadataGroupedEpisodes)
-  const nextEpisode = useMemo(() => {
-    try {
-      if ((type as any) !== 'series' || !season || !episode) return null;
-      // Prefer groupedEpisodes from route, else metadataGroupedEpisodes
-      const sourceGroups = groupedEpisodes && Object.keys(groupedEpisodes || {}).length > 0
-        ? groupedEpisodes
-        : (metadataGroupedEpisodes || {});
-      const allEpisodes = Object.values(sourceGroups || {}).flat() as any[];
-      if (!allEpisodes || allEpisodes.length === 0) return null;
-      // First try next episode in same season
-      let nextEp = allEpisodes.find((ep: any) =>
-        ep.season_number === season && ep.episode_number === episode + 1
-      );
-      // If not found, try first episode of next season
-      if (!nextEp) {
-        nextEp = allEpisodes.find((ep: any) =>
-          ep.season_number === season + 1 && ep.episode_number === 1
-        );
-      }
-      if (DEBUG_MODE) {
-        logger.log('[AndroidVideoPlayer] nextEpisode computation', {
-          fromRouteGroups: !!(groupedEpisodes && Object.keys(groupedEpisodes || {}).length),
-          fromMetadataGroups: !!(metadataGroupedEpisodes && Object.keys(metadataGroupedEpisodes || {}).length),
-          allEpisodesCount: allEpisodes?.length || 0,
-          currentSeason: season,
-          currentEpisode: episode,
-          found: !!nextEp,
-          foundId: nextEp?.stremioId || nextEp?.id,
-          foundName: nextEp?.name,
-        });
-      }
-      return nextEp;
-    } catch {
-      return null;
-    }
-  }, [type, season, episode, groupedEpisodes, metadataGroupedEpisodes]);
-
-  // Small offset (in seconds) used to avoid seeking to the *exact* end of the
-  // file which triggers the `onEnd` callback and causes playback to restart.
-  const END_EPSILON = 0.3;
-
-  const hideControls = () => {
-    // Do not hide while user is interacting with the slider
-    if (isDragging) {
-      return;
-    }
     Animated.timing(fadeAnim, {
-      toValue: 0,
+      toValue: playerState.showControls ? 1 : 0,
       duration: 300,
-      useNativeDriver: true,
-    }).start(() => setShowControls(false));
-  };
+      useNativeDriver: true
+    }).start();
+  }, [playerState.showControls]);
 
-
-  const onPinchGestureEvent = (event: PinchGestureHandlerGestureEvent) => {
-    // Zoom disabled
-    return;
-  };
-
-  const onPinchHandlerStateChange = (event: PinchGestureHandlerGestureEvent) => {
-    // Zoom disabled
-    return;
-  };
-
-  // Long press gesture handlers for speed boost
-  const onLongPressActivated = useCallback(() => {
-    if (!holdToSpeedEnabled) return;
-
-    if (!isSpeedBoosted && playbackSpeed !== holdToSpeedValue) {
-      setOriginalSpeed(playbackSpeed);
-      setPlaybackSpeed(holdToSpeedValue);
-      setIsSpeedBoosted(true);
-
-      // Show "Activated" overlay
-      setShowSpeedActivatedOverlay(true);
-      Animated.spring(speedActivatedOverlayOpacity, {
-        toValue: 1,
-        tension: 100,
-        friction: 8,
-        useNativeDriver: true,
-      }).start();
-
-      // Auto-hide after 2 seconds
-      setTimeout(() => {
-        Animated.timing(speedActivatedOverlayOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowSpeedActivatedOverlay(false);
-        });
-      }, 2000);
-
-      logger.log(`[AndroidVideoPlayer] Speed boost activated: ${holdToSpeedValue}x`);
-    }
-  }, [isSpeedBoosted, playbackSpeed, holdToSpeedEnabled, holdToSpeedValue, speedActivatedOverlayOpacity]);
-
-  const restoreSpeedSafely = useCallback(() => {
-    if (isSpeedBoosted) {
-      setPlaybackSpeed(originalSpeed);
-      setIsSpeedBoosted(false);
-      logger.log('[AndroidVideoPlayer] Speed boost deactivated, restored to:', originalSpeed);
-    }
-  }, [isSpeedBoosted, originalSpeed]);
-
-  const onLongPressEnd = useCallback(() => {
-    restoreSpeedSafely();
-  }, [restoreSpeedSafely]);
-
-  const onLongPressStateChange = useCallback((event: LongPressGestureHandlerGestureEvent) => {
-    // Fallback: ensure we restore on cancel/fail transitions as well
-    // @ts-ignore - event.nativeEvent.state uses numeric State enum
-    const state = event?.nativeEvent?.state;
-    if (state === State.CANCELLED || state === State.FAILED || state === State.END) {
-      restoreSpeedSafely();
-    }
-  }, [restoreSpeedSafely]);
-
-  // Safety: if component unmounts while boosted, restore speed
+  // Auto-hide controls after 3 seconds of inactivity
   useEffect(() => {
-    return () => {
-      if (isSpeedBoosted) {
-        // best-effort restoration on unmount
-        try { setPlaybackSpeed(originalSpeed); } catch { }
-      }
-    };
-  }, [isSpeedBoosted, originalSpeed]);
-
-  const resetZoom = () => {
-    const targetZoom = is16by9Content ? 1.1 : 1;
-    setZoomScale(targetZoom);
-    setLastZoomScale(targetZoom);
-    if (DEBUG_MODE) {
-      if (__DEV__) logger.log(`[AndroidVideoPlayer] Zoom reset to ${targetZoom}x (16:9: ${is16by9Content})`);
-    }
-  };
-
-  // Apply memoized calculations to state
-  useEffect(() => {
-    setCustomVideoStyles(videoStyles);
-    setZoomScale(zoomFactor);
-
-    if (DEBUG_MODE && resizeMode === 'cover') {
-      logger.log(`[AndroidVideoPlayer] Cover zoom updated: ${zoomFactor.toFixed(2)}x (video AR: ${videoAspectRatio?.toFixed(2)})`);
-    }
-  }, [videoStyles, zoomFactor, resizeMode, videoAspectRatio]);
-
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ screen }) => {
-      setScreenDimensions(screen);
-      // Re-apply immersive mode on layout changes to keep system bars hidden
-      enableImmersiveMode();
-    });
-
-    // Immediate player setup - UI critical
-    StatusBar.setHidden(true, 'none');
-    enableImmersiveMode();
-    startOpeningAnimation();
-
-    // Initialize volume immediately (no async)
-    setVolume(1.0);
-    if (DEBUG_MODE) {
-      logger.log(`[AndroidVideoPlayer] Initial volume: 1.0 (native)`);
-    }
-
-    // Defer brightness initialization until after navigation animation completes
-    // This prevents sluggish player entry
-    const brightnessTask = InteractionManager.runAfterInteractions(async () => {
-      try {
-        // Capture Android system brightness and mode to restore later
-        if (Platform.OS === 'android') {
-          try {
-            const [sysBright, sysMode] = await Promise.all([
-              (Brightness as any).getSystemBrightnessAsync?.(),
-              (Brightness as any).getSystemBrightnessModeAsync?.()
-            ]);
-            originalSystemBrightnessRef.current = typeof sysBright === 'number' ? sysBright : null;
-            originalSystemBrightnessModeRef.current = typeof sysMode === 'number' ? sysMode : null;
-            if (DEBUG_MODE) {
-              logger.log(`[AndroidVideoPlayer] Captured system brightness=${originalSystemBrightnessRef.current}, mode=${originalSystemBrightnessModeRef.current}`);
-            }
-          } catch (e) {
-            if (__DEV__) logger.warn('[AndroidVideoPlayer] Failed to capture system brightness state:', e);
-          }
-        }
-        const currentBrightness = await Brightness.getBrightnessAsync();
-        setBrightness(currentBrightness);
-        if (DEBUG_MODE) {
-          logger.log(`[AndroidVideoPlayer] Initial brightness: ${currentBrightness}`);
-        }
-      } catch (error) {
-        logger.warn('[AndroidVideoPlayer] Error getting initial brightness:', error);
-        // Fallback to 1.0 if brightness API fails
-        setBrightness(1.0);
-      }
-    });
-
-    return () => {
-      subscription?.remove();
-      brightnessTask.cancel();
-      disableImmersiveMode();
-    };
-  }, []);
-
-  // Re-apply immersive mode when screen gains focus
-  useFocusEffect(
-    useCallback(() => {
-      enableImmersiveMode();
-      // Workaround for VLC surface detach: force complete remount VLC view on focus
-      if (useVLC) {
-        logger.log('[VLC] Forcing complete remount due to focus gain');
-        setVlcRestoreTime(currentTime); // Save current time for restoration
-        setForceVlcRemount(true);
-        vlcLoadedRef.current = false; // Reset loaded state
-        // Re-enable after a brief moment
-        setTimeout(() => {
-          setForceVlcRemount(false);
-          setVlcKey(`vlc-focus-${Date.now()}`);
-        }, 100);
-      }
-      return () => { };
-    }, [useVLC])
-  );
-
-  // Re-apply immersive mode when app returns to foreground
-  useEffect(() => {
-    const onAppStateChange = (state: string) => {
-      if (state === 'active') {
-        isAppBackgrounded.current = false;
-        enableImmersiveMode();
-        if (useVLC) {
-          // Force complete remount VLC view when app returns to foreground
-          logger.log('[VLC] Forcing complete remount due to app foreground');
-          setVlcRestoreTime(currentTime); // Save current time for restoration
-          setForceVlcRemount(true);
-          vlcLoadedRef.current = false; // Reset loaded state
-          // Re-enable after a brief moment
-          setTimeout(() => {
-            setForceVlcRemount(false);
-            setVlcKey(`vlc-foreground-${Date.now()}`);
-          }, 100);
-        }
-        // On iOS, if we were playing before system interruption and the app becomes active again,
-        // ensure playback resumes (handles status bar pull-down case)
-        if (Platform.OS === 'ios' && wasPlayingBeforeIOSInterruptionRef.current && isPlayerReady) {
-          logger.log('[AndroidVideoPlayer] iOS app active - resuming playback after system interruption');
-          // Small delay to allow system UI to settle
-          setTimeout(() => {
-            if (isMounted.current && wasPlayingBeforeIOSInterruptionRef.current) {
-              setPaused(false); // Resume playback
-              wasPlayingBeforeIOSInterruptionRef.current = false; // Reset flag
-            }
-          }, 300); // Slightly longer delay for iOS
-        }
-      } else if (state === 'background' || state === 'inactive') {
-        // Mark app as backgrounded to prevent prop updates on detached native views
-        isAppBackgrounded.current = true;
-        // On iOS, when app goes inactive (like status bar pull), track if we were playing
-        if (Platform.OS === 'ios') {
-          wasPlayingBeforeIOSInterruptionRef.current = !paused;
-          if (!paused) {
-            logger.log('[AndroidVideoPlayer] iOS app inactive - tracking playing state for resume');
-            setPaused(true);
-          }
-        }
-      }
-    };
-    const sub = AppState.addEventListener('change', onAppStateChange);
-    return () => {
-      sub.remove();
-    };
-  }, [paused, isPlayerReady]);
-
-  const startOpeningAnimation = () => {
-    // Logo entrance animation - optimized for faster appearance
-    Animated.parallel([
-      Animated.timing(logoOpacityAnim, {
-        toValue: 1,
-        duration: 300, // Reduced from 600ms to 300ms
-        useNativeDriver: true,
-      }),
-      Animated.spring(logoScaleAnim, {
-        toValue: 1,
-        tension: 80, // Increased tension for faster spring
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Continuous pulse animation for the logo
-    const createPulseAnimation = () => {
-      return Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 800, // Reduced from 1000ms to 800ms
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800, // Reduced from 1000ms to 800ms
-          useNativeDriver: true,
-        }),
-      ]);
-    };
-
-    const loopPulse = () => {
-      createPulseAnimation().start(() => {
-        if (!isOpeningAnimationComplete) {
-          loopPulse();
-        }
-      });
-    };
-
-    // Start pulsing immediately without delay
-    // Removed the 800ms delay
-    loopPulse();
-  };
-
-  const completeOpeningAnimation = () => {
-    // Stop the pulse animation immediately
-    pulseAnim.stopAnimation();
-
-    Animated.parallel([
-      Animated.timing(openingFadeAnim, {
-        toValue: 1,
-        duration: 300, // Reduced from 600ms to 300ms
-        useNativeDriver: true,
-      }),
-      Animated.timing(openingScaleAnim, {
-        toValue: 1,
-        duration: 350, // Reduced from 700ms to 350ms
-        useNativeDriver: true,
-      }),
-      Animated.timing(backgroundFadeAnim, {
-        toValue: 0,
-        duration: 400, // Reduced from 800ms to 400ms
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setIsOpeningAnimationComplete(true);
-
-      // Delay hiding the overlay to allow background fade animation to complete
-      setTimeout(() => {
-        setShouldHideOpeningOverlay(true);
-      }, 450); // Slightly longer than the background fade duration
-    });
-
-    // Fallback: ensure animation completes even if something goes wrong
-    setTimeout(() => {
-      if (!isOpeningAnimationComplete) {
-        if (__DEV__) logger.warn('[AndroidVideoPlayer] Opening animation fallback triggered');
-        setIsOpeningAnimationComplete(true);
-      }
-    }, 1000); // 1 second fallback
-  };
-
-  useEffect(() => {
-    const loadWatchProgress = async () => {
-      if (id && type) {
-        try {
-          if (__DEV__) logger.log(`[AndroidVideoPlayer] Loading watch progress for ${type}:${id}${episodeId ? `:${episodeId}` : ''}`);
-          const savedProgress = await storageService.getWatchProgress(id, type, episodeId);
-          if (__DEV__) logger.log(`[AndroidVideoPlayer] Saved progress:`, savedProgress);
-
-          if (savedProgress) {
-            const progressPercent = (savedProgress.currentTime / savedProgress.duration) * 100;
-            if (__DEV__) logger.log(`[AndroidVideoPlayer] Progress: ${progressPercent.toFixed(1)}% (${savedProgress.currentTime}/${savedProgress.duration})`);
-
-            if (progressPercent < 85) {
-              setResumePosition(savedProgress.currentTime);
-              setSavedDuration(savedProgress.duration);
-              if (__DEV__) logger.log(`[AndroidVideoPlayer] Set resume position to: ${savedProgress.currentTime} of ${savedProgress.duration}`);
-              if (appSettings.alwaysResume) {
-                // Only prepare auto-resume state and seek when AlwaysResume is enabled
-                setInitialPosition(savedProgress.currentTime);
-                initialSeekTargetRef.current = savedProgress.currentTime;
-                if (__DEV__) logger.log(`[AndroidVideoPlayer] AlwaysResume enabled. Auto-seeking to ${savedProgress.currentTime}`);
-                seekToTime(savedProgress.currentTime);
-              } else {
-                // Do not set initialPosition; start from beginning with no auto-seek
-                setShowResumeOverlay(true);
-                if (__DEV__) logger.log(`[AndroidVideoPlayer] AlwaysResume disabled. Not auto-seeking; overlay shown (if enabled)`);
-              }
-            } else {
-              if (__DEV__) logger.log(`[AndroidVideoPlayer] Progress too high (${progressPercent.toFixed(1)}%), not showing resume overlay`);
-            }
-          } else {
-            if (__DEV__) logger.log(`[AndroidVideoPlayer] No saved progress found`);
-          }
-        } catch (error) {
-          logger.error('[AndroidVideoPlayer] Error loading watch progress:', error);
-        }
-      } else {
-        if (__DEV__) logger.log(`[AndroidVideoPlayer] Missing id or type: id=${id}, type=${type}`);
-      }
-    };
-    loadWatchProgress();
-  }, [id, type, episodeId, appSettings.alwaysResume]);
-
-  const saveWatchProgress = async () => {
-    if (id && type && currentTime > 0 && duration > 0) {
-      const progress = {
-        currentTime,
-        duration,
-        lastUpdated: Date.now()
-      };
-      try {
-        await storageService.setWatchProgress(id, type, progress, episodeId);
-
-        // Sync to Trakt if authenticated
-        await traktAutosync.handleProgressUpdate(currentTime, duration);
-      } catch (error) {
-        logger.error('[AndroidVideoPlayer] Error saving watch progress:', error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (id && type && !paused && duration > 0) {
-      if (progressSaveInterval) {
-        clearInterval(progressSaveInterval);
-      }
-
-      // Sync interval for progress updates - increased from 5s to 10s to reduce overhead
-      const syncInterval = 10000; // 10 seconds for better performance
-
-      const interval = setInterval(() => {
-        saveWatchProgress();
-      }, syncInterval);
-
-      setProgressSaveInterval(interval);
-      return () => {
-        clearInterval(interval);
-        setProgressSaveInterval(null);
-      };
-    }
-  }, [id, type, paused, currentTime, duration]);
-
-  // Use refs to track latest values for unmount cleanup without causing effect re-runs
-  const currentTimeRef = useRef(currentTime);
-  const durationRef = useRef(duration);
-
-  // Keep refs updated with latest values
-  useEffect(() => {
-    currentTimeRef.current = currentTime;
-  }, [currentTime]);
-
-  useEffect(() => {
-    durationRef.current = duration;
-  }, [duration]);
-
-  // Cleanup effect - only runs on actual component unmount
-  useEffect(() => {
-    return () => {
-      if (id && type && durationRef.current > 0) {
-        saveWatchProgress();
-        // Final Trakt sync on component unmount
-        traktAutosync.handlePlaybackEnd(currentTimeRef.current, durationRef.current, 'unmount');
-      }
-    };
-  }, [id, type]); // Only id and type - NOT currentTime or duration
-
-  const seekToTime = (rawSeconds: number) => {
-    // Clamp to just before the end of the media.
-    const timeInSeconds = Math.max(0, Math.min(rawSeconds, duration > 0 ? duration - END_EPSILON : rawSeconds));
-
-    if (useVLC) {
-      // Use VLC imperative method
-      if (vlcPlayerRef.current && duration > 0) {
-        if (DEBUG_MODE) {
-          if (__DEV__) logger.log(`[AndroidVideoPlayer][VLC] Seeking to ${timeInSeconds.toFixed(2)}s out of ${duration.toFixed(2)}s`);
-        }
-        vlcPlayerRef.current.seek(timeInSeconds);
-      } else {
-        if (DEBUG_MODE) {
-          logger.error(`[AndroidVideoPlayer][VLC] Seek failed: vlcRef=${!!vlcPlayerRef.current}, duration=${duration}`);
-        }
-      }
-    } else {
-      // Use react-native-video method
-      if (videoRef.current && duration > 0 && !isSeeking.current) {
-        if (DEBUG_MODE) {
-          if (__DEV__) logger.log(`[AndroidVideoPlayer] Seeking to ${timeInSeconds.toFixed(2)}s out of ${duration.toFixed(2)}s`);
-        }
-
-        isSeeking.current = true;
-        setSeekTime(timeInSeconds);
-        if (Platform.OS === 'ios') {
-          iosWasPausedDuringSeekRef.current = paused;
-          if (!paused) setPaused(true);
-        }
-
-        // Clear seek state handled in onSeek; keep a fallback timeout
-        setTimeout(() => {
-          if (isMounted.current && isSeeking.current) {
-            setSeekTime(null);
-            isSeeking.current = false;
-            if (DEBUG_MODE) logger.log('[AndroidVideoPlayer] Seek fallback timeout cleared seeking state');
-            if (Platform.OS === 'ios' && iosWasPausedDuringSeekRef.current === false) {
-              setPaused(false);
-              iosWasPausedDuringSeekRef.current = null;
-            }
-          }
-        }, 1200);
-      } else {
-        if (DEBUG_MODE) {
-          logger.error(`[AndroidVideoPlayer] Seek failed: videoRef=${!!videoRef.current}, duration=${duration}, seeking=${isSeeking.current}`);
-        }
-      }
-    }
-  };
-
-  // Handle seeking when seekTime changes
-  useEffect(() => {
-    if (seekTime !== null && videoRef.current && duration > 0) {
-      // Use tolerance on iOS for more reliable seeks
-      if (Platform.OS === 'ios') {
-        try {
-          (videoRef.current as any).seek(seekTime, 1);
-        } catch {
-          videoRef.current.seek(seekTime);
-        }
-      } else {
-        videoRef.current.seek(seekTime);
-      }
-    }
-  }, [seekTime, duration]);
-
-  const onSeek = (data: any) => {
-    if (DEBUG_MODE) logger.log('[AndroidVideoPlayer] onSeek', data);
-    if (isMounted.current) {
-      setSeekTime(null);
-      isSeeking.current = false;
-
-      // IMMEDIATE SYNC: Update Trakt progress immediately after seeking
-      if (duration > 0 && data?.currentTime !== undefined) {
-        traktAutosync.handleProgressUpdate(data.currentTime, duration, true); // force=true for immediate sync
-      }
-
-      // Resume playback on iOS if we paused for seeking
-      if (Platform.OS === 'ios') {
-        const shouldResume = wasPlayingBeforeDragRef.current || iosWasPausedDuringSeekRef.current === false || isDragging;
-        // Aggressively resume on iOS after seek if user was playing or this was a drag
-        if (shouldResume) {
-          logger.log('[AndroidVideoPlayer] onSeek: resuming after seek (iOS)');
-          setPaused(false);
-        } else {
-          logger.log('[AndroidVideoPlayer] onSeek: staying paused (iOS)');
-        }
-        // Reset flags
-        wasPlayingBeforeDragRef.current = false;
-        iosWasPausedDuringSeekRef.current = null;
-      }
-    }
-  };
-
-  // Slider callback functions for React Native Community Slider
-  const handleSliderValueChange = useCallback((value: number) => {
-    if (isDragging && duration > 0) {
-      const seekTime = Math.min(value, duration - END_EPSILON);
-
-      pendingSeekValue.current = seekTime;
-    }
-  }, [isDragging, duration]);
-
-  const handleSlidingStart = useCallback(() => {
-    setIsDragging(true);
-    // Keep controls visible while dragging and cancel any hide timeout
-    if (!showControls) setShowControls(true);
+    // Clear any existing timeout
     if (controlsTimeout.current) {
       clearTimeout(controlsTimeout.current);
       controlsTimeout.current = null;
     }
-    // On iOS, pause during drag for more reliable seeks
-    if (Platform.OS === 'ios') {
-      wasPlayingBeforeDragRef.current = !paused;
-      if (!paused) setPaused(true);
-      logger.log('[AndroidVideoPlayer] handleSlidingStart: pausing for iOS drag');
-    }
-  }, [showControls, paused]);
 
-  const handleSlidingComplete = useCallback((value: number) => {
-    setIsDragging(false);
-    if (duration > 0) {
-      const seekTime = Math.min(value, duration - END_EPSILON);
-      seekToTime(seekTime);
-      pendingSeekValue.current = null;
-      // iOS safety: if the user was playing before drag, ensure resume shortly after seek
-      if (Platform.OS === 'ios' && wasPlayingBeforeDragRef.current) {
-        setTimeout(() => {
-          logger.log('[AndroidVideoPlayer] handleSlidingComplete: forcing resume after seek (iOS)');
-          setPaused(false);
-        }, 60);
-      }
+    // Only set timeout if controls are visible and video is playing
+    if (playerState.showControls && !playerState.paused) {
+      controlsTimeout.current = setTimeout(() => {
+        // Don't hide if user is dragging the seek bar
+        if (!playerState.isDragging.current) {
+          playerState.setShowControls(false);
+        }
+      }, 2000); // 2 seconds delay
     }
-    // Restart auto-hide timer after interaction finishes
-    if (controlsTimeout.current) {
-      clearTimeout(controlsTimeout.current);
-    }
-    // Ensure controls are visible, then schedule auto-hide
-    if (!showControls) setShowControls(true);
-    controlsTimeout.current = setTimeout(hideControls, 5000);
-  }, [duration, showControls]);
 
-  // Ensure auto-hide resumes after drag ends
-  useEffect(() => {
-    if (!isDragging && showControls) {
+    // Cleanup on unmount or when dependencies change
+    return () => {
       if (controlsTimeout.current) {
         clearTimeout(controlsTimeout.current);
+<<<<<<< HEAD
       }
       controlsTimeout.current = setTimeout(hideControls, 5000);
     }
@@ -1924,619 +1052,380 @@ const AndroidVideoPlayer: React.FC = () => {
         }
       } catch (e) {
         logger.warn('[AndroidVideoPlayer] Failed to restore system brightness state:', e);
+=======
+        controlsTimeout.current = null;
+>>>>>>> origin/main
       }
     };
+  }, [playerState.showControls, playerState.paused, playerState.isDragging]);
 
-    // Don't await brightness restoration - do it in background
-    restoreSystemBrightness();
+  useEffect(() => {
+    openingAnimation.startOpeningAnimation();
+  }, []);
 
-    // Disable immersive mode immediately (synchronous)
-    disableImmersiveMode();
+  // Load subtitle settings on mount
+  useEffect(() => {
+    const loadSubtitleSettings = async () => {
+      const settings = await storageService.getSubtitleSettings();
+      if (settings) {
+        if (settings.subtitleSize !== undefined) setSubtitleSize(settings.subtitleSize);
+        if (settings.subtitleBackground !== undefined) setSubtitleBackground(settings.subtitleBackground);
+        if (settings.subtitleTextColor !== undefined) setSubtitleTextColor(settings.subtitleTextColor);
+        if (settings.subtitleBgOpacity !== undefined) setSubtitleBgOpacity(settings.subtitleBgOpacity);
+        if (settings.subtitleTextShadow !== undefined) setSubtitleTextShadow(settings.subtitleTextShadow);
+        if (settings.subtitleOutline !== undefined) setSubtitleOutline(settings.subtitleOutline);
+        if (settings.subtitleOutlineColor !== undefined) setSubtitleOutlineColor(settings.subtitleOutlineColor);
+        if (settings.subtitleOutlineWidth !== undefined) setSubtitleOutlineWidth(settings.subtitleOutlineWidth);
+        if (settings.subtitleAlign !== undefined) setSubtitleAlign(settings.subtitleAlign);
+        if (settings.subtitleBottomOffset !== undefined) setSubtitleBottomOffset(settings.subtitleBottomOffset);
+        if (settings.subtitleLetterSpacing !== undefined) setSubtitleLetterSpacing(settings.subtitleLetterSpacing);
+        if (settings.subtitleLineHeightMultiplier !== undefined) setSubtitleLineHeightMultiplier(settings.subtitleLineHeightMultiplier);
+      }
+    };
+    loadSubtitleSettings();
+  }, []);
 
-    // Navigate IMMEDIATELY - don't wait for orientation changes
-    if ((navigation as any).canGoBack && (navigation as any).canGoBack()) {
-      (navigation as any).goBack();
-    } else {
-      // Fallback to Streams if stack isn't present
-      (navigation as any).navigate('Streams', { id, type, episodeId, fromPlayer: true });
-    }
-
-    // Fire orientation changes in background - don't await
-    ScreenOrientation.unlockAsync()
-      .then(() => {
-        // On tablets keep rotation unlocked; on phones, return to portrait
-        const { width: dw, height: dh } = Dimensions.get('window');
-        const isTablet = Math.min(dw, dh) >= 768 || ((Platform as any).isPad === true);
-        if (!isTablet) {
-          setTimeout(() => {
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => { });
-          }, 50);
-        } else {
-          ScreenOrientation.unlockAsync().catch(() => { });
-        }
-      })
-      .catch(() => {
-        // Fallback: still try to restore portrait on phones
-        const { width: dw, height: dh } = Dimensions.get('window');
-        const isTablet = Math.min(dw, dh) >= 768 || ((Platform as any).isPad === true);
-        if (!isTablet) {
-          setTimeout(() => {
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => { });
-          }, 50);
-        } else {
-          ScreenOrientation.unlockAsync().catch(() => { });
-        }
+  // Save subtitle settings when they change
+  useEffect(() => {
+    const saveSettings = async () => {
+      await storageService.saveSubtitleSettings({
+        subtitleSize,
+        subtitleBackground,
+        subtitleTextColor,
+        subtitleBgOpacity,
+        subtitleTextShadow,
+        subtitleOutline,
+        subtitleOutlineColor,
+        subtitleOutlineWidth,
+        subtitleAlign,
+        subtitleBottomOffset,
+        subtitleLetterSpacing,
+        subtitleLineHeightMultiplier,
       });
-
-    // Send Trakt sync in background (don't await)
-    const backgroundSync = async () => {
-      try {
-        logger.log('[AndroidVideoPlayer] Starting background Trakt sync');
-        // IMMEDIATE: Force immediate progress update (uses scrobble/stop which handles pause/scrobble)
-        await traktAutosync.handleProgressUpdate(actualCurrentTime, duration, true);
-
-        // IMMEDIATE: Use user_close reason to trigger immediate scrobble stop
-        await traktAutosync.handlePlaybackEnd(actualCurrentTime, duration, 'user_close');
-
-        logger.log('[AndroidVideoPlayer] Background Trakt sync completed successfully');
-      } catch (error) {
-        logger.error('[AndroidVideoPlayer] Error in background Trakt sync:', error);
-      }
     };
+    saveSettings();
+  }, [
+    subtitleSize, subtitleBackground, subtitleTextColor, subtitleBgOpacity,
+    subtitleTextShadow, subtitleOutline, subtitleOutlineColor, subtitleOutlineWidth,
+    subtitleAlign, subtitleBottomOffset, subtitleLetterSpacing, subtitleLineHeightMultiplier
+  ]);
 
-    // Start background sync without blocking UI
-    backgroundSync();
-  }, [isSyncingBeforeClose, currentTime, duration, traktAutosync, navigation, metadata, imdbId, backdrop]);
+  const handleLoad = useCallback((data: any) => {
+    if (!playerState.isMounted.current) return;
 
-  const handleResume = async () => {
-    if (resumePosition) {
-      seekToTime(resumePosition);
-    }
-    setShowResumeOverlay(false);
-  };
-
-  const handleStartFromBeginning = async () => {
-    seekToTime(0);
-    setShowResumeOverlay(false);
-  };
-
-  const toggleControls = () => {
-    if (controlsTimeout.current) {
-      clearTimeout(controlsTimeout.current);
-      controlsTimeout.current = null;
-    }
-
-    setShowControls(prevShowControls => {
-      const newShowControls = !prevShowControls;
-      Animated.timing(fadeAnim, {
-        toValue: newShowControls ? 1 : 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-      if (newShowControls) {
-        controlsTimeout.current = setTimeout(hideControls, 5000);
-      }
-      // Reinforce immersive mode after any UI toggle
-      enableImmersiveMode();
-      return newShowControls;
+    const videoDuration = data.duration;
+    console.log('[AndroidVideoPlayer] handleLoad called:', {
+      duration: videoDuration,
+      initialPosition: watchProgress.initialPosition,
+      showResumeOverlay: watchProgress.showResumeOverlay,
+      initialSeekTarget: watchProgress.initialSeekTargetRef?.current
     });
-  };
 
-  const handleError = (error: any) => {
-    try {
-      logger.error('AndroidVideoPlayer error: ', error);
-
-      // Early return if component is unmounted to prevent iOS crashes
-      if (!isMounted.current) {
-        logger.warn('[AndroidVideoPlayer] Component unmounted, skipping error handling');
-        return;
-      }
-
-      // Check for codec errors that should trigger VLC fallback
-      const errorString = JSON.stringify(error || {});
-      const isCodecError = errorString.includes('MediaCodecVideoRenderer error') ||
-        errorString.includes('MediaCodecAudioRenderer error') ||
-        errorString.includes('NO_EXCEEDS_CAPABILITIES') ||
-        errorString.includes('NO_UNSUPPORTED_TYPE') ||
-        errorString.includes('Decoder failed') ||
-        errorString.includes('video/hevc') ||
-        errorString.includes('audio/eac3') ||
-        errorString.includes('ERROR_CODE_DECODING_FAILED') ||
-        errorString.includes('ERROR_CODE_DECODER_INIT_FAILED');
-
-      // If it's a codec error and we're not already using VLC, silently switch to VLC
-      if (isCodecError && !useVLC && !vlcFallbackAttemptedRef.current) {
-        vlcFallbackAttemptedRef.current = true;
-        logger.warn('[AndroidVideoPlayer] Codec error detected, silently switching to VLC');
-        // Clear any existing timeout
-        if (errorTimeoutRef.current) {
-          clearTimeout(errorTimeoutRef.current);
-          errorTimeoutRef.current = null;
-        }
-        safeSetState(() => setShowErrorModal(false));
-
-        // Switch to VLC silently
-        setTimeout(() => {
-          if (!isMounted.current) return;
-          // Force VLC by updating the route params
-          navigation.setParams({ forceVlc: true } as any);
-        }, 100);
-        return; // Do not proceed to show error UI
-      }
-
-      // One-shot, silent retry without showing error UI
-      if (retryAttemptRef.current < 1) {
-        retryAttemptRef.current = 1;
-        // Cache-bust to force a fresh fetch and warm upstream
-        const addRetryParam = (url: string) => {
-          const sep = url.includes('?') ? '&' : '?';
-          return `${url}${sep}rn_retry_ts=${Date.now()}`;
-        };
-        const bustedUrl = addRetryParam(currentStreamUrl);
-        logger.warn('[AndroidVideoPlayer] Silent retry with cache-busted URL');
-        // Ensure no modal is visible
-        if (errorTimeoutRef.current) {
-          clearTimeout(errorTimeoutRef.current);
-          errorTimeoutRef.current = null;
-        }
-        safeSetState(() => setShowErrorModal(false));
-        // Brief pause to let the player reset
-        setPaused(true);
-        setTimeout(() => {
-          if (!isMounted.current) return;
-          setCurrentStreamUrl(bustedUrl);
-          setPaused(false);
-        }, 120);
-        return; // Do not proceed to show error UI
-      }
-
-      // If format unrecognized, try different approaches for HLS streams
-      const isUnrecognized = !!(error?.error?.errorString && String(error.error.errorString).includes('UnrecognizedInputFormatException'));
-      if (isUnrecognized && retryAttemptRef.current < 1) {
-        retryAttemptRef.current = 1;
-
-        // Check if this might be an HLS stream that needs different handling
-        const mightBeHls = currentStreamUrl.includes('.m3u8') || currentStreamUrl.includes('playlist') ||
-          currentStreamUrl.includes('hls') || currentStreamUrl.includes('stream');
-
-        if (mightBeHls) {
-          logger.warn(`[AndroidVideoPlayer] HLS stream format not recognized. Retrying with explicit HLS type and headers`);
-          if (errorTimeoutRef.current) {
-            clearTimeout(errorTimeoutRef.current);
-            errorTimeoutRef.current = null;
-          }
-          safeSetState(() => setShowErrorModal(false));
-          setPaused(true);
-          setTimeout(() => {
-            if (!isMounted.current) return;
-            // Force HLS type and add cache-busting
-            setCurrentVideoType('m3u8');
-            const sep = currentStreamUrl.includes('?') ? '&' : '?';
-            const retryUrl = `${currentStreamUrl}${sep}hls_retry=${Date.now()}`;
-            setCurrentStreamUrl(retryUrl);
-            setPaused(false);
-          }, 120);
-          return;
-        } else {
-          // For non-HLS streams, try flipping between HLS and MP4
-          const nextType = currentVideoType === 'm3u8' ? 'mp4' : 'm3u8';
-          logger.warn(`[AndroidVideoPlayer] Format not recognized. Retrying with type='${nextType}'`);
-          if (errorTimeoutRef.current) {
-            clearTimeout(errorTimeoutRef.current);
-            errorTimeoutRef.current = null;
-          }
-          safeSetState(() => setShowErrorModal(false));
-          setPaused(true);
-          setTimeout(() => {
-            if (!isMounted.current) return;
-            setCurrentVideoType(nextType);
-            // Force re-mount of source by tweaking URL param
-            const sep = currentStreamUrl.includes('?') ? '&' : '?';
-            const retryUrl = `${currentStreamUrl}${sep}rn_type_retry=${Date.now()}`;
-            setCurrentStreamUrl(retryUrl);
-            setPaused(false);
-          }, 120);
-          return;
-        }
-      }
-
-      // Handle HLS manifest parsing errors (when content isn't actually M3U8)
-      const isManifestParseError = error?.error?.errorCode === '23002' ||
-        error?.errorCode === '23002' ||
-        (error?.error?.errorString &&
-          error.error.errorString.includes('ERROR_CODE_PARSING_MANIFEST_MALFORMED'));
-
-      if (isManifestParseError && retryAttemptRef.current < 2) {
-        retryAttemptRef.current = 2;
-        logger.warn('[AndroidVideoPlayer] HLS manifest parsing failed, likely not M3U8. Retrying as MP4');
-
-        if (errorTimeoutRef.current) {
-          clearTimeout(errorTimeoutRef.current);
-          errorTimeoutRef.current = null;
-        }
-        safeSetState(() => setShowErrorModal(false));
-        setPaused(true);
-        setTimeout(() => {
-          if (!isMounted.current) return;
-          setCurrentVideoType('mp4');
-          // Force re-mount of source by tweaking URL param
-          const sep = currentStreamUrl.includes('?') ? '&' : '?';
-          const retryUrl = `${currentStreamUrl}${sep}manifest_fix_retry=${Date.now()}`;
-          setCurrentStreamUrl(retryUrl);
-          setPaused(false);
-        }, 120);
-        return;
-      }
-
-      // Check for specific AVFoundation server configuration errors (iOS)
-      const isServerConfigError = error?.error?.code === -11850 ||
-        error?.code === -11850 ||
-        (error?.error?.localizedDescription &&
-          error.error.localizedDescription.includes('server is not correctly configured'));
-
-      // Format error details for user display
-      let errorMessage = 'An unknown error occurred';
-      if (error) {
-        if (isServerConfigError) {
-          errorMessage = 'Stream server configuration issue. This may be a temporary problem with the video source.';
-        } else if (typeof error === 'string') {
-          errorMessage = error;
-        } else if (error.message) {
-          errorMessage = error.message;
-        } else if (error.error && error.error.message) {
-          errorMessage = error.error.message;
-        } else if (error.error && error.error.localizedDescription) {
-          errorMessage = error.error.localizedDescription;
-        } else if (error.code) {
-          errorMessage = `Error Code: ${error.code}`;
-        } else {
-          try {
-            errorMessage = JSON.stringify(error, null, 2);
-          } catch (jsonError) {
-            errorMessage = 'Error occurred but details could not be serialized';
-          }
-        }
-      }
-
-      // Use safeSetState to prevent crashes on iOS when component is unmounted
-      safeSetState(() => {
-        setErrorDetails(errorMessage);
-        setShowErrorModal(true);
-      });
-
-      // Clear any existing timeout
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
-
-      // Auto-exit only when a modal is actually visible
-      if (showErrorModal) {
-        errorTimeoutRef.current = setTimeout(() => {
-          if (isMounted.current) {
-            handleErrorExit();
-          }
-        }, 5000);
-      }
-    } catch (handlerError) {
-      // Fallback error handling to prevent crashes during error processing
-      logger.error('[AndroidVideoPlayer] Error in error handler:', handlerError);
-      if (isMounted.current) {
-        // Minimal safe error handling
-        safeSetState(() => {
-          setErrorDetails('A critical error occurred');
-          setShowErrorModal(true);
-        });
-        // Force exit after 3 seconds if error handler itself fails
-        setTimeout(() => {
-          if (isMounted.current) {
-            handleClose();
-          }
-        }, 3000);
+    if (videoDuration > 0) {
+      playerState.setDuration(videoDuration);
+      if (id && type) {
+        storageService.setContentDuration(id, type, videoDuration, episodeId);
+        storageService.updateProgressDuration(id, type, videoDuration, episodeId);
       }
     }
-  };
 
-  // Enhanced screen lock prevention - keep screen awake as soon as player mounts
-  const keepAwakeModuleRef = useRef<any>(null);
-  const keepAwakeActiveRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    try {
-      // Use require to avoid TS dynamic import constraints
-      // If the module is unavailable, catch and ignore
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const mod = require('expo-keep-awake');
-      keepAwakeModuleRef.current = mod;
-    } catch (_e) {
-      keepAwakeModuleRef.current = null;
-    }
-  }, []);
-
-  // Activate keep-awake immediately when player mounts and keep it active
-  useEffect(() => {
-    const mod = keepAwakeModuleRef.current;
-    if (!mod) return;
-
-    const activate = mod.activateKeepAwakeAsync || mod.activateKeepAwake;
-    const deactivate = mod.deactivateKeepAwakeAsync || mod.deactivateKeepAwake;
-
-    // Activate immediately when component mounts
-    try {
-      if (activate && !keepAwakeActiveRef.current) {
-        activate();
-        keepAwakeActiveRef.current = true;
-        logger.log('[AndroidVideoPlayer] Screen lock prevention activated on mount');
-      }
-    } catch (error) {
-      logger.warn('[AndroidVideoPlayer] Failed to activate keep-awake:', error);
+    if (data.naturalSize) {
+      playerState.setVideoAspectRatio(data.naturalSize.width / data.naturalSize.height);
+    } else {
+      playerState.setVideoAspectRatio(16 / 9);
     }
 
-    // Keep it active throughout the entire player session
-    const keepAliveInterval = setInterval(() => {
-      try {
-        if (activate && !keepAwakeActiveRef.current) {
-          activate();
-          keepAwakeActiveRef.current = true;
-        }
-      } catch (error) {
-        logger.warn('[AndroidVideoPlayer] Failed to maintain keep-awake:', error);
+    if (data.audioTracks) {
+      const formatted = data.audioTracks.map((t: any, i: number) => ({
+        id: t.index !== undefined ? t.index : i,
+        name: t.title || t.name || `Track ${i + 1}`,
+        language: t.language
+      }));
+      tracksHook.setRnVideoAudioTracks(formatted);
+    }
+    if (data.textTracks) {
+      const formatted = data.textTracks.map((t: any, i: number) => ({
+        id: t.index !== undefined ? t.index : i,
+        name: t.title || t.name || `Track ${i + 1}`,
+        language: t.language
+      }));
+      tracksHook.setRnVideoTextTracks(formatted);
+    }
+
+    playerState.setIsVideoLoaded(true);
+    openingAnimation.completeOpeningAnimation();
+
+    // Auto-select audio track based on preferences
+    if (data.audioTracks && data.audioTracks.length > 0 && settings?.preferredAudioLanguage) {
+      const formatted = data.audioTracks.map((t: any, i: number) => ({
+        id: t.index !== undefined ? t.index : i,
+        name: t.title || t.name || `Track ${i + 1}`,
+        language: t.language
+      }));
+      const bestAudioTrack = findBestAudioTrack(formatted, settings.preferredAudioLanguage);
+      if (bestAudioTrack !== null) {
+        logger.debug(`[AndroidVideoPlayer] Auto-selecting audio track ${bestAudioTrack} for language: ${settings.preferredAudioLanguage}`);
+        tracksHook.setSelectedAudioTrack({ type: 'index', value: bestAudioTrack });
       }
-    }, 10000); // Reduced frequency from 5s to 10s to reduce overhead
+    }
 
-    return () => {
-      clearInterval(keepAliveInterval);
-      try {
-        if (deactivate && keepAwakeActiveRef.current) {
-          deactivate();
-          keepAwakeActiveRef.current = false;
-          logger.log('[AndroidVideoPlayer] Screen lock prevention deactivated on unmount');
-        }
-      } catch (error) {
-        logger.warn('[AndroidVideoPlayer] Failed to deactivate keep-awake:', error);
-      }
-    };
-  }, []); // Empty dependency array - only run on mount/unmount
+    // Auto-select subtitle track based on preferences
+    // Only auto-select internal tracks here if preference is 'internal' or 'any'
+    // If preference is 'external', we wait for the useEffect to handle selection after external subs load
+    if (data.textTracks && data.textTracks.length > 0 && !hasAutoSelectedTracks.current && settings?.enableSubtitleAutoSelect) {
+      const sourcePreference = settings?.subtitleSourcePreference || 'internal';
 
-  // Additional keep-awake activation on app state changes
-  useEffect(() => {
-    const mod = keepAwakeModuleRef.current;
-    if (!mod) return;
-
-    const activate = mod.activateKeepAwakeAsync || mod.activateKeepAwake;
-
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active') {
-        try {
-          if (activate && !keepAwakeActiveRef.current) {
-            activate();
-            keepAwakeActiveRef.current = true;
-            logger.log('[AndroidVideoPlayer] Screen lock prevention re-activated on app foreground');
+      // Only pre-select internal if preference is internal or any
+      if (sourcePreference === 'internal' || sourcePreference === 'any') {
+        const formatted = data.textTracks.map((t: any, i: number) => ({
+          id: t.index !== undefined ? t.index : i,
+          name: t.title || t.name || `Track ${i + 1}`,
+          language: t.language
+        }));
+        const subtitleSelection = findBestSubtitleTrack(
+          formatted,
+          [], // External subtitles not yet loaded
+          {
+            preferredSubtitleLanguage: settings?.preferredSubtitleLanguage || 'en',
+            subtitleSourcePreference: sourcePreference,
+            enableSubtitleAutoSelect: true
           }
-        } catch (error) {
-          logger.warn('[AndroidVideoPlayer] Failed to re-activate keep-awake on app foreground:', error);
+        );
+
+        if (subtitleSelection.type === 'internal' && subtitleSelection.internalTrackId !== undefined) {
+          logger.debug(`[AndroidVideoPlayer] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId}`);
+          tracksHook.setSelectedTextTrack(subtitleSelection.internalTrackId);
+          hasAutoSelectedTracks.current = true;
         }
       }
-    };
+      // If preference is 'external', don't select anything here - useEffect will handle it
+    }
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription?.remove();
-  }, []);
+    // Handle Resume - check both initialPosition and initialSeekTargetRef
+    const resumeTarget = watchProgress.initialPosition || watchProgress.initialSeekTargetRef?.current;
+    if (resumeTarget && resumeTarget > 0 && !watchProgress.showResumeOverlay && videoDuration > 0) {
+      const seekPosition = Math.min(resumeTarget, videoDuration - 0.5);
+      console.log('[AndroidVideoPlayer] Seeking to resume position:', seekPosition, 'duration:', videoDuration, 'useExoPlayer:', useExoPlayer);
 
-  const handleErrorExit = () => {
-    try {
-      // Early return if component is unmounted
-      if (!isMounted.current) {
-        logger.warn('[AndroidVideoPlayer] Component unmounted, skipping error exit');
-        return;
-      }
-
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-        errorTimeoutRef.current = null;
-      }
-
-      // Use safeSetState to prevent crashes on iOS when component is unmounted
-      safeSetState(() => {
-        setShowErrorModal(false);
-      });
-
-      // Add small delay before closing to ensure modal state is updated
+      // Use a small delay to ensure the player is ready
+      // Directly use refs to avoid stale closure issues
       setTimeout(() => {
-        if (isMounted.current) {
-          handleClose();
-        }
-      }, 100);
-    } catch (exitError) {
-      logger.error('[AndroidVideoPlayer] Error in handleErrorExit:', exitError);
-      // Force close as last resort
-      if (isMounted.current) {
-        handleClose();
-      }
-    }
-  };
+        console.log('[AndroidVideoPlayer] Executing resume seek to:', seekPosition, 'ExoPlayer available:', !!exoPlayerRef.current, 'MPV available:', !!mpvPlayerRef.current);
 
-  const onBuffer = (data: any) => {
-    setIsBuffering(data.isBuffering);
-  };
-
-  const onEnd = async () => {
-    // Make sure we report 100% progress to Trakt
-    const finalTime = duration;
-    setCurrentTime(finalTime);
-
-    try {
-      // REGULAR: Use regular sync for natural video end (not immediate since it's not user-triggered)
-      logger.log('[AndroidVideoPlayer] Video ended naturally, sending final progress update with 100%');
-      await traktAutosync.handleProgressUpdate(finalTime, duration, false); // force=false for regular sync
-
-      // REGULAR: Use 'ended' reason for natural video end (uses regular queued method)
-      logger.log('[AndroidVideoPlayer] Sending final stop call after natural end');
-      await traktAutosync.handlePlaybackEnd(finalTime, duration, 'ended');
-
-      logger.log('[AndroidVideoPlayer] Completed video end sync to Trakt');
-    } catch (error) {
-      logger.error('[AndroidVideoPlayer] Error syncing to Trakt on video end:', error);
-    }
-  };
-
-  const selectAudioTrack = (trackSelection: SelectedTrack) => {
-    if (DEBUG_MODE) {
-      logger.log(`[AndroidVideoPlayer] Selecting audio track:`, trackSelection);
-      logger.log(`[AndroidVideoPlayer] Available tracks:`, rnVideoAudioTracks);
-    }
-
-    // Validate track selection
-    if (trackSelection.type === SelectedTrackType.INDEX) {
-      const trackExists = rnVideoAudioTracks.some(track => track.id === trackSelection.value);
-      if (!trackExists) {
-        logger.error(`[AndroidVideoPlayer] Audio track ${trackSelection.value} not found in available tracks`);
-        return;
-      }
-
-    }
-
-    // If changing tracks, briefly pause to allow smooth transition
-    const wasPlaying = !paused;
-    if (wasPlaying) {
-      setPaused(true);
-    }
-
-    // Set the new audio track
-    setSelectedAudioTrack(trackSelection);
-
-    if (DEBUG_MODE) {
-      logger.log(`[AndroidVideoPlayer] Audio track changed to:`, trackSelection);
-    }
-
-    // Resume playback after a brief delay if it was playing
-    if (wasPlaying) {
-      setTimeout(() => {
-        if (isMounted.current) {
-          setPaused(false);
-          if (DEBUG_MODE) {
-            logger.log(`[AndroidVideoPlayer] Resumed playback after audio track change`);
-          }
+        if (useExoPlayer && exoPlayerRef.current) {
+          console.log('[AndroidVideoPlayer] Seeking ExoPlayer to resume position:', seekPosition);
+          exoPlayerRef.current.seek(seekPosition);
+        } else if (mpvPlayerRef.current) {
+          console.log('[AndroidVideoPlayer] Seeking MPV to resume position:', seekPosition);
+          mpvPlayerRef.current.seek(seekPosition);
+        } else {
+          console.warn('[AndroidVideoPlayer] No player ref available for resume seek');
         }
       }, 300);
     }
-  };
+  }, [id, type, episodeId, playerState.isMounted, watchProgress.initialPosition, useExoPlayer]);
 
-  // Wrapper function to convert number to SelectedTrack for modal usage
-  const selectAudioTrackById = useCallback((trackId: number) => {
-    if (useVLC) {
-      // For VLC, directly set the selected track
-      selectVlcAudioTrack(trackId);
-    } else {
-      // For RN Video, use the existing track selection system
-      const trackSelection: SelectedTrack = { type: SelectedTrackType.INDEX, value: trackId };
-      selectAudioTrack(trackSelection);
+  const handleProgress = useCallback((data: any) => {
+    if (playerState.isDragging.current || playerState.isSeeking.current || !playerState.isMounted.current || setupHook.isAppBackgrounded.current) return;
+    const currentTimeInSeconds = data.currentTime;
+    if (Math.abs(currentTimeInSeconds - playerState.currentTime) > 0.5) {
+      playerState.setCurrentTime(currentTimeInSeconds);
+      playerState.setBuffered(data.playableDuration || currentTimeInSeconds);
     }
-  }, [useVLC, selectVlcAudioTrack, selectAudioTrack]);
+  }, [playerState.currentTime, playerState.isDragging, playerState.isSeeking, setupHook.isAppBackgrounded]);
 
-  const selectTextTrack = useCallback((trackId: number) => {
-    if (useVLC) {
-      // For VLC, directly set the selected subtitle track and disable custom subtitles
-      if (trackId === -999) {
-        // Custom subtitles selected - disable embedded subtitles
-        setUseCustomSubtitles(true);
-        setSelectedTextTrack(-1);
-        selectVlcSubtitleTrack(null); // Disable embedded subtitles
-      } else {
-        // Embedded subtitle selected - disable custom subtitles
-        setUseCustomSubtitles(false);
-        setSelectedTextTrack(trackId);
-        selectVlcSubtitleTrack(trackId >= 0 ? trackId : null);
-      }
-    } else {
-      // For RN Video, use existing subtitle selection logic
-      if (trackId === -999) {
-        setUseCustomSubtitles(true);
-        setSelectedTextTrack(-1);
-      } else {
-        setUseCustomSubtitles(false);
-        setSelectedTextTrack(trackId);
-      }
-    }
-  }, [useVLC, selectVlcSubtitleTrack]);
-
-  // Automatically disable VLC internal subtitles when external subtitles are enabled
+  // Auto-select subtitles when both internal tracks and video are loaded
+  // This ensures we wait for internal tracks before falling back to external
   useEffect(() => {
-    if (useVLC && useCustomSubtitles) {
-      logger.log('[AndroidVideoPlayer][VLC] External subtitles enabled, disabling internal subtitles');
-      selectVlcSubtitleTrack(null);
-    }
-  }, [useVLC, useCustomSubtitles, selectVlcSubtitleTrack]);
-
-  const disableCustomSubtitles = useCallback(() => {
-    setUseCustomSubtitles(false);
-    setCustomSubtitles([]);
-    // Reset to first available built-in track or disable all tracks
-    if (useVLC) {
-      selectVlcSubtitleTrack(ksTextTracks.length > 0 ? 0 : null);
-    }
-    setSelectedTextTrack(ksTextTracks.length > 0 ? 0 : -1);
-  }, [useVLC, selectVlcSubtitleTrack, ksTextTracks.length]);
-
-  const loadSubtitleSize = async () => {
-    try {
-      // Prefer scoped subtitle settings
-      const saved = await storageService.getSubtitleSettings();
-      if (saved && typeof saved.subtitleSize === 'number') {
-        setSubtitleSize(saved.subtitleSize);
-        return;
-      }
-      // One-time migrate legacy key if present
-      const legacy = await mmkvStorage.getItem(SUBTITLE_SIZE_KEY);
-      if (legacy) {
-        const migrated = parseInt(legacy, 10);
-        if (!Number.isNaN(migrated) && migrated > 0) {
-          setSubtitleSize(migrated);
-          try {
-            const merged = { ...(saved || {}), subtitleSize: migrated };
-            await storageService.saveSubtitleSettings(merged);
-          } catch { }
-        }
-        try { await mmkvStorage.removeItem(SUBTITLE_SIZE_KEY); } catch { }
-        return;
-      }
-      // If no saved settings, use responsive default
-      const screenWidth = Dimensions.get('window').width;
-      setSubtitleSize(getDefaultSubtitleSize(screenWidth));
-    } catch (error) {
-      logger.error('[AndroidVideoPlayer] Error loading subtitle size:', error);
-      // Fallback to responsive default on error
-      const screenWidth = Dimensions.get('window').width;
-      setSubtitleSize(getDefaultSubtitleSize(screenWidth));
-    }
-  };
-
-  const saveSubtitleSize = async (size: number) => {
-    try {
-      setSubtitleSize(size);
-      // Persist via scoped subtitle settings so it survives restarts and account switches
-      const saved = await storageService.getSubtitleSettings();
-      const next = { ...(saved || {}), subtitleSize: size };
-      await storageService.saveSubtitleSettings(next);
-    } catch (error) {
-      logger.error('[AndroidVideoPlayer] Error saving subtitle size:', error);
-    }
-  };
-
-  const fetchAvailableSubtitles = async (imdbIdParam?: string, autoSelectEnglish = true) => {
-    const targetImdbId = imdbIdParam || imdbId;
-    if (!targetImdbId) {
-      logger.error('[AndroidVideoPlayer] No IMDb ID available for subtitle search');
+    if (!playerState.isVideoLoaded || hasAutoSelectedTracks.current || !settings?.enableSubtitleAutoSelect) {
       return;
     }
+
+    const internalTracks = tracksHook.ksTextTracks;
+    const externalSubs = availableSubtitles;
+
+    // Wait a short delay to ensure tracks are fully populated
+    const timeoutId = setTimeout(() => {
+      if (hasAutoSelectedTracks.current) return;
+
+      const subtitleSelection = findBestSubtitleTrack(
+        internalTracks,
+        externalSubs,
+        {
+          preferredSubtitleLanguage: settings?.preferredSubtitleLanguage || 'en',
+          subtitleSourcePreference: settings?.subtitleSourcePreference || 'internal',
+          enableSubtitleAutoSelect: true
+        }
+      );
+
+      // Trust the findBestSubtitleTrack function's decision - it already implements priority logic
+      if (subtitleSelection.type === 'internal' && subtitleSelection.internalTrackId !== undefined) {
+        logger.debug(`[AndroidVideoPlayer] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId}`);
+        tracksHook.setSelectedTextTrack(subtitleSelection.internalTrackId);
+        hasAutoSelectedTracks.current = true;
+      } else if (subtitleSelection.type === 'external' && subtitleSelection.externalSubtitle) {
+        logger.debug(`[AndroidVideoPlayer] Auto-selecting external subtitle: ${subtitleSelection.externalSubtitle.display}`);
+        loadWyzieSubtitle(subtitleSelection.externalSubtitle);
+        hasAutoSelectedTracks.current = true;
+      }
+    }, 500); // Short delay to ensure tracks are populated
+
+    return () => clearTimeout(timeoutId);
+  }, [playerState.isVideoLoaded, tracksHook.ksTextTracks, availableSubtitles, settings]);
+
+  // Sync custom subtitle text with current playback time
+  useEffect(() => {
+    if (!useCustomSubtitles || customSubtitles.length === 0) return;
+
+    const cueNow = customSubtitles.find(
+      cue => playerState.currentTime >= cue.start && playerState.currentTime <= cue.end
+    );
+    setCurrentSubtitle(cueNow ? cueNow.text : '');
+  }, [playerState.currentTime, useCustomSubtitles, customSubtitles]);
+
+  const toggleControls = useCallback(() => {
+    playerState.setShowControls(prev => {
+      // If we're showing controls, the useEffect will handle the auto-hide timer
+      return !prev;
+    });
+  }, []);
+
+  const hideControls = useCallback(() => {
+    if (playerState.isDragging.current) return;
+    playerState.setShowControls(false);
+  }, []);
+
+  const loadStartAtRef = useRef<number | null>(null);
+  const firstFrameAtRef = useRef<number | null>(null);
+  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleClose = useCallback(() => {
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.reset({ index: 0, routes: [{ name: 'Home' }] } as any);
+  }, [navigation]);
+
+  // Handle codec errors from ExoPlayer - silently switch to MPV
+  const handleCodecError = useCallback(() => {
+    if (!hasExoPlayerFailed.current) {
+      hasExoPlayerFailed.current = true;
+      logger.warn('[AndroidVideoPlayer] ExoPlayer codec error detected, switching to MPV silently');
+      ToastAndroid.show('Switching to MPV due to playback issue', ToastAndroid.SHORT);
+      setUseExoPlayer(false);
+    }
+  }, []);
+
+  // Handle manual switch to MPV - for users experiencing black screen
+  const handleManualSwitchToMPV = useCallback(() => {
+    if (useExoPlayer && !hasExoPlayerFailed.current) {
+      setShowMpvSwitchAlert(true);
+    }
+  }, [useExoPlayer]);
+
+  // Confirm and execute the switch to MPV
+  const confirmSwitchToMPV = useCallback(() => {
+    hasExoPlayerFailed.current = true;
+    logger.info('[AndroidVideoPlayer] User confirmed switch to MPV');
+    ToastAndroid.show('Switching to MPV player...', ToastAndroid.SHORT);
+
+    // Store current playback position before switching
+    const currentPos = playerState.currentTime;
+
+    // Switch to MPV
+    setUseExoPlayer(false);
+
+    // Seek to current position after a brief delay to ensure MPV is loaded
+    setTimeout(() => {
+      if (mpvPlayerRef.current && currentPos > 0) {
+        mpvPlayerRef.current.seek(currentPos);
+      }
+    }, 500);
+  }, [playerState.currentTime]);
+
+
+  const handleSelectStream = async (newStream: any) => {
+    if (newStream.url === currentStreamUrl) {
+      modals.setShowSourcesModal(false);
+      return;
+    }
+    modals.setShowSourcesModal(false);
+    playerState.setPaused(true);
+
+    // Unmount VideoSurface first to ensure MPV is fully destroyed
+    setIsTransitioningStream(true);
+
+    const newQuality = newStream.quality || newStream.title?.match(/(\d+)p/)?.[0];
+    const newProvider = newStream.addonName || newStream.name || newStream.addon || 'Unknown';
+    const newStreamName = newStream.name || newStream.title || 'Unknown';
+
+    // Wait for unmount to complete, then navigate
+    setTimeout(() => {
+      (navigation as any).replace('PlayerAndroid', {
+        ...route.params,
+        uri: newStream.url,
+        quality: newQuality,
+        streamProvider: newProvider,
+        streamName: newStreamName,
+        headers: newStream.headers,
+        availableStreams: availableStreams
+      });
+    }, 300);
+  };
+
+  const handleEpisodeStreamSelect = async (stream: any) => {
+    if (!modals.selectedEpisodeForStreams) return;
+    modals.setShowEpisodeStreamsModal(false);
+    playerState.setPaused(true);
+
+    // Unmount VideoSurface first to ensure MPV is fully destroyed
+    setIsTransitioningStream(true);
+
+    const ep = modals.selectedEpisodeForStreams;
+
+    const newQuality = stream.quality || (stream.title?.match(/(\d+)p/)?.[0]);
+    const newProvider = stream.addonName || stream.name || stream.addon || 'Unknown';
+    const newStreamName = stream.name || stream.title || 'Unknown Stream';
+
+    // Wait for unmount to complete, then navigate
+    setTimeout(() => {
+      (navigation as any).replace('PlayerAndroid', {
+        uri: stream.url,
+        title: title,
+        episodeTitle: ep.name,
+        season: ep.season_number,
+        episode: ep.episode_number,
+        quality: newQuality,
+        year: year,
+        streamProvider: newProvider,
+        streamName: newStreamName,
+        headers: stream.headers || undefined,
+        id,
+        type: 'series',
+        episodeId: ep.stremioId || `${id}:${ep.season_number}:${ep.episode_number}`,
+        imdbId: imdbId ?? undefined,
+        backdrop: backdrop || undefined,
+        availableStreams: {},
+        groupedEpisodes: groupedEpisodes,
+      });
+    }, 300);
+  };
+
+  // Subtitle addon fetching
+  const fetchAvailableSubtitles = useCallback(async () => {
+    const targetImdbId = imdbId;
+    if (!targetImdbId) {
+      logger.warn('[AndroidVideoPlayer] No IMDB ID for subtitle fetch');
+      return;
+    }
+
     setIsLoadingSubtitleList(true);
     try {
-      // Fetch from all installed subtitle-capable addons via Stremio
       const stremioType = type === 'series' ? 'series' : 'movie';
       const stremioVideoId = stremioType === 'series' && season && episode
         ? `series:${targetImdbId}:${season}:${episode}`
         : undefined;
-      const stremioResults = await stremioService.getSubtitles(stremioType, targetImdbId, stremioVideoId);
-      const stremioSubs: WyzieSubtitle[] = (stremioResults || []).map(sub => ({
+      const results = await stremioService.getSubtitles(stremioType, targetImdbId, stremioVideoId);
+
+      const subs: WyzieSubtitle[] = (results || []).map((sub: any) => ({
         id: sub.id || `${sub.lang}-${sub.url}`,
         url: sub.url,
         flagUrl: '',
@@ -2548,145 +1437,61 @@ const AndroidVideoPlayer: React.FC = () => {
         isHearingImpaired: false,
         source: sub.addonName || sub.addon || 'Addon',
       }));
-      // Sort with English languages first, then alphabetical over full list
-      const isEnglish = (s: WyzieSubtitle) => {
-        const lang = (s.language || '').toLowerCase();
-        const disp = (s.display || '').toLowerCase();
-        return lang === 'en' || lang === 'eng' || /^en([-_]|$)/.test(lang) || disp.includes('english');
-      };
-      stremioSubs.sort((a, b) => {
-        const aIsEn = isEnglish(a);
-        const bIsEn = isEnglish(b);
-        if (aIsEn && !bIsEn) return -1;
-        if (!aIsEn && bIsEn) return 1;
-        return (a.display || '').localeCompare(b.display || '');
-      });
-      setAvailableSubtitles(stremioSubs);
-      if (autoSelectEnglish) {
-        const englishSubtitle = stremioSubs.find(sub =>
-          sub.language.toLowerCase() === 'eng' ||
-          sub.language.toLowerCase() === 'en' ||
-          sub.display.toLowerCase().includes('english')
-        );
-        if (englishSubtitle) {
-          loadWyzieSubtitle(englishSubtitle);
-          return;
-        }
-      }
-      if (!autoSelectEnglish) {
-        // If no English found and not auto-selecting, still open the modal
-        setShowSubtitleLanguageModal(true);
-      }
-    } catch (error) {
-      logger.error('[AndroidVideoPlayer] Error fetching subtitles from OpenSubtitles addon:', error);
+
+      setAvailableSubtitles(subs);
+      logger.info(`[AndroidVideoPlayer] Fetched ${subs.length} addon subtitles`);
+      // Auto-selection is now handled by useEffect that waits for internal tracks
+    } catch (e) {
+      logger.error('[AndroidVideoPlayer] Error fetching addon subtitles', e);
     } finally {
       setIsLoadingSubtitleList(false);
     }
-  };
+  }, [imdbId, type, season, episode]);
 
-  const loadWyzieSubtitle = async (subtitle: WyzieSubtitle) => {
-    logger.log(`[AndroidVideoPlayer] Subtitle click received: id=${subtitle.id}, lang=${subtitle.language}, url=${subtitle.url}`);
-    setShowSubtitleLanguageModal(false);
-    logger.log('[AndroidVideoPlayer] setShowSubtitleLanguageModal(false)');
+  const loadWyzieSubtitle = useCallback(async (subtitle: WyzieSubtitle) => {
+    if (!subtitle.url) return;
+
+    modals.setShowSubtitleModal(false);
     setIsLoadingSubtitles(true);
-    logger.log('[AndroidVideoPlayer] isLoadingSubtitles -> true');
     try {
-      logger.log('[AndroidVideoPlayer] Fetching subtitle SRT start');
+      // Download subtitle file
       let srtContent = '';
       try {
-        const axiosResp = await axios.get(subtitle.url, {
-          timeout: 10000,
-          headers: {
-            'Accept': 'text/plain, */*',
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Nuvio/1.0'
-          },
-          responseType: 'text',
-          transitional: {
-            clarifyTimeoutError: true
-          }
-        });
-        srtContent = typeof axiosResp.data === 'string' ? axiosResp.data : String(axiosResp.data || '');
-      } catch (axiosErr: any) {
-        logger.warn('[AndroidVideoPlayer] Axios subtitle fetch failed, falling back to fetch()', {
-          message: axiosErr?.message,
-          code: axiosErr?.code
-        });
-        // Fallback with explicit timeout using AbortController
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        try {
-          const resp = await fetch(subtitle.url, { signal: controller.signal });
-          srtContent = await resp.text();
-        } finally {
-          clearTimeout(timeoutId);
-        }
+        const resp = await axios.get(subtitle.url, { timeout: 10000 });
+        srtContent = typeof resp.data === 'string' ? resp.data : String(resp.data);
+      } catch {
+        const resp = await fetch(subtitle.url);
+        srtContent = await resp.text();
       }
-      logger.log(`[AndroidVideoPlayer] Fetching subtitle SRT done, size=${srtContent.length}`);
+
+      // Parse subtitle file
       const parsedCues = parseSRT(srtContent);
-      logger.log(`[AndroidVideoPlayer] Parsed cues count=${parsedCues.length}`);
+      setCustomSubtitles(parsedCues);
+      setUseCustomSubtitles(true);
+      setSelectedExternalSubtitleId(subtitle.id); // Track the selected external subtitle
 
-      // iOS AVPlayer workaround: clear subtitle state first, then apply
-      if (Platform.OS === 'ios') {
-        logger.log('[AndroidVideoPlayer] iOS detected; clearing subtitle state before apply');
-        // Immediately stop spinner so UI doesn't get stuck
-        setIsLoadingSubtitles(false);
-        logger.log('[AndroidVideoPlayer] isLoadingSubtitles -> false (early stop for iOS)');
-        // Step 1: Clear any existing subtitle state
-        setUseCustomSubtitles(false);
-        logger.log('[AndroidVideoPlayer] useCustomSubtitles -> false');
-        setCustomSubtitles([]);
-        logger.log('[AndroidVideoPlayer] customSubtitles -> []');
-        setSelectedTextTrack(-1);
-        logger.log('[AndroidVideoPlayer] selectedTextTrack -> -1');
-
-        // Step 2: Apply immediately (no scheduling), then do a small micro-nudge
-        logger.log('[AndroidVideoPlayer] Applying parsed cues immediately (iOS)');
-        setCustomSubtitles(parsedCues);
-        logger.log('[AndroidVideoPlayer] customSubtitles <- parsedCues');
-        setUseCustomSubtitles(true);
-        logger.log('[AndroidVideoPlayer] useCustomSubtitles -> true');
-        setSelectedTextTrack(-1);
-        logger.log('[AndroidVideoPlayer] selectedTextTrack -> -1 (disable native while using custom)');
-        setCustomSubtitleVersion(v => v + 1);
-        logger.log('[AndroidVideoPlayer] customSubtitleVersion incremented');
-
-        // Immediately set current subtitle based on currentTime to avoid waiting for next onProgress
-        try {
-          const adjustedTime = currentTime + (subtitleOffsetSec || 0);
-          const cueNow = parsedCues.find(cue => adjustedTime >= cue.start && adjustedTime <= cue.end);
-          const textNow = cueNow ? cueNow.text : '';
-          setCurrentSubtitle(textNow);
-          logger.log('[AndroidVideoPlayer] currentSubtitle set immediately after apply (iOS)');
-        } catch (e) {
-          logger.error('[AndroidVideoPlayer] Error setting immediate subtitle', e);
-        }
-
-        // Removed micro-seek nudge on iOS
-      } else {
-        // Android works immediately
-        setCustomSubtitles(parsedCues);
-        logger.log('[AndroidVideoPlayer] (Android) customSubtitles <- parsedCues');
-        setUseCustomSubtitles(true);
-        logger.log('[AndroidVideoPlayer] (Android) useCustomSubtitles -> true');
-        setSelectedTextTrack(-1);
-        logger.log('[AndroidVideoPlayer] (Android) selectedTextTrack -> -1');
-        setIsLoadingSubtitles(false);
-        logger.log('[AndroidVideoPlayer] (Android) isLoadingSubtitles -> false');
-        try {
-          const adjustedTime = currentTime + (subtitleOffsetSec || 0);
-          const cueNow = parsedCues.find(cue => adjustedTime >= cue.start && adjustedTime <= cue.end);
-          const textNow = cueNow ? cueNow.text : '';
-          setCurrentSubtitle(textNow);
-          logger.log('[AndroidVideoPlayer] currentSubtitle set immediately after apply (Android)');
-        } catch { }
+      // Disable MPV's built-in subtitle track when using custom subtitles
+      tracksHook.setSelectedTextTrack(-1);
+      if (mpvPlayerRef.current) {
+        mpvPlayerRef.current.setSubtitleTrack(-1);
       }
-    } catch (error) {
-      logger.error('[AndroidVideoPlayer] Error loading Wyzie subtitle:', error);
-      setIsLoadingSubtitles(false);
-      logger.log('[AndroidVideoPlayer] isLoadingSubtitles -> false (error path)');
-    }
-  };
 
+      // Set initial subtitle based on current time
+      const adjustedTime = playerState.currentTime;
+      const cueNow = parsedCues.find(cue => adjustedTime >= cue.start && adjustedTime <= cue.end);
+      setCurrentSubtitle(cueNow ? cueNow.text : '');
+
+      logger.info(`[AndroidVideoPlayer] Loaded addon subtitle: ${subtitle.display} (${parsedCues.length} cues)`);
+      toast.success(`Subtitle loaded: ${subtitle.display}`);
+    } catch (e) {
+      logger.error('[AndroidVideoPlayer] Error loading subtitle', e);
+      toast.error('Failed to load subtitle');
+    } finally {
+      setIsLoadingSubtitles(false);
+    }
+  }, [modals, playerState.currentTime, tracksHook]);
+
+<<<<<<< HEAD
   const togglePlayback = useCallback(() => {
     const newPausedState = !paused;
     setPaused(newPausedState);
@@ -3058,402 +1863,283 @@ const AndroidVideoPlayer: React.FC = () => {
         }
       }
     };
+=======
+  const disableCustomSubtitles = useCallback(() => {
+    setUseCustomSubtitles(false);
+    setCustomSubtitles([]);
+    setCurrentSubtitle('');
+    setSelectedExternalSubtitleId(null); // Clear external selection
+>>>>>>> origin/main
   }, []);
 
-  const safeSetState = (setter: any) => {
-    if (isMounted.current) {
-      setter();
-    }
-  };
+  const cycleResizeMode = useCallback(() => {
+    if (playerState.resizeMode === 'contain') playerState.setResizeMode('cover');
+    else playerState.setResizeMode('contain');
+  }, [playerState.resizeMode]);
 
-
-  useEffect(() => {
-    if (!useCustomSubtitles || customSubtitles.length === 0) {
-      if (currentSubtitle !== '') {
-        setCurrentSubtitle('');
-      }
-      if (currentFormattedSegments.length > 0) {
-        setCurrentFormattedSegments([]);
-      }
-      return;
-    }
-    const adjustedTime = currentTime + (subtitleOffsetSec || 0) - 0.2;
-    const currentCue = customSubtitles.find(cue =>
-      adjustedTime >= cue.start && adjustedTime <= cue.end
-    );
-    const newSubtitle = currentCue ? currentCue.text : '';
-    setCurrentSubtitle(newSubtitle);
-
-    // Extract formatted segments from current cue
-    if (currentCue?.formattedSegments) {
-      const segmentsPerLine: SubtitleSegment[][] = [];
-      let currentLine: SubtitleSegment[] = [];
-
-      currentCue.formattedSegments.forEach(seg => {
-        const parts = seg.text.split(/\r?\n/);
-        parts.forEach((part, index) => {
-          if (index > 0) {
-            // New line found
-            segmentsPerLine.push(currentLine);
-            currentLine = [];
-          }
-          if (part.length > 0) {
-            currentLine.push({ ...seg, text: part });
-          }
-        });
-      });
-
-      if (currentLine.length > 0) {
-        segmentsPerLine.push(currentLine);
-      }
-
-      setCurrentFormattedSegments(segmentsPerLine);
-    } else {
-      setCurrentFormattedSegments([]);
-    }
-  }, [currentTime, customSubtitles, useCustomSubtitles, subtitleOffsetSec]);
-
-  useEffect(() => {
-    loadSubtitleSize();
-  }, []);
-
-  // Handle audio track changes with proper logging
-  useEffect(() => {
-    if (selectedAudioTrack !== null && rnVideoAudioTracks.length > 0) {
-      if (selectedAudioTrack.type === SelectedTrackType.INDEX && selectedAudioTrack.value !== undefined) {
-        const selectedTrack = rnVideoAudioTracks.find(track => track.id === selectedAudioTrack.value);
-        if (selectedTrack) {
-          if (DEBUG_MODE) {
-            logger.log(`[AndroidVideoPlayer] Audio track selected: ${selectedTrack.name} (${selectedTrack.language}) - ID: ${selectedAudioTrack.value}`);
-          }
-        } else {
-          logger.warn(`[AndroidVideoPlayer] Selected audio track ${selectedAudioTrack.value} not found in available tracks`);
-        }
-      } else if (selectedAudioTrack.type === SelectedTrackType.SYSTEM) {
-        if (DEBUG_MODE) {
-          logger.log(`[AndroidVideoPlayer] Using system audio selection`);
-        }
-      } else if (selectedAudioTrack.type === SelectedTrackType.DISABLED) {
-        if (DEBUG_MODE) {
-          logger.log(`[AndroidVideoPlayer] Audio disabled`);
-        }
-      }
-    }
-  }, [selectedAudioTrack, rnVideoAudioTracks]);
-
-  // Load global subtitle settings
-  useEffect(() => {
-    (async () => {
-      try {
-        const saved = await storageService.getSubtitleSettings();
-        if (saved) {
-          if (typeof saved.subtitleSize === 'number') setSubtitleSize(saved.subtitleSize);
-          if (typeof saved.subtitleBackground === 'boolean') setSubtitleBackground(saved.subtitleBackground);
-          if (typeof saved.subtitleTextColor === 'string') setSubtitleTextColor(saved.subtitleTextColor);
-          if (typeof saved.subtitleBgOpacity === 'number') setSubtitleBgOpacity(saved.subtitleBgOpacity);
-          if (typeof saved.subtitleTextShadow === 'boolean') setSubtitleTextShadow(saved.subtitleTextShadow);
-          if (typeof saved.subtitleOutline === 'boolean') setSubtitleOutline(saved.subtitleOutline);
-          if (typeof saved.subtitleOutlineColor === 'string') setSubtitleOutlineColor(saved.subtitleOutlineColor);
-          if (typeof saved.subtitleOutlineWidth === 'number') setSubtitleOutlineWidth(saved.subtitleOutlineWidth);
-          if (typeof saved.subtitleAlign === 'string') setSubtitleAlign(saved.subtitleAlign as 'center' | 'left' | 'right');
-          if (typeof saved.subtitleBottomOffset === 'number') setSubtitleBottomOffset(saved.subtitleBottomOffset);
-          if (typeof saved.subtitleLetterSpacing === 'number') setSubtitleLetterSpacing(saved.subtitleLetterSpacing);
-          if (typeof saved.subtitleLineHeightMultiplier === 'number') setSubtitleLineHeightMultiplier(saved.subtitleLineHeightMultiplier);
-          if (typeof saved.subtitleOffsetSec === 'number') setSubtitleOffsetSec(saved.subtitleOffsetSec);
-        }
-      } catch { } finally {
-        try { setSubtitleSettingsLoaded(true); } catch { }
-      }
-    })();
-  }, []);
-
-  // Persist global subtitle settings on change
-  useEffect(() => {
-    if (!subtitleSettingsLoaded) return;
-    storageService.saveSubtitleSettings({
-      subtitleSize,
-      subtitleBackground,
-      subtitleTextColor,
-      subtitleBgOpacity,
-      subtitleTextShadow,
-      subtitleOutline,
-      subtitleOutlineColor,
-      subtitleOutlineWidth,
-      subtitleAlign,
-      subtitleBottomOffset,
-      subtitleLetterSpacing,
-      subtitleLineHeightMultiplier,
-      subtitleOffsetSec,
-    });
-  }, [
-    subtitleSize,
-    subtitleBackground,
-    subtitleTextColor,
-    subtitleBgOpacity,
-    subtitleTextShadow,
-    subtitleOutline,
-    subtitleOutlineColor,
-    subtitleOutlineWidth,
-    subtitleAlign,
-    subtitleBottomOffset,
-    subtitleLetterSpacing,
-    subtitleLineHeightMultiplier,
-    subtitleOffsetSec,
-    subtitleSettingsLoaded,
-  ]);
-
-  const increaseSubtitleSize = () => {
-    const newSize = Math.min(subtitleSize + 2, 80);
-    saveSubtitleSize(newSize);
-  };
-
-  const decreaseSubtitleSize = () => {
-    const newSize = Math.max(subtitleSize - 2, 8);
-    saveSubtitleSize(newSize);
-  };
-
-  const toggleSubtitleBackground = () => {
-    setSubtitleBackground(!subtitleBackground);
-  };
-
-  const handleSelectStream = async (newStream: any) => {
-    if (newStream.url === currentStreamUrl) {
-      setShowSourcesModal(false);
-      return;
-    }
-
-    setShowSourcesModal(false);
-
-    // Extract quality and provider information
-    let newQuality = newStream.quality;
-    if (!newQuality && newStream.title) {
-      const qualityMatch = newStream.title.match(/(\d+)p/);
-      newQuality = qualityMatch ? qualityMatch[0] : undefined;
-    }
-
-    const newProvider = newStream.addonName || newStream.name || newStream.addon || 'Unknown';
-    const newStreamName = newStream.name || newStream.title || 'Unknown Stream';
-
-    // Pause current playback
-    setPaused(true);
-
-    // Navigate with replace to reload player with new source
-    setTimeout(() => {
-      (navigation as any).replace('PlayerAndroid', {
-        uri: newStream.url,
-        title: title,
-        episodeTitle: episodeTitle,
-        season: season,
-        episode: episode,
-        quality: newQuality,
-        year: year,
-        streamProvider: newProvider,
-        streamName: newStreamName,
-        headers: newStream.headers || undefined,
-        forceVlc: false,
-        id,
-        type,
-        episodeId,
-        imdbId: imdbId ?? undefined,
-        backdrop: backdrop || undefined,
-        availableStreams: availableStreams,
-      });
-    }, 100);
-  };
-
-  const handleEpisodeSelect = (episode: Episode) => {
-    logger.log('[AndroidVideoPlayer] Episode selected:', episode.name);
-    setSelectedEpisodeForStreams(episode);
-    setShowEpisodesModal(false);
-    setShowEpisodeStreamsModal(true);
-  };
-
-  // Debug: Log when modal state changes
-  useEffect(() => {
-    if (showEpisodesModal) {
-      logger.log('[AndroidVideoPlayer] Episodes modal opened, groupedEpisodes:', groupedEpisodes);
-      logger.log('[AndroidVideoPlayer] type:', type, 'season:', season, 'episode:', episode);
-    }
-  }, [showEpisodesModal, groupedEpisodes, type]);
-
-  const handleEpisodeStreamSelect = async (stream: any) => {
-    if (!selectedEpisodeForStreams) return;
-
-    setShowEpisodeStreamsModal(false);
-
-    const newQuality = stream.quality || (stream.title?.match(/(\d+)p/)?.[0]);
-    const newProvider = stream.addonName || stream.name || stream.addon || 'Unknown';
-    const newStreamName = stream.name || stream.title || 'Unknown Stream';
-
-    setPaused(true);
-
-    setTimeout(() => {
-      (navigation as any).replace('PlayerAndroid', {
-        uri: stream.url,
-        title: title,
-        episodeTitle: selectedEpisodeForStreams.name,
-        season: selectedEpisodeForStreams.season_number,
-        episode: selectedEpisodeForStreams.episode_number,
-        quality: newQuality,
-        year: year,
-        streamProvider: newProvider,
-        streamName: newStreamName,
-        headers: stream.headers || undefined,
-        forceVlc: false,
-        id,
-        type: 'series',
-        episodeId: selectedEpisodeForStreams.stremioId || `${id}:${selectedEpisodeForStreams.season_number}:${selectedEpisodeForStreams.episode_number}`,
-        imdbId: imdbId ?? undefined,
-        backdrop: backdrop || undefined,
-        availableStreams: {},
-        groupedEpisodes: groupedEpisodes,
-      });
-    }, 100);
-  };
-
-  useEffect(() => {
-    if (isVideoLoaded && initialPosition && !isInitialSeekComplete && duration > 0) {
-      logger.log(`[AndroidVideoPlayer] Post-load initial seek to: ${initialPosition}s`);
-      seekToTime(initialPosition);
-      setIsInitialSeekComplete(true);
-      // Verify whether the seek actually took effect (detect non-seekable sources)
-      if (!initialSeekVerifiedRef.current) {
-        initialSeekVerifiedRef.current = true;
-        const target = initialSeekTargetRef.current ?? initialPosition;
-        setTimeout(() => {
-          const delta = Math.abs(currentTime - (target || 0));
-          if (target && (currentTime < target - 1.5)) {
-            logger.warn(`[AndroidVideoPlayer] Initial seek appears ignored (delta=${delta.toFixed(2)}). Treating source as non-seekable; starting from 0`);
-            isSourceSeekableRef.current = false;
-            // Reset resume intent and continue from 0
-            setInitialPosition(null);
-            setResumePosition(null);
-            setShowResumeOverlay(false);
-          } else {
-            isSourceSeekableRef.current = true;
-          }
-        }, 1200);
-      }
-    }
-  }, [isVideoLoaded, initialPosition, duration]);
+  // Memoize selectedTextTrack to prevent unnecessary re-renders
+  const memoizedSelectedTextTrack = useMemo(() => {
+    return tracksHook.selectedTextTrack === -1
+      ? { type: 'disabled' as const }
+      : { type: 'index' as const, value: tracksHook.selectedTextTrack };
+  }, [tracksHook.selectedTextTrack]);
 
   return (
     <View style={[styles.container, {
-      width: screenDimensions.width,
-      height: screenDimensions.height,
-      position: 'absolute',
-      top: 0,
-      left: 0,
+      width: playerState.screenDimensions.width,
+      height: playerState.screenDimensions.height,
+      position: 'absolute', top: 0, left: 0
     }]}>
       <LoadingOverlay
-        visible={!shouldHideOpeningOverlay}
+        visible={!openingAnimation.shouldHideOpeningOverlay}
         backdrop={backdrop || null}
         hasLogo={hasLogo}
         logo={metadata?.logo}
-        backgroundFadeAnim={backgroundFadeAnim}
-        backdropImageOpacityAnim={backdropImageOpacityAnim}
+        backgroundFadeAnim={openingAnimation.backgroundFadeAnim}
+        backdropImageOpacityAnim={openingAnimation.backdropImageOpacityAnim}
         onClose={handleClose}
-        width={screenDimensions.width}
-        height={screenDimensions.height}
+        width={playerState.screenDimensions.width}
+        height={playerState.screenDimensions.height}
       />
 
-      <Animated.View
-        style={[
-          styles.videoPlayerContainer,
-          {
-            opacity: openingFadeAnim,
-            transform: [{ scale: openingScaleAnim }],
-            width: screenDimensions.width,
-            height: screenDimensions.height,
-          }
-        ]}
-      >
-        {/* Left side gesture handler - brightness + tap + long press (Android and iOS) */}
-        <LongPressGestureHandler
-          onActivated={onLongPressActivated}
-          onEnded={onLongPressEnd}
-          onHandlerStateChange={onLongPressStateChange}
-          minDurationMs={500}
-          shouldCancelWhenOutside={false}
-          simultaneousHandlers={[]}
-        >
-          <PanGestureHandler
-            onGestureEvent={gestureControls.onBrightnessGestureEvent}
-            activeOffsetY={[-10, 10]}
-            failOffsetX={[-30, 30]}
-            shouldCancelWhenOutside={false}
-            simultaneousHandlers={[]}
-            maxPointers={1}
-          >
-            <TapGestureHandler
-              onActivated={toggleControls}
-              shouldCancelWhenOutside={false}
-              simultaneousHandlers={[]}
-            >
-              <View style={{
-                position: 'absolute',
-                top: screenDimensions.height * 0.15,
-                left: 0,
-                width: screenDimensions.width * 0.4,
-                height: screenDimensions.height * 0.7,
-                zIndex: 10,
-              }} />
-            </TapGestureHandler>
-          </PanGestureHandler>
-        </LongPressGestureHandler>
+      <View style={{ flex: 1, backgroundColor: 'black' }}>
+        {!isTransitioningStream && (
+          <VideoSurface
+            processedStreamUrl={currentStreamUrl}
+            headers={headers}
+            volume={volume}
+            playbackSpeed={speedControl.playbackSpeed}
+            resizeMode={playerState.resizeMode}
+            paused={playerState.paused}
+            currentStreamUrl={currentStreamUrl}
+            toggleControls={toggleControls}
+            onLoad={handleLoad}
+            onProgress={handleProgress}
+            onSeek={(data) => {
+              playerState.isSeeking.current = false;
+              if (data.currentTime) traktAutosync.handleProgressUpdate(data.currentTime, playerState.duration, true);
+            }}
+            onEnd={() => {
+              if (modals.showEpisodeStreamsModal) return;
+              playerState.setPaused(true);
+            }}
+            onError={(err: any) => {
+              logger.error('Video Error', err);
 
-        {/* Combined gesture handler for right side - volume + tap + long press */}
-        <LongPressGestureHandler
-          onActivated={onLongPressActivated}
-          onEnded={onLongPressEnd}
-          onHandlerStateChange={onLongPressStateChange}
-          minDurationMs={500}
-          shouldCancelWhenOutside={false}
-          simultaneousHandlers={[]}
-        >
-          <PanGestureHandler
-            onGestureEvent={gestureControls.onVolumeGestureEvent}
-            activeOffsetY={[-10, 10]}
-            failOffsetX={[-30, 30]}
-            shouldCancelWhenOutside={false}
-            simultaneousHandlers={[]}
-            maxPointers={1}
-          >
-            <TapGestureHandler
-              onActivated={toggleControls}
-              shouldCancelWhenOutside={false}
-              simultaneousHandlers={[]}
-            >
-              <View style={{
-                position: 'absolute',
-                top: screenDimensions.height * 0.15, // Back to original margin
-                right: 0,
-                width: screenDimensions.width * 0.4, // Back to larger area (40% of screen)
-                height: screenDimensions.height * 0.7, // Back to larger middle portion (70% of screen)
-                zIndex: 10, // Higher z-index to capture gestures
-              }} />
-            </TapGestureHandler>
-          </PanGestureHandler>
-        </LongPressGestureHandler>
+              // Determine the actual error message
+              let displayError = 'An unknown error occurred';
 
-        {/* Center area tap handler - handles both show and hide */}
-        <TapGestureHandler
-          onActivated={() => {
-            if (showControls) {
-              // If controls are visible, hide them
-              const timeoutId = setTimeout(() => {
-                hideControls();
-              }, 0);
-              // Clear any existing timeout
-              if (controlsTimeout.current) {
-                clearTimeout(controlsTimeout.current);
+              if (typeof err?.error === 'string') {
+                displayError = err.error;
+              } else if (err?.error?.errorString) {
+                displayError = err.error.errorString;
+              } else if (err?.errorString) {
+                displayError = err.errorString;
+              } else if (typeof err === 'string') {
+                displayError = err;
+              } else {
+                displayError = JSON.stringify(err);
               }
-              controlsTimeout.current = timeoutId;
-            } else {
-              // If controls are hidden, show them
-              toggleControls();
+
+              modals.setErrorDetails(displayError);
+              modals.setShowErrorModal(true);
+            }}
+            onBuffer={(buf) => playerState.setIsBuffering(buf.isBuffering)}
+            onTracksChanged={(data) => {
+              console.log('[AndroidVideoPlayer] onTracksChanged:', data);
+              if (data?.audioTracks) {
+                const formatted = data.audioTracks.map((t: any) => ({
+                  id: t.id,
+                  name: t.name || `Track ${t.id}`,
+                  language: t.language
+                }));
+                tracksHook.setRnVideoAudioTracks(formatted);
+              }
+              if (data?.subtitleTracks) {
+                const formatted = data.subtitleTracks.map((t: any) => ({
+                  id: t.id,
+                  name: t.name || `Track ${t.id}`,
+                  language: t.language
+                }));
+                tracksHook.setRnVideoTextTracks(formatted);
+              }
+            }}
+            mpvPlayerRef={mpvPlayerRef}
+            exoPlayerRef={exoPlayerRef}
+            pinchRef={pinchRef}
+            onPinchGestureEvent={() => { }}
+            onPinchHandlerStateChange={() => { }}
+            screenDimensions={playerState.screenDimensions}
+            decoderMode={settings.decoderMode}
+            gpuMode={settings.gpuMode}
+            // Dual video engine props
+            useExoPlayer={useExoPlayer}
+            onCodecError={handleCodecError}
+            selectedAudioTrack={tracksHook.selectedAudioTrack as any || undefined}
+            selectedTextTrack={memoizedSelectedTextTrack as any}
+            // Subtitle Styling - pass to MPV for built-in subtitle customization
+            // MPV uses different scaling than React Native, so we apply conversion factors:
+            // - Font size: MPV needs ~1.5x larger values (MPV's sub-font-size vs RN fontSize)
+            // - Border: MPV needs ~1.5x larger values
+            // - Position: MPV sub-pos uses 0=top, 100=bottom, >100=below screen
+            subtitleSize={Math.round(subtitleSize * 1.5)}
+            subtitleColor={subtitleTextColor}
+            subtitleBackgroundOpacity={subtitleBackground ? subtitleBgOpacity : 0}
+            subtitleBorderSize={subtitleOutline ? Math.round(subtitleOutlineWidth * 1.5) : 0}
+            subtitleBorderColor={subtitleOutlineColor}
+            subtitleShadowEnabled={subtitleTextShadow}
+            subtitlePosition={Math.max(50, 100 - Math.floor(subtitleBottomOffset * 0.3))} // Scale offset to MPV range
+            subtitleDelay={subtitleOffsetSec}
+            subtitleAlignment={subtitleAlign}
+          />
+        )}
+
+        {/* Custom Subtitles for addon subtitles */}
+        <CustomSubtitles
+          useCustomSubtitles={useCustomSubtitles}
+          currentSubtitle={currentSubtitle}
+          subtitleSize={subtitleSize}
+          subtitleBackground={subtitleBackground}
+          zoomScale={1.0}
+          textColor={subtitleTextColor}
+          backgroundOpacity={subtitleBgOpacity}
+          textShadow={subtitleTextShadow}
+          outline={subtitleOutline}
+          outlineColor={subtitleOutlineColor}
+          outlineWidth={subtitleOutlineWidth}
+          align={subtitleAlign}
+          bottomOffset={subtitleBottomOffset}
+          letterSpacing={subtitleLetterSpacing}
+          lineHeightMultiplier={subtitleLineHeightMultiplier}
+          controlsVisible={playerState.showControls}
+          controlsExtraOffset={100}
+        />
+        <GestureControls
+          screenDimensions={playerState.screenDimensions}
+          gestureControls={gestureControls}
+          onLongPressActivated={speedControl.activateSpeedBoost}
+          onLongPressEnd={speedControl.deactivateSpeedBoost}
+          onLongPressStateChange={(e) => {
+            if (e.nativeEvent.state !== 4 && e.nativeEvent.state !== 2) speedControl.deactivateSpeedBoost();
+          }}
+          toggleControls={toggleControls}
+          showControls={playerState.showControls}
+          hideControls={hideControls}
+          volume={volume}
+          brightness={brightness}
+          controlsTimeout={controlsTimeout}
+        />
+
+        <PlayerControls
+          showControls={playerState.showControls}
+          fadeAnim={fadeAnim}
+          paused={playerState.paused}
+          title={title}
+          episodeTitle={episodeTitle}
+          season={season}
+          episode={episode}
+          quality={currentQuality || quality}
+          year={year}
+          streamProvider={currentStreamProvider || streamProvider}
+          streamName={currentStreamName}
+          currentTime={playerState.currentTime}
+          duration={playerState.duration}
+          zoomScale={1}
+          currentResizeMode={playerState.resizeMode}
+          ksAudioTracks={tracksHook.ksAudioTracks}
+          selectedAudioTrack={tracksHook.computedSelectedAudioTrack}
+          availableStreams={availableStreams}
+          togglePlayback={controlsHook.togglePlayback}
+          skip={controlsHook.skip}
+          handleClose={handleClose}
+          cycleAspectRatio={cycleResizeMode}
+          cyclePlaybackSpeed={() => {
+            const speeds = [0.5, 1, 1.25, 1.5, 2];
+            const idx = speeds.indexOf(speedControl.playbackSpeed);
+            const next = speeds[(idx + 1) % speeds.length];
+            speedControl.setPlaybackSpeed(next);
+          }}
+          currentPlaybackSpeed={speedControl.playbackSpeed}
+          setShowAudioModal={modals.setShowAudioModal}
+          setShowSubtitleModal={modals.setShowSubtitleModal}
+          setShowSpeedModal={modals.setShowSpeedModal}
+          isSubtitleModalOpen={modals.showSubtitleModal}
+          setShowSourcesModal={modals.setShowSourcesModal}
+          setShowEpisodesModal={type === 'series' ? modals.setShowEpisodesModal : undefined}
+          onSliderValueChange={(val) => { playerState.isDragging.current = true; }}
+          onSlidingStart={() => { playerState.isDragging.current = true; }}
+          onSlidingComplete={(val) => {
+            playerState.isDragging.current = false;
+            controlsHook.seekToTime(val);
+          }}
+          buffered={playerState.buffered}
+          formatTime={formatTime}
+          playerBackend={useExoPlayer ? 'ExoPlayer' : 'MPV'}
+          onSwitchToMPV={handleManualSwitchToMPV}
+          useExoPlayer={useExoPlayer}
+        />
+
+        <SpeedActivatedOverlay
+          visible={speedControl.showSpeedActivatedOverlay}
+          opacity={speedControl.speedActivatedOverlayOpacity}
+          speed={speedControl.holdToSpeedValue}
+          screenDimensions={playerState.screenDimensions}
+        />
+
+        <PauseOverlay
+          visible={playerState.paused && !playerState.showControls}
+          onClose={() => playerState.setShowControls(true)}
+          title={title}
+          episodeTitle={episodeTitle}
+          season={season}
+          episode={episode}
+          year={year}
+          type={type || 'movie'}
+          description={nextEpisodeHook.currentEpisodeDescription || ''}
+          cast={cast}
+          screenDimensions={playerState.screenDimensions}
+        />
+
+        {/* Parental Guide Overlay - Shows after controls first hide */}
+        <ParentalGuideOverlay
+          imdbId={imdbId || (id?.startsWith('tt') ? id : undefined)}
+          type={type as 'movie' | 'series'}
+          season={season}
+          episode={episode}
+          shouldShow={playerState.isVideoLoaded && !playerState.showControls && !playerState.paused}
+        />
+
+        {/* Skip Intro Button - Shows during intro section of TV episodes */}
+        <SkipIntroButton
+          imdbId={imdbId || (id?.startsWith('tt') ? id : undefined)}
+          type={type || 'movie'}
+          season={season}
+          episode={episode}
+          currentTime={playerState.currentTime}
+          onSkip={(endTime) => controlsHook.seekToTime(endTime)}
+          controlsVisible={playerState.showControls}
+          controlsFixedOffset={100}
+        />
+
+        {/* Up Next Button - Shows near end of episodes */}
+        <UpNextButton
+          type={type || 'movie'}
+          nextEpisode={nextEpisodeHook.nextEpisode}
+          currentTime={playerState.currentTime}
+          duration={playerState.duration}
+          insets={insets}
+          isLoading={false}
+          nextLoadingProvider={null}
+          nextLoadingQuality={null}
+          nextLoadingTitle={null}
+          onPress={() => {
+            if (nextEpisodeHook.nextEpisode) {
+              logger.log(`[AndroidVideoPlayer] Opening streams for next episode: S${nextEpisodeHook.nextEpisode.season_number}E${nextEpisodeHook.nextEpisode.episode_number}`);
+              modals.setSelectedEpisodeForStreams(nextEpisodeHook.nextEpisode);
+              modals.setShowEpisodeStreamsModal(true);
             }
           }}
+<<<<<<< HEAD
           shouldCancelWhenOutside={false}
           simultaneousHandlers={[]}
         >
@@ -4103,29 +2789,62 @@ const AndroidVideoPlayer: React.FC = () => {
           ksAudioTracks={useVLC ? vlcAudioTracks : rnVideoAudioTracks}
           selectedAudioTrack={useVLC ? (vlcSelectedAudioTrack ?? null) : (selectedAudioTrack?.type === SelectedTrackType.INDEX && selectedAudioTrack.value !== undefined ? Number(selectedAudioTrack.value) : null)}
           selectAudioTrack={selectAudioTrackById}
+=======
+          metadata={metadataResult?.metadata ? { poster: metadataResult.metadata.poster, id: metadataResult.metadata.id } : undefined}
+          controlsVisible={playerState.showControls}
+          controlsFixedOffset={100}
+>>>>>>> origin/main
         />
-      </>
+      </View>
+
+      <AudioTrackModal
+        showAudioModal={modals.showAudioModal}
+        setShowAudioModal={modals.setShowAudioModal}
+        ksAudioTracks={tracksHook.ksAudioTracks}
+        selectedAudioTrack={tracksHook.computedSelectedAudioTrack}
+        selectAudioTrack={(trackId) => {
+          tracksHook.setSelectedAudioTrack(trackId === null ? null : { type: 'index', value: trackId });
+          // Actually tell MPV to switch the audio track
+          if (trackId !== null && mpvPlayerRef.current) {
+            mpvPlayerRef.current.setAudioTrack(trackId);
+          }
+        }}
+      />
+
       <SubtitleModals
-        showSubtitleModal={showSubtitleModal}
-        setShowSubtitleModal={setShowSubtitleModal}
-        showSubtitleLanguageModal={showSubtitleLanguageModal}
-        setShowSubtitleLanguageModal={setShowSubtitleLanguageModal}
+        showSubtitleModal={modals.showSubtitleModal}
+        setShowSubtitleModal={modals.setShowSubtitleModal}
+        showSubtitleLanguageModal={false}
+        setShowSubtitleLanguageModal={() => { }}
         isLoadingSubtitleList={isLoadingSubtitleList}
         isLoadingSubtitles={isLoadingSubtitles}
-        customSubtitles={customSubtitles}
+        customSubtitles={[]}
         availableSubtitles={availableSubtitles}
-        ksTextTracks={ksTextTracks}
-        selectedTextTrack={computedSelectedTextTrack}
+        ksTextTracks={tracksHook.ksTextTracks}
+        selectedTextTrack={tracksHook.computedSelectedTextTrack}
         useCustomSubtitles={useCustomSubtitles}
+        isKsPlayerActive={true}
+        useExoPlayer={useExoPlayer}
         subtitleSize={subtitleSize}
         subtitleBackground={subtitleBackground}
         fetchAvailableSubtitles={fetchAvailableSubtitles}
         loadWyzieSubtitle={loadWyzieSubtitle}
-        selectTextTrack={selectTextTrack}
+        selectTextTrack={(trackId) => {
+          tracksHook.setSelectedTextTrack(trackId);
+          // For MPV, manually switch the subtitle track
+          if (!useExoPlayer && mpvPlayerRef.current) {
+            mpvPlayerRef.current.setSubtitleTrack(trackId);
+          }
+          // For ExoPlayer, the selectedTextTrack prop will be updated via memoizedSelectedTextTrack
+          // which triggers a re-render with the new track selection
+          // Disable custom subtitles when selecting built-in track
+          setUseCustomSubtitles(false);
+          modals.setShowSubtitleModal(false);
+        }}
         disableCustomSubtitles={disableCustomSubtitles}
-        increaseSubtitleSize={increaseSubtitleSize}
-        decreaseSubtitleSize={decreaseSubtitleSize}
-        toggleSubtitleBackground={toggleSubtitleBackground}
+        increaseSubtitleSize={() => setSubtitleSize(prev => Math.min(prev + 2, 60))}
+        decreaseSubtitleSize={() => setSubtitleSize(prev => Math.max(prev - 2, 12))}
+        toggleSubtitleBackground={() => setSubtitleBackground(prev => !prev)}
         subtitleTextColor={subtitleTextColor}
         setSubtitleTextColor={setSubtitleTextColor}
         subtitleBgOpacity={subtitleBgOpacity}
@@ -4148,51 +2867,54 @@ const AndroidVideoPlayer: React.FC = () => {
         setSubtitleLineHeightMultiplier={setSubtitleLineHeightMultiplier}
         subtitleOffsetSec={subtitleOffsetSec}
         setSubtitleOffsetSec={setSubtitleOffsetSec}
+        selectedExternalSubtitleId={selectedExternalSubtitleId}
+        onOpenSyncModal={() => setShowSyncModal(true)}
       />
 
-      <SpeedModal
-        showSpeedModal={showSpeedModal}
-        setShowSpeedModal={setShowSpeedModal}
-        currentSpeed={playbackSpeed}
-        setPlaybackSpeed={setPlaybackSpeed}
-        holdToSpeedEnabled={holdToSpeedEnabled}
-        setHoldToSpeedEnabled={setHoldToSpeedEnabled}
-        holdToSpeedValue={holdToSpeedValue}
-        setHoldToSpeedValue={setHoldToSpeedValue}
+      {/* Visual Subtitle Sync Modal */}
+      <SubtitleSyncModal
+        visible={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        onConfirm={(offset) => setSubtitleOffsetSec(offset)}
+        currentOffset={subtitleOffsetSec}
+        currentTime={playerState.currentTime}
+        subtitles={customSubtitles}
+        primaryColor={currentTheme.colors.primary}
       />
 
       <SourcesModal
-        showSourcesModal={showSourcesModal}
-        setShowSourcesModal={setShowSourcesModal}
+        showSourcesModal={modals.showSourcesModal}
+        setShowSourcesModal={modals.setShowSourcesModal}
         availableStreams={availableStreams}
         currentStreamUrl={currentStreamUrl}
-        onSelectStream={handleSelectStream}
+        onSelectStream={(stream) => handleSelectStream(stream)}
       />
 
-      {type === 'series' && (
-        <>
-          <EpisodesModal
-            showEpisodesModal={showEpisodesModal}
-            setShowEpisodesModal={setShowEpisodesModal}
-            groupedEpisodes={groupedEpisodes || metadataGroupedEpisodes || {}}
-            currentEpisode={season && episode ? { season, episode } : undefined}
-            metadata={metadata ? { poster: metadata.poster, id: metadata.id } : undefined}
-            onSelectEpisode={handleEpisodeSelect}
-          />
+      <SpeedModal
+        showSpeedModal={modals.showSpeedModal}
+        setShowSpeedModal={modals.setShowSpeedModal}
+        currentSpeed={speedControl.playbackSpeed}
+        setPlaybackSpeed={speedControl.setPlaybackSpeed}
+        holdToSpeedEnabled={speedControl.holdToSpeedEnabled}
+        setHoldToSpeedEnabled={speedControl.setHoldToSpeedEnabled}
+        holdToSpeedValue={speedControl.holdToSpeedValue}
+        setHoldToSpeedValue={speedControl.setHoldToSpeedValue}
+      />
 
-          <EpisodeStreamsModal
-            visible={showEpisodeStreamsModal}
-            episode={selectedEpisodeForStreams}
-            onClose={() => {
-              setShowEpisodeStreamsModal(false);
-              setShowEpisodesModal(true);
-            }}
-            onSelectStream={handleEpisodeStreamSelect}
-            metadata={metadata ? { id: metadata.id, name: metadata.name } : undefined}
-          />
-        </>
-      )}
+      <EpisodesModal
+        showEpisodesModal={modals.showEpisodesModal}
+        setShowEpisodesModal={modals.setShowEpisodesModal}
+        groupedEpisodes={groupedEpisodes || (metadataResult as any)?.groupedEpisodes}
+        currentEpisode={season && episode ? { season, episode } : undefined}
+        metadata={metadata}
+        onSelectEpisode={(ep) => {
+          modals.setSelectedEpisodeForStreams(ep);
+          modals.setShowEpisodesModal(false);
+          modals.setShowEpisodeStreamsModal(true);
+        }}
+      />
 
+<<<<<<< HEAD
       {/* Error Modal */}
       {isMounted.current && (
         <Modal
@@ -4237,28 +2959,18 @@ const AndroidVideoPlayer: React.FC = () => {
                   <MaterialIcons name="close" size={24} color="#ffffff" />
                 </Focusable>
               </View>
+=======
+>>>>>>> origin/main
 
-              <Text style={{
-                fontSize: 14,
-                color: '#cccccc',
-                marginBottom: 16,
-                lineHeight: 20
-              }}>The video player encountered an error and cannot continue playback:</Text>
 
-              <View style={{
-                backgroundColor: '#2a2a2a',
-                borderRadius: 8,
-                padding: 12,
-                marginBottom: 20,
-                maxHeight: 200
-              }}>
-                <Text style={{
-                  fontSize: 12,
-                  color: '#ff8888',
-                  fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
-                }}>{errorDetails}</Text>
-              </View>
+      <ErrorModal
+        showErrorModal={modals.showErrorModal}
+        setShowErrorModal={modals.setShowErrorModal}
+        errorDetails={modals.errorDetails}
+        onDismiss={handleClose}
+      />
 
+<<<<<<< HEAD
               <View style={{
                 flexDirection: 'row',
                 justifyContent: 'flex-end'
@@ -4280,21 +2992,42 @@ const AndroidVideoPlayer: React.FC = () => {
                   }}>Exit Player</Text>
                 </Focusable>
               </View>
+=======
+      <EpisodeStreamsModal
+        visible={modals.showEpisodeStreamsModal}
+        onClose={() => modals.setShowEpisodeStreamsModal(false)}
+        episode={modals.selectedEpisodeForStreams}
+        onSelectStream={handleEpisodeStreamSelect}
+        metadata={{ id: id, name: title }}
+      />
 
-              <Text style={{
-                fontSize: 12,
-                color: '#888888',
-                textAlign: 'center',
-                marginTop: 12
-              }}>This dialog will auto-close in 5 seconds</Text>
-            </View>
-          </View>
-        </Modal>
-      )}
+      {/* MPV Switch Confirmation Alert */}
+      <CustomAlert
+        visible={showMpvSwitchAlert}
+        title="Switch to MPV Player?"
+        message="This will switch from ExoPlayer to MPV player. Use this if you're facing playback issues that don't automatically switch to MPV. The switch cannot be undone during this playback session."
+        onClose={() => setShowMpvSwitchAlert(false)}
+        actions={[
+          {
+            label: 'Cancel',
+            onPress: () => setShowMpvSwitchAlert(false),
+          },
+          {
+            label: 'Switch to MPV',
+            onPress: () => {
+              setShowMpvSwitchAlert(false);
+              confirmSwitchToMPV();
+            },
+          },
+        ]}
+      />
+>>>>>>> origin/main
+
     </View>
   );
 };
 
+<<<<<<< HEAD
 // New styles for the gesture indicator
 const localStyles = StyleSheet.create({
   gestureIndicatorContainer: {
@@ -4351,4 +3084,6 @@ const localStyles = StyleSheet.create({
   },
 });
 
+=======
+>>>>>>> origin/main
 export default AndroidVideoPlayer;

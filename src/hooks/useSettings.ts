@@ -37,6 +37,7 @@ export interface AppSettings {
   useExternalPlayer: boolean;
   preferredPlayer: 'internal' | 'vlc' | 'infuse' | 'outplayer' | 'vidhub' | 'infuse_livecontainer' | 'external';
   showHeroSection: boolean;
+  showThisWeekSection: boolean; // Toggle "This Week" section
   featuredContentSource: 'tmdb' | 'catalogs';
   heroStyle: 'legacy' | 'carousel' | 'appletv';
   selectedHeroCatalogs: string[]; // Array of catalog IDs to display in hero section
@@ -78,8 +79,21 @@ export interface AppSettings {
   // AI
   aiChatEnabled: boolean; // Enable/disable Ask AI and AI features
   // Metadata enrichment
-  enrichMetadataWithTMDB: boolean; // Use TMDB to enrich metadata (cast, certification, posters, fallbacks)
+  enrichMetadataWithTMDB: boolean; // Master switch - use TMDB to enrich metadata
   useTmdbLocalizedMetadata: boolean; // Use TMDB localized metadata (titles, overviews) per tmdbLanguagePreference
+  // Granular TMDB enrichment controls (only apply when enrichMetadataWithTMDB is true)
+  tmdbEnrichCast: boolean; // Use TMDB cast data (actors, directors, crew)
+  tmdbEnrichLogos: boolean; // Use TMDB title logos
+  tmdbEnrichBanners: boolean; // Use TMDB backdrop/banner images
+  tmdbEnrichCertification: boolean; // Show TMDB content certification (PG-13, R, etc.)
+  tmdbEnrichRecommendations: boolean; // Show TMDB recommendations
+  tmdbEnrichEpisodes: boolean; // Use TMDB episode data (thumbnails, info, fallbacks)
+  tmdbEnrichSeasonPosters: boolean; // Use TMDB season posters
+  tmdbEnrichProductionInfo: boolean; // Show networks/production companies with logos
+  tmdbEnrichMovieDetails: boolean; // Show movie details (budget, revenue, tagline, etc.)
+  tmdbEnrichTvDetails: boolean; // Show TV details (status, seasons count, networks, etc.)
+  tmdbEnrichCollections: boolean; // Show movie collections/franchises
+  tmdbEnrichTitleDescription: boolean; // Use TMDB title/description (overrides addon when localization enabled)
   // Trakt integration
   showTraktComments: boolean; // Show Trakt comments in metadata screens
   // Continue Watching behavior
@@ -88,6 +102,16 @@ export interface AppSettings {
   streamCacheTTL: number; // Stream cache duration in milliseconds (default: 1 hour)
   enableStreamsBackdrop: boolean; // Enable blurred backdrop background on StreamsScreen mobile
   useExternalPlayerForDownloads: boolean; // Enable/disable external player for downloaded content
+  // Android MPV player settings
+  videoPlayerEngine: 'auto' | 'mpv'; // Video player engine: auto (ExoPlayer primary, MPV fallback) or mpv (MPV only)
+  decoderMode: 'auto' | 'sw' | 'hw' | 'hw+'; // Decoder mode: auto (auto-copy), sw (software), hw (mediacodec-copy), hw+ (mediacodec)
+  gpuMode: 'gpu' | 'gpu-next'; // GPU rendering mode: gpu (standard) or gpu-next (advanced HDR/color)
+  showDiscover: boolean;
+  // Audio/Subtitle Language Preferences
+  preferredSubtitleLanguage: string; // Preferred language for subtitles (ISO 639-1 code, e.g., 'en', 'es', 'fr')
+  preferredAudioLanguage: string; // Preferred language for audio tracks (ISO 639-1 code)
+  subtitleSourcePreference: 'internal' | 'external' | 'any'; // Prefer internal (embedded), external (addon), or any
+  enableSubtitleAutoSelect: boolean; // Auto-select subtitles based on preferences
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -100,6 +124,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   useExternalPlayer: false,
   preferredPlayer: 'internal',
   showHeroSection: true,
+  showThisWeekSection: true, // Enabled by default
   featuredContentSource: 'catalogs',
   heroStyle: 'appletv',
   selectedHeroCatalogs: [], // Empty array means all catalogs are selected
@@ -142,6 +167,19 @@ export const DEFAULT_SETTINGS: AppSettings = {
   // Metadata enrichment
   enrichMetadataWithTMDB: true,
   useTmdbLocalizedMetadata: false,
+  // Granular TMDB enrichment controls (all enabled by default for backward compatibility)
+  tmdbEnrichCast: true,
+  tmdbEnrichLogos: true,
+  tmdbEnrichBanners: true,
+  tmdbEnrichCertification: true,
+  tmdbEnrichRecommendations: true,
+  tmdbEnrichEpisodes: true,
+  tmdbEnrichSeasonPosters: true,
+  tmdbEnrichProductionInfo: true,
+  tmdbEnrichMovieDetails: true,
+  tmdbEnrichTvDetails: true,
+  tmdbEnrichCollections: true,
+  tmdbEnrichTitleDescription: true, // Enabled by default for backward compatibility
   // Trakt integration
   showTraktComments: true, // Show Trakt comments by default when authenticated
   // Continue Watching behavior
@@ -149,6 +187,16 @@ export const DEFAULT_SETTINGS: AppSettings = {
   openMetadataScreenWhenCacheDisabled: true, // Default to StreamsScreen when cache disabled
   streamCacheTTL: 60 * 60 * 1000, // Default: 1 hour in milliseconds
   enableStreamsBackdrop: true, // Enable by default (new behavior)
+  // Android MPV player settings
+  videoPlayerEngine: 'auto', // Default to auto (ExoPlayer primary, MPV fallback)
+  decoderMode: 'auto', // Default to auto (best compatibility and performance)
+  gpuMode: 'gpu', // Default to gpu (gpu-next for advanced HDR)
+  showDiscover: true, // Show Discover section in SearchScreen
+  // Audio/Subtitle Language Preferences
+  preferredSubtitleLanguage: 'en', // Default to English subtitles
+  preferredAudioLanguage: 'en', // Default to English audio
+  subtitleSourcePreference: 'internal', // Prefer internal/embedded subtitles first
+  enableSubtitleAutoSelect: true, // Auto-select subtitles by default
 };
 
 const SETTINGS_STORAGE_KEY = 'app_settings';

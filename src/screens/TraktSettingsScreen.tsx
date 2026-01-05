@@ -343,6 +343,18 @@ const TraktSettingsScreen: React.FC = () => {
         Trakt Settings
       </Text>
 
+      {/* Maintenance Mode Banner */}
+      {traktService.isMaintenanceMode() && (
+        <View style={styles.maintenanceBanner}>
+          <MaterialIcons name="engineering" size={24} color="#FFF" />
+          <View style={styles.maintenanceBannerTextContainer}>
+            <Text style={styles.maintenanceBannerTitle}>Under Maintenance</Text>
+            <Text style={styles.maintenanceBannerMessage}>
+              {traktService.getMaintenanceMessage()}
+            </Text>
+          </View>
+        </View>
+      )}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -354,6 +366,38 @@ const TraktSettingsScreen: React.FC = () => {
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+            </View>
+          ) : traktService.isMaintenanceMode() ? (
+            <View style={styles.signInContainer}>
+              <TraktIcon
+                width={120}
+                height={120}
+                style={[styles.traktLogo, { opacity: 0.5 }]}
+              />
+              <Text style={[
+                styles.signInTitle,
+                { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
+              ]}>
+                Trakt Unavailable
+              </Text>
+              <Text style={[
+                styles.signInDescription,
+                { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
+              ]}>
+                The Trakt integration is temporarily paused for maintenance. All syncing and authentication is disabled until maintenance is complete.
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { backgroundColor: currentTheme.colors.border, opacity: 0.6 }
+                ]}
+                disabled={true}
+              >
+                <MaterialIcons name="engineering" size={20} color={currentTheme.colors.mediumEmphasis} style={{ marginRight: 8 }} />
+                <Text style={[styles.buttonText, { color: currentTheme.colors.mediumEmphasis }]}>
+                  Service Under Maintenance
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : isAuthenticated && userProfile ? (
             <View style={styles.profileContainer}>
@@ -535,7 +579,7 @@ const TraktSettingsScreen: React.FC = () => {
                   styles.infoText,
                   { color: currentTheme.colors.mediumEmphasis }
                 ]}>
-                  When connected to Trakt, Continue Watching is sourced from Trakt. Account sync for watch progress is disabled to avoid conflicts.
+                  When connected to Trakt, full history is synced directly from the API and is not written to local storage. Your Continue Watching list reflects your global Trakt progress.
                 </Text>
               </View>
               <View style={styles.settingItem}>
@@ -857,6 +901,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
+<<<<<<< HEAD
   // TV Device Code styles
   codeContainer: {
     width: '100%',
@@ -896,6 +941,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     alignItems: 'center',
+=======
+  // Maintenance mode styles
+  maintenanceBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E67E22',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
+  },
+  maintenanceBannerTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  maintenanceBannerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  maintenanceBannerMessage: {
+    fontSize: 13,
+    color: '#FFF',
+    opacity: 0.9,
+>>>>>>> origin/main
   },
 });
 

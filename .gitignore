@@ -51,6 +51,7 @@ android/build/
 android/.gradle/
 android/app/libs/*.aar
 !android/app/libs/lib-decoder-ffmpeg-release.aar
+!android/app/libs/libmpv-release.aar
 HEATING_OPTIMIZATIONS.md
 # sliderreadme.md
 .cursor/mcp.json
@@ -80,6 +81,7 @@ bottomnav.md
 mmkv.md
 fix-android-scroll-lag-summary.md
 server/cache-server
+server/campaign-manager
 carousal.md
 node_modules
 expofs.md
@@ -88,3 +90,8 @@ android/sentry.properties
 Stremio addons refer
 trakt-docs
 trakt-docss
+
+# Removed submodules (kept locally)
+libmpv-android/
+mpv-android/
+mpvKt/

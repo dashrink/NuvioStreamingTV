@@ -52,6 +52,7 @@ interface ThisWeekEpisode {
   vote_average: number;
   still_path: string | null;
   season_poster_path: string | null;
+  addonId?: string;
   // Grouping fields
   isGroup?: boolean;
   episodeCount?: number;
@@ -204,7 +205,8 @@ export const ThisWeekSection = React.memo(() => {
     if (episode.isGroup) {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
-        type: 'series'
+        type: 'series',
+        addonId: episode.addonId,
       });
       return;
     }
@@ -215,7 +217,8 @@ export const ThisWeekSection = React.memo(() => {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
         type: 'series',
-        episodeId
+        episodeId,
+        addonId: episode.addonId,
       });
       return;
     }
@@ -225,7 +228,8 @@ export const ThisWeekSection = React.memo(() => {
     navigation.navigate('Streams', {
       id: episode.seriesId,
       type: 'series',
-      episodeId
+      episodeId,
+      addonId: episode.addonId,
     });
   };
 

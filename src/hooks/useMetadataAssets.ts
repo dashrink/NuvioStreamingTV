@@ -120,8 +120,13 @@ export const useMetadataAssets = (
           setLoadingBanner(true);
         }
 
+<<<<<<< HEAD
         // If enrichment is disabled, use addon banner and don't fetch from external sources
         if (!settings.enrichMetadataWithTMDB) {
+=======
+        // If enrichment or banner enrichment is disabled, use addon banner and don't fetch from external sources
+        if (!settings.enrichMetadataWithTMDB || !settings.tmdbEnrichBanners) {
+>>>>>>> origin/main
           const addonBanner = metadata?.banner || null;
           if (isMountedRef.current && addonBanner && addonBanner !== bannerImage) {
             setBannerImage(addonBanner);
@@ -141,8 +146,11 @@ export const useMetadataAssets = (
           let finalBanner: string | null = bannerImage; // Start with current to prevent flicker
           let bannerSourceType: 'tmdb' | 'default' = (bannerSource === 'tmdb' || bannerSource === 'default') ? bannerSource : 'default';
 
+<<<<<<< HEAD
           let tmdbId = null;
 
+=======
+>>>>>>> origin/main
           // TMDB path only
           if (currentPreference === 'tmdb') {
             if (id.startsWith('tmdb:')) {
@@ -178,17 +186,25 @@ export const useMetadataAssets = (
                 // Only update if request wasn't aborted and component is still mounted
                 if (!isMountedRef.current) return;
 
+<<<<<<< HEAD
                 if (details?.backdrop_path) {
                   finalBanner = tmdbService.getImageUrl(details.backdrop_path);
                   bannerSourceType = 'tmdb';
 
                   // Preload the image
+=======
+                if (metadata?.banner) {
+                  finalBanner = metadata.banner;
+                  bannerSourceType = 'default';
+                } else if (details?.backdrop_path) {
+                  finalBanner = tmdbService.getImageUrl(details.backdrop_path);
+                  bannerSourceType = 'tmdb';
+>>>>>>> origin/main
                   if (finalBanner) {
                     FastImage.preload([{ uri: finalBanner }]);
                   }
                 } else {
-                  // TMDB has no backdrop, gracefully fall back
-                  finalBanner = metadata?.banner || bannerImage || null;
+                  finalBanner = bannerImage || null;
                   bannerSourceType = 'default';
                 }
               } catch (error) {
@@ -209,11 +225,16 @@ export const useMetadataAssets = (
             }
           }
 
+<<<<<<< HEAD
+=======
+          // Final fallback to metadata banner only
+>>>>>>> origin/main
           if (!finalBanner) {
             finalBanner = metadata?.banner || null;
             bannerSourceType = 'default';
           }
 
+<<<<<<< HEAD
           // Enhanced: Attempt to upgrade quality if it's a known TMDB URL format (even if from addon)
           if (finalBanner && typeof finalBanner === 'string') {
             // Check if it's a TMDB URL with restricted width
@@ -227,6 +248,8 @@ export const useMetadataAssets = (
             }
           }
 
+=======
+>>>>>>> origin/main
           // CRITICAL: Batch all state updates into a single call to prevent race conditions
           // This ensures the native view hierarchy doesn't receive conflicting unmount/remount signals
           if (isMountedRef.current && (finalBanner !== bannerImage || bannerSourceType !== bannerSource)) {
@@ -265,7 +288,7 @@ export const useMetadataAssets = (
 
     pendingFetchRef.current = fetchPromise;
     return fetchPromise;
-  }, [metadata, id, type, imdbId, settings.logoSourcePreference, settings.tmdbLanguagePreference, settings.enrichMetadataWithTMDB, foundTmdbId, bannerImage, bannerSource]);
+  }, [metadata, id, type, imdbId, settings.logoSourcePreference, settings.tmdbLanguagePreference, settings.enrichMetadataWithTMDB, settings.tmdbEnrichBanners, foundTmdbId, bannerImage, bannerSource]);
 
   // Fetch banner when needed
   useEffect(() => {

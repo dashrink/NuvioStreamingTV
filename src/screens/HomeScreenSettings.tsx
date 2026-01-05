@@ -65,11 +65,11 @@ const SettingItem: React.FC<SettingItemProps> = ({
   const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={onPress ? 0.7 : 1}
       onPress={onPress}
       style={[
-        styles.settingItem, 
+        styles.settingItem,
         !isLast && styles.settingItemBorder,
         { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }
       ]}
@@ -128,8 +128,8 @@ const HomeScreenSettings: React.FC = () => {
         if (Platform.OS === 'ios') {
           StatusBar.setHidden(false);
         }
-      } catch {}
-      return () => {};
+      } catch { }
+      return () => { };
     }, [isDarkMode, colors.darkBackground])
   );
 
@@ -171,25 +171,25 @@ const HomeScreenSettings: React.FC = () => {
       if (isTabletDevice && !Platform.isTV && settings.heroStyle !== 'carousel') {
         updateSetting('heroStyle', 'carousel' as any);
       }
-    } catch {}
+    } catch { }
   }, [isTabletDevice, settings.heroStyle, updateSetting]);
 
   // Radio button component for content source selection
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
-    <TouchableOpacity 
-      style={styles.radioOption} 
+    <TouchableOpacity
+      style={styles.radioOption}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.radioContainer}>
         <View style={[
-          styles.radio, 
+          styles.radio,
           { borderColor: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }
         ]}>
           {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
         </View>
         <Text style={[
-          styles.radioLabel, 
+          styles.radioLabel,
           { color: isDarkMode ? colors.highEmphasis : colors.textDark }
         ]}>
           {label}
@@ -246,9 +246,9 @@ const HomeScreenSettings: React.FC = () => {
   }, [settings.selectedHeroCatalogs]);
 
   const ChevronRight = () => (
-    <MaterialIcons 
-      name="chevron-right" 
-      size={24} 
+    <MaterialIcons
+      name="chevron-right"
+      size={24}
       color={isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
     />
   );
@@ -261,30 +261,30 @@ const HomeScreenSettings: React.FC = () => {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? colors.highEmphasis : colors.textDark} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? colors.highEmphasis : colors.textDark}
           />
           <Text style={[styles.backText, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
+
       <Text style={[styles.headerTitle, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
         Home Screen Settings
       </Text>
 
       {/* Saved indicator */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.savedIndicator, 
-          { 
+          styles.savedIndicator,
+          {
             opacity: fadeAnim,
             backgroundColor: isDarkMode ? 'rgba(0, 180, 150, 0.9)' : 'rgba(0, 180, 150, 0.9)'
           }
@@ -295,7 +295,7 @@ const HomeScreenSettings: React.FC = () => {
         <Text style={styles.savedIndicatorText}>Changes Applied</Text>
       </Animated.View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -309,9 +309,22 @@ const HomeScreenSettings: React.FC = () => {
             isDarkMode={isDarkMode}
             colors={colors}
             renderControl={() => (
-              <CustomSwitch 
-                value={settings.showHeroSection} 
-                onValueChange={(value) => handleUpdateSetting('showHeroSection', value)} 
+              <CustomSwitch
+                value={settings.showHeroSection}
+                onValueChange={(value) => handleUpdateSetting('showHeroSection', value)}
+              />
+            )}
+          />
+          <SettingItem
+            title="Show This Week Section"
+            description="New episodes from current week"
+            icon="date-range"
+            isDarkMode={isDarkMode}
+            colors={colors}
+            renderControl={() => (
+              <CustomSwitch
+                value={settings.showThisWeekSection}
+                onValueChange={(value) => handleUpdateSetting('showThisWeekSection', value)}
               />
             )}
           />
@@ -331,19 +344,21 @@ const HomeScreenSettings: React.FC = () => {
 
         {settings.showHeroSection && (
           <>
-            <View style={styles.segmentCard}>
-              <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Hero Layout</Text>
-              <SegmentedControl
-                options={[
-                  { label: 'Legacy', value: 'legacy' }, 
-                  { label: 'Carousel', value: 'carousel' },
-                  { label: 'Apple TV', value: 'appletv' }
-                ]}
-                value={settings.heroStyle}
-                onChange={(val) => handleUpdateSetting('heroStyle', val as any)}
-              />
-              <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Full-width banner, swipeable cards, or Apple TV style</Text>
-            </View>
+            {!isTabletDevice && (
+              <View style={styles.segmentCard}>
+                <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Hero Layout</Text>
+                <SegmentedControl
+                  options={[
+                    { label: 'Legacy', value: 'legacy' },
+                    { label: 'Carousel', value: 'carousel' },
+                    { label: 'Apple TV', value: 'appletv' }
+                  ]}
+                  value={settings.heroStyle}
+                  onChange={(val) => handleUpdateSetting('heroStyle', val as any)}
+                />
+                <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Full-width banner, swipeable cards, or Apple TV style</Text>
+              </View>
+            )}
 
             <View style={styles.segmentCard}>
               <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
@@ -367,7 +382,7 @@ const HomeScreenSettings: React.FC = () => {
                   isDarkMode={isDarkMode}
                   colors={colors}
                   renderControl={() => (
-                    <CustomSwitch 
+                    <CustomSwitch
                       value={settings.enableHomeHeroBackground}
                       onValueChange={(value) => handleUpdateSetting('enableHomeHeroBackground', value)}
                     />
@@ -383,7 +398,7 @@ const HomeScreenSettings: React.FC = () => {
           <Text style={[styles.cardHeader, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Posters</Text>
           <View style={styles.settingsRowInline}>
             <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Show Titles</Text>
-            <CustomSwitch 
+            <CustomSwitch
               value={settings.showPosterTitles}
               onValueChange={(value) => handleUpdateSetting('showPosterTitles', value)}
             />

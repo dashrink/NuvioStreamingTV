@@ -113,7 +113,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.mediumGray,
     fontSize: 15,
   },
-  scraperItem: {
+  pluginItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.elevation2,
@@ -126,46 +126,46 @@ const createStyles = (colors: any) => StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  scraperLogo: {
+  pluginLogo: {
     width: 40,
     height: 40,
     marginRight: 12,
     borderRadius: 6,
     backgroundColor: colors.elevation3,
   },
-  scraperInfo: {
+  pluginInfo: {
     flex: 1,
   },
-  scraperName: {
+  pluginName: {
     fontSize: 15,
     fontWeight: '600',
     color: colors.white,
     marginBottom: 2,
   },
-  scraperDescription: {
+  pluginDescription: {
     fontSize: 13,
     color: colors.mediumGray,
     marginBottom: 4,
     lineHeight: 18,
   },
-  scraperMeta: {
+  pluginMeta: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  scraperVersion: {
+  pluginVersion: {
     fontSize: 12,
     color: colors.mediumGray,
   },
-  scraperDot: {
+  pluginDot: {
     fontSize: 12,
     color: colors.mediumGray,
     marginHorizontal: 8,
   },
-  scraperTypes: {
+  pluginTypes: {
     fontSize: 12,
     color: colors.mediumGray,
   },
-  scraperLanguage: {
+  pluginLanguage: {
     fontSize: 12,
     color: colors.mediumGray,
   },
@@ -307,10 +307,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  scrapersList: {
+  pluginsList: {
     gap: 12,
   },
-  scrapersContainer: {
+  pluginsContainer: {
     marginBottom: 24,
   },
   inputContainer: {
@@ -439,6 +439,45 @@ const createStyles = (colors: any) => StyleSheet.create({
   filterChipTextSelected: {
     color: colors.white,
     fontWeight: '600',
+  },
+  // Repository tabs
+  repositoryTabsContainer: {
+    marginBottom: 16,
+  },
+  repositoryTabsScroll: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  repositoryTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: colors.elevation2,
+    borderWidth: 1,
+    borderColor: colors.elevation3,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  repositoryTabSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  repositoryTabText: {
+    color: colors.mediumGray,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  repositoryTabTextSelected: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  repositoryTabCount: {
+    fontSize: 12,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  repositoryTabCountSelected: {
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -649,7 +688,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  scraperCard: {
+  pluginCard: {
     backgroundColor: colors.elevation2,
     borderRadius: 12,
     padding: 16,
@@ -658,29 +697,29 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: colors.elevation3,
     minHeight: 120,
   },
-  scraperCardHeader: {
+  pluginCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  scraperCardInfo: {
+  pluginCardInfo: {
     flex: 1,
     marginRight: 12,
   },
-  scraperCardMeta: {
+  pluginCardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
     gap: 8,
     flexWrap: 'wrap',
   },
-  scraperCardMetaItem: {
+  pluginCardMetaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
     marginBottom: 4,
   },
-  scraperCardMetaText: {
+  pluginCardMetaText: {
     fontSize: 12,
     color: colors.mediumGray,
   },
@@ -760,6 +799,29 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: colors.white,
+  },
+  repositoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  repositoryNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  pluginRepositoryBadge: {
+    backgroundColor: colors.elevation3,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  pluginRepositoryBadgeText: {
+    fontSize: 10,
+    color: colors.mediumGray,
+    fontWeight: '500',
   },
 });
 
@@ -862,7 +924,7 @@ const PluginsScreen: React.FC = () => {
 
   // Core state
   const [repositoryUrl, setRepositoryUrl] = useState(settings.scraperRepositoryUrl);
-  const [installedScrapers, setInstalledScrapers] = useState<ScraperInfo[]>([]);
+  const [installedPlugins, setInstalledPlugins] = useState<ScraperInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasRepository, setHasRepository] = useState(false);
@@ -881,9 +943,10 @@ const PluginsScreen: React.FC = () => {
   // New UX state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'movie' | 'tv'>('all');
+  const [selectedRepositoryTab, setSelectedRepositoryTab] = useState<string>('all'); // 'all' or repository ID
   const [expandedSections, setExpandedSections] = useState({
     repository: true,
-    scrapers: true,
+    plugins: true,
     settings: false,
     quality: false,
   });
@@ -904,29 +967,39 @@ const PluginsScreen: React.FC = () => {
     { value: 'SZ', label: 'China' },
   ];
 
-  // Filtered scrapers based on search and filter
-  const filteredScrapers = useMemo(() => {
-    let filtered = installedScrapers;
+  // Get enabled repositories for tabs
+  const enabledRepositories = useMemo(() => {
+    return repositories.filter(r => r.enabled !== false);
+  }, [repositories]);
+
+  // Filtered plugins based on search, type filter, and repository tab
+  const filteredPlugins = useMemo(() => {
+    let filtered = installedPlugins;
+
+    // Filter by repository tab
+    if (selectedRepositoryTab !== 'all') {
+      filtered = filtered.filter(plugin => plugin.repositoryId === selectedRepositoryTab);
+    }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(scraper =>
-        scraper.name.toLowerCase().includes(query) ||
-        scraper.description.toLowerCase().includes(query) ||
-        scraper.id.toLowerCase().includes(query)
+      filtered = filtered.filter(plugin =>
+        plugin.name.toLowerCase().includes(query) ||
+        plugin.description.toLowerCase().includes(query) ||
+        plugin.id.toLowerCase().includes(query)
       );
     }
 
     // Filter by type
     if (selectedFilter !== 'all') {
-      filtered = filtered.filter(scraper =>
-        scraper.supportedTypes?.includes(selectedFilter as 'movie' | 'tv')
+      filtered = filtered.filter(plugin =>
+        plugin.supportedTypes?.includes(selectedFilter as 'movie' | 'tv')
       );
     }
 
     return filtered;
-  }, [installedScrapers, searchQuery, selectedFilter]);
+  }, [installedPlugins, searchQuery, selectedFilter, selectedRepositoryTab]);
 
   // Helper functions
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -936,26 +1009,26 @@ const PluginsScreen: React.FC = () => {
     }));
   };
 
-  const getScraperStatus = (scraper: ScraperInfo): 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited' => {
-    if (scraper.manifestEnabled === false) return 'disabled';
-    if (scraper.disabledPlatforms?.includes(Platform.OS as 'ios' | 'android')) return 'platform-disabled';
-    if (scraper.limited) return 'limited';
-    if (scraper.enabled) return 'enabled';
+  const getPluginStatus = (plugin: ScraperInfo): 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited' => {
+    if (plugin.manifestEnabled === false) return 'disabled';
+    if (plugin.disabledPlatforms?.includes(Platform.OS as 'ios' | 'android')) return 'platform-disabled';
+    if (plugin.limited) return 'limited';
+    if (plugin.enabled) return 'enabled';
     return 'available';
   };
 
   const handleBulkToggle = async (enabled: boolean) => {
     try {
       setIsRefreshing(true);
-      const promises = filteredScrapers.map(scraper =>
-        pluginService.setScraperEnabled(scraper.id, enabled)
+      const promises = filteredPlugins.map(plugin =>
+        pluginService.setScraperEnabled(plugin.id, enabled)
       );
       await Promise.all(promises);
-      await loadScrapers();
-      openAlert('Success', `${enabled ? 'Enabled' : 'Disabled'} ${filteredScrapers.length} scrapers`);
+      await loadPlugins();
+      openAlert('Success', `${enabled ? 'Enabled' : 'Disabled'} ${filteredPlugins.length} plugins`);
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to bulk toggle:', error);
-      openAlert('Error', 'Failed to update scrapers');
+      logger.error('[PluginSettings] Failed to bulk toggle:', error);
+      openAlert('Error', 'Failed to update plugins');
     } finally {
       setIsRefreshing(false);
     }
@@ -1009,16 +1082,14 @@ const PluginsScreen: React.FC = () => {
         enabled: true
       });
 
+      // Refresh all enabled repositories to include the new one
+      await pluginService.refreshRepository();
       await loadRepositories();
-
-      // Switch to the new repository and refresh it
-      await pluginService.setCurrentRepository(repoId);
-      await loadRepositories();
-      await loadScrapers();
+      await loadPlugins();
 
       setNewRepositoryUrl('');
       setShowAddRepositoryModal(false);
-      openAlert('Success', 'Repository added and refreshed successfully');
+      openAlert('Success', 'Repository added and plugins loaded successfully');
     } catch (error) {
       logger.error('[PluginsScreen] Failed to add repository:', error);
       openAlert('Error', 'Failed to add repository');
@@ -1027,16 +1098,25 @@ const PluginsScreen: React.FC = () => {
     }
   };
 
-  const handleSwitchRepository = async (repoId: string) => {
+  const handleToggleRepositoryEnabled = async (repoId: string, enabled: boolean) => {
     try {
       setSwitchingRepository(repoId);
-      await pluginService.setCurrentRepository(repoId);
+      await pluginService.toggleRepositoryEnabled(repoId, enabled);
+
+      if (enabled) {
+        // When enabling, refresh just this repository to fetch its plugins
+        await pluginService.refreshSingleRepository(repoId);
+      }
+
+      // Reload the data
       await loadRepositories();
-      await loadScrapers();
-      openAlert('Success', 'Repository switched successfully');
+      await loadPlugins();
+
+      const repo = repositories.find(r => r.id === repoId);
+      openAlert('Success', `Repository "${repo?.name || 'Unknown'}" ${enabled ? 'enabled' : 'disabled'} successfully`);
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to switch repository:', error);
-      openAlert('Error', 'Failed to switch repository');
+      logger.error('[PluginSettings] Failed to toggle repository:', error);
+      openAlert('Error', 'Failed to update repository');
     } finally {
       setSwitchingRepository(null);
     }
@@ -1051,8 +1131,8 @@ const PluginsScreen: React.FC = () => {
 
     const alertTitle = isLastRepository ? 'Remove Last Repository' : 'Remove Repository';
     const alertMessage = isLastRepository
-      ? `Are you sure you want to remove "${repo.name}"? This is your only repository, so you'll have no scrapers available until you add a new repository.`
-      : `Are you sure you want to remove "${repo.name}"? This will also remove all scrapers from this repository.`;
+      ? `Are you sure you want to remove "${repo.name}"? This is your only repository, so you'll have no plugins available until you add a new repository.`
+      : `Are you sure you want to remove "${repo.name}"? This will also remove all plugins from this repository.`;
 
     openAlert(
       alertTitle,
@@ -1065,13 +1145,13 @@ const PluginsScreen: React.FC = () => {
             try {
               await pluginService.removeRepository(repoId);
               await loadRepositories();
-              await loadScrapers();
+              await loadPlugins();
               const successMessage = isLastRepository
                 ? 'Repository removed successfully. You can add a new repository using the "Add Repository" button.'
                 : 'Repository removed successfully';
               openAlert('Success', successMessage);
             } catch (error) {
-              logger.error('[ScraperSettings] Failed to remove repository:', error);
+              logger.error('[PluginSettings] Failed to remove repository:', error);
               openAlert('Error', error instanceof Error ? error.message : 'Failed to remove repository');
             }
           },
@@ -1081,16 +1161,16 @@ const PluginsScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    loadScrapers();
+    loadPlugins();
     loadRepositories();
   }, []);
 
-  const loadScrapers = async () => {
+  const loadPlugins = async () => {
     try {
       const scrapers = await pluginService.getAvailableScrapers();
 
 
-      setInstalledScrapers(scrapers);
+      setInstalledPlugins(scrapers);
       // Detect ShowBox scraper dynamically and preload settings
       const sb = scrapers.find(s => {
         const id = (s.id || '').toLowerCase();
@@ -1111,7 +1191,7 @@ const PluginsScreen: React.FC = () => {
         setShowboxTokenVisible(false);
       }
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to load scrapers:', error);
+      logger.error('[PluginSettings] Failed to load plugins:', error);
     }
   };
 
@@ -1132,7 +1212,7 @@ const PluginsScreen: React.FC = () => {
         setRepositoryUrl(currentRepo.url);
       }
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to load repositories:', error);
+      logger.error('[PluginSettings] Failed to load repositories:', error);
     }
   };
 
@@ -1144,7 +1224,7 @@ const PluginsScreen: React.FC = () => {
         setRepositoryUrl(repoUrl);
       }
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to check repository:', error);
+      logger.error('[PluginSettings] Failed to check repository:', error);
     }
   };
 
@@ -1171,7 +1251,7 @@ const PluginsScreen: React.FC = () => {
       setHasRepository(true);
       openAlert('Success', 'Repository URL saved successfully');
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to save repository:', error);
+      logger.error('[PluginSettings] Failed to save repository:', error);
       openAlert('Error', 'Failed to save repository URL');
     } finally {
       setIsLoading(false);
@@ -1191,8 +1271,8 @@ const PluginsScreen: React.FC = () => {
       // Force a complete hard refresh by clearing any cached data first
       await pluginService.refreshRepository();
 
-      // Load fresh scrapers from the updated repository
-      await loadScrapers();
+      // Load fresh plugins from the updated repository
+      await loadPlugins();
 
       openAlert('Success', 'Repository refreshed successfully with latest files');
     } catch (error) {
@@ -1207,34 +1287,34 @@ const PluginsScreen: React.FC = () => {
     }
   };
 
-  const handleToggleScraper = async (scraperId: string, enabled: boolean) => {
+  const handleTogglePlugin = async (pluginId: string, enabled: boolean) => {
     try {
       if (enabled) {
-        // If enabling a scraper, ensure it's installed first
-        const installedScrapers = await pluginService.getInstalledScrapers();
-        const isInstalled = installedScrapers.some(scraper => scraper.id === scraperId);
+        // If enabling a plugin, ensure it's installed first
+        const installedPluginsList = await pluginService.getInstalledScrapers();
+        const isInstalled = installedPluginsList.some(plugin => plugin.id === pluginId);
 
         if (!isInstalled) {
-          // Need to install the scraper first
+          // Need to install the plugin first
           setIsRefreshing(true);
           await pluginService.refreshRepository();
           setIsRefreshing(false);
         }
       }
 
-      await pluginService.setScraperEnabled(scraperId, enabled);
-      await loadScrapers();
+      await pluginService.setScraperEnabled(pluginId, enabled);
+      await loadPlugins();
     } catch (error) {
-      logger.error('[ScraperSettings] Failed to toggle scraper:', error);
-      openAlert('Error', 'Failed to update scraper status');
+      logger.error('[PluginSettings] Failed to toggle plugin:', error);
+      openAlert('Error', 'Failed to update plugin status');
       setIsRefreshing(false);
     }
   };
 
-  const handleClearScrapers = () => {
+  const handleClearPlugins = () => {
     openAlert(
-      'Clear All Scrapers',
-      'Are you sure you want to remove all installed scrapers? This action cannot be undone.',
+      'Clear All Plugins',
+      'Are you sure you want to remove all installed plugins? This action cannot be undone.',
       [
         { label: 'Cancel', onPress: () => { } },
         {
@@ -1242,11 +1322,11 @@ const PluginsScreen: React.FC = () => {
           onPress: async () => {
             try {
               await pluginService.clearScrapers();
-              await loadScrapers();
-              openAlert('Success', 'All scrapers have been removed');
+              await loadPlugins();
+              openAlert('Success', 'All plugins have been removed');
             } catch (error) {
-              logger.error('[ScraperSettings] Failed to clear scrapers:', error);
-              openAlert('Error', 'Failed to clear scrapers');
+              logger.error('[PluginSettings] Failed to clear plugins:', error);
+              openAlert('Error', 'Failed to clear plugins');
             }
           },
         },
@@ -1254,10 +1334,10 @@ const PluginsScreen: React.FC = () => {
     );
   };
 
-  const handleClearCache = () => {
+  const handleClearPluginCache = () => {
     openAlert(
       'Clear Repository Cache',
-      'This will remove the saved repository URL and clear all cached scraper data. You will need to re-enter your repository URL.',
+      'This will remove the saved repository URL and clear all cached plugin data. You will need to re-enter your repository URL.',
       [
         { label: 'Cancel', onPress: () => { } },
         {
@@ -1269,10 +1349,10 @@ const PluginsScreen: React.FC = () => {
               await updateSetting('scraperRepositoryUrl', '');
               setRepositoryUrl('');
               setHasRepository(false);
-              await loadScrapers();
+              await loadPlugins();
               openAlert('Success', 'Repository cache cleared successfully');
             } catch (error) {
-              logger.error('[ScraperSettings] Failed to clear cache:', error);
+              logger.error('[PluginSettings] Failed to clear cache:', error);
               openAlert('Error', 'Failed to clear repository cache');
             }
           },
@@ -1299,7 +1379,7 @@ const PluginsScreen: React.FC = () => {
         await pluginService.refreshRepository();
 
         // Reload plugins to get the latest state
-        await loadScrapers();
+        await loadPlugins();
 
         logger.log('[PluginsScreen] Plugins enabled and repository refreshed');
       } catch (error) {
@@ -1394,7 +1474,7 @@ const PluginsScreen: React.FC = () => {
 
                 // Force hard refresh of repository
                 await pluginService.refreshRepository();
-                await loadScrapers();
+                await loadPlugins();
 
                 logger.log('[PluginsScreen] Pull-to-refresh completed');
               } catch (error) {
@@ -1423,7 +1503,7 @@ const PluginsScreen: React.FC = () => {
                 Allow the app to use installed plugins for finding streams
               </Text>
             </View>
-                        <CustomSwitch
+            <CustomSwitch
               value={settings.enableLocalScrapers}
               onValueChange={handleToggleLocalScrapers}
             />
@@ -1439,66 +1519,56 @@ const PluginsScreen: React.FC = () => {
           styles={styles}
         >
           <Text style={styles.sectionDescription}>
-            Manage multiple scraper repositories. Switch between repositories to access different sets of scrapers.
+            Enable multiple repositories to combine plugins from different sources. Toggle each repository on or off below.
           </Text>
-
-          {/* Current Repository */}
-          {currentRepositoryId && (
-            <View style={styles.currentRepoContainer}>
-              <Text style={styles.currentRepoLabel}>Current Repository:</Text>
-              <Text style={styles.currentRepoUrl}>{pluginService.getRepositoryName()}</Text>
-              <Text style={[styles.currentRepoUrl, { fontSize: 12, opacity: 0.7, marginTop: 4 }]}>{repositoryUrl}</Text>
-            </View>
-          )}
 
           {/* Repository List */}
           {repositories.length > 0 && (
             <View style={styles.repositoriesList}>
-              <Text style={[styles.settingTitle, { marginBottom: 12 }]}>Available Repositories</Text>
+              <Text style={[styles.settingTitle, { marginBottom: 8 }]}>Your Repositories</Text>
+              <Text style={[styles.settingDescription, { marginBottom: 12 }]}>
+                Enable multiple repositories to combine plugins from different sources.
+              </Text>
               {repositories.map((repo) => (
-                <View key={repo.id} style={styles.repositoryItem}>
-                  <View style={styles.repositoryInfo}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <View key={repo.id} style={[styles.repositoryItem, repo.enabled === false && { opacity: 0.6 }]}>
+                  <View style={styles.repositoryHeader}>
+                    <View style={styles.repositoryNameContainer}>
                       <Text style={styles.repositoryName}>{repo.name}</Text>
-                      {repo.id === currentRepositoryId && (
+                      {repo.enabled !== false && (
                         <View style={[styles.statusBadge, { backgroundColor: '#34C759' }]}>
                           <Ionicons name="checkmark-circle" size={12} color="white" />
-                          <Text style={styles.statusBadgeText}>Active</Text>
+                          <Text style={styles.statusBadgeText}>Enabled</Text>
                         </View>
                       )}
                       {switchingRepository === repo.id && (
                         <View style={[styles.statusBadge, { backgroundColor: colors.primary }]}>
                           <ActivityIndicator size={12} color="white" />
-                          <Text style={styles.statusBadgeText}>Switching...</Text>
+                          <Text style={styles.statusBadgeText}>Updating...</Text>
                         </View>
                       )}
                     </View>
+                    <Switch
+                      value={repo.enabled !== false}
+                      onValueChange={(enabled) => handleToggleRepositoryEnabled(repo.id, enabled)}
+                      trackColor={{ false: colors.elevation3, true: colors.primary }}
+                      thumbColor={repo.enabled !== false ? colors.white : '#f4f3f4'}
+                      disabled={!settings.enableLocalScrapers || switchingRepository !== null}
+                    />
+                  </View>
+                  <View style={styles.repositoryInfo}>
                     {repo.description && (
                       <Text style={styles.repositoryDescription}>{repo.description}</Text>
                     )}
                     <Text style={styles.repositoryUrl}>{repo.url}</Text>
                     <Text style={styles.repositoryMeta}>
-                      {repo.scraperCount || 0} scrapers • Last updated: {repo.lastUpdated ? new Date(repo.lastUpdated).toLocaleDateString() : 'Never'}
+                      {repo.scraperCount || 0} plugins • Last updated: {repo.lastUpdated ? new Date(repo.lastUpdated).toLocaleDateString() : 'Never'}
                     </Text>
                   </View>
                   <View style={styles.repositoryActions}>
-                    {repo.id !== currentRepositoryId && (
-                      <TouchableOpacity
-                        style={[styles.repositoryActionButton, styles.repositoryActionButtonPrimary]}
-                        onPress={() => handleSwitchRepository(repo.id)}
-                        disabled={switchingRepository === repo.id}
-                      >
-                        {switchingRepository === repo.id ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
-                        ) : (
-                          <Text style={styles.repositoryActionButtonText}>Switch</Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
                     <TouchableOpacity
                       style={[styles.repositoryActionButton, styles.repositoryActionButtonSecondary]}
                       onPress={() => handleRefreshRepository()}
-                      disabled={isRefreshing || switchingRepository !== null}
+                      disabled={isRefreshing || switchingRepository !== null || repo.enabled === false}
                     >
                       {isRefreshing ? (
                         <ActivityIndicator size="small" color={colors.mediumGray} />
@@ -1532,13 +1602,13 @@ const PluginsScreen: React.FC = () => {
 
         {/* Available Plugins */}
         <CollapsibleSection
-          title={`Available Plugins (${filteredScrapers.length})`}
-          isExpanded={expandedSections.scrapers}
-          onToggle={() => toggleSection('scrapers')}
+          title={`Available Plugins (${filteredPlugins.length})`}
+          isExpanded={expandedSections.plugins}
+          onToggle={() => toggleSection('plugins')}
           colors={colors}
           styles={styles}
         >
-          {installedScrapers.length > 0 && (
+          {installedPlugins.length > 0 && (
             <>
               {/* Search and Filter */}
               <View style={styles.searchContainer}>
@@ -1547,7 +1617,7 @@ const PluginsScreen: React.FC = () => {
                   style={styles.searchInput}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
-                  placeholder="Search scrapers..."
+                  placeholder="Search plugins..."
                   placeholderTextColor={colors.mediumGray}
                 />
                 {searchQuery.length > 0 && (
@@ -1556,6 +1626,70 @@ const PluginsScreen: React.FC = () => {
                   </TouchableOpacity>
                 )}
               </View>
+
+              {/* Repository Tabs - only show if multiple repositories */}
+              {enabledRepositories.length > 1 && (
+                <View style={styles.repositoryTabsContainer}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.repositoryTabsScroll}
+                  >
+                    {/* All tab */}
+                    <TouchableOpacity
+                      style={[
+                        styles.repositoryTab,
+                        selectedRepositoryTab === 'all' && styles.repositoryTabSelected
+                      ]}
+                      onPress={() => setSelectedRepositoryTab('all')}
+                    >
+                      <Text style={[
+                        styles.repositoryTabText,
+                        selectedRepositoryTab === 'all' && styles.repositoryTabTextSelected
+                      ]}>
+                        All
+                      </Text>
+                      <Text style={[
+                        styles.repositoryTabCount,
+                        selectedRepositoryTab === 'all' && styles.repositoryTabCountSelected
+                      ]}>
+                        {installedPlugins.length}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Repository tabs */}
+                    {enabledRepositories.map((repo) => {
+                      const repoPluginCount = installedPlugins.filter(p => p.repositoryId === repo.id).length;
+                      return (
+                        <TouchableOpacity
+                          key={repo.id}
+                          style={[
+                            styles.repositoryTab,
+                            selectedRepositoryTab === repo.id && styles.repositoryTabSelected
+                          ]}
+                          onPress={() => setSelectedRepositoryTab(repo.id)}
+                        >
+                          <Text
+                            style={[
+                              styles.repositoryTabText,
+                              selectedRepositoryTab === repo.id && styles.repositoryTabTextSelected
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {repo.name}
+                          </Text>
+                          <Text style={[
+                            styles.repositoryTabCount,
+                            selectedRepositoryTab === repo.id && styles.repositoryTabCountSelected
+                          ]}>
+                            {repoPluginCount}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
 
               {/* Filter Chips */}
               <View style={styles.filterContainer}>
@@ -1572,14 +1706,14 @@ const PluginsScreen: React.FC = () => {
                       styles.filterChipText,
                       selectedFilter === filter && styles.filterChipTextSelected
                     ]}>
-                      {filter === 'all' ? 'All' : filter === 'movie' ? 'Movies' : 'TV Shows'}
+                      {filter === 'all' ? 'All Types' : filter === 'movie' ? 'Movies' : 'TV Shows'}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               {/* Bulk Actions */}
-              {filteredScrapers.length > 0 && (
+              {filteredPlugins.length > 0 && (
                 <View style={styles.bulkActionsContainer}>
                   <TouchableOpacity
                     style={[styles.bulkActionButton, styles.bulkActionButtonEnabled]}
@@ -1600,7 +1734,7 @@ const PluginsScreen: React.FC = () => {
             </>
           )}
 
-          {filteredScrapers.length === 0 ? (
+          {filteredPlugins.length === 0 ? (
             <View style={styles.emptyStateContainer}>
               <Ionicons
                 name={searchQuery ? "search" : "download-outline"}
@@ -1609,12 +1743,12 @@ const PluginsScreen: React.FC = () => {
                 style={styles.emptyStateIcon}
               />
               <Text style={styles.emptyStateTitle}>
-                {searchQuery ? 'No Scrapers Found' : 'No Scrapers Available'}
+                {searchQuery ? 'No Plugins Found' : 'No Plugins Available'}
               </Text>
               <Text style={styles.emptyStateDescription}>
                 {searchQuery
-                  ? `No scrapers match "${searchQuery}". Try a different search term.`
-                  : 'Configure a repository above to view available scrapers.'
+                  ? `No plugins match "${searchQuery}". Try a different search term.`
+                  : 'Configure a repository above to view available plugins.'
                 }
               </Text>
               {searchQuery && (
@@ -1627,72 +1761,81 @@ const PluginsScreen: React.FC = () => {
               )}
             </View>
           ) : (
-            <View style={styles.scrapersContainer}>
-              {filteredScrapers.map((scraper) => (
-                <View key={scraper.id} style={styles.scraperCard}>
-                  <View style={styles.scraperCardHeader}>
-                    {scraper.logo ? (
-                      (scraper.logo.toLowerCase().endsWith('.svg') || scraper.logo.toLowerCase().includes('.svg?')) ? (
+            <View style={styles.pluginsContainer}>
+              {filteredPlugins.map((plugin) => (
+                <View key={plugin.id} style={styles.pluginCard}>
+                  <View style={styles.pluginCardHeader}>
+                    {plugin.logo ? (
+                      (plugin.logo.toLowerCase().endsWith('.svg') || plugin.logo.toLowerCase().includes('.svg?')) ? (
                         <Image
-                          source={{ uri: scraper.logo }}
-                          style={styles.scraperLogo}
+                          source={{ uri: plugin.logo }}
+                          style={styles.pluginLogo}
                           resizeMode="contain"
                         />
                       ) : (
                         <FastImage
-                          source={{ uri: scraper.logo }}
-                          style={styles.scraperLogo}
+                          source={{ uri: plugin.logo }}
+                          style={styles.pluginLogo}
                           resizeMode={FastImage.resizeMode.contain}
                         />
                       )
                     ) : (
-                      <View style={styles.scraperLogo} />
+                      <View style={styles.pluginLogo} />
                     )}
-                    <View style={styles.scraperCardInfo}>
+                    <View style={styles.pluginCardInfo}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 }}>
-                        <Text style={styles.scraperName}>{scraper.name}</Text>
-                        <StatusBadge status={getScraperStatus(scraper)} colors={colors} />
+                        <Text style={styles.pluginName}>{plugin.name}</Text>
+                        <StatusBadge status={getPluginStatus(plugin)} colors={colors} />
                       </View>
-                      <Text style={styles.scraperDescription}>{scraper.description}</Text>
+                      <Text style={styles.pluginDescription}>{plugin.description}</Text>
                     </View>
-                                        <CustomSwitch
-                      value={scraper.enabled && settings.enableLocalScrapers}
-                      onValueChange={(enabled: boolean) => handleToggleScraper(scraper.id, enabled)}
-                      disabled={!settings.enableLocalScrapers || scraper.manifestEnabled === false || (scraper.disabledPlatforms && scraper.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
+                    <CustomSwitch
+                      value={plugin.enabled && settings.enableLocalScrapers}
+                      onValueChange={(enabled: boolean) => handleTogglePlugin(plugin.id, enabled)}
+                      disabled={!settings.enableLocalScrapers || plugin.manifestEnabled === false || (plugin.disabledPlatforms && plugin.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
+                    />
                     />
                   </View>
 
-                  <View style={styles.scraperCardMeta}>
-                    <View style={styles.scraperCardMetaItem}>
+                  <View style={styles.pluginCardMeta}>
+                    <View style={styles.pluginCardMetaItem}>
                       <Ionicons name="information-circle" size={12} color={colors.mediumGray} />
-                      <Text style={styles.scraperCardMetaText}>v{scraper.version}</Text>
+                      <Text style={styles.pluginCardMetaText}>v{plugin.version}</Text>
                     </View>
-                    <View style={styles.scraperCardMetaItem}>
+                    <View style={styles.pluginCardMetaItem}>
                       <Ionicons name="film" size={12} color={colors.mediumGray} />
-                      <Text style={styles.scraperCardMetaText}>
-                        {scraper.supportedTypes?.join(', ') || 'Unknown'}
+                      <Text style={styles.pluginCardMetaText}>
+                        {plugin.supportedTypes?.join(', ') || 'Unknown'}
                       </Text>
                     </View>
-                    {scraper.contentLanguage && scraper.contentLanguage.length > 0 && (
-                      <View style={styles.scraperCardMetaItem}>
+                    {plugin.contentLanguage && plugin.contentLanguage.length > 0 && (
+                      <View style={styles.pluginCardMetaItem}>
                         <Ionicons name="globe" size={12} color={colors.mediumGray} />
-                        <Text style={styles.scraperCardMetaText}>
-                          {scraper.contentLanguage.map(lang => lang.toUpperCase()).join(', ')}
+                        <Text style={styles.pluginCardMetaText}>
+                          {plugin.contentLanguage.map((lang: string) => lang.toUpperCase()).join(', ')}
                         </Text>
                       </View>
                     )}
-                    {scraper.supportsExternalPlayer === false && (
-                      <View style={styles.scraperCardMetaItem}>
+                    {plugin.supportsExternalPlayer === false && (
+                      <View style={styles.pluginCardMetaItem}>
                         <Ionicons name="play-circle" size={12} color={colors.mediumGray} />
-                        <Text style={styles.scraperCardMetaText}>
+                        <Text style={styles.pluginCardMetaText}>
                           No external player
                         </Text>
                       </View>
                     )}
+                    {/* Repository badge */}
+                    {plugin.repositoryId && repositories.length > 1 && (
+                      <View style={styles.pluginRepositoryBadge}>
+                        <Text style={styles.pluginRepositoryBadgeText}>
+                          {repositories.find(r => r.id === plugin.repositoryId)?.name || 'Unknown'}
+                        </Text>
+                      </View>
+                    )}
                   </View>
 
-                  {/* ShowBox Settings - only visible when ShowBox scraper is available */}
-                  {showboxScraperId && scraper.id === showboxScraperId && settings.enableLocalScrapers && (
+                  {/* ShowBox Settings - only visible when ShowBox plugin is available */}
+                  {showboxScraperId && plugin.id === showboxScraperId && settings.enableLocalScrapers && (
                     <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.elevation3 }}>
                       <Text style={[styles.settingTitle, { marginBottom: 8 }]}>ShowBox UI Token</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -1765,7 +1908,7 @@ const PluginsScreen: React.FC = () => {
                 Validate streaming URLs before returning them (may slow down results but improves reliability)
               </Text>
             </View>
-                        <CustomSwitch
+            <CustomSwitch
               value={settings.enableScraperUrlValidation && settings.enableLocalScrapers}
               onValueChange={handleToggleUrlValidation}
               disabled={!settings.enableLocalScrapers}
@@ -1776,10 +1919,10 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Group Plugin Streams</Text>
               <Text style={styles.settingDescription}>
-                When enabled, all plugin streams are grouped under "{pluginService.getRepositoryName()}". When disabled, each plugin shows as a separate provider.
+                When enabled, plugin streams are grouped by repository. When disabled, each plugin shows as a separate provider.
               </Text>
             </View>
-                        <CustomSwitch
+            <CustomSwitch
               value={settings.streamDisplayMode === 'grouped'}
               onValueChange={(value: boolean) => {
                 updateSetting('streamDisplayMode', value ? 'grouped' : 'separate');
@@ -1796,10 +1939,10 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Sort by Quality First</Text>
               <Text style={styles.settingDescription}>
-                When enabled, streams are sorted by quality first, then by scraper. When disabled, streams are sorted by scraper first, then by quality. Only available when grouping is enabled.
+                When enabled, streams are sorted by quality first, then by plugin. When disabled, streams are sorted by plugin first, then by quality. Only available when grouping is enabled.
               </Text>
             </View>
-                        <CustomSwitch
+            <CustomSwitch
               value={settings.streamSortMode === 'quality-then-scraper'}
               onValueChange={(value: boolean) => updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality')}
               disabled={!settings.enableLocalScrapers || settings.streamDisplayMode !== 'grouped'}
@@ -1808,12 +1951,12 @@ const PluginsScreen: React.FC = () => {
 
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Show Scraper Logos</Text>
+              <Text style={styles.settingTitle}>Show Plugin Logos</Text>
               <Text style={styles.settingDescription}>
-                Display scraper logos next to streaming links on the streams screen.
+                Display plugin logos next to streaming links on the streams screen.
               </Text>
             </View>
-                        <CustomSwitch
+            <CustomSwitch
               value={settings.showScraperLogos && settings.enableLocalScrapers}
               onValueChange={(value: boolean) => updateSetting('showScraperLogos', value)}
               disabled={!settings.enableLocalScrapers}
@@ -1947,10 +2090,10 @@ const PluginsScreen: React.FC = () => {
               2. <Text style={{ fontWeight: '600' }}>Add Repository</Text> - Add a GitHub raw URL or use the default repository
             </Text>
             <Text style={styles.modalText}>
-              3. <Text style={{ fontWeight: '600' }}>Refresh Repository</Text> - Download available scrapers from the repository
+              3. <Text style={{ fontWeight: '600' }}>Refresh Repository</Text> - Download available plugins from the repository
             </Text>
             <Text style={styles.modalText}>
-              4. <Text style={{ fontWeight: '600' }}>Enable Scrapers</Text> - Turn on the scrapers you want to use for streaming
+              4. <Text style={{ fontWeight: '600' }}>Enable Plugins</Text> - Turn on the plugins you want to use for streaming
             </Text>
             <TouchableOpacity
               style={styles.modalButton}

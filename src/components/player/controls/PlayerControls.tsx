@@ -51,6 +51,9 @@ interface PlayerControlsProps {
   isAirPlayActive?: boolean;
   allowsAirPlay?: boolean;
   onAirPlayPress?: () => void;
+  // MPV Switch (Android only)
+  onSwitchToMPV?: () => void;
+  useExoPlayer?: boolean;
 }
 
 export const PlayerControls: React.FC<PlayerControlsProps> = ({
@@ -93,6 +96,8 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   isAirPlayActive,
   allowsAirPlay,
   onAirPlayPress,
+  onSwitchToMPV,
+  useExoPlayer,
 }) => {
   const { currentTheme } = useTheme();
 
@@ -353,6 +358,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                   />
                 </Focusable>
               )}
+<<<<<<< HEAD
               <Focusable
                 ref={closeButtonRef}
                 style={styles.closeButton}
@@ -360,6 +366,22 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                 nextFocusDown={playPauseRef}
                 nextFocusRight={airplayRef}
               >
+=======
+              {/* Switch to MPV Button - Android only, when using ExoPlayer */}
+              {Platform.OS === 'android' && onSwitchToMPV && useExoPlayer && (
+                <TouchableOpacity
+                  style={{ padding: 8 }}
+                  onPress={onSwitchToMPV}
+                >
+                  <Ionicons
+                    name="swap-horizontal"
+                    size={closeIconSize}
+                    color="white"
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+>>>>>>> origin/main
                 <Ionicons name="close" size={closeIconSize} color="white" />
               </Focusable>
             </View>
@@ -373,12 +395,18 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         }]}>
 
           {/* Backward Seek Button (-10s) */}
+<<<<<<< HEAD
           <Focusable
             ref={backwardSeekRef}
             onPress={() => handleSeekWithAnimation(-10)}
             nextFocusUp={closeButtonRef}
             nextFocusDown={aspectRatioRef}
             nextFocusRight={playPauseRef}
+=======
+          <TouchableOpacity
+            onPress={() => handleSeekWithAnimation(-10)}
+            activeOpacity={0.7}
+>>>>>>> origin/main
           >
             <Animated.View style={[
               styles.seekButtonContainer,
@@ -443,12 +471,21 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                 }
               ]} />
             </Animated.View>
+<<<<<<< HEAD
           </Focusable>
 
           {/* Play/Pause Button */}
           <Focusable
             ref={playPauseRef}
             onPress={handlePlayPauseWithAnimation}
+=======
+          </TouchableOpacity>
+
+          {/* Play/Pause Button */}
+          <TouchableOpacity
+            onPress={handlePlayPauseWithAnimation}
+            activeOpacity={0.7}
+>>>>>>> origin/main
             style={{ marginHorizontal: buttonSpacing }}
             hasTVPreferredFocus={Platform.isTV}
             nextFocusUp={closeButtonRef}
@@ -480,12 +517,18 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
           </Focusable>
 
           {/* Forward Seek Button (+10s) */}
+<<<<<<< HEAD
           <Focusable
             ref={forwardSeekRef}
             onPress={() => handleSeekWithAnimation(10)}
             nextFocusUp={closeButtonRef}
             nextFocusDown={audioRef}
             nextFocusLeft={playPauseRef}
+=======
+          <TouchableOpacity
+            onPress={() => handleSeekWithAnimation(10)}
+            activeOpacity={0.7}
+>>>>>>> origin/main
           >
             <Animated.View style={[
               styles.seekButtonContainer,

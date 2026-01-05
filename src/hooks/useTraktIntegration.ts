@@ -521,9 +521,10 @@ export function useTraktIntegration() {
 
     try {
       // Fetch both playback progress and recently watched movies
-      const [traktProgress, watchedMovies] = await Promise.all([
+      const [traktProgress, watchedMovies, watchedShows] = await Promise.all([
         getTraktPlaybackProgress(),
-        traktService.getWatchedMovies()
+        traktService.getWatchedMovies(),
+        traktService.getWatchedShows()
       ]);
 
       // Progress retrieval logging removed
@@ -558,15 +559,23 @@ export function useTraktIntegration() {
             return undefined;
           })();
 
-          updatePromises.push(
-            storageService.mergeWithTraktProgress(
-              id,
-              type,
-              item.progress,
-              item.paused_at,
-              episodeId,
-              exactTime
-            )
+          // Merge with local progress
+          await storageService.mergeWithTraktProgress(
+            id,
+            type,
+            item.progress,
+            item.paused_at,
+            episodeId,
+            exactTime
+          );
+
+          // FIX: Mark as already synced so it won't be re-uploaded to Trakt
+          await storageService.updateTraktSyncStatus(
+            id,
+            type,
+            true, // synced = true
+            item.progress,
+            episodeId
           );
         } catch (error) {
           logger.error('[useTraktIntegration] Error preparing Trakt progress update:', error);
@@ -580,20 +589,60 @@ export function useTraktIntegration() {
             const id = movie.movie.ids.imdb;
             const watchedAt = movie.last_watched_at;
 
-            updatePromises.push(
-              storageService.mergeWithTraktProgress(
-                id,
-                'movie',
-                100, // 100% progress for watched items
-                watchedAt
-              )
+            await storageService.mergeWithTraktProgress(
+              id,
+              'movie',
+              100,
+              watchedAt
+            );
+
+            // FIX: Mark as already synced
+            await storageService.updateTraktSyncStatus(
+              id,
+              'movie',
+              true,
+              100
             );
           }
         } catch (error) {
-          logger.error('[useTraktIntegration] Error preparing watched movie update:', error);
+    logger.error('[useTraktIntegration] Error preparing watched movie update:', error);
         }
       }
 
+      // Process watched shows (100% completed episodes)
+      for (const show of watchedShows) {
+        try {
+          if (show.show?.ids?.imdb && show.seasons) {
+            const showImdbId = show.show.ids.imdb;
+
+            for (const season of show.seasons) {
+              for (const episode of season.episodes) {
+                const episodeId = `${showImdbId}:${season.number}:${episode.number}`;
+          
+                await storageService.mergeWithTraktProgress(
+                  showImdbId,
+                  'series',
+                  100,
+                  episode.last_watched_at,
+                  episodeId
+                );
+
+                // FIX: Mark as already synced
+                await storageService.updateTraktSyncStatus(
+                  showImdbId,
+                  'series',
+                  true,
+                  100,
+                  episodeId
+                );
+              }
+            }
+          }
+        } catch (error) {
+          logger.error('[useTraktIntegration] Error preparing watched show update:', error);
+        }
+      }
+      
       // Execute all updates in parallel
       await Promise.all(updatePromises);
 

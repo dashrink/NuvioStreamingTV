@@ -17,6 +17,8 @@ interface KSPlayerViewProps {
   usesExternalPlaybackWhileExternalScreenIsActive?: boolean;
   subtitleBottomOffset?: number;
   subtitleFontSize?: number;
+  subtitleTextColor?: string;
+  subtitleBackgroundColor?: string;
   resizeMode?: 'contain' | 'cover' | 'stretch';
   onLoad?: (data: any) => void;
   onProgress?: (data: any) => void;
@@ -56,6 +58,8 @@ export interface KSPlayerProps {
   usesExternalPlaybackWhileExternalScreenIsActive?: boolean;
   subtitleBottomOffset?: number;
   subtitleFontSize?: number;
+  subtitleTextColor?: string;
+  subtitleBackgroundColor?: string;
   resizeMode?: 'contain' | 'cover' | 'stretch';
   onLoad?: (data: any) => void;
   onProgress?: (data: any) => void;
@@ -120,11 +124,16 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
       }
     },
     setTextTrack: (trackId: number) => {
+      console.log('[KSPlayerComponent] setTextTrack called with trackId:', trackId);
       if (nativeRef.current) {
         const node = findNodeHandle(nativeRef.current);
+        console.log('[KSPlayerComponent] setTextTrack dispatching command to node:', node);
         // @ts-ignore legacy UIManager commands path for Paper
         const commandId = UIManager.getViewManagerConfig('KSPlayerView').Commands.setTextTrack;
+        console.log('[KSPlayerComponent] setTextTrack commandId:', commandId);
         UIManager.dispatchViewManagerCommand(node, commandId, [trackId]);
+      } else {
+        console.warn('[KSPlayerComponent] setTextTrack: nativeRef.current is null');
       }
     },
     getTracks: async () => {
@@ -199,6 +208,8 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
       usesExternalPlaybackWhileExternalScreenIsActive={props.usesExternalPlaybackWhileExternalScreenIsActive}
       subtitleBottomOffset={props.subtitleBottomOffset}
       subtitleFontSize={props.subtitleFontSize}
+      subtitleTextColor={props.subtitleTextColor}
+      subtitleBackgroundColor={props.subtitleBackgroundColor}
       resizeMode={props.resizeMode}
       onLoad={(e: any) => props.onLoad?.(e?.nativeEvent ?? e)}
       onProgress={(e: any) => props.onProgress?.(e?.nativeEvent ?? e)}

@@ -577,12 +577,26 @@ export type TraktContentCommentLegacy =
   | TraktEpisodeComment
   | TraktListComment;
 
+
+const TRAKT_MAINTENANCE_MODE = false;
+const TRAKT_MAINTENANCE_MESSAGE = 'Trakt integration is temporarily unavailable for maintenance. Please try again later.';
+
 export class TraktService {
   private static instance: TraktService;
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
   private tokenExpiry: number = 0;
   private isInitialized: boolean = false;
+
+
+  public isMaintenanceMode(): boolean {
+    return TRAKT_MAINTENANCE_MODE;
+  }
+
+
+  public getMaintenanceMessage(): string {
+    return TRAKT_MAINTENANCE_MESSAGE;
+  }
 
   // Rate limiting - Optimized for real-time scrobbling
   private lastApiCall: number = 0;
@@ -726,6 +740,12 @@ export class TraktService {
    * Check if the user is authenticated with Trakt
    */
   public async isAuthenticated(): Promise<boolean> {
+    // During maintenance, report as not authenticated to disable all syncing
+    if (this.isMaintenanceMode()) {
+      logger.log('[TraktService] Maintenance mode: reporting as not authenticated');
+      return false;
+    }
+
     await this.ensureInitialized();
 
     if (!this.accessToken) {
@@ -756,6 +776,12 @@ export class TraktService {
    * Exchange the authorization code for an access token
    */
   public async exchangeCodeForToken(code: string, codeVerifier: string): Promise<boolean> {
+    // Block authentication during maintenance
+    if (this.isMaintenanceMode()) {
+      logger.warn('[TraktService] Maintenance mode: blocking new authentication');
+      return false;
+    }
+
     await this.ensureInitialized();
 
     try {
@@ -992,6 +1018,12 @@ export class TraktService {
     body?: any,
     retryCount: number = 0
   ): Promise<T> {
+    // Block all API requests during maintenance
+    if (this.isMaintenanceMode()) {
+      logger.warn('[TraktService] Maintenance mode: blocking API request to', endpoint);
+      throw new Error(TRAKT_MAINTENANCE_MESSAGE);
+    }
+
     await this.ensureInitialized();
 
     // Rate limiting: ensure minimum interval between API calls
@@ -1202,6 +1234,149 @@ export class TraktService {
    */
   public async getWatchedShows(): Promise<TraktWatchedItem[]> {
     return this.apiRequest<TraktWatchedItem[]>('/sync/watched/shows');
+  }
+
+
+  public async isMovieWatchedAccurate(imdbId: string): Promise<boolean> {
+    try {
+      const imdb = imdbId.startsWith('tt')
+        ? imdbId
+        : `tt${imdbId}`;
+
+      const movies = await this.apiRequest<any[]>('/sync/watched/movies');
+      const moviesArray = Array.isArray(movies) ? movies : [];
+
+      return moviesArray.some(
+        (m: any) => m.movie?.ids?.imdb === imdb
+      );
+    } catch (err) {
+      logger.warn('[TraktService] Movie watched check failed', err);
+      return false;
+    }
+  }
+
+  public async isEpisodeWatchedAccurate(
+    showImdbId: string,
+    season: number,
+    episode: number
+  ): Promise<boolean> {
+    try {
+      if (season === 0) return false;
+
+      const imdb = showImdbId.startsWith('tt')
+        ? showImdbId
+        : `tt${showImdbId}`;
+
+      const watchedShows = await this.apiRequest<any[]>(
+        '/sync/watched/shows'
+      );
+
+      const show = watchedShows.find(
+        s => s.show?.ids?.imdb === imdb
+      );
+
+      if (show) {
+        const seasonData = show.seasons?.find(
+          (s: any) => s.number === season
+        );
+
+        if (
+          seasonData?.episodes?.some(
+            (e: any) => e.number === episode
+          )
+        ) {
+          return true;
+        }
+      }
+
+      let page = 1;
+
+      while (true) {
+        const history = await this.apiRequest<any[]>(
+          `/sync/history/shows/${imdb}?page=${page}&limit=100`
+        );
+
+        if (!history.length) break;
+
+        if (
+          history.some(
+            (h: any) =>
+              h.episode?.season === season &&
+              h.episode?.number === episode
+          )
+        ) {
+          return true;
+        }
+
+        page++;
+      }
+
+      return false;
+    } catch (err) {
+      logger.warn('[TraktService] Episode watched check failed', err);
+      return false;
+    }
+  }
+
+  public async isSeasonCompletedAccurate(
+    showImdbId: string,
+    seasonNumber: number,
+    totalAiredEpisodes: number
+  ): Promise<boolean> {
+    try {
+      if (seasonNumber === 0) return false;
+      if (!totalAiredEpisodes || totalAiredEpisodes <= 0) return false;
+
+      const imdb = showImdbId.startsWith('tt')
+        ? showImdbId
+        : `tt${showImdbId}`;
+
+      const watchedEpisodes = new Set<number>();
+
+      const watchedShows = await this.apiRequest<any[]>(
+        '/sync/watched/shows'
+      );
+
+      const show = watchedShows.find(
+        s => s.show?.ids?.imdb === imdb
+      );
+
+      if (show) {
+        const season = show.seasons?.find(
+          (s: any) => s.number === seasonNumber
+        );
+
+        season?.episodes?.forEach(
+          (e: any) => watchedEpisodes.add(e.number)
+        );
+      }
+
+      let page = 1;
+
+      while (true) {
+        const history = await this.apiRequest<any[]>(
+          `/sync/history/shows/${imdb}?page=${page}&limit=10`
+        );
+
+        if (!history.length) break;
+
+        history.forEach((h: any) => {
+          if (
+            h.episode?.season === seasonNumber &&
+            typeof h.episode?.number === 'number'
+          ) {
+            watchedEpisodes.add(h.episode.number);
+          }
+        });
+
+        page++;
+      }
+
+      return watchedEpisodes.size >= totalAiredEpisodes;
+    } catch (err) {
+      logger.warn('[TraktService] Season completion check failed', err);
+      return false;
+    }
   }
 
   /**
@@ -2648,6 +2823,26 @@ export class TraktService {
       return false;
     } catch (error) {
       logger.error('[TraktService] Failed to remove episode from history:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Remove a playback item from Trakt (Continue Watching) by Playback ID
+   */
+  public async removePlaybackItem(playbackId: number): Promise<boolean> {
+    try {
+      logger.log(`🔍 [TraktService] removePlaybackItem called for playback ID: ${playbackId}`);
+      if (!playbackId) return false;
+
+      // Use DELETE /sync/playback/{id}
+      // Note: The ID here is the playback ID, not the movie/episode ID
+      await this.apiRequest<any>(`/sync/playback/${playbackId}`, 'DELETE');
+
+      logger.log(`✅ [TraktService] Successfully removed playback item ${playbackId}. Response: 204 No Content (Standard for DELETE)`);
+      return true;
+    } catch (error) {
+      logger.error(`[TraktService] Failed to remove playback item ${playbackId}:`, error);
       return false;
     }
   }

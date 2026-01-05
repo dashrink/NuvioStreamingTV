@@ -1,11 +1,18 @@
+<<<<<<< HEAD
 import React, { useRef } from 'react';
 import { View, Text, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
+=======
+import React from 'react';
+import { View, Text, TouchableOpacity, useWindowDimensions, StyleSheet } from 'react-native';
+>>>>>>> origin/main
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   FadeOut,
-  SlideInRight,
-  SlideOutRight,
+  SlideInDown,
+  SlideOutDown,
+  useAnimatedStyle,
+  withTiming,
 } from 'react-native-reanimated';
 import Focusable from '../../common/Focusable';
 import TVModalWrapper from '../../common/TVModalWrapper';
@@ -21,7 +28,31 @@ interface SpeedModalProps {
   setHoldToSpeedValue: (speed: number) => void;
 }
 
-export const SpeedModal: React.FC<SpeedModalProps> = ({
+const MorphingButton = ({ label, isSelected, onPress, isSmall = false }: any) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      // Linear transition from 40 (Pill) to 10 (Rectangle)
+      borderRadius: withTiming(isSelected ? 10 : 40, { duration: 250 }),
+      backgroundColor: withTiming(isSelected ? (isSmall ? 'rgba(255,255,255,0.2)' : 'white') : 'rgba(255,255,255,0.06)', { duration: 50 }),
+    };
+  });
+
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={{ flex: isSmall ? 0 : 1 }}>
+      <Animated.View style={[{ paddingVertical: isSmall ? 6 : 8, paddingHorizontal: isSmall ? 14 : 0, alignItems: 'center', justifyContent: 'center' }, animatedStyle]}>
+        <Text style={{
+          color: isSelected && !isSmall ? 'black' : 'white',
+          fontWeight: isSelected ? '700' : '400',
+          fontSize: isSmall ? 11 : 13
+        }}>
+          {label}
+        </Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+const SpeedModal: React.FC<SpeedModalProps> = ({
   showSpeedModal,
   setShowSpeedModal,
   currentSpeed,
@@ -32,6 +63,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
   setHoldToSpeedValue,
 }) => {
   const { width } = useWindowDimensions();
+<<<<<<< HEAD
   const MENU_WIDTH = Math.min(width * 0.85, 400);
   const firstSpeedRef = useRef<any>(null);
 
@@ -49,61 +81,77 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
   const handleHoldSpeedSelect = (speed: number) => {
     setHoldToSpeedValue(speed);
   };
+=======
+  const speedPresets = [0.5, 1.0, 1.25, 1.5, 2.0, 2.5];
+  const holdSpeedOptions = [1.0, 2.0, 3.0];
+>>>>>>> origin/main
 
   if (!showSpeedModal) return null;
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
+<<<<<<< HEAD
       <Focusable style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose} disabled={Platform.isTV}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
       </Focusable>
-
-      <Animated.View
-        entering={SlideInRight.duration(300)}
-        exiting={SlideOutRight.duration(250)}
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: MENU_WIDTH,
-          backgroundColor: '#0f0f0f',
-          borderLeftWidth: 1,
-          borderColor: 'rgba(255,255,255,0.1)',
-        }}
+=======
+      <TouchableOpacity
+        style={StyleSheet.absoluteFill}
+        activeOpacity={1}
+        onPress={() => setShowSpeedModal(false)}
       >
-        <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 15, paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <Text style={{ color: 'white', fontSize: 22, fontWeight: '700' }}>Playback Speed</Text>
-          </View>
-        </View>
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }} />
+      </TouchableOpacity>
+>>>>>>> origin/main
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
-        >
-          {/* Current Speed Display */}
-          <View style={{
-            backgroundColor: 'rgba(59, 130, 246, 0.15)',
-            borderRadius: 12,
-            padding: 12,
-            marginBottom: 20,
+      <View pointerEvents="box-none" style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
+        <Animated.View
+          entering={SlideInDown.duration(300)}
+          exiting={SlideOutDown.duration(250)}
+          style={{
+            width: Math.min(width * 0.9, 420),
+            backgroundColor: 'rgba(15, 15, 15, 0.95)',
+            borderRadius: 24,
+            padding: 20,
             borderWidth: 1,
-            borderColor: 'rgba(59, 130, 246, 0.3)',
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <MaterialIcons name="play-arrow" size={20} color="#3B82F6" />
-              <Text style={{
-                color: '#3B82F6',
-                fontSize: 18,
-                fontWeight: '700',
-                marginLeft: 6
-              }}>
-                Current: {currentSpeed}x
-              </Text>
-            </View>
+            borderColor: 'rgba(255,255,255,0.1)'
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, alignItems: 'center' }}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Playback Speed</Text>
           </View>
 
+          {/* Speed Selection Row */}
+          <View style={{ flexDirection: 'row', gap: 6, marginBottom: 20 }}>
+            {speedPresets.map((speed) => (
+              <MorphingButton
+                key={speed}
+                label={`${speed}x`}
+                isSelected={currentSpeed === speed}
+                onPress={() => setPlaybackSpeed(speed)}
+              />
+            ))}
+          </View>
+
+          <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: 14 }} />
+
+          {/* On Hold Section */}
+          <View>
+            <TouchableOpacity
+              onPress={() => setHoldToSpeedEnabled(!holdToSpeedEnabled)}
+              style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: holdToSpeedEnabled ? 15 : 0 }}
+            >
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>On Hold</Text>
+              <View style={{
+                width: 34, height: 18, borderRadius: 10,
+                backgroundColor: holdToSpeedEnabled ? 'white' : 'rgba(255,255,255,0.2)',
+                padding: 2, alignItems: holdToSpeedEnabled ? 'flex-end' : 'flex-start'
+              }}>
+                <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: holdToSpeedEnabled ? 'black' : 'white' }} />
+              </View>
+            </TouchableOpacity>
+
+<<<<<<< HEAD
           {/* Speed Presets */}
           <View style={{ marginBottom: 20 }}>
             <Text style={{
@@ -212,40 +260,24 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                   })}
                 </ScrollView>
               </View>
+=======
+            {holdToSpeedEnabled && (
+              <Animated.View entering={FadeIn} style={{ flexDirection: 'row', gap: 8 }}>
+                {holdSpeedOptions.map((speed) => (
+                  <MorphingButton
+                    key={speed}
+                    isSmall
+                    label={`${speed}x`}
+                    isSelected={holdToSpeedValue === speed}
+                    onPress={() => setHoldToSpeedValue(speed)}
+                  />
+                ))}
+              </Animated.View>
+>>>>>>> origin/main
             )}
-
-            {/* Info Text */}
-            <View style={{
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderRadius: 10,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: 'rgba(34, 197, 94, 0.3)',
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                <MaterialIcons name="info" size={16} color="#22C55E" />
-                <View style={{ flex: 1 }}>
-                  <Text style={{
-                    color: '#22C55E',
-                    fontSize: 13,
-                    fontWeight: '600',
-                    marginBottom: 4,
-                  }}>
-                    Hold left/right sides
-                  </Text>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    fontSize: 12,
-                    lineHeight: 16,
-                  }}>
-                    Hold and press the left or right side of the video player to temporarily boost playback speed.
-                  </Text>
-                </View>
-              </View>
-            </View>
           </View>
-        </ScrollView>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </View>
   );
 };

@@ -66,6 +66,7 @@ import { useToast } from '../contexts/ToastContext';
 import FirstTimeWelcome from '../components/FirstTimeWelcome';
 import { HeaderVisibility } from '../contexts/HeaderVisibility';
 import { useTrailer } from '../contexts/TrailerContext';
+import { useScrollToTop } from '../contexts/ScrollToTopContext';
 
 // Constants
 const CATALOG_SETTINGS_KEY = 'catalog_settings';
@@ -138,6 +139,25 @@ const HomeScreen = () => {
   const totalCatalogsRef = useRef(0);
   const [visibleCatalogCount, setVisibleCatalogCount] = useState(5); // Reduced for memory
   const insets = useSafeAreaInsets();
+  const flashListRef = useRef<any>(null);
+
+  // Scroll to top handler - use scrollToIndex and retry to handle re-renders
+  const scrollToTop = useCallback(() => {
+    // First attempt
+    flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
+
+    // Retry after a short delay in case re-render interrupted the scroll
+    setTimeout(() => {
+      flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }, 150);
+
+    // Final retry to ensure we're at the top
+    setTimeout(() => {
+      flashListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }, 400);
+  }, []);
+
+  useScrollToTop('Home', scrollToTop);
 
   // Stabilize insets to prevent iOS layout shifts
   const [stableInsetsTop, setStableInsetsTop] = useState(insets.top);
@@ -649,7 +669,9 @@ const HomeScreen = () => {
     }
 
     // Normal flow when addons are present (featured moved to ListHeaderComponent)
-    data.push({ type: 'thisWeek', key: 'thisWeek' });
+    if (settings.showThisWeekSection) {
+      data.push({ type: 'thisWeek', key: 'thisWeek' });
+    }
 
     // Only show a limited number of catalogs initially for performance
     const catalogsToShow = catalogs.slice(0, visibleCatalogCount);
@@ -669,7 +691,7 @@ const HomeScreen = () => {
     }
 
     return data;
-  }, [hasAddons, catalogs, visibleCatalogCount]);
+  }, [hasAddons, catalogs, visibleCatalogCount, settings.showThisWeekSection]);
 
   const handleLoadMoreCatalogs = useCallback(() => {
     setVisibleCatalogCount(prev => Math.min(prev + 3, catalogs.length));
@@ -890,6 +912,7 @@ const HomeScreen = () => {
           translucent
         />
         <FlashList
+          ref={flashListRef}
           data={listData}
           renderItem={renderListItem}
           keyExtractor={keyExtractor}
