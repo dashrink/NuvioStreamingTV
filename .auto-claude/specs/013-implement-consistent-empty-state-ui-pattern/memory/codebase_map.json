@@ -29,7 +29,17 @@
       "description": "PluginsScreen has two empty state scenarios in the \"Available Plugins\" collapsible section: (1) 'No Scrapers Found' when searchQuery has value but no matching results, (2) 'No Scrapers Available' when filteredScrapers.length === 0 and no search query. Both now use EmptyState component with Ionicons (search and download-outline icons).",
       "category": "empty-state-integration",
       "discovered_at": "2026-01-09T21:29:06.517020+00:00"
+    },
+    "src/screens/DownloadsScreen.tsx": {
+      "description": "DownloadsScreen has two empty state scenarios: (1) 'No Downloads Yet' when downloads.length === 0, uses EmptyState with 'download-outline' icon from MaterialCommunityIcons and 'Explore Content' action navigating to Search. (2) 'No {filter} downloads' when filter returns no results (ListEmptyComponent), uses EmptyState with 'filter-off' icon from MaterialCommunityIcons with custom emptyFilterState style (flex: 0, paddingVertical).",
+      "category": "component_patterns",
+      "discovered_at": "2026-01-09T21:31:29.084170+00:00"
+    },
+    "src/screens/CalendarScreen.tsx": {
+      "description": "CalendarScreen has two empty state scenarios: (1) 'No episodes for {date}' when selectedDate is set but filteredEpisodes.length === 0 (uses event-busy icon size 48 with Show All Episodes action), (2) 'No upcoming episodes found' when calendarData.length === 0 (uses calendar-today icon with subtitle). Both now use EmptyState component with MaterialIcons library.",
+      "category": "empty-states",
+      "discovered_at": "2026-01-09T21:33:08.149389+00:00"
     }
   },
-  "last_updated": "2026-01-09T21:29:06.517036+00:00"
+  "last_updated": "2026-01-09T21:33:08.149399+00:00"
 }

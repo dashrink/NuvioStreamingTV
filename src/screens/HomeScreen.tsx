@@ -54,6 +54,7 @@ import AppleTVHero from '../components/home/AppleTVHero';
 import CatalogSection from '../components/home/CatalogSection';
 import { SkeletonFeatured } from '../components/home/SkeletonLoaders';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { EmptyState } from '../components/common';
 import homeStyles, { sharedStyles } from '../styles/homeStyles';
 import { useTheme } from '../contexts/ThemeContext';
 import type { Theme } from '../contexts/ThemeContext';
@@ -810,22 +811,19 @@ const HomeScreen = () => {
     <>
       {catalogsLoading && loadedCatalogCount > 0 && loadedCatalogCount < totalCatalogsRef.current && null}
       {!catalogsLoading && catalogs.filter(c => c).length === 0 && (
-        <View style={[styles.emptyCatalog, { backgroundColor: currentTheme.colors.elevation1 }]}>
-          <MaterialIcons name="movie-filter" size={40} color={currentTheme.colors.textDark} />
-          <Text style={{ color: currentTheme.colors.textDark, marginTop: 8, fontSize: 16, textAlign: 'center' }}>
-            No content available
-          </Text>
-          <TouchableOpacity
-            style={[styles.addCatalogButton, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <MaterialIcons name="add-circle" size={20} color={currentTheme.colors.white} />
-            <Text style={[styles.addCatalogButtonText, { color: currentTheme.colors.white }]}>Add Catalogs</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon={{ name: 'movie-filter', library: 'MaterialIcons', size: 48 }}
+          title="No content available"
+          subtitle="Add catalogs to see your content here"
+          primaryAction={{
+            label: 'Add Catalogs',
+            onPress: () => navigation.navigate('Settings'),
+          }}
+          style={styles.emptyCatalogState}
+        />
       )}
     </>
-  ), [catalogsLoading, catalogs, loadedCatalogCount, totalCatalogsRef.current, navigation, currentTheme.colors]);
+  ), [catalogsLoading, catalogs, loadedCatalogCount, totalCatalogsRef.current, navigation]);
 
   // Memoize scroll handler with requestAnimationFrame throttling for better performance
   const handleScroll = useCallback((event: any) => {
@@ -1023,6 +1021,13 @@ const styles = StyleSheet.create<any>({
     alignItems: 'center',
     margin: 16,
     borderRadius: 16,
+  },
+  emptyCatalogState: {
+    flex: 0,
+    paddingVertical: 48,
+    paddingHorizontal: 32,
+    marginHorizontal: 16,
+    paddingBottom: 48,
   },
   addCatalogButton: {
     flexDirection: 'row',
