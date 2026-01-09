@@ -3,7 +3,7 @@
   "category": "UI",
   "title": "Home Screen TV Optimization",
   "description": "Optimize HomeScreen for 10-foot experience with improved focus management, larger touch targets, and TV-optimized hero carousel. Enhances existing HeroCarousel and AppleTVHero components.",
-  "status": "verified",
+  "status": "completed",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [

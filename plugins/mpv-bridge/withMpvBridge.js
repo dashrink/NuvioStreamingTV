@@ -1,4 +1,4 @@
-const { withDangerousMod, withMainApplication, withMainActivity } = require('@expo/config-plugins');
+const { withDangerousMod, withMainApplication, withMainActivity, withAppBuildGradle } = require('@expo/config-plugins');
 const fs = require('fs');
 const path = require('path');
 
@@ -70,6 +70,43 @@ function withMpvMainActivity(config) {
 }
 
 /**
+ * Add MPV library dependency and set minSdkVersion in app/build.gradle
+ */
+function withMpvDependency(config) {
+    return withAppBuildGradle(config, async (config) => {
+        let contents = config.modResults.contents;
+
+        const mpvDependency = 'implementation("dev.jdtech.mpv:libmpv:0.5.1")';
+
+        // Check if the dependency already exists
+        if (!contents.includes('dev.jdtech.mpv:libmpv')) {
+            // Find the dependencies block and add the MPV dependency
+            const dependenciesPattern = /dependencies\s*\{/;
+            if (contents.match(dependenciesPattern)) {
+                contents = contents.replace(
+                    dependenciesPattern,
+                    `dependencies {\n    // MPV library for native video playback\n    ${mpvDependency}\n`
+                );
+                console.log('[mpv-bridge] Added MPV library dependency to build.gradle');
+            }
+        }
+
+        // Override minSdkVersion to 26 for MPV library compatibility
+        // MPV library requires minSdk 26
+        if (contents.includes('minSdkVersion rootProject.ext.minSdkVersion')) {
+            contents = contents.replace(
+                'minSdkVersion rootProject.ext.minSdkVersion',
+                'minSdkVersion 26 // MPV library requires minSdk 26'
+            );
+            console.log('[mpv-bridge] Set minSdkVersion to 26 for MPV compatibility');
+        }
+
+        config.modResults.contents = contents;
+        return config;
+    });
+}
+
+/**
  * Main plugin function
  */
 function withMpvBridge(config) {
@@ -81,6 +118,9 @@ function withMpvBridge(config) {
             return config;
         },
     ]);
+
+    // Add MPV library dependency to build.gradle
+    config = withMpvDependency(config);
 
     // Modify MainApplication to register the package
     config = withMpvMainApplication(config);

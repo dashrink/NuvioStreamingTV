@@ -1,0 +1,21 @@
+{
+  "category": "Uncategorized",
+  "description": "## Parent Task Context (Already Completed)\n\n> **Note:** The following parent task has already been completed. This context is provided to help you understand the background and requirements for this sub-task. Do not re-implement the parent task - focus only on the new sub-task described below.\n\n### Catalog Grid TV Navigation\n\n**Description:** Enhanced catalog grid layouts with proper spatial navigation using nextFocus props. Optimizes content card sizes and spacing for TV screens with clear focus rings.\n\n---\n\n## Task Description\n\nRerun this optimization. make sure all tasks are completed before you mark it as ready for testing",
+  "title": "Add TV navigation focus optimization completion",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "haiku",
+  "thinkingLevel": "none",
+  "branchName": "feat/tvos-support",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [
+    "catalog-grid-tv-navigation"
+  ],
+  "titleGenerating": false,
+  "status": "backlog",
+  "id": "feature-1767939323054-sv1inr24r"
+}

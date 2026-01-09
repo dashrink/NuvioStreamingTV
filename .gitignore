@@ -95,3 +95,6 @@ trakt-docss
 libmpv-android/
 mpv-android/
 mpvKt/
+
+# Auto Claude data directory
+.auto-claude/

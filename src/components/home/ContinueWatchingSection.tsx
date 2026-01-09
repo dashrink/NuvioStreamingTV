@@ -28,6 +28,7 @@ import { streamCacheService } from '../../services/streamCacheService';
 import { useSettings } from '../../hooks/useSettings';
 import CustomAlert from '../../components/CustomAlert';
 import Focusable from '../common/Focusable';
+import TVContinueWatchingSection, { TVContinueWatchingItem } from '../tv/TVContinueWatchingSection';
 
 // Define interface for continue watching items
 interface ContinueWatchingItem extends StreamingContent {
@@ -1191,6 +1192,59 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
     return null;
   }
 
+  // Convert items to TV format for TV component
+  const tvItems: TVContinueWatchingItem[] = useMemo(() => {
+    return continueWatchingItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type as 'movie' | 'series',
+      poster: item.poster,
+      progress: item.progress,
+      lastUpdated: item.lastUpdated,
+      season: item.season,
+      episode: item.episode,
+      episodeTitle: item.episodeTitle,
+      year: item.year,
+      addonId: item.addonId,
+    }));
+  }, [continueWatchingItems]);
+
+  // Use TV-optimized component when on TV platform
+  if (Platform.isTV) {
+    return (
+      <>
+        <TVContinueWatchingSection
+          data={tvItems}
+          loading={loading}
+          onItemPress={(item, index) => {
+            const originalItem = continueWatchingItems[index];
+            if (originalItem) {
+              handleContentPress(originalItem);
+            }
+          }}
+          onItemLongPress={(item, index) => {
+            const originalItem = continueWatchingItems[index];
+            if (originalItem) {
+              handleLongPress(originalItem);
+            }
+          }}
+          showHeader={true}
+          title="Continue Watching"
+          listRef={flashListRef as any}
+          testID="continue-watching-section-tv"
+        />
+        <CustomAlert
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          actions={alertActions}
+          onClose={() => setAlertVisible(false)}
+        />
+      </>
+    );
+  }
+
+  // Mobile/Tablet layout
   return (
     <View
       style={styles.container}

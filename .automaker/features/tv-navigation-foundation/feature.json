@@ -3,7 +3,7 @@
   "category": "Core",
   "title": "TV Navigation Foundation",
   "description": "Core TV navigation infrastructure with focus management, D-pad support, and spatial navigation. Includes Focusable component optimization and useTVMode hooks already implemented.",
-  "status": "verified",
+  "status": "completed",
   "priority": 1,
   "complexity": "simple",
   "dependencies": [],

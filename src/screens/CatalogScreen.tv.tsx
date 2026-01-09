@@ -22,9 +22,15 @@ import { useTheme } from '../contexts/ThemeContext';
 import FastImage from '@d11/react-native-fast-image';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
+import Focusable from '../components/common/Focusable';
 
-
-
+// TV-specific grid layout constants
+const TV_GRID_LAYOUT = {
+  ITEM_WIDTH: 200,       // Larger items for TV viewing distance
+  ITEM_SPACING: 20,      // Increased spacing for clear focus rings
+  FOCUS_SCALE: 1.05,     // Scale factor when focused
+  NUM_COLUMNS: 6,        // Default columns for TV
+};
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for CatalogScreen
 let GlassViewComp: any = null;
@@ -64,47 +70,18 @@ const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
 // Dynamic column and spacing calculation based on screen width
 const calculateCatalogLayout = (screenWidth: number) => {
-  const MIN_ITEM_WIDTH = 120;
-  const MAX_ITEM_WIDTH = 180; // Increased for tablets
-  // Increase padding and spacing on larger screens for proper breathing room
-  const HORIZONTAL_PADDING = screenWidth >= 1600 ? SPACING.xl * 4 : screenWidth >= 1200 ? SPACING.xl * 3 : screenWidth >= 1000 ? SPACING.xl * 2 : SPACING.lg * 2;
-  const ITEM_SPACING = screenWidth >= 1600 ? SPACING.xl : screenWidth >= 1200 ? SPACING.lg : screenWidth >= 1000 ? SPACING.md : SPACING.sm;
-
-  // Calculate how many columns can fit
+  // TV-specific layout for optimal viewing distance and focus ring visibility
+  const HORIZONTAL_PADDING = TV_GRID_LAYOUT.ITEM_SPACING * 2;
   const availableWidth = screenWidth - HORIZONTAL_PADDING;
-  const maxColumns = Math.floor(availableWidth / (MIN_ITEM_WIDTH + ITEM_SPACING));
-
-  // More flexible column limits for different screen sizes
-  let numColumns;
-  if (screenWidth < 600) {
-    // Phone: 2-3 columns
-    numColumns = Math.min(Math.max(maxColumns, 2), 3);
-  } else if (screenWidth < 900) {
-    // Small tablet: 3-5 columns
-    numColumns = Math.min(Math.max(maxColumns, 3), 5);
-  } else if (screenWidth < 1200) {
-    // Large tablet: 4-6 columns
-    numColumns = Math.min(Math.max(maxColumns, 4), 6);
-  } else if (screenWidth < 1600) {
-    // Desktop-ish: 5-8 columns
-    numColumns = Math.min(Math.max(maxColumns, 5), 8);
-  } else {
-    // Ultra-wide: 6-10 columns
-    numColumns = Math.min(Math.max(maxColumns, 6), 10);
-  }
-
-  // Calculate actual item width with proper spacing
-  const totalSpacing = ITEM_SPACING * (numColumns - 1);
-  const itemWidth = (availableWidth - totalSpacing) / numColumns;
-
-  // Ensure item width doesn't exceed maximum
-  const finalItemWidth = Math.floor(Math.min(itemWidth, MAX_ITEM_WIDTH));
+  const numColumns = TV_GRID_LAYOUT.NUM_COLUMNS;
+  const totalSpacing = TV_GRID_LAYOUT.ITEM_SPACING * (numColumns - 1);
+  const itemWidth = Math.floor((availableWidth - totalSpacing) / numColumns);
 
   return {
     numColumns,
-    itemWidth: finalItemWidth,
-    itemSpacing: ITEM_SPACING,
-    containerPadding: HORIZONTAL_PADDING / 2, // use half per side for contentContainerStyle padding
+    itemWidth: Math.max(itemWidth, TV_GRID_LAYOUT.ITEM_WIDTH),
+    itemSpacing: TV_GRID_LAYOUT.ITEM_SPACING,
+    containerPadding: HORIZONTAL_PADDING / 2,
   };
 };
 
@@ -298,7 +275,50 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
   const styles = createStyles(colors);
   const isDarkMode = true;
 
+  // TV spatial navigation: refs for grid items
+  const itemRefs = useRef<Map<number, React.RefObject<any>>>(new Map());
+  const backButtonRef = useRef<any>(null);
   const flashListRef = useRef<FlashList<Meta>>(null);
+
+  // Get or create ref for a specific item index
+  const getItemRef = useCallback((index: number): React.RefObject<any> => {
+    if (!itemRefs.current.has(index)) {
+      itemRefs.current.set(index, createRef<any>());
+    }
+    return itemRefs.current.get(index)!;
+  }, []);
+
+  // Calculate spatial navigation targets for grid items
+  const getGridNavigationTargets = useCallback((index: number, totalItems: number) => {
+    const numCols = screenData.numColumns;
+    const row = Math.floor(index / numCols);
+    const col = index % numCols;
+    const totalRows = Math.ceil(totalItems / numCols);
+
+    return {
+      // Left: previous item in same row, or undefined if at start of row
+      left: col > 0 ? getItemRef(index - 1) : undefined,
+      // Right: next item in same row, or undefined if at end of row or last item
+      right: col < numCols - 1 && index < totalItems - 1 ? getItemRef(index + 1) : undefined,
+      // Up: item directly above, or back button if in first row
+      up: row > 0 ? getItemRef(index - numCols) : backButtonRef,
+      // Down: item directly below, or undefined if no item below
+      down: row < totalRows - 1 && index + numCols < totalItems ? getItemRef(index + numCols) : undefined,
+    };
+  }, [screenData.numColumns, getItemRef]);
+
+  // Handle focus on grid item - scroll to bring it into view on TV
+  const handleItemFocus = useCallback((index: number) => {
+    if (flashListRef.current) {
+      const row = Math.floor(index / screenData.numColumns);
+      // Scroll to show the focused row with some padding
+      flashListRef.current.scrollToIndex({
+        index: Math.max(0, row * screenData.numColumns),
+        animated: true,
+        viewPosition: 0.3, // Position item at 30% from top
+      });
+    }
+  }, [screenData.numColumns]);
 
   // Load mobile columns preference (phones only)
   useEffect(() => {
@@ -766,20 +786,41 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
     const shape = item.posterShape || 'poster';
     const aspectRatio = shape === 'landscape' ? 16 / 9 : (shape === 'square' ? 1 : 2 / 3);
 
-    // Use TouchableOpacity for mobile
-    const ItemWrapper = TouchableOpacity;
+    // Get spatial navigation targets for TV grid navigation
+    const navTargets = getGridNavigationTargets(index, items.length);
+    const itemRef = getItemRef(index);
+
+    // Use Focusable for TV
+    const ItemWrapper = Focusable;
+
+    // TV-specific styles for enhanced focus visibility
+    const tvItemStyle = {
+      borderWidth: 2,
+      borderColor: 'transparent',
+    };
 
     return (
       <ItemWrapper
+        ref={itemRef}
         style={[
           styles.item,
+          tvItemStyle,
           {
             marginRight: rightMargin,
             width: effectiveItemWidth
           }
         ]}
         onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type, addonId })}
-        activeOpacity={0.7}
+        // TV spatial navigation props
+        {...(navTargets ? {
+          nextFocusLeft: navTargets.left,
+          nextFocusRight: navTargets.right,
+          nextFocusUp: navTargets.up,
+          nextFocusDown: navTargets.down,
+          hasTVPreferredFocus: index === 0,
+          onFocus: () => handleItemFocus(index),
+          scaleOnFocus: TV_GRID_LAYOUT.FOCUS_SCALE,
+        } : {})}
       >
         <FastImage
           source={{ uri: optimizePosterUrl(item.poster) }}
@@ -833,10 +874,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
         {showTitles && (
           <Text
             style={{
-              fontSize: 12,
+              fontSize: 14, // Larger text for TV
               fontWeight: '500',
               color: colors.mediumGray,
-              marginTop: 6,
+              marginTop: 8,
               textAlign: 'center',
               paddingHorizontal: 4,
             }}
@@ -926,19 +967,24 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
     );
   }
 
-  // Use TouchableOpacity for mobile
-  const BackButtonComponent = TouchableOpacity;
+  // Determine BackButton component - Focusable for TV
+  const BackButtonComponent = Focusable;
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <BackButtonComponent
+          ref={backButtonRef}
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          // TV navigation: back button can navigate down to first grid item
+          {...(items.length > 0 ? {
+            nextFocusDown: getItemRef(0),
+          } : {})}
         >
-          <MaterialIcons name="chevron-left" size={28} color={colors.white} />
-          <Text style={styles.backText}>Back</Text>
+          <MaterialIcons name="chevron-left" size={32} color={colors.white} />
+          <Text style={[styles.backText, { fontSize: 18 }]}>Back</Text>
         </BackButtonComponent>
       </View>
       <Text style={styles.headerTitle}>{displayName || `${type.charAt(0).toUpperCase() + type.slice(1)}s`}</Text>
@@ -998,7 +1044,7 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
           keyExtractor={(item) => `${item.id}-${item.type}`}
           numColumns={effectiveNumColumns}
           key={effectiveNumColumns}
-          ItemSeparatorComponent={() => <View style={{ height: ((screenData as any).itemSpacing ?? SPACING.sm) }} />}
+          ItemSeparatorComponent={() => <View style={{ height: TV_GRID_LAYOUT.ITEM_SPACING }} />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

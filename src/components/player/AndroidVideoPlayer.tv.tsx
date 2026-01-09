@@ -19,8 +19,7 @@ import { useTraktAutosyncSettings } from '../../hooks/useTraktAutosyncSettings';
 import { useMetadata } from '../../hooks/useMetadata';
 import { useSettings } from '../../hooks/useSettings';
 import { usePlayerGestureControls } from '../../hooks/usePlayerGestureControls';
-// useTVEventHandler removed
-
+import { useTVEventHandler } from '../../hooks/useTVEventHandler';
 
 // Shared Hooks (cross-platform)
 import {
@@ -983,7 +982,41 @@ const AndroidVideoPlayer: React.FC = () => {
 
 
 
-    // TV Event Handler removed from mobile version
+    // TV Remote Event Handler - handles all D-pad and media button events
+    // Must be placed after togglePlayback and handleClose are defined
+    useTVEventHandler(useCallback((evt: any) => {
+      if (!evt || !evt.eventType) return;
+
+      const eventType = evt.eventType;
+
+      switch (eventType) {
+        case 'playPause':
+          // Media play/pause button
+          togglePlayback();
+          break;
+
+        case 'select':
+          // Center/OK button - toggle play/pause when controls visible, otherwise show controls
+          if (showControls) {
+            togglePlayback();
+          } else {
+            setShowControls(true);
+            fadeAnim.setValue(1);
+            resetTVControlsTimeout();
+          }
+          break;
+
+        case 'left':
+          // D-pad left - seek backward
+          handleTVSeek('backward');
+          break;
+
+        case 'right':
+          // D-pad right - seek forward
+          handleTVSeek('forward');
+          break;
+
+        case 'up':
           // D-pad up - show controls
           if (!showControls) {
             setShowControls(true);
@@ -998,7 +1031,45 @@ const AndroidVideoPlayer: React.FC = () => {
             setShowControls(true);
             fadeAnim.setValue(1);
           }
+          resetTVControlsTimeout();
+          break;
 
+        case 'longLeft':
+          // Long press left - start continuous seek backward
+          startTVHoldSeek('left');
+          break;
+
+        case 'longRight':
+          // Long press right - start continuous seek forward
+          startTVHoldSeek('right');
+          break;
+
+        case 'blur':
+          // Focus lost or button released - stop continuous seek
+          stopTVHoldSeek();
+          break;
+
+        case 'menu':
+          // Menu/Back button - close player
+          handleClose();
+          break;
+
+        case 'swipeLeft':
+        case 'swipeRight':
+          // Swipe gestures (if supported) - map to seek
+          handleTVSeek(eventType === 'swipeRight' ? 'forward' : 'backward');
+          break;
+      }
+    }, [
+      showControls,
+      fadeAnim,
+      togglePlayback,
+      handleTVSeek,
+      startTVHoldSeek,
+      stopTVHoldSeek,
+      resetTVControlsTimeout,
+      handleClose,
+    ]));
 
     // Handle next episode button press
     const handlePlayNextEpisode = useCallback(async () => {

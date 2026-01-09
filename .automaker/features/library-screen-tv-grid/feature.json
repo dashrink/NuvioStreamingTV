@@ -3,7 +3,7 @@
   "category": "UI",
   "title": "Library Screen TV Grid",
   "description": "TV-optimized library grid with focus-based navigation through watchlist, collection, and ratings folders. Enhances existing LibraryScreen with proper spatial navigation.",
-  "status": "verified",
+  "status": "completed",
   "priority": 1,
   "complexity": "simple",
   "dependencies": [

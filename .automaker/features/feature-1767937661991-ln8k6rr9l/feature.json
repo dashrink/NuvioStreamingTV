@@ -1,0 +1,21 @@
+{
+  "category": "Core",
+  "description": "Refactor the entire app so that every TV code should be extracted into another file with .tv.tsx for tsx files and .tv.ts for ts files and so on. also clear out any conditional check for TV platform in the code. I need proper abstract using this pattern.",
+  "title": "Extract TV code into separate files with .tv extension",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "haiku",
+  "thinkingLevel": "none",
+  "branchName": "feat/tvos-support",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "titleGenerating": false,
+  "status": "completed",
+  "id": "feature-1767937661991-ln8k6rr9l",
+  "startedAt": "2026-01-09T06:03:35.815Z",
+  "updatedAt": "2026-01-09T06:03:35.944Z"
+}

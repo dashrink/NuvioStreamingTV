@@ -23,10 +23,25 @@ config.transformer = {
 };
 
 // Optimize resolver for better tree shaking and SVG support
+// Also support .tv.tsx/.tv.ts files for TV platform extraction pattern
+const isTV = process.env.APP_VARIANT === 'tv';
+
+// Standard source extensions + SVG
+const sourceExts = [
+  ...config.resolver.sourceExts,
+  'svg'
+];
+
+// If targeting TV, prioritize .tv.tsx and .tv.ts extension
+if (isTV) {
+  sourceExts.unshift('tv.tsx', 'tv.ts');
+  console.log('📺 TV mode enabled: Prioritizing .tv.tsx and .tv.ts files');
+}
+
 config.resolver = {
   ...config.resolver,
   assetExts: [...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'zip'],
-  sourceExts: [...config.resolver.sourceExts, 'svg'],
+  sourceExts,
   resolverMainFields: ['react-native', 'browser', 'main'],
 };
 

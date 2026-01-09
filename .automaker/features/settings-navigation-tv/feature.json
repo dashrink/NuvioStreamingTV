@@ -3,7 +3,7 @@
   "category": "UI",
   "title": "Settings Navigation TV",
   "description": "TV-friendly settings screens with focus-based list navigation, larger text, and proper back button handling. Optimizes all settings screens for remote control navigation.",
-  "status": "verified",
+  "status": "completed",
   "priority": 1,
   "complexity": "moderate",
   "dependencies": [
