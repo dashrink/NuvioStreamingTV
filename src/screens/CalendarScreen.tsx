@@ -20,6 +20,7 @@ import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import { EmptyState } from '../components/common';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useLibrary } from '../hooks/useLibrary';
 import { useTraktContext } from '../contexts/TraktContext';
@@ -334,20 +335,14 @@ const CalendarScreen = () => {
           }
         />
       ) : selectedDate && filteredEpisodes.length === 0 ? (
-        <View style={styles.emptyFilterContainer}>
-          <MaterialIcons name="event-busy" size={48} color={currentTheme.colors.lightGray} />
-          <Text style={[styles.emptyFilterText, { color: currentTheme.colors.text }]}>
-            No episodes for {format(selectedDate, 'MMMM d, yyyy')}
-          </Text>
-          <TouchableOpacity 
-            style={[styles.clearFilterButtonLarge, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={clearDateFilter}
-          >
-            <Text style={[styles.clearFilterButtonText, { color: currentTheme.colors.text }]}>
-              Show All Episodes
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon={{ name: 'event-busy', size: 48, library: 'MaterialIcons' }}
+          title={`No episodes for ${format(selectedDate, 'MMMM d, yyyy')}`}
+          primaryAction={{
+            label: 'Show All Episodes',
+            onPress: clearDateFilter,
+          }}
+        />
       ) : calendarData.length > 0 ? (
         <SectionList
           sections={calendarData}
@@ -370,15 +365,11 @@ const CalendarScreen = () => {
           }
         />
       ) : (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons name="calendar-today" size={64} color={currentTheme.colors.lightGray} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.text }]}>
-            No upcoming episodes found
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-            Add series to your library to see their upcoming episodes here
-          </Text>
-        </View>
+        <EmptyState
+          icon={{ name: 'calendar-today', library: 'MaterialIcons' }}
+          title="No upcoming episodes found"
+          subtitle="Add series to your library to see their upcoming episodes here"
+        />
       )}
     </SafeAreaView>
   );
