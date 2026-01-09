@@ -96,14 +96,26 @@ export const CustomAlert = ({
             overlayStyle
           ]}
         >
-          <Pressable style={styles.overlayPressable} onPress={onClose} />
+          <Pressable
+            style={styles.overlayPressable}
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close alert"
+            accessibilityHint="Double tap to dismiss this alert"
+          />
           <View style={styles.centered}>
-            <Animated.View style={[
-              styles.alertContainer,
-              alertStyle,
-            ]}>
+            <Animated.View
+              style={[
+                styles.alertContainer,
+                alertStyle,
+              ]}
+              accessible={true}
+              accessibilityRole="alert"
+              accessibilityLabel={`${title}. ${message}`}
+              accessibilityViewIsModal={true}
+            >
               {/* Title */}
-              <Text style={styles.title}>
+              <Text style={styles.title} accessibilityRole="header">
                 {title}
               </Text>
 
@@ -132,6 +144,9 @@ export const CustomAlert = ({
                       ]}
                       onPress={() => handleActionPress(action)}
                       activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={action.label}
+                      accessibilityHint={`Tap to ${action.label.toLowerCase()}`}
                     >
                       <Text style={[
                         styles.actionText,
