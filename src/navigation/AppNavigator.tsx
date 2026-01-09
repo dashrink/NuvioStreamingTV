@@ -72,6 +72,8 @@ import BackdropGalleryScreen from '../screens/BackdropGalleryScreen';
 import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
+import ProfileSelectorScreen from '../screens/ProfileSelectorScreen';
+import ProfilesScreen from '../screens/ProfilesScreen';
 
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
 import { useTVMode } from '../hooks/useTVMode';
@@ -221,6 +223,10 @@ export type RootStackParamList = {
   PlaybackSettings: undefined;
   AboutSettings: undefined;
   DeveloperSettings: undefined;
+  // Profile management screens
+  ProfileSelector: undefined;
+  Profiles: undefined;
+  ProfileSettings: { profileId: string };
 };
 
 
@@ -1602,6 +1608,50 @@ const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof 
             <Stack.Screen
               name="DeveloperSettings"
               component={DeveloperSettingsScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ProfileSelector"
+              component={ProfileSelectorScreen}
+              options={{
+                animation: 'fade',
+                animationDuration: 200,
+                presentation: 'card',
+                gestureEnabled: false,
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Profiles"
+              component={ProfilesScreen}
+              options={{
+                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
+                animationDuration: Platform.OS === 'android' ? 250 : 300,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal',
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ProfileSettings"
+              component={ProfilesScreen}
               options={{
                 animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
                 animationDuration: Platform.OS === 'android' ? 250 : 300,

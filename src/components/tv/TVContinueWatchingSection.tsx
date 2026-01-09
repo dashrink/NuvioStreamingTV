@@ -31,14 +31,12 @@ import FastImage from '@d11/react-native-fast-image';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
 import Focusable from '../common/Focusable';
-import {
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_FOCUS_CONFIG,
-  TV_ANIMATIONS,
-  isTV,
-  scaleForTV,
-} from '../../utils/tvStyles';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
+import { TV_ANIMATIONS } from '../../utils/tvStyles/animations';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { scaleForTV } from '../../utils/tvStyles/helpers';
 
 // ============================================================================
 // TYPES

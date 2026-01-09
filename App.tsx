@@ -41,6 +41,7 @@ import UpdateService from './src/services/updateService';
 import { memoryMonitorService } from './src/services/memoryMonitorService';
 import { aiService } from './src/services/aiService';
 import { AccountProvider, useAccount } from './src/contexts/AccountContext';
+import { ProfileProvider } from './src/contexts/ProfileContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
@@ -269,7 +270,9 @@ function App(): React.JSX.Element {
                 <ThemeProvider>
                   <TrailerProvider>
                     <ToastProvider>
-                      <ThemedApp />
+                      <ProfileProvider>
+                        <ThemedApp />
+                      </ProfileProvider>
                     </ToastProvider>
                   </TrailerProvider>
                 </ThemeProvider>
