@@ -1,0 +1,35 @@
+{
+  "discovered_files": {
+    "src/components/common/": {
+      "description": "Common components directory contains reusable UI components like LoadingSpinner, ScreenHeader, and TraktLoadingSpinner. New EmptyState component should follow the same patterns (useTheme hook, size props, StyleSheet).",
+      "category": "architecture",
+      "discovered_at": "2026-01-09T21:20:10.162528+00:00"
+    },
+    "src/components/common/EmptyState.tsx": {
+      "description": "Reusable EmptyState component with flexible props for icon (MaterialIcons, Ionicons, MaterialCommunityIcons), title, subtitle, and primary/secondary action buttons. Uses useTheme hook and has tablet responsiveness at 768px breakpoint.",
+      "category": "UI Component",
+      "discovered_at": "2026-01-09T21:21:59.262473+00:00"
+    },
+    "src/components/common/index.ts": {
+      "description": "Barrel export file for common components. Enables cleaner imports like `import { EmptyState, LoadingSpinner, ScreenHeader } from '../components/common'` instead of individual file imports.",
+      "category": "architecture",
+      "discovered_at": "2026-01-09T21:24:02.111257+00:00"
+    },
+    "src/screens/SearchScreen.tsx": {
+      "description": "SearchScreen has two empty state scenarios: (1) 'Keep typing...' when query is exactly 1 character, (2) 'No results found' when search completed but no results. Both now use EmptyState component with MaterialIcons (search and search-off icons).",
+      "category": "patterns",
+      "discovered_at": "2026-01-09T21:25:34.821658+00:00"
+    },
+    "src/screens/LibraryScreen.tsx": {
+      "description": "LibraryScreen has three empty state scenarios: (1) 'No Trakt collections' when traktFolders.length === 0, (2) 'No content in {folderName}' when a specific folder is empty, (3) 'No movies/TV shows/content yet' when filteredItems.length === 0 based on filter. All now use EmptyState component with MaterialCommunityIcons (folder-off-outline, folder-open-outline) and MaterialIcons (video-library).",
+      "category": "screen-patterns",
+      "discovered_at": "2026-01-09T21:27:49.260005+00:00"
+    },
+    "src/screens/PluginsScreen.tsx": {
+      "description": "PluginsScreen has two empty state scenarios in the \"Available Plugins\" collapsible section: (1) 'No Scrapers Found' when searchQuery has value but no matching results, (2) 'No Scrapers Available' when filteredScrapers.length === 0 and no search query. Both now use EmptyState component with Ionicons (search and download-outline icons).",
+      "category": "empty-state-integration",
+      "discovered_at": "2026-01-09T21:29:06.517020+00:00"
+    }
+  },
+  "last_updated": "2026-01-09T21:29:06.517036+00:00"
+}

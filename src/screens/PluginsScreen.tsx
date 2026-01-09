@@ -17,6 +17,7 @@ import {
   Image,
 } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
+import { EmptyState } from '../components/common';
 import FastImage from '@d11/react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -1603,31 +1604,25 @@ const PluginsScreen: React.FC = () => {
           )}
 
           {filteredScrapers.length === 0 ? (
-            <View style={styles.emptyStateContainer}>
-              <Ionicons
-                name={searchQuery ? "search" : "download-outline"}
-                size={48}
-                color={colors.mediumGray}
-                style={styles.emptyStateIcon}
-              />
-              <Text style={styles.emptyStateTitle}>
-                {searchQuery ? 'No Scrapers Found' : 'No Scrapers Available'}
-              </Text>
-              <Text style={styles.emptyStateDescription}>
-                {searchQuery
+            <EmptyState
+              icon={{
+                name: searchQuery ? 'search' : 'download-outline',
+                size: 48,
+                library: 'Ionicons',
+              }}
+              title={searchQuery ? 'No Scrapers Found' : 'No Scrapers Available'}
+              subtitle={
+                searchQuery
                   ? `No scrapers match "${searchQuery}". Try a different search term.`
                   : 'Configure a repository above to view available scrapers.'
-                }
-              </Text>
-              {searchQuery && (
-                <TouchableOpacity
-                  style={[styles.button, styles.secondaryButton]}
-                  onPress={() => setSearchQuery('')}
-                >
-                  <Text style={styles.secondaryButtonText}>Clear Search</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+              }
+              primaryAction={
+                searchQuery
+                  ? { label: 'Clear Search', onPress: () => setSearchQuery('') }
+                  : undefined
+              }
+              style={{ flex: 0, paddingBottom: 32 }}
+            />
           ) : (
             <View style={styles.scrapersContainer}>
               {filteredScrapers.map((scraper) => (

@@ -1,0 +1,68 @@
+# Build Progress: Implement Consistent Empty State UI Pattern
+# Spec ID: 013-implement-consistent-empty-state-ui-pattern
+
+## Status: Planning Complete
+## Last Updated: 2026-01-10
+
+---
+
+## Overview
+Create a reusable EmptyState component with consistent styling and actionable CTAs to replace ad-hoc implementations across multiple screens.
+
+## Current State Analysis
+
+### Empty States Found (7 screens):
+1. **PluginsScreen** - Custom empty state with icon, title, description
+2. **SearchScreen** - Two states: "Keep typing..." and "No results found"
+3. **HomeScreen** - "No content available" with "Add Catalogs" CTA
+4. **LibraryScreen** - Multiple states for Trakt collections and main library
+5. **DownloadsScreen** - EmptyDownloadsState component with icon, title, CTA
+6. **CalendarScreen** - Empty state for calendar episodes
+7. **AddonsScreen** - Empty states for addons
+
+### Issues Identified:
+- Inconsistent icon sizes (48-80px across screens)
+- Varying CTA button styles and border-radius
+- Some hardcoded colors instead of theme colors
+- Inconsistent padding/margins
+- Duplicate style definitions
+
+## Implementation Plan (4 Phases, 10 Subtasks)
+
+### Phase 1: Create EmptyState Component
+- [ ] 1.1: Create EmptyState.tsx with flexible props
+- [ ] 1.2: Create index barrel export for common components
+
+### Phase 2: Integrate into Key Screens
+- [ ] 2.1: SearchScreen integration
+- [ ] 2.2: LibraryScreen integration
+- [ ] 2.3: PluginsScreen integration
+- [ ] 2.4: DownloadsScreen integration
+
+### Phase 3: Additional Screen Integration
+- [ ] 3.1: CalendarScreen integration
+- [ ] 3.2: HomeScreen integration
+- [ ] 3.3: AddonsScreen integration
+
+### Phase 4: Cleanup and Verification
+- [ ] 4.1: Remove unused styles
+- [ ] 4.2: Verify TypeScript and build
+
+---
+
+## Progress Log
+
+### 2026-01-10
+- [PLANNING] Read spec.md and analyzed codebase
+- [PLANNING] Identified 7 screens with empty states
+- [PLANNING] Created detailed implementation plan with phases and subtasks
+- [PLANNING] Documented technical notes and acceptance criteria
+
+---
+
+## Notes
+- Following LoadingSpinner pattern for component structure
+- Supporting MaterialIcons, Ionicons, and MaterialCommunityIcons
+- Tablet responsiveness using width >= 768 pattern
+- Standardizing icon size to 64px default
+- Standardizing CTA button border-radius to 24px
