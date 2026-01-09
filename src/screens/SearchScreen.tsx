@@ -44,6 +44,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ScreenHeader from '../components/common/ScreenHeader';
+import { EmptyState } from '../components/common';
 
 const { width, height } = Dimensions.get('window');
 
@@ -961,37 +962,17 @@ const SearchScreen = () => {
             />
           </View>
         ) : query.trim().length === 1 ? (
-          <View
-            style={styles.emptyContainer}
-          >
-            <MaterialIcons
-              name="search"
-              size={64}
-              color={currentTheme.colors.lightGray}
-            />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-              Keep typing...
-            </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-              Type at least 2 characters to search
-            </Text>
-          </View>
+          <EmptyState
+            icon={{ name: 'search', size: 64, library: 'MaterialIcons' }}
+            title="Keep typing..."
+            subtitle="Type at least 2 characters to search"
+          />
         ) : searched && !hasResultsToShow ? (
-          <View
-            style={styles.emptyContainer}
-          >
-            <MaterialIcons
-              name="search-off"
-              size={64}
-              color={currentTheme.colors.lightGray}
-            />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-              No results found
-            </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-              Try different keywords or check your spelling
-            </Text>
-          </View>
+          <EmptyState
+            icon={{ name: 'search-off', size: 64, library: 'MaterialIcons' }}
+            title="No results found"
+            subtitle="Try different keywords or check your spelling"
+          />
         ) : (
           <ScrollView
             style={styles.scrollView}
