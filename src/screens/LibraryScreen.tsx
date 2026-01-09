@@ -10,6 +10,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
   useColorScheme,
   useWindowDimensions,
   SafeAreaView,
@@ -38,6 +39,7 @@ import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
 import { useSettings } from '../hooks/useSettings';
+import debounce from 'lodash/debounce';
 
 interface LibraryItem extends StreamingContent {
   progress?: number;
@@ -225,6 +227,7 @@ const LibraryScreen = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     isAuthenticated: traktAuthenticated,
