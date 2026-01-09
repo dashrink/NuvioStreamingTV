@@ -135,6 +135,9 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                                     style={styles.backButton}
                                     onPress={onBackPress}
                                     activeOpacity={0.7}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Go back"
+                                    accessibilityHint="Double tap to return to previous screen"
                                 >
                                     <IconComponent
                                         name={backIconName as any}
@@ -155,6 +158,7 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                                         showBackButton && styles.headerTitleWithBack,
                                         titleStyle,
                                     ]}
+                                    accessibilityRole="header"
                                 >
                                     {title}
                                 </Text>
@@ -168,6 +172,9 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                                     style={styles.rightActionButton}
                                     onPress={onRightActionPress}
                                     activeOpacity={0.7}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={rightActionIcon.replace(/-/g, ' ')}
+                                    accessibilityHint={`Double tap to ${rightActionIcon.replace(/-/g, ' ')}`}
                                 >
                                     <IconComponent
                                         name={rightActionIcon as any}
