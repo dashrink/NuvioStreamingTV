@@ -1,0 +1,14 @@
+{
+  "id": "tv-remote-event-handling",
+  "category": "Core",
+  "title": "TV Remote Event Handling",
+  "description": "Enhanced remote control event handling for both Android TV and tvOS. Supports media keys, playback controls, and menu button integration using existing useTVEventHandler and useTVBackHandler hooks.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "simple",
+  "dependencies": [
+    "tv-navigation-foundation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.876Z",
+  "updatedAt": "2026-01-08T07:40:51.876Z"
+}

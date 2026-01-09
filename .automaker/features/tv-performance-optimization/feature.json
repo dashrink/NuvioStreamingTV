@@ -1,0 +1,14 @@
+{
+  "id": "tv-performance-optimization",
+  "category": "Core",
+  "title": "TV Performance Optimization",
+  "description": "Performance tuning for TV hardware constraints including memory optimization, image caching, and lazy loading strategies. Ensures smooth navigation on lower-end TV devices.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "catalog-grid-tv-navigation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.889Z",
+  "updatedAt": "2026-01-08T07:40:51.889Z"
+}

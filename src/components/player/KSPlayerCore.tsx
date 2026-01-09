@@ -941,103 +941,102 @@ const KSPlayerCore: React.FC = () => {
         />
       )}
 
-<<<<<<< HEAD
-  {/* Error Modal */ }
-  <Modal
-    visible={showErrorModal}
-    transparent
-    animationType="fade"
-    supportedOrientations={["landscape", "landscape-left", "landscape-right", "portrait"]}
-    onRequestClose={handleErrorExit}
-  >
-    <View style={{
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.8)'
-    }}>
-      <View style={{
-        backgroundColor: '#1a1a1a',
-        borderRadius: 14,
-        width: '85%',
-        maxHeight: '70%',
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 5,
-      }}>
+      {/* Error Modal */}
+      <Modal
+        visible={showErrorModal}
+        transparent
+        animationType="fade"
+        supportedOrientations={["landscape", "landscape-left", "landscape-right", "portrait"]}
+        onRequestClose={handleErrorExit}
+      >
         <View style={{
-          flexDirection: 'row',
+          flex: 1,
+          justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: 16
+          backgroundColor: 'rgba(0,0,0,0.8)'
         }}>
-          <MaterialIcons name="error" size={24} color="#ff4444" style={{ marginRight: 8 }} />
-          <Text style={{
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: '#ffffff',
-            flex: 1
-          }}>Playback Error</Text>
-          <Focusable onPress={handleErrorExit}>
-            <MaterialIcons name="close" size={24} color="#ffffff" />
-          </Focusable>
-        </View>
+          <View style={{
+            backgroundColor: '#1a1a1a',
+            borderRadius: 14,
+            width: '85%',
+            maxHeight: '70%',
+            padding: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.25,
+            shadowRadius: 8,
+            elevation: 5,
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16
+            }}>
+              <MaterialIcons name="error" size={24} color="#ff4444" style={{ marginRight: 8 }} />
+              <Text style={{
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: '#ffffff',
+                flex: 1
+              }}>Playback Error</Text>
+              <Focusable onPress={handleErrorExit}>
+                <MaterialIcons name="close" size={24} color="#ffffff" />
+              </Focusable>
+            </View>
 
-        <Text style={{
-          fontSize: 14,
-          color: '#cccccc',
-          marginBottom: 16,
-          lineHeight: 20
-        }}>The video player encountered an error and cannot continue playback:</Text>
-
-        <View style={{
-          backgroundColor: '#2a2a2a',
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 20,
-          maxHeight: 200
-        }}>
-          <Text style={{
-            fontSize: 12,
-            color: '#ff8888',
-            fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
-          }}>{errorDetails}</Text>
-        </View>
-
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'flex-end'
-        }}>
-          <Focusable
-            style={{
-              backgroundColor: '#ff4444',
-              borderRadius: 8,
-              paddingVertical: 10,
-              paddingHorizontal: 20
-            }}
-            onPress={handleErrorExit}
-            hasTVPreferredFocus={Platform.isTV}
-          >
             <Text style={{
-              color: '#ffffff',
-              fontWeight: '600',
-              fontSize: 16
-            }}>Exit Player</Text>
-          </Focusable>
-        </View>
+              fontSize: 14,
+              color: '#cccccc',
+              marginBottom: 16,
+              lineHeight: 20
+            }}>The video player encountered an error and cannot continue playback:</Text>
 
-        <Text style={{
-          fontSize: 12,
-          color: '#888888',
-          textAlign: 'center',
-          marginTop: 12
-        }}>This dialog will auto-close in 5 seconds</Text>
-      </View>
-    </View>
-  </Modal>
-=======
+            <View style={{
+              backgroundColor: '#2a2a2a',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 20,
+              maxHeight: 200
+            }}>
+              <Text style={{
+                fontSize: 12,
+                color: '#ff8888',
+                fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
+              }}>{errorDetails}</Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end'
+            }}>
+              <Focusable
+                style={{
+                  backgroundColor: '#ff4444',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  paddingHorizontal: 20
+                }}
+                onPress={handleErrorExit}
+                hasTVPreferredFocus={Platform.isTV}
+              >
+                <Text style={{
+                  color: '#ffffff',
+                  fontWeight: '600',
+                  fontSize: 16
+                }}>Exit Player</Text>
+              </Focusable>
+            </View>
+
+            <Text style={{
+              fontSize: 12,
+              color: '#888888',
+              textAlign: 'center',
+              marginTop: 12
+            }}>This dialog will auto-close in 5 seconds</Text>
+          </View>
+        </View>
+      </Modal>
+
       <EpisodeStreamsModal
         visible={modals.showEpisodeStreamsModal}
         onClose={() => modals.setShowEpisodeStreamsModal(false)}
@@ -1045,8 +1044,7 @@ const KSPlayerCore: React.FC = () => {
         onSelectStream={handleEpisodeStreamSelect}
         metadata={{ id: id, name: title }}
       />
->>>>>>> origin/main
-    </View >
+    </View>
   );
 };
 

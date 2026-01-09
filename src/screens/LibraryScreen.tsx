@@ -39,6 +39,9 @@ import { traktService, TraktService, TraktImages } from '../services/traktServic
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
 import { useSettings } from '../hooks/useSettings';
 import { useScrollToTop } from '../contexts/ScrollToTopContext';
+import { TVLibraryGrid, TVLibraryItem } from '../components/tv/TVLibraryGrid';
+import { TVLibraryFolders, LibraryFolder } from '../components/tv/TVLibraryFolders';
+import { isTV, TV_SPACING, TV_TYPOGRAPHY } from '../utils/tvStyles';
 
 interface LibraryItem extends StreamingContent {
   progress?: number;
@@ -507,6 +510,81 @@ const LibraryScreen = () => {
     />;
   }, [itemWidth, navigation, currentTheme, settings.showPosterTitles]);
 
+  // Convert library items to TVLibraryItem format for TV grid
+  const convertToTVLibraryItems = useCallback((items: LibraryItem[]): TVLibraryItem[] => {
+    return items.map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      poster: item.poster,
+      year: (item as any).year,
+      progress: item.progress,
+      watched: item.watched,
+      imdbId: item.id,
+      traktId: item.traktId,
+    }));
+  }, []);
+
+  // Convert Trakt folders to LibraryFolder format for TV folder navigation
+  const convertToLibraryFolders = useCallback((folders: TraktFolder[]): LibraryFolder[] => {
+    const folderColors: Record<string, string> = {
+      'watched': '#4CAF50',
+      'continue-watching': '#FF9800',
+      'watchlist': '#2196F3',
+      'collection': '#9C27B0',
+      'ratings': '#FFD700',
+    };
+
+    return folders.map(folder => ({
+      id: folder.id,
+      name: folder.name,
+      icon: folder.icon,
+      itemCount: folder.itemCount,
+      color: folderColors[folder.id] || currentTheme.colors.primary,
+    }));
+  }, [currentTheme.colors.primary]);
+
+  // Convert TraktDisplayItem to TVLibraryItem for TV grid
+  const convertTraktToTVLibraryItems = useCallback((items: TraktDisplayItem[]): TVLibraryItem[] => {
+    return items.map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      poster: item.poster !== 'placeholder' ? item.poster : undefined,
+      year: item.year,
+      rating: item.rating,
+      imdbId: item.imdbId,
+      traktId: item.traktId,
+    }));
+  }, []);
+
+  // Handle TV library item press
+  const handleTVLibraryItemPress = useCallback((item: TVLibraryItem, index: number) => {
+    if (item.type === 'folder') {
+      // Handle folder navigation
+      setSelectedTraktFolder(item.id);
+      loadAllCollections();
+    } else if (item.imdbId) {
+      navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
+    }
+  }, [navigation, loadAllCollections]);
+
+  // Handle TV library item long press
+  const handleTVLibraryItemLongPress = useCallback((item: TVLibraryItem, index: number) => {
+    // Find the corresponding library item and show menu
+    const libraryItem = libraryItems.find(li => li.id === item.id);
+    if (libraryItem) {
+      setSelectedItem(libraryItem);
+      setMenuVisible(true);
+    }
+  }, [libraryItems]);
+
+  // Handle TV folder press
+  const handleTVFolderPress = useCallback((folder: LibraryFolder) => {
+    setSelectedTraktFolder(folder.id);
+    loadAllCollections();
+  }, [loadAllCollections]);
+
   const getTraktFolderItems = useCallback((folderId: string): TraktDisplayItem[] => {
     const items: TraktDisplayItem[] = [];
 
@@ -706,6 +784,48 @@ const LibraryScreen = () => {
     });
   }, [watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
+  // TV-optimized Trakt empty state
+  const TVTraktEmptyState = useCallback(({ title, subtitle, buttonText, onPress }: {
+    title: string;
+    subtitle: string;
+    buttonText: string;
+    onPress: () => void;
+  }) => (
+    <View style={styles.emptyContainer}>
+      <TraktIcon width={isTV ? 100 : 80} height={isTV ? 100 : 80} style={{ opacity: 0.7, marginBottom: 16 }} />
+      <Text style={[
+        styles.emptyText,
+        { color: currentTheme.colors.white },
+        isTV && { fontSize: TV_TYPOGRAPHY.headlineMedium }
+      ]}>
+        {title}
+      </Text>
+      <Text style={[
+        styles.emptySubtext,
+        { color: currentTheme.colors.mediumGray },
+        isTV && { fontSize: TV_TYPOGRAPHY.bodyLarge }
+      ]}>
+        {subtitle}
+      </Text>
+      <Focusable
+        style={[styles.exploreButton, {
+          backgroundColor: currentTheme.colors.primary,
+          shadowColor: currentTheme.colors.black
+        }, isTV && { paddingVertical: 16, paddingHorizontal: 32 }]}
+        onPress={onPress}
+        hasTVPreferredFocus={isTV}
+      >
+        <Text style={[
+          styles.exploreButtonText,
+          { color: currentTheme.colors.white },
+          isTV && { fontSize: TV_TYPOGRAPHY.titleMedium }
+        ]}>
+          {buttonText}
+        </Text>
+      </Focusable>
+    </View>
+  ), [currentTheme]);
+
   const renderTraktContent = () => {
     if (traktLoading) {
       return <TraktLoadingSpinner />;
@@ -714,23 +834,28 @@ const LibraryScreen = () => {
     if (!selectedTraktFolder) {
       if (traktFolders.length === 0) {
         return (
-          <View style={styles.emptyContainer}>
-            <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No Trakt collections</Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-              Your Trakt collections will appear here once you start using Trakt
-            </Text>
-            <Focusable
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
-              onPress={() => {
-                loadAllCollections();
-              }}
-            >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
-            </Focusable>
+          <TVTraktEmptyState
+            title="No Trakt collections"
+            subtitle="Your Trakt collections will appear here once you start using Trakt"
+            buttonText="Load Collections"
+            onPress={loadAllCollections}
+          />
+        );
+      }
+
+      // Use TVLibraryFolders for TV platforms
+      if (isTV) {
+        const libraryFolders = convertToLibraryFolders(traktFolders);
+        return (
+          <View style={[styles.tvFoldersContainer, { paddingTop: TV_SPACING.lg }]}>
+            <TVLibraryFolders
+              folders={libraryFolders}
+              onFolderPress={handleTVFolderPress}
+              selectedFolderId={selectedTraktFolder}
+              title="Trakt Collections"
+              autoFocus={true}
+              focusGroupId="trakt-folders"
+            />
           </View>
         );
       }
@@ -751,28 +876,31 @@ const LibraryScreen = () => {
     }
 
     const folderItems = getTraktFolderItems(selectedTraktFolder);
+    const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
 
     if (folderItems.length === 0) {
-      const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
       return (
-        <View style={styles.emptyContainer}>
-          <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No content in {folderName}</Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            This collection is empty
-          </Text>
-          <Focusable
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => {
-              loadAllCollections();
-            }}
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
-          </Focusable>
-        </View>
+        <TVTraktEmptyState
+          title={`No content in ${folderName}`}
+          subtitle="This collection is empty"
+          buttonText="Refresh"
+          onPress={loadAllCollections}
+        />
+      );
+    }
+
+    // Use TVLibraryGrid for TV platforms
+    if (isTV) {
+      const tvItems = convertTraktToTVLibraryItems(folderItems);
+      return (
+        <TVLibraryGrid
+          data={tvItems}
+          loading={traktLoading}
+          onItemPress={handleTVLibraryItemPress}
+          showTitles={settings.showPosterTitles}
+          focusGroupId={`trakt-folder-${selectedTraktFolder}`}
+          autoFocus={true}
+        />
       );
     }
 
@@ -800,7 +928,9 @@ const LibraryScreen = () => {
         style={[
           styles.filterButton,
           isActive && { backgroundColor: currentTheme.colors.primary },
-          { shadowColor: currentTheme.colors.black }
+          { shadowColor: currentTheme.colors.black },
+          // TV-specific styling
+          isTV && styles.tvFilterButton,
         ]}
         onPress={() => {
           if (filterType === 'trakt') {
@@ -815,15 +945,20 @@ const LibraryScreen = () => {
           }
           setFilter(filterType);
         }}
+        scaleOnFocus={isTV ? 1.05 : 1.02}
       >
         {filterType === 'trakt' ? (
           <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
-            <TraktIcon width={18} height={18} style={{ opacity: isActive ? 1 : 0.6 }} />
+            <TraktIcon
+              width={isTV ? 24 : 18}
+              height={isTV ? 24 : 18}
+              style={{ opacity: isActive ? 1 : 0.6 }}
+            />
           </View>
         ) : (
           <MaterialIcons
             name={iconName}
-            size={22}
+            size={isTV ? 28 : 22}
             color={isActive ? currentTheme.colors.white : currentTheme.colors.mediumGray}
             style={styles.filterIcon}
           />
@@ -832,7 +967,8 @@ const LibraryScreen = () => {
           style={[
             styles.filterText,
             { color: currentTheme.colors.mediumGray },
-            isActive && { color: currentTheme.colors.white, fontWeight: '600' }
+            isActive && { color: currentTheme.colors.white, fontWeight: '600' },
+            isTV && { fontSize: TV_TYPOGRAPHY.titleSmall },
           ]}
         >
           {label}
@@ -841,40 +977,74 @@ const LibraryScreen = () => {
     );
   };
 
+  // TV-optimized empty state component
+  const TVEmptyState = useCallback(() => (
+    <View style={styles.emptyContainer}>
+      <MaterialIcons
+        name="video-library"
+        size={isTV ? 80 : 64}
+        color={currentTheme.colors.lightGray}
+      />
+      <Text style={[
+        styles.emptyText,
+        { color: currentTheme.colors.white },
+        isTV && { fontSize: TV_TYPOGRAPHY.headlineMedium }
+      ]}>
+        {filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet'}
+      </Text>
+      <Text style={[
+        styles.emptySubtext,
+        { color: currentTheme.colors.mediumGray },
+        isTV && { fontSize: TV_TYPOGRAPHY.bodyLarge }
+      ]}>
+        Add some content to your library to see it here
+      </Text>
+      <Focusable
+        style={[styles.exploreButton, {
+          backgroundColor: currentTheme.colors.primary,
+          shadowColor: currentTheme.colors.black
+        }, isTV && { paddingVertical: 16, paddingHorizontal: 32 }]}
+        onPress={() => navigation.navigate('Search')}
+        hasTVPreferredFocus={isTV}
+      >
+        <Text style={[
+          styles.exploreButtonText,
+          { color: currentTheme.colors.white },
+          isTV && { fontSize: TV_TYPOGRAPHY.titleMedium }
+        ]}>
+          Find something to watch
+        </Text>
+      </Focusable>
+    </View>
+  ), [filter, currentTheme, navigation]);
+
   const renderContent = () => {
     if (loading) {
       return <SkeletonLoader />;
     }
 
     if (filteredItems.length === 0) {
-      const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
-      const emptySubtitle = 'Add some content to your library to see it here';
+      return <TVEmptyState />;
+    }
+
+    // Use TVLibraryGrid for TV platforms
+    if (isTV) {
+      const tvItems = convertToTVLibraryItems(filteredItems);
       return (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="video-library"
-            size={64}
-            color={currentTheme.colors.lightGray}
-          />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-            {emptyTitle}
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            {emptySubtitle}
-          </Text>
-          <Focusable
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
-          </Focusable>
-        </View>
+        <TVLibraryGrid
+          data={tvItems}
+          loading={loading}
+          onItemPress={handleTVLibraryItemPress}
+          onItemLongPress={handleTVLibraryItemLongPress}
+          showTitles={settings.showPosterTitles}
+          focusGroupId="library-content-grid"
+          autoFocus={true}
+          ListEmptyComponent={TVEmptyState}
+        />
       );
     }
 
+    // Standard FlashList for mobile/tablet
     return (
       <FlashList
         ref={flashListRef}
@@ -1030,6 +1200,12 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  tvFilterButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    marginHorizontal: 8,
+    borderRadius: 28,
   },
   listContainer: {
     paddingHorizontal: 8,
@@ -1261,6 +1437,9 @@ const styles = StyleSheet.create({
     width: 44,
   },
   traktContainer: {
+    flex: 1,
+  },
+  tvFoldersContainer: {
     flex: 1,
   },
   emptyListText: {

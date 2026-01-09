@@ -75,27 +75,7 @@ import { RecentSearches } from '../components/search/RecentSearches';
 
 const { width, height } = Dimensions.get('window');
 
-<<<<<<< HEAD
-// Enhanced responsive breakpoints
-const BREAKPOINTS = {
-  phone: 0,
-  tablet: 768,
-  largeTablet: 1024,
-  tv: 1440,
-};
-
-const getDeviceType = (deviceWidth: number) => {
-  // Always treat TV devices as 'tv' regardless of reported dp width
-  if (Platform.isTV) return 'tv';
-  if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
-  if (deviceWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
-  if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';
-  return 'phone';
-};
-
-=======
-// Re-export for local use (backward compatibility)
->>>>>>> origin/main
+// Enhanced responsive breakpoints and device type logic are imported from searchUtils
 const deviceType = getDeviceType(width);
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -921,22 +901,17 @@ const SearchScreen = () => {
     }, [item.id, item.type]);
 
     return (
-<<<<<<< HEAD
       <Focusable
-        style={[styles.horizontalItem, { width: itemWidth }]}
-=======
-      <TouchableOpacity
         style={[
           styles.horizontalItem,
           { width: itemWidth },
           isGrid && styles.discoverGridItem
         ]}
->>>>>>> origin/main
         onPress={() => {
-          navigation.navigate('Metadata', { 
-            id: item.id, 
+          navigation.navigate('Metadata', {
+            id: item.id,
             type: item.type,
-            addonId: item.addonId 
+            addonId: item.addonId
           });
         }}
         onLongPress={() => {

@@ -1,0 +1,14 @@
+{
+  "id": "cast-crew-tv-carousel",
+  "category": "UI",
+  "title": "Cast & Crew TV Carousel",
+  "description": "TV-navigable cast and crew horizontal carousel with actor profiles. Optimizes metadata screen cast section for D-pad browsing.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "metadata-screen-tv-layout"
+  ],
+  "createdAt": "2026-01-08T07:40:51.886Z",
+  "updatedAt": "2026-01-08T07:40:51.886Z"
+}

@@ -10,11 +10,17 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import CustomAlert from '../../components/CustomAlert';
 import { SettingsCard, SettingItem, ChevronRight } from './SettingsComponents';
+import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { useTVMode } from '../../hooks/useTVMode';
 
 const DeveloperSettingsScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { currentTheme } = useTheme();
     const insets = useSafeAreaInsets();
+    const useTVStyle = isTV;
+
+    // TV Mode hook for back button handling
+    useTVMode();
 
     const [alertVisible, setAlertVisible] = useState(false);
     const [alertTitle, setAlertTitle] = useState('');
@@ -82,27 +88,37 @@ const DeveloperSettingsScreen: React.FC = () => {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+        <View style={[
+            styles.container,
+            { backgroundColor: currentTheme.colors.darkBackground },
+            useTVStyle && styles.tvContainer
+        ]}>
             <StatusBar barStyle="light-content" />
             <ScreenHeader title="Developer" showBackButton onBackPress={() => navigation.goBack()} />
 
             <ScrollView
-                style={styles.scrollView}
+                style={[styles.scrollView, useTVStyle && styles.tvScrollView]}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingBottom: insets.bottom + 24 },
+                    useTVStyle && styles.tvScrollContent
+                ]}
             >
-                <SettingsCard title="TESTING">
+                <SettingsCard title="TESTING" isTablet={useTVStyle}>
                     <SettingItem
                         title="Test Onboarding"
                         icon="play-circle"
                         onPress={() => navigation.navigate('Onboarding')}
                         renderControl={() => <ChevronRight />}
+                        isTablet={useTVStyle}
                     />
                     <SettingItem
                         title="Reset Onboarding"
                         icon="refresh-ccw"
                         onPress={handleResetOnboarding}
                         renderControl={() => <ChevronRight />}
+                        isTablet={useTVStyle}
                     />
                     <SettingItem
                         title="Test Announcement"
@@ -110,6 +126,7 @@ const DeveloperSettingsScreen: React.FC = () => {
                         description="Show what's new overlay"
                         onPress={handleResetAnnouncement}
                         renderControl={() => <ChevronRight />}
+                        isTablet={useTVStyle}
                     />
                     <SettingItem
                         title="Reset Campaigns"
@@ -118,16 +135,18 @@ const DeveloperSettingsScreen: React.FC = () => {
                         onPress={handleResetCampaigns}
                         renderControl={() => <ChevronRight />}
                         isLast
+                        isTablet={useTVStyle}
                     />
                 </SettingsCard>
 
-                <SettingsCard title="DANGER ZONE">
+                <SettingsCard title="DANGER ZONE" isTablet={useTVStyle}>
                     <SettingItem
                         title="Clear All Data"
                         description="Reset all settings and cached data"
                         icon="trash-2"
                         onPress={handleClearAllData}
                         isLast
+                        isTablet={useTVStyle}
                     />
                 </SettingsCard>
             </ScrollView>
@@ -147,11 +166,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    tvContainer: {
+        paddingHorizontal: TV_SPACING.screenPadding,
+    },
     scrollView: {
         flex: 1,
     },
+    tvScrollView: {
+        paddingHorizontal: TV_SPACING.lg,
+    },
     scrollContent: {
         paddingTop: 16,
+    },
+    tvScrollContent: {
+        paddingTop: TV_SPACING.xl,
+        paddingBottom: TV_SPACING.xxl,
     },
 });
 

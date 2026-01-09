@@ -11,6 +11,9 @@ import { SettingsCard, SettingItem, CustomSwitch, ChevronRight } from './Setting
 import { useRealtimeConfig } from '../../hooks/useRealtimeConfig';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { isTV, TV_TYPOGRAPHY, TV_SPACING } from '../../utils/tvStyles';
+import { useTVMode } from '../../hooks/useTVMode';
+import Focusable from '../../components/common/Focusable';
 
 const { width } = Dimensions.get('window');
 
@@ -389,7 +392,7 @@ export const PlaybackSettingsContent: React.FC<PlaybackSettingsContentProps> = (
 };
 
 /**
- * PlaybackSettingsScreen - Wrapper for mobile navigation
+ * PlaybackSettingsScreen - Wrapper for mobile/TV navigation
  * Uses PlaybackSettingsContent internally
  */
 const PlaybackSettingsScreen: React.FC = () => {
@@ -397,18 +400,30 @@ const PlaybackSettingsScreen: React.FC = () => {
     const { currentTheme } = useTheme();
     const insets = useSafeAreaInsets();
     const screenIsTablet = width >= 768;
+    const useTVStyle = isTV;
+
+    // TV Mode hook for back button handling
+    useTVMode();
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+        <View style={[
+            styles.container,
+            { backgroundColor: currentTheme.colors.darkBackground },
+            useTVStyle && styles.tvContainer
+        ]}>
             <StatusBar barStyle="light-content" />
             <ScreenHeader title="Playback" showBackButton onBackPress={() => navigation.goBack()} />
 
             <ScrollView
-                style={styles.scrollView}
+                style={[styles.scrollView, useTVStyle && styles.tvScrollView]}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingBottom: insets.bottom + 24 },
+                    useTVStyle && styles.tvScrollContent
+                ]}
             >
-                <PlaybackSettingsContent isTablet={screenIsTablet} />
+                <PlaybackSettingsContent isTablet={screenIsTablet || useTVStyle} />
             </ScrollView>
         </View>
     );
@@ -418,11 +433,24 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    // TV Container styles
+    tvContainer: {
+        paddingHorizontal: TV_SPACING.screenPadding,
+    },
     scrollView: {
         flex: 1,
     },
+    // TV ScrollView styles
+    tvScrollView: {
+        paddingHorizontal: TV_SPACING.lg,
+    },
     scrollContent: {
         paddingTop: 16,
+    },
+    // TV ScrollContent styles
+    tvScrollContent: {
+        paddingTop: TV_SPACING.xl,
+        paddingBottom: TV_SPACING.xxl,
     },
     sheetHeader: {
         paddingHorizontal: 20,

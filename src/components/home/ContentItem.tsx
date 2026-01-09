@@ -14,6 +14,12 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import {
+  isTV as isTVDevice,
+  TV_SPACING,
+  TV_TYPOGRAPHY,
+  TV_CATALOG,
+} from '../../utils/tvStyles';
 
 interface ContentItemProps {
   item: StreamingContent;
@@ -22,6 +28,13 @@ interface ContentItemProps {
   onItemFocus?: (index: number) => void;
   shouldLoadImage?: boolean;
   deferMs?: number;
+  // TV spatial navigation props
+  nextFocusUp?: number | React.RefObject<any>;
+  nextFocusDown?: number | React.RefObject<any>;
+  nextFocusLeft?: number | React.RefObject<any>;
+  nextFocusRight?: number | React.RefObject<any>;
+  hasTVPreferredFocus?: boolean;
+  focusableRef?: React.RefObject<any>;
 }
 
 const { width } = Dimensions.get('window');
@@ -44,17 +57,19 @@ const getDeviceType = (screenWidth: number) => {
 };
 
 // Dynamic poster calculation based on screen width - show 1/4 of next poster
+// TV-specific: Larger posters for viewing distance, more spacing for focus rings
+// Uses TV_CATALOG constants for consistent 10-foot experience
 const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
   // For TV, use forceTV parameter since Platform.isTV is available
-  const isTVDevice = forceTV || Platform.isTV;
-  const deviceType = isTVDevice ? 'tv' : getDeviceType(screenWidth);
+  const isTVDeviceCalc = forceTV || Platform.isTV;
+  const deviceType = isTVDeviceCalc ? 'tv' : getDeviceType(screenWidth);
 
   // Responsive sizing based on device type
-  // TV uses smaller posters since actual dp is ~960, not 1440
-  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 120 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
-  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 160 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
-  const LEFT_PADDING = deviceType === 'tv' ? 24 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
-  const SPACING = deviceType === 'tv' ? 10 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
+  // TV: Uses TV_CATALOG constants for optimal viewing from couch distance (8-12 feet)
+  const MIN_POSTER_WIDTH = deviceType === 'tv' ? TV_CATALOG.posterWidth : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
+  const MAX_POSTER_WIDTH = deviceType === 'tv' ? TV_CATALOG.posterWidth + 40 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
+  const LEFT_PADDING = deviceType === 'tv' ? TV_SPACING.screenPadding : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
+  const SPACING = deviceType === 'tv' ? TV_CATALOG.posterSpacing : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
@@ -94,7 +109,20 @@ const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
-const ContentItem = ({ item, onPress, index, onItemFocus, shouldLoadImage: shouldLoadImageProp, deferMs = 0 }: ContentItemProps) => {
+const ContentItem = ({
+  item,
+  onPress,
+  index,
+  onItemFocus,
+  shouldLoadImage: shouldLoadImageProp,
+  deferMs = 0,
+  nextFocusUp,
+  nextFocusDown,
+  nextFocusLeft,
+  nextFocusRight,
+  hasTVPreferredFocus,
+  focusableRef,
+}: ContentItemProps) => {
   // Track inLibrary status locally to force re-render
   const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
 
@@ -323,10 +351,16 @@ const ContentItem = ({ item, onPress, index, onItemFocus, shouldLoadImage: shoul
     <>
       <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
         <Focusable
+          ref={focusableRef}
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
           onPress={handlePress}
           onLongPress={handleLongPress}
           onFocus={handleFocus}
+          nextFocusUp={nextFocusUp}
+          nextFocusDown={nextFocusDown}
+          nextFocusLeft={nextFocusLeft}
+          nextFocusRight={nextFocusRight}
+          hasTVPreferredFocus={hasTVPreferredFocus}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}

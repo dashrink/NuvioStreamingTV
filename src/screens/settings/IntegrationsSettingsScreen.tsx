@@ -11,6 +11,8 @@ import MDBListIcon from '../../components/icons/MDBListIcon';
 import TMDBIcon from '../../components/icons/TMDBIcon';
 import { SettingsCard, SettingItem, ChevronRight } from './SettingsComponents';
 import { useRealtimeConfig } from '../../hooks/useRealtimeConfig';
+import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { useTVMode } from '../../hooks/useTVMode';
 
 const { width } = Dimensions.get('window');
 
@@ -107,25 +109,37 @@ export const IntegrationsSettingsContent: React.FC<IntegrationsSettingsContentPr
 };
 
 /**
- * IntegrationsSettingsScreen - Wrapper for mobile navigation
+ * IntegrationsSettingsScreen - Wrapper for mobile/TV navigation
  */
 const IntegrationsSettingsScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { currentTheme } = useTheme();
     const insets = useSafeAreaInsets();
     const screenIsTablet = width >= 768;
+    const useTVStyle = isTV;
+
+    // TV Mode hook for back button handling
+    useTVMode();
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+        <View style={[
+            styles.container,
+            { backgroundColor: currentTheme.colors.darkBackground },
+            useTVStyle && styles.tvContainer
+        ]}>
             <StatusBar barStyle="light-content" />
             <ScreenHeader title="Integrations" showBackButton onBackPress={() => navigation.goBack()} />
 
             <ScrollView
-                style={styles.scrollView}
+                style={[styles.scrollView, useTVStyle && styles.tvScrollView]}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingBottom: insets.bottom + 24 },
+                    useTVStyle && styles.tvScrollContent
+                ]}
             >
-                <IntegrationsSettingsContent isTablet={screenIsTablet} />
+                <IntegrationsSettingsContent isTablet={screenIsTablet || useTVStyle} />
             </ScrollView>
         </View>
     );
@@ -135,11 +149,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    tvContainer: {
+        paddingHorizontal: TV_SPACING.screenPadding,
+    },
     scrollView: {
         flex: 1,
     },
+    tvScrollView: {
+        paddingHorizontal: TV_SPACING.lg,
+    },
     scrollContent: {
         paddingTop: 16,
+    },
+    tvScrollContent: {
+        paddingTop: TV_SPACING.xl,
+        paddingBottom: TV_SPACING.xxl,
     },
 });
 

@@ -1,4 +1,4 @@
-```javascript
+
 import React, { useRef } from 'react';
 import { View, Text, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';

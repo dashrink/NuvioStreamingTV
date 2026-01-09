@@ -1,0 +1,14 @@
+{
+  "id": "player-audio-track-menu-tv",
+  "category": "Playback",
+  "title": "Player Audio Track Menu TV",
+  "description": "TV-navigable audio track selection menu with language and codec information. Integrates with existing player hooks for track management.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "video-player-tv-controls"
+  ],
+  "createdAt": "2026-01-08T07:40:51.880Z",
+  "updatedAt": "2026-01-08T07:40:51.880Z"
+}

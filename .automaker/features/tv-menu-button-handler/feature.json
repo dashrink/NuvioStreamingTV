@@ -1,0 +1,14 @@
+{
+  "id": "tv-menu-button-handler",
+  "category": "Core",
+  "title": "TV Menu Button Handler",
+  "description": "Dedicated menu button handler for TV remotes to open app menu or settings overlay. Platform-specific implementation for tvOS and Android TV.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "tv-remote-event-handling"
+  ],
+  "createdAt": "2026-01-08T07:40:51.889Z",
+  "updatedAt": "2026-01-08T07:40:51.889Z"
+}

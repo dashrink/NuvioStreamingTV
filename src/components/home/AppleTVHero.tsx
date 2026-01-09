@@ -46,6 +46,13 @@ import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
 import { streamCacheService } from '../../services/streamCacheService';
 import Focusable from '../common/Focusable';
+import {
+  isTV,
+  TV_SPACING,
+  TV_TYPOGRAPHY,
+  TV_TOUCH_TARGETS,
+  TV_HERO,
+} from '../../utils/tvStyles';
 
 interface AppleTVHeroProps {
   featuredContent: StreamingContent | null;
@@ -60,8 +67,8 @@ const { width, height } = Dimensions.get('window');
 // Get status bar height
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
-// Calculate hero height - 85% of screen height mobile, 75% for TV for better banner display
-const HERO_HEIGHT = Platform.isTV ? height * 0.75 : height * 0.85;
+// Calculate hero height using TV-optimized configuration
+const HERO_HEIGHT = isTV ? height * TV_HERO.heightPercentage : height * 0.85;
 
 // Animated Pagination Dot Component
 const PaginationDot: React.FC<{
@@ -715,11 +722,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         id: currentItem.id,
         type: currentItem.type,
         title: currentItem.name,
-<<<<<<< HEAD
-        modal: true, // Use new modal transparent presentation
-=======
         addonId: currentItem.addonId,
->>>>>>> origin/main
+        modal: true, // Use new modal transparent presentation
         metadata: {
           poster: currentItem.poster,
           banner: currentItem.banner,
@@ -1466,8 +1470,8 @@ const styles = StyleSheet.create({
     // paddingBottom will be set dynamically with insets
   },
   logoContainer: {
-    width: width * 0.6,
-    height: 100,
+    width: isTV ? TV_HERO.logoWidth : width * 0.6,
+    height: isTV ? TV_HERO.logoHeight : 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1476,12 +1480,12 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   titleContainer: {
-    marginBottom: 8,
+    marginBottom: isTV ? TV_SPACING.sm : 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 36,
+    fontSize: isTV ? TV_TYPOGRAPHY.displayMedium : 36,
     fontWeight: '900',
     color: '#fff',
     textAlign: 'center',
@@ -1490,7 +1494,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   metadataContainer: {
-    marginBottom: 20,
+    marginBottom: isTV ? TV_SPACING.lg : 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1498,68 +1502,69 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: isTV ? 12 : 8,
   },
   metadataText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: isTV ? TV_TYPOGRAPHY.bodyLarge : 14,
     fontWeight: '600',
   },
   metadataDot: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
+    fontSize: isTV ? TV_TYPOGRAPHY.bodyLarge : 14,
   },
   buttonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 20,
+    gap: isTV ? TV_SPACING.md : 12,
+    marginBottom: isTV ? TV_SPACING.lg : 20,
   },
   playButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    paddingVertical: 11,
-    paddingHorizontal: 32,
+    paddingVertical: isTV ? 14 : 11,
+    paddingHorizontal: isTV ? 40 : 32,
     borderRadius: 40,
-    gap: 8,
-    minWidth: 130,
+    gap: isTV ? 12 : 8,
+    minWidth: isTV ? TV_TOUCH_TARGETS.large.width : 130,
+    minHeight: isTV ? TV_TOUCH_TARGETS.large.height : undefined,
   },
   playButtonText: {
     color: '#000',
-    fontSize: 18,
+    fontSize: isTV ? TV_TYPOGRAPHY.titleLarge : 18,
     fontWeight: '700',
   },
   saveButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 30,
+    width: isTV ? TV_TOUCH_TARGETS.iconButton.width : 52,
+    height: isTV ? TV_TOUCH_TARGETS.iconButton.height : 52,
+    borderRadius: isTV ? TV_TOUCH_TARGETS.iconButton.width / 2 : 30,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   // Wrapper styles to constrain Focusable component on TV
   playButtonWrapper: {
-    height: 46, // Match playButton height (paddingVertical: 11 * 2 + icon)
-    minWidth: 130,
+    height: isTV ? TV_TOUCH_TARGETS.large.height : 46,
+    minWidth: isTV ? TV_TOUCH_TARGETS.large.width : 130,
   },
   saveButtonWrapper: {
-    width: 52,
-    height: 52,
+    width: isTV ? TV_TOUCH_TARGETS.iconButton.width : 52,
+    height: isTV ? TV_TOUCH_TARGETS.iconButton.height : 52,
   },
   arrowButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: isTV ? TV_TOUCH_TARGETS.arrow.width : 48,
+    height: isTV ? TV_TOUCH_TARGETS.arrow.height : 48,
+    borderRadius: isTV ? TV_TOUCH_TARGETS.arrow.width / 2 : 24,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   arrowButtonWrapper: {
-    width: 48,
-    height: 48,
+    width: isTV ? TV_TOUCH_TARGETS.arrow.width : 48,
+    height: isTV ? TV_TOUCH_TARGETS.arrow.height : 48,
   },
   hiddenTrigger: {
     width: 0,
@@ -1569,12 +1574,12 @@ const styles = StyleSheet.create({
   paginationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
+    gap: isTV ? 12 : 8,
+    marginTop: isTV ? TV_SPACING.md : 12,
   },
   paginationDot: {
-    height: 8,
-    borderRadius: 4,
+    height: isTV ? TV_HERO.paginationDot.inactive : 8,
+    borderRadius: isTV ? TV_HERO.paginationDot.inactive / 2 : 4,
     backgroundColor: 'rgba(255,255,255,0.9)',
   },
   bottomBlend: {

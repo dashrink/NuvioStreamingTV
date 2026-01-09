@@ -14,6 +14,8 @@ import { fetchTotalDownloads } from '../../services/githubReleaseService';
 import { getDisplayedAppVersion } from '../../utils/version';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import { SettingsCard, SettingItem, ChevronRight } from './SettingsComponents';
+import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { useTVMode } from '../../hooks/useTVMode';
 
 const { width } = Dimensions.get('window');
 
@@ -185,25 +187,37 @@ export const AboutFooter: React.FC<{ displayDownloads: number | null }> = ({ dis
 };
 
 /**
- * AboutSettingsScreen - Wrapper for mobile navigation
+ * AboutSettingsScreen - Wrapper for mobile/TV navigation
  */
 const AboutSettingsScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const { currentTheme } = useTheme();
     const insets = useSafeAreaInsets();
     const screenIsTablet = width >= 768;
+    const useTVStyle = isTV;
+
+    // TV Mode hook for back button handling
+    useTVMode();
 
     return (
-        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+        <View style={[
+            styles.container,
+            { backgroundColor: currentTheme.colors.darkBackground },
+            useTVStyle && styles.tvContainer
+        ]}>
             <StatusBar barStyle="light-content" />
             <ScreenHeader title="About" showBackButton onBackPress={() => navigation.goBack()} />
 
             <ScrollView
-                style={styles.scrollView}
+                style={[styles.scrollView, useTVStyle && styles.tvScrollView]}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingBottom: insets.bottom + 40 },
+                    useTVStyle && styles.tvScrollContent
+                ]}
             >
-                <AboutSettingsContent isTablet={screenIsTablet} />
+                <AboutSettingsContent isTablet={screenIsTablet || useTVStyle} />
                 <View style={{ height: 24 }} />
             </ScrollView>
         </View>
@@ -214,11 +228,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    tvContainer: {
+        paddingHorizontal: TV_SPACING.screenPadding,
+    },
     scrollView: {
         flex: 1,
     },
+    tvScrollView: {
+        paddingHorizontal: TV_SPACING.lg,
+    },
     scrollContent: {
         paddingTop: 16,
+    },
+    tvScrollContent: {
+        paddingTop: TV_SPACING.xl,
+        paddingBottom: TV_SPACING.xxl,
     },
     downloadsContainer: {
         alignItems: 'center',

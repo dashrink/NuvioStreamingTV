@@ -12,8 +12,11 @@ import {
   Platform,
   Dimensions,
   Linking,
+  BackHandler,
 } from 'react-native';
 import Focusable from '../components/common/Focusable';
+import { isTV, TV_TYPOGRAPHY, TV_SPACING, TV_TOUCH_TARGETS, TV_FOCUS_CONFIG } from '../utils/tvStyles';
+import { useTVMode } from '../hooks/useTVMode';
 
 import Animated, {
   useAnimatedStyle,
@@ -68,7 +71,7 @@ const SETTINGS_CATEGORIES = [
   { id: 'cache', title: 'Cache', icon: 'database' as string },
 ];
 
-// Tablet Sidebar Component
+// Tablet/TV Sidebar Component with focus-based navigation
 interface SidebarProps {
   selectedCategory: string;
   onCategorySelect: (category: string) => void;
@@ -78,41 +81,57 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, currentTheme, categories, extraTopPadding = 0 }) => {
+  // For TV, we'll track refs for navigation between sidebar items
+  const itemRefs = useRef<{ [key: string]: any }>({});
+  const useTVStyle = isTV;
+
   return (
     <View style={[
       styles.sidebar,
       {
         backgroundColor: currentTheme.colors.elevation1,
         borderRightColor: currentTheme.colors.elevation2,
-      }
+      },
+      useTVStyle && styles.tvSidebar
     ]}>
       <View style={[
         styles.sidebarHeader,
         {
           paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + extraTopPadding,
           borderBottomColor: currentTheme.colors.elevation2,
-        }
+        },
+        useTVStyle && styles.tvSidebarHeader
       ]}>
-        <Text style={[styles.sidebarTitle, { color: currentTheme.colors.highEmphasis }]}>
+        <Text style={[
+          styles.sidebarTitle,
+          { color: currentTheme.colors.highEmphasis },
+          useTVStyle && styles.tvSidebarTitle
+        ]}>
           Settings
         </Text>
       </View>
 
       <ScrollView style={styles.sidebarContent} showsVerticalScrollIndicator={false}>
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <Focusable
             key={category.id}
+            ref={(ref: any) => { itemRefs.current[category.id] = ref; }}
+            hasTVPreferredFocus={index === 0 && useTVStyle}
+            scaleOnFocus={TV_FOCUS_CONFIG.focusScaleSubtle}
             style={[
               styles.sidebarItem,
+              useTVStyle && styles.tvSidebarItem,
               selectedCategory === category.id && [
                 styles.sidebarItemActive,
-                { backgroundColor: currentTheme.colors.primary + '10' }
+                { backgroundColor: currentTheme.colors.primary + '10' },
+                useTVStyle && styles.tvSidebarItemActive
               ]
             ]}
             onPress={() => onCategorySelect(category.id)}
           >
             <View style={[
               styles.sidebarItemIconContainer,
+              useTVStyle && styles.tvSidebarItemIconContainer,
               {
                 backgroundColor: selectedCategory === category.id
                   ? currentTheme.colors.primary + '15'
@@ -121,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
             ]}>
               <Feather
                 name={category.icon as any}
-                size={20}
+                size={useTVStyle ? 26 : 20}
                 color={
                   selectedCategory === category.id
                     ? currentTheme.colors.primary
@@ -131,6 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
             </View>
             <Text style={[
               styles.sidebarItemText,
+              useTVStyle && styles.tvSidebarItemText,
               {
                 color: selectedCategory === category.id
                   ? currentTheme.colors.highEmphasis
@@ -151,6 +171,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
 const SettingsScreen: React.FC = () => {
   const { settings, updateSetting } = useSettings();
   const [hasUpdateBadge, setHasUpdateBadge] = useState(false);
+
+  // TV Mode hook for back button handling
+  useTVMode();
+
+  // Track if we're in TV mode for layout decisions
+  const useTVLayout = isTV;
+
   // CustomAlert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -501,32 +528,38 @@ const SettingsScreen: React.FC = () => {
 
   // Keep headers below floating top navigator on tablets
   const tabletNavOffset = isTablet ? 64 : 0;
+  const tvNavOffset = useTVLayout ? TV_SPACING.screenPadding : 0;
 
-  // TABLET LAYOUT
-  if (isTablet) {
+  // TABLET/TV LAYOUT - Use sidebar navigation on both tablet and TV
+  if (isTablet || useTVLayout) {
     return (
-      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <View style={[
+        styles.container,
+        { backgroundColor: currentTheme.colors.darkBackground },
+        useTVLayout && styles.tvContainer
+      ]}>
         <StatusBar barStyle={'light-content'} />
-        <View style={styles.tabletContainer}>
+        <View style={[styles.tabletContainer, useTVLayout && styles.tvTabletContainer]}>
           <Sidebar
             selectedCategory={selectedCategory}
             onCategorySelect={setSelectedCategory}
             currentTheme={currentTheme}
             categories={visibleCategories}
-            extraTopPadding={tabletNavOffset}
+            extraTopPadding={useTVLayout ? tvNavOffset : tabletNavOffset}
           />
 
           <View style={[
             styles.tabletContent,
+            useTVLayout && styles.tvContent,
             {
-              paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + tabletNavOffset,
+              paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + (useTVLayout ? tvNavOffset : tabletNavOffset),
             }
           ]}>
             <ScrollView
               ref={tabletScrollViewRef}
-              style={styles.tabletScrollView}
+              style={[styles.tabletScrollView, useTVLayout && styles.tvScrollView]}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.tabletScrollContent}
+              contentContainerStyle={[styles.tabletScrollContent, useTVLayout && styles.tvScrollContent]}
             >
               {renderCategoryContent(selectedCategory)}
 
@@ -879,6 +912,62 @@ const styles = StyleSheet.create({
   tabletScrollContent: {
     paddingTop: 8,
     paddingBottom: 40,
+  },
+  // TV-specific styles for 10-foot viewing experience
+  tvContainer: {
+    paddingHorizontal: 0,
+  },
+  tvTabletContainer: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  tvSidebar: {
+    width: 360,
+    borderRightWidth: 2,
+  },
+  tvSidebarHeader: {
+    paddingHorizontal: TV_SPACING.xl,
+    paddingBottom: TV_SPACING.xl,
+  },
+  tvSidebarTitle: {
+    fontSize: TV_TYPOGRAPHY.displaySmall,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  tvSidebarItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: TV_SPACING.lg,
+    paddingVertical: TV_SPACING.lg,
+    marginHorizontal: TV_SPACING.md,
+    marginVertical: TV_SPACING.xs,
+    borderRadius: 16,
+    minHeight: TV_TOUCH_TARGETS.standard.height,
+  },
+  tvSidebarItemActive: {
+    borderRadius: 16,
+  },
+  tvSidebarItemIconContainer: {
+    width: TV_TOUCH_TARGETS.standard.width - 8,
+    height: TV_TOUCH_TARGETS.standard.height - 8,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tvSidebarItemText: {
+    fontSize: TV_TYPOGRAPHY.titleMedium,
+    marginLeft: TV_SPACING.lg,
+  },
+  tvContent: {
+    flex: 1,
+  },
+  tvScrollView: {
+    flex: 1,
+    paddingHorizontal: TV_SPACING.screenPadding,
+  },
+  tvScrollContent: {
+    paddingTop: TV_SPACING.lg,
+    paddingBottom: TV_SPACING.xxl,
   },
   // Footer and social styles
   footer: {

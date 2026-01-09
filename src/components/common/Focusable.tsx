@@ -20,10 +20,18 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 // Configurable focus style constants - can be themed
 // Using clean border-based focus indicator that works across all themes
+// Enhanced for TV viewing distance - focus rings must be clearly visible
 export const TV_FOCUS_STYLES = {
-    borderWidth: 2, // Clean visible border for TV
-    scaleDefault: 1.02, // Subtle scale for focus feedback
+    borderWidth: 3,          // Thicker border for TV viewing distance
+    scaleDefault: 1.04,      // Slightly more prominent scale for TV
     fallbackColor: '#2d9cdb', // Fallback if theme not available
+    focusShadow: {
+        shadowColor: '#2d9cdb',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
+        elevation: 8,        // Android elevation for shadow effect
+    },
 };
 
 interface FocusableProps {
@@ -91,11 +99,18 @@ const Focusable = React.forwardRef<any, FocusableProps>(({
     // Expose ref for external use
     React.useImperativeHandle(ref, () => pressableRef.current);
 
-    // Default border-based focus style using theme color
+    // Default border-based focus style using theme color with enhanced visibility
+    const focusColor = currentTheme?.colors?.primary || TV_FOCUS_STYLES.fallbackColor;
     const defaultFocusedStyle = useMemo(() => ({
         borderWidth: TV_FOCUS_STYLES.borderWidth,
-        borderColor: currentTheme?.colors?.primary || TV_FOCUS_STYLES.fallbackColor,
-    }), [currentTheme?.colors?.primary]);
+        borderColor: focusColor,
+        // Enhanced shadow/glow effect for TV viewing distance
+        shadowColor: focusColor,
+        shadowOffset: TV_FOCUS_STYLES.focusShadow.shadowOffset,
+        shadowOpacity: TV_FOCUS_STYLES.focusShadow.shadowOpacity,
+        shadowRadius: TV_FOCUS_STYLES.focusShadow.shadowRadius,
+        elevation: TV_FOCUS_STYLES.focusShadow.elevation,
+    }), [focusColor]);
 
     const animatedStyle = useAnimatedStyle(() => {
         // Only apply scaling animations if we are on a TV platform

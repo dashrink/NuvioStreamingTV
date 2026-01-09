@@ -1,0 +1,14 @@
+{
+  "id": "tv-navigation-foundation",
+  "category": "Core",
+  "title": "TV Navigation Foundation",
+  "description": "Core TV navigation infrastructure with focus management, D-pad support, and spatial navigation. Includes Focusable component optimization and useTVMode hooks already implemented.",
+  "status": "verified",
+  "priority": 1,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-08T07:40:51.875Z",
+  "updatedAt": "2026-01-08T08:26:18.183Z",
+  "startedAt": "2026-01-08T08:22:51.011Z",
+  "branchName": "feat/tvos-support"
+}

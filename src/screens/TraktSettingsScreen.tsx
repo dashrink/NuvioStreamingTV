@@ -901,7 +901,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-<<<<<<< HEAD
   // TV Device Code styles
   codeContainer: {
     width: '100%',
@@ -941,7 +940,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     alignItems: 'center',
-=======
+  },
   // Maintenance mode styles
   maintenanceBanner: {
     flexDirection: 'row',
@@ -966,7 +965,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFF',
     opacity: 0.9,
->>>>>>> origin/main
   },
 });
 

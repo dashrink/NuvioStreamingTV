@@ -1011,7 +1011,7 @@ const customFadeInterpolator = ({ current, layouts }: any) => {
 };
 
 // Stack Navigator
-const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
+const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
   const { currentTheme } = useTheme();
   const { user, loading } = useAccount();
   useTVMode();
@@ -1037,22 +1037,15 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
-      <PaperProvider theme={CustomDarkTheme}>
-        <View style={{
-          flex: 1,
-          backgroundColor: currentTheme.colors.darkBackground,
-          ...(Platform.OS === 'android' && {
-            // Prevent white flashes on Android
-            opacity: 1,
-          })
-        }}>
-          <Stack.Navigator
+    <View style={{
+      flex: 1,
+      backgroundColor: currentTheme.colors.darkBackground,
+      ...(Platform.OS === 'android' && {
+        // Prevent white flashes on Android
+        opacity: 1,
+      })
+    }}>
+      <Stack.Navigator
             initialRouteName={initialRouteName || 'MainTabs'}
             screenOptions={{
               headerShown: false,
@@ -1623,9 +1616,22 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
             />
           </Stack.Navigator>
         </View>
-      </PaperProvider>
-    </SafeAreaProvider>
-  );
+    );
+};
+
+const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
+    return (
+        <SafeAreaProvider>
+            <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle="light-content"
+            />
+            <PaperProvider theme={CustomDarkTheme}>
+                <InnerNavigatorContent initialRouteName={initialRouteName} />
+            </PaperProvider>
+        </SafeAreaProvider>
+    );
 };
 
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (

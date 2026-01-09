@@ -1,0 +1,14 @@
+{
+  "id": "search-voice-tv-integration",
+  "category": "Core",
+  "title": "Search Voice TV Integration",
+  "description": "Voice search integration for Android TV and tvOS using platform voice APIs. Allows users to search content using voice commands via remote control.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "search-screen-tv-keyboard"
+  ],
+  "createdAt": "2026-01-08T07:40:51.888Z",
+  "updatedAt": "2026-01-08T07:40:51.888Z"
+}

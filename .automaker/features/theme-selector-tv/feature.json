@@ -1,0 +1,14 @@
+{
+  "id": "theme-selector-tv",
+  "category": "UI",
+  "title": "Theme Selector TV Interface",
+  "description": "TV-optimized theme and accent color selection with visual preview. Enhances existing ThemeScreen with grid-based color picker navigable via D-pad.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "settings-navigation-tv"
+  ],
+  "createdAt": "2026-01-08T07:40:51.883Z",
+  "updatedAt": "2026-01-08T07:40:51.883Z"
+}

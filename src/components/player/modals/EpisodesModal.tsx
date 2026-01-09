@@ -122,38 +122,15 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 15, gap: 8 }}>
-<<<<<<< HEAD
-            {seasons.map((season, index) => (
-              <Focusable
-                key={season}
-                hasTVPreferredFocus={Platform.isTV && season === selectedSeason}
-                onPress={() => setSelectedSeason(season)}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  backgroundColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.06)',
-                  borderWidth: 1,
-                  borderColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.1)',
-                }}
-              >
-                <Text style={{
-                  color: selectedSeason === season ? 'black' : 'white',
-                  fontWeight: selectedSeason === season ? '700' : '500'
-                }}>
-                  Season {season}
-                </Text>
-              </Focusable>
-            ))}
-=======
             {[...seasons]
               .sort((a, b) => {
                 if (a === 0) return 1;
                 if (b === 0) return -1;
                 return a - b;
               }).map((season) => (
-                <TouchableOpacity
+                <Focusable
                   key={season}
+                  hasTVPreferredFocus={Platform.isTV && season === selectedSeason}
                   onPress={() => setSelectedSeason(season)}
                   style={{
                     paddingHorizontal: 16,
@@ -170,9 +147,8 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   }}>
                     {season === 0 ? 'Specials' : `Season ${season}`}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               ))}
->>>>>>> origin/main
           </ScrollView>
         </View>
 

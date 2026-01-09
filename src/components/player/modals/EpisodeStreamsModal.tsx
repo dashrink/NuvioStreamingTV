@@ -141,26 +141,15 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
   const sortedProviders = Object.entries(availableStreams);
 
   return (
-<<<<<<< HEAD
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <Focusable style={StyleSheet.absoluteFill} onPress={onClose}>
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </Focusable>
-=======
-    <View style={[StyleSheet.absoluteFill, { zIndex: 10000 }]}>
       {/* Backdrop */}
-      <TouchableOpacity
-        style={StyleSheet.absoluteFill}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+      <Focusable style={StyleSheet.absoluteFill} onPress={onClose}>
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
         />
-      </TouchableOpacity>
->>>>>>> origin/main
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -207,7 +196,6 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
             </View>
           )}
 
-<<<<<<< HEAD
           {!isLoading && sortedProviders.length > 0 && (
             sortedProviders.map(([providerId, providerData]) => (
               <View key={providerId} style={{ marginBottom: 30 }}>
@@ -320,63 +308,8 @@ export const EpisodeStreamsModal: React.FC<EpisodeStreamsModalProps> = ({
               }}>
                 No sources available
               </Text>
-=======
-          {sortedProviders.map(([providerId, providerData]) => (
-            <View key={providerId} style={{ marginBottom: 20 }}>
->>>>>>> origin/main
-              <Text style={{
-                color: 'rgba(255, 255, 255, 0.4)',
-                fontSize: 12,
-                fontWeight: '700',
-                marginBottom: 10,
-                marginLeft: 5,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}>
-                {providerData.addonName}
-              </Text>
-
-              <View style={{ gap: 8 }}>
-                {providerData.streams.map((stream, index) => {
-                  const quality = getQualityFromTitle(stream.title) || stream.quality;
-
-                  return (
-                    <TouchableOpacity
-                      key={`${providerId}-${index}`}
-                      style={{
-                        padding: 8,
-                        borderRadius: 12,
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.05)'
-                      }}
-                      onPress={() => {
-                        onSelectStream(stream);
-                        onClose();
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View style={{ flex: 1 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                            <Text style={{ color: 'white', fontWeight: '700', fontSize: 14, flex: 1 }} numberOfLines={1}>
-                              {stream.name || 'Unknown Source'}
-                            </Text>
-                            <QualityBadge quality={quality} />
-                          </View>
-                          {stream.title && (
-                            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }} numberOfLines={2}>
-                              {stream.title}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
             </View>
-          ))}
+          )}
 
           {!isLoading && sortedProviders.length === 0 && (
             <View style={{ padding: 40, alignItems: 'center', opacity: 0.5 }}>

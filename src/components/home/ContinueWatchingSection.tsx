@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Platform
 } from 'react-native';
-import { FlatList } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -113,7 +113,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const flashListRef = useRef<any>(null);
+  const flashListRef = useRef<FlashList<ContinueWatchingItem>>(null);
 
   // Enhanced responsive sizing for tablets and TV screens
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -1215,14 +1215,9 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
         </View>
       </View>
 
-<<<<<<< HEAD
       <FlashList
         ref={flashListRef}
         data={continueWatchingItems}
-=======
-      <FlatList
-        data={[...continueWatchingItems].sort((a, b) => (b.lastUpdated ?? 0) - (a.lastUpdated ?? 0))}
->>>>>>> origin/main
         renderItem={renderContinueWatchingItem}
         keyExtractor={keyExtractor}
         horizontal
@@ -1292,21 +1287,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 12,
     overflow: 'hidden',
-<<<<<<< HEAD
-    elevation: 6,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    // borderWidth removed - now set inline for TV focus transition
-=======
     elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 1,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
->>>>>>> origin/main
+    // borderWidth removed - now set inline for TV focus transition
   },
   posterContainer: {
     width: 80,

@@ -1,0 +1,14 @@
+{
+  "id": "tv-screensaver-integration",
+  "category": "Platform",
+  "title": "TV Screensaver Integration",
+  "description": "Custom screensaver for TV platforms displaying featured content posters or backdrop slideshow. Activates after idle timeout.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "tv-navigation-foundation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.889Z",
+  "updatedAt": "2026-01-08T07:40:51.889Z"
+}

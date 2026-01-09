@@ -1,0 +1,22 @@
+{
+  "category": "Core",
+  "description": "Fix any code that's making the build fail for android platform (Merge residue like << HEAD etc.) That was previously tackled by a different AI model.",
+  "title": "Fix Android build failures and merge conflicts",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "sonnet",
+  "thinkingLevel": "medium",
+  "branchName": "feat/tvos-support",
+  "priority": 1,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "titleGenerating": false,
+  "status": "completed",
+  "id": "feature-1767861315973-1qes2pdke",
+  "startedAt": "2026-01-08T08:35:16.366Z",
+  "updatedAt": "2026-01-08T08:47:35.227Z",
+  "justFinishedAt": "2026-01-08T08:47:35.227Z"
+}

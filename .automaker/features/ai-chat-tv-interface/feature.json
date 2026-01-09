@@ -1,0 +1,14 @@
+{
+  "id": "ai-chat-tv-interface",
+  "category": "UI",
+  "title": "AI Chat TV Interface",
+  "description": "TV-optimized AI chat screen with on-screen keyboard for message input and scrollable conversation history. Enhances existing AIChatScreen for 10-foot interaction.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "search-screen-tv-keyboard"
+  ],
+  "createdAt": "2026-01-08T07:40:51.884Z",
+  "updatedAt": "2026-01-08T07:40:51.884Z"
+}

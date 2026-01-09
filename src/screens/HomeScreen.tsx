@@ -18,9 +18,18 @@ import {
   Pressable,
   Alert,
   InteractionManager,
-  AppState
+  AppState,
+  TVFocusGuideView,
 } from 'react-native';
 import Focusable from '../components/common/Focusable';
+import {
+  isTV,
+  TV_SPACING,
+  TV_TYPOGRAPHY,
+  TV_TOUCH_TARGETS,
+  TV_CATALOG,
+  getDeviceType,
+} from '../utils/tvStyles';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -948,19 +957,27 @@ const HomeScreen = () => {
 const { width, height } = Dimensions.get('window');
 
 // Dynamic poster calculation based on screen width - show 1/4 of next poster
+// Enhanced for TV 10-foot experience with larger touch targets
 const calculatePosterLayout = (screenWidth: number) => {
-  const MIN_POSTER_WIDTH = 100; // Reduced minimum for more posters
-  const MAX_POSTER_WIDTH = 130; // Reduced maximum for more posters
-  const LEFT_PADDING = 16; // Left padding
-  const SPACING = 8; // Space between posters
+  const deviceType = getDeviceType(screenWidth);
+
+  // TV-optimized sizing for 10-foot experience
+  const MIN_POSTER_WIDTH = deviceType === 'tv' ? TV_TOUCH_TARGETS.posterCard.width : 100;
+  const MAX_POSTER_WIDTH = deviceType === 'tv' ? TV_TOUCH_TARGETS.posterCard.width + 40 : 130;
+  const LEFT_PADDING = deviceType === 'tv' ? TV_SPACING.screenPadding : 16;
+  const SPACING = deviceType === 'tv' ? TV_SPACING.cardGap : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
 
   // Try different numbers of full posters to find the best fit
-  let bestLayout = { numFullPosters: 3, posterWidth: 120 };
+  // TV shows fewer, larger posters for better visibility at 10 feet
+  let bestLayout = { numFullPosters: deviceType === 'tv' ? 5 : 3, posterWidth: deviceType === 'tv' ? 160 : 120 };
 
-  for (let n = 3; n <= 6; n++) {
+  const minPosters = deviceType === 'tv' ? 4 : 3;
+  const maxPosters = deviceType === 'tv' ? 6 : 6;
+
+  for (let n = minPosters; n <= maxPosters; n++) {
     // Calculate poster width needed for N full posters + 0.25 partial poster
     // Formula: N * posterWidth + (N-1) * spacing + 0.25 * posterWidth = availableWidth - rightPadding
     // Simplified: posterWidth * (N + 0.25) + (N-1) * spacing = availableWidth - rightPadding
@@ -984,12 +1001,16 @@ const calculatePosterLayout = (screenWidth: number) => {
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
+// Get device type for TV-optimized styles
+const currentDeviceType = getDeviceType(width);
+const isTVDevice = currentDeviceType === 'tv';
+
 const styles = StyleSheet.create<any>({
   container: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 90,
+    paddingBottom: isTVDevice ? 120 : 90, // More padding on TV for overscan safety
   },
   loadingMainContainer: {
     flex: 1,
@@ -1042,48 +1063,50 @@ const styles = StyleSheet.create<any>({
     marginRight: 2,
   },
   emptyCatalog: {
-    padding: 32,
+    padding: isTVDevice ? TV_SPACING.xxl : 32,
     alignItems: 'center',
-    margin: 16,
-    borderRadius: 16,
+    margin: isTVDevice ? TV_SPACING.lg : 16,
+    borderRadius: isTVDevice ? 20 : 16,
   },
   addCatalogButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: isTVDevice ? 24 : 16,
+    paddingVertical: isTVDevice ? 14 : 10,
     borderRadius: 30,
-    marginTop: 16,
+    marginTop: isTVDevice ? TV_SPACING.lg : 16,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
+    minHeight: isTVDevice ? TV_TOUCH_TARGETS.standard.height : undefined,
   },
   addCatalogButtonText: {
-    fontSize: 14,
+    fontSize: isTVDevice ? TV_TYPOGRAPHY.bodyLarge : 14,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: isTVDevice ? 12 : 8,
   },
   loadMoreContainer: {
-    padding: 16,
+    padding: isTVDevice ? TV_SPACING.lg : 16,
     alignItems: 'center',
   },
   loadMoreButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: isTVDevice ? 28 : 20,
+    paddingVertical: isTVDevice ? 16 : 12,
+    borderRadius: isTVDevice ? 30 : 25,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    minHeight: isTVDevice ? TV_TOUCH_TARGETS.standard.height : undefined,
   },
   loadMoreText: {
-    marginLeft: 8,
-    fontSize: 14,
+    marginLeft: isTVDevice ? 12 : 8,
+    fontSize: isTVDevice ? TV_TYPOGRAPHY.bodyLarge : 14,
     fontWeight: '600',
   },
   toast: {

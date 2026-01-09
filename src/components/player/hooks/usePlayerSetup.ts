@@ -6,7 +6,7 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { logger } from '../../../utils/logger';
 import { useFocusEffect } from '@react-navigation/native';
 
-interface PlayerSetupConfig {
+export interface PlayerSetupConfig {
     setScreenDimensions: (dim: any) => void;
     setVolume: (vol: number) => void;
     setBrightness: (bri: number) => void;

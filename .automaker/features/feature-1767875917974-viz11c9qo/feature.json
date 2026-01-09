@@ -1,0 +1,21 @@
+{
+  "category": "Uncategorized",
+  "description": "Check for any syntax error or bugs after running the build command for android using expo command",
+  "title": "",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "opus",
+  "thinkingLevel": "none",
+  "branchName": "feat/tvos-support",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "titleGenerating": false,
+  "status": "backlog",
+  "id": "feature-1767875917974-viz11c9qo",
+  "startedAt": "2026-01-08T12:38:38.317Z",
+  "updatedAt": "2026-01-08T12:41:44.620Z"
+}

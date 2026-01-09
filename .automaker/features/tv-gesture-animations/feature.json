@@ -1,0 +1,14 @@
+{
+  "id": "tv-gesture-animations",
+  "category": "UI",
+  "title": "TV Gesture Animations",
+  "description": "Enhanced focus animations and transitions optimized for TV viewing distance. Uses react-native-reanimated for smooth 60fps animations.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [
+    "tv-navigation-foundation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.889Z",
+  "updatedAt": "2026-01-08T07:40:51.889Z"
+}

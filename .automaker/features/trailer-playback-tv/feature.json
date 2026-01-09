@@ -1,0 +1,15 @@
+{
+  "id": "trailer-playback-tv",
+  "category": "Playback",
+  "title": "Trailer Playback TV",
+  "description": "In-app trailer playback for TV platforms with integrated video player controls. Allows users to watch trailers without leaving the app.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "video-player-tv-controls",
+    "metadata-screen-tv-layout"
+  ],
+  "createdAt": "2026-01-08T07:40:51.887Z",
+  "updatedAt": "2026-01-08T07:40:51.887Z"
+}

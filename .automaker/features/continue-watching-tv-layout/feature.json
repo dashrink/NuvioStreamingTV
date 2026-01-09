@@ -1,0 +1,14 @@
+{
+  "id": "continue-watching-tv-layout",
+  "category": "UI",
+  "title": "Continue Watching TV Layout",
+  "description": "TV-optimized continue watching section with horizontal scrolling, focus indicators, and progress bars visible at 10-foot distance. Adapts existing ContinueWatchingSection component.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "simple",
+  "dependencies": [
+    "home-screen-tv-optimization"
+  ],
+  "createdAt": "2026-01-08T07:40:51.876Z",
+  "updatedAt": "2026-01-08T07:40:51.876Z"
+}

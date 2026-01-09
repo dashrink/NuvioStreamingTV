@@ -5,7 +5,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import FastImage from '@d11/react-native-fast-image';
 import { Pagination } from 'react-native-reanimated-carousel';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Focusable from '../common/Focusable';
+import {
+  isTV,
+  TV_SPACING,
+  TV_TYPOGRAPHY,
+  TV_TOUCH_TARGETS,
+  TV_HERO,
+  TV_ANIMATIONS,
+} from '../../utils/tvStyles';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for HeroCarousel
 let GlassViewComp: any = null;
@@ -43,6 +52,11 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  // TV navigation refs for focus management
+  const leftArrowRef = useRef<any>(null);
+  const rightArrowRef = useRef<any>(null);
+  const cardFocusRef = useRef<any>(null);
 
   // Responsive sizing computed per-render so rotation updates layout
   const isTablet = useMemo(
@@ -232,6 +246,24 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
   navigation.navigate('Metadata', { id, type, addonId });
 }, [navigation]);
 
+  // TV navigation: go to previous card
+  const handlePreviousCard = useCallback(() => {
+    if (activeIndex > 0) {
+      scrollToLogicalIndex(activeIndex - 1, true);
+    } else if (loopingEnabled) {
+      scrollToLogicalIndex(data.length - 1, true);
+    }
+  }, [activeIndex, data.length, loopingEnabled, scrollToLogicalIndex]);
+
+  // TV navigation: go to next card
+  const handleNextCard = useCallback(() => {
+    if (activeIndex < data.length - 1) {
+      scrollToLogicalIndex(activeIndex + 1, true);
+    } else if (loopingEnabled) {
+      scrollToLogicalIndex(0, true);
+    }
+  }, [activeIndex, data.length, loopingEnabled, scrollToLogicalIndex]);
+
   // Container animation based on scroll - must be before early returns
   // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
   // const containerAnimatedStyle = useAnimatedStyle(() => {
@@ -412,25 +444,53 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
           ))}
         </Animated.ScrollView>
       </Animated.View>
+      {/* TV Navigation Arrows - Only visible on TV */}
+      {isTV && data.length > 1 && (
+        <View style={styles.tvNavigationContainer} pointerEvents="box-none">
+          <Focusable
+            ref={leftArrowRef}
+            onPress={handlePreviousCard}
+            nextFocusRight={cardFocusRef}
+            style={[styles.tvArrowButton, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+          >
+            <MaterialIcons name="chevron-left" size={TV_TOUCH_TARGETS.arrow.iconSize} color="white" />
+          </Focusable>
+          <Focusable
+            ref={rightArrowRef}
+            onPress={handleNextCard}
+            nextFocusLeft={cardFocusRef}
+            style={[styles.tvArrowButton, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+          >
+            <MaterialIcons name="chevron-right" size={TV_TOUCH_TARGETS.arrow.iconSize} color="white" />
+          </Focusable>
+        </View>
+      )}
+
       {/* Pagination below the card row (library-based, worklet-driven) */}
-      <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 6, position: 'relative', zIndex: 1 }} pointerEvents="auto">
+      <View style={{
+        alignItems: 'center',
+        paddingTop: isTV ? TV_SPACING.sm : 8,
+        paddingBottom: isTV ? TV_SPACING.sm : 6,
+        position: 'relative',
+        zIndex: 1
+      }} pointerEvents="auto">
         <Pagination.Basic
           progress={paginationProgress}
           data={data}
-          size={10}
+          size={isTV ? TV_HERO.paginationDot.inactive + 2 : 10}
           dotStyle={{
-            width: 8,
-            height: 8,
+            width: isTV ? TV_HERO.paginationDot.inactive : 8,
+            height: isTV ? TV_HERO.paginationDot.inactive : 8,
             borderRadius: 999,
             backgroundColor: currentTheme.colors.elevation3,
           }}
           activeDotStyle={{
-            width: 10,
-            height: 10,
+            width: isTV ? TV_HERO.paginationDot.inactive + 4 : 10,
+            height: isTV ? TV_HERO.paginationDot.inactive + 4 : 10,
             borderRadius: 999,
             backgroundColor: currentTheme.colors.white,
           }}
-          containerStyle={{ gap: 8 }}
+          containerStyle={{ gap: isTV ? 12 : 8 }}
           horizontal
           onPress={(index: number) => {
             scrollToLogicalIndex(index, true);
@@ -1207,6 +1267,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 12, // Position at bottom
+  },
+  // TV Navigation Styles for 10-foot experience
+  tvNavigationContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: isTV ? TV_SPACING.screenPadding : 16,
+    zIndex: 100,
+  },
+  tvArrowButton: {
+    width: isTV ? TV_TOUCH_TARGETS.arrow.width : 48,
+    height: isTV ? TV_TOUCH_TARGETS.arrow.height : 48,
+    borderRadius: isTV ? TV_TOUCH_TARGETS.arrow.width / 2 : 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
 });
 

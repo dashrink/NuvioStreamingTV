@@ -46,6 +46,7 @@ import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
 import { useTVMode } from './src/hooks/useTVMode';
 import { CampaignManager } from './src/components/promotions/CampaignManager';
+import { TVNavigationProvider } from './src/contexts/TVNavigationContext';
 
 Sentry.init({
   dsn: 'https://1a58bf436454d346e5852b7bfd3c95e8@o4509536317276160.ingest.de.sentry.io/4509536317734992',
@@ -220,31 +221,35 @@ const ThemedApp = () => {
             <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
               <StatusBar style="light" />
               {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
-              {shouldShowApp && <AppNavigator initialRouteName={initialRouteName} />}
-              <UpdatePopup
-                visible={showUpdatePopup}
-                updateInfo={updateInfo}
-                onUpdateNow={handleUpdateNow}
-                onUpdateLater={handleUpdateLater}
-                onDismiss={handleDismiss}
-                isInstalling={isInstalling}
-              />
-              <MajorUpdateOverlay
-                visible={githubUpdate.visible}
-                latestTag={githubUpdate.latestTag}
-                releaseNotes={githubUpdate.releaseNotes}
-                releaseUrl={githubUpdate.releaseUrl}
-                onDismiss={githubUpdate.onDismiss}
-                onLater={githubUpdate.onLater}
-              />
-              <AnnouncementOverlay
-                visible={showAnnouncement}
-                announcements={announcements}
-                onClose={handleAnnouncementClose}
-                onActionPress={handleNavigateToDebrid}
-                actionButtonText="Connect Now"
-              />
-              <CampaignManager />
+              {shouldShowApp && (
+                <>
+                  <AppNavigator initialRouteName={initialRouteName} />
+                  <UpdatePopup
+                    visible={showUpdatePopup}
+                    updateInfo={updateInfo}
+                    onUpdateNow={handleUpdateNow}
+                    onUpdateLater={handleUpdateLater}
+                    onDismiss={handleDismiss}
+                    isInstalling={isInstalling}
+                  />
+                  <MajorUpdateOverlay
+                    visible={githubUpdate.visible}
+                    latestTag={githubUpdate.latestTag}
+                    releaseNotes={githubUpdate.releaseNotes}
+                    releaseUrl={githubUpdate.releaseUrl}
+                    onDismiss={githubUpdate.onDismiss}
+                    onLater={githubUpdate.onLater}
+                  />
+                  <AnnouncementOverlay
+                    visible={showAnnouncement}
+                    announcements={announcements}
+                    onClose={handleAnnouncementClose}
+                    onActionPress={handleNavigateToDebrid}
+                    actionButtonText="Connect Now"
+                  />
+                  <CampaignManager />
+                </>
+              )}
             </View>
           </DownloadsProvider>
         </NavigationContainer>
@@ -256,21 +261,23 @@ const ThemedApp = () => {
 function App(): React.JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <GenreProvider>
-          <CatalogProvider>
-            <TraktProvider>
-              <ThemeProvider>
-                <TrailerProvider>
-                  <ToastProvider>
-                    <ThemedApp />
-                  </ToastProvider>
-                </TrailerProvider>
-              </ThemeProvider>
-            </TraktProvider>
-          </CatalogProvider>
-        </GenreProvider>
-      </BottomSheetModalProvider>
+      <TVNavigationProvider>
+        <BottomSheetModalProvider>
+          <GenreProvider>
+            <CatalogProvider>
+              <TraktProvider>
+                <ThemeProvider>
+                  <TrailerProvider>
+                    <ToastProvider>
+                      <ThemedApp />
+                    </ToastProvider>
+                  </TrailerProvider>
+                </ThemeProvider>
+              </TraktProvider>
+            </CatalogProvider>
+          </GenreProvider>
+        </BottomSheetModalProvider>
+      </TVNavigationProvider>
     </GestureHandlerRootView>
   );
 }

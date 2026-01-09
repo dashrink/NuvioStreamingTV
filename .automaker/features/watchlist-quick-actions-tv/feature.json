@@ -1,0 +1,14 @@
+{
+  "id": "watchlist-quick-actions-tv",
+  "category": "UI",
+  "title": "Watchlist Quick Actions TV",
+  "description": "TV-accessible quick actions for adding/removing from watchlist directly from content cards. Long-press or context menu integration for TV remotes.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "catalog-grid-tv-navigation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.887Z",
+  "updatedAt": "2026-01-08T07:40:51.887Z"
+}

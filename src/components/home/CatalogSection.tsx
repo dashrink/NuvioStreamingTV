@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, createRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, FlatList, FlatListProps } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -9,9 +9,32 @@ import ContentItem from './ContentItem';
 import Focusable from '../common/Focusable';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import {
+  isTV as isTVDevice,
+  TV_SPACING,
+  TV_TYPOGRAPHY,
+  TV_CATALOG,
+  TV_TOUCH_TARGETS,
+} from '../../utils/tvStyles';
+
+// TV-specific layout constants for optimal spacing and card sizes
+// Designed for viewing from typical couch distance (8-12 feet)
+const TV_LAYOUT = {
+  POSTER_WIDTH: TV_CATALOG.posterWidth,      // Larger posters for TV viewing distance
+  POSTER_SPACING: TV_CATALOG.posterSpacing,  // Increased spacing for clear focus rings
+  HORIZONTAL_PADDING: TV_SPACING.screenPadding, // More padding on TV screens
+  TITLE_FONT_SIZE: TV_CATALOG.headerFontSize,    // Larger title for TV readability
+};
 
 interface CatalogSectionProps {
   catalog: CatalogContent;
+  // TV spatial navigation props for connecting sections
+  sectionIndex?: number;
+  nextFocusUp?: React.RefObject<any>;
+  nextFocusDown?: React.RefObject<any>;
+  onSectionFocus?: (sectionIndex: number) => void;
+  // Expose first item ref for external navigation
+  firstItemRef?: React.RefObject<any>;
 }
 
 const { width } = Dimensions.get('window');
@@ -72,10 +95,31 @@ const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 const separatorWidth = isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8;
 
-const CatalogSection = ({ catalog }: CatalogSectionProps) => {
+const CatalogSection = ({
+  catalog,
+  sectionIndex,
+  nextFocusUp,
+  nextFocusDown,
+  onSectionFocus,
+  firstItemRef,
+}: CatalogSectionProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const flatListRef = useRef<FlatList<StreamingContent>>(null);
+
+  // Create refs for each item to enable horizontal spatial navigation on TV
+  const itemRefs = useRef<Map<number, React.RefObject<any>>>(new Map());
+
+  // Get or create ref for a specific item index
+  const getItemRef = useCallback((index: number): React.RefObject<any> => {
+    if (!itemRefs.current.has(index)) {
+      itemRefs.current.set(index, createRef<any>());
+    }
+    return itemRefs.current.get(index)!;
+  }, []);
+
+  // View All button ref for navigation from first item
+  const viewAllButtonRef = useRef<any>(null);
 
   // Debug: log catalog name to understand what's happening
   const catalogTitle = catalog.name || catalog.id || 'Movies';
@@ -114,15 +158,36 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
   }, []);
 
   const renderContentItem = useCallback(({ item, index }: { item: StreamingContent, index: number }) => {
+    // Get refs for spatial navigation on TV
+    const itemRef = getItemRef(index);
+    const prevItemRef = index > 0 ? getItemRef(index - 1) : undefined;
+    const nextItemRef = index < catalog.items.length - 1 ? getItemRef(index + 1) : undefined;
+
+    // Use the firstItemRef for the first item if provided
+    const effectiveRef = (index === 0 && firstItemRef) ? firstItemRef : itemRef;
+
     return (
       <ContentItem
         item={item}
         index={index}
         onPress={handleContentPress}
-        onItemFocus={handleItemFocus}
+        onItemFocus={(idx) => {
+          handleItemFocus(idx);
+          // Notify parent section was focused for vertical navigation coordination
+          if (onSectionFocus && sectionIndex !== undefined) {
+            onSectionFocus(sectionIndex);
+          }
+        }}
+        // TV spatial navigation props
+        focusableRef={effectiveRef}
+        nextFocusLeft={prevItemRef}
+        nextFocusRight={nextItemRef}
+        nextFocusUp={nextFocusUp}
+        nextFocusDown={nextFocusDown}
+        hasTVPreferredFocus={index === 0 && sectionIndex === 0}
       />
     );
-  }, [handleContentPress, handleItemFocus]);
+  }, [handleContentPress, handleItemFocus, getItemRef, catalog.items.length, firstItemRef, nextFocusUp, nextFocusDown, onSectionFocus, sectionIndex]);
 
   // Memoize the ItemSeparatorComponent to prevent re-creation (responsive spacing)
   const ItemSeparator = useCallback(() => <View style={{ width: separatorWidth }} />, []);
@@ -163,6 +228,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
           />
         </View>
         <Focusable
+          ref={viewAllButtonRef}
           onPress={() =>
             navigation.navigate('Catalog', {
               id: catalog.id,
@@ -178,6 +244,9 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
               borderRadius: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
             }
           ]}
+          // TV navigation: View All button navigates down to first item in this section
+          nextFocusDown={firstItemRef || getItemRef(0)}
+          nextFocusUp={nextFocusUp}
         >
           <Text style={[
             styles.viewAllText,

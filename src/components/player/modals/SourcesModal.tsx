@@ -86,26 +86,15 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
   };
 
   return (
-<<<<<<< HEAD
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <Focusable style={StyleSheet.absoluteFill} onPress={handleClose}>
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </Focusable>
-=======
-    <View style={[StyleSheet.absoluteFill, { zIndex: 10000 }]}>
       {/* Backdrop */}
-      <TouchableOpacity
-        style={StyleSheet.absoluteFill}
-        activeOpacity={1}
-        onPress={handleClose}
-      >
+      <Focusable style={StyleSheet.absoluteFill} onPress={handleClose}>
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
         />
-      </TouchableOpacity>
->>>>>>> origin/main
+      </Focusable>
 
       <Animated.View
         entering={SlideInRight.duration(300)}

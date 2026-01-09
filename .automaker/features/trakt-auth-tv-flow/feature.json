@@ -1,0 +1,14 @@
+{
+  "id": "trakt-auth-tv-flow",
+  "category": "Authentication",
+  "title": "Trakt Authentication TV Flow",
+  "description": "TV-optimized Trakt OAuth flow with on-screen code display and polling. Simplifies authentication process for users without keyboards on TV devices.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "settings-navigation-tv"
+  ],
+  "createdAt": "2026-01-08T07:40:51.881Z",
+  "updatedAt": "2026-01-08T07:40:51.881Z"
+}

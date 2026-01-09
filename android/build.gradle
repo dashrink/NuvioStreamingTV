@@ -3,16 +3,7 @@
 buildscript {
 // @generated begin react-native-google-cast-version-import - expo prebuild (DO NOT MODIFY) sync-751dea5919495636a44001495c681e3442af2777
   ext {
-<<<<<<< HEAD
         castFrameworkVersion = "+"
-=======
-    buildToolsVersion = "35.0.0"
-    minSdkVersion = 24
-    compileSdkVersion = 35
-    targetSdkVersion = 35
-    castFrameworkVersion = "22.1.0"
-    ndkVersion = "29.0.14206865" // Required for libmpv AAR built with NDK r29
->>>>>>> origin/main
   }
 // @generated end react-native-google-cast-version-import
   repositories {

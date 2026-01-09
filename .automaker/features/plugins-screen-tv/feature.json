@@ -1,0 +1,14 @@
+{
+  "id": "plugins-screen-tv",
+  "category": "UI",
+  "title": "Plugins Screen TV Interface",
+  "description": "TV-friendly plugin management interface for browsing and configuring local scrapers. Optimizes existing PluginsScreen with focus navigation.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [
+    "settings-navigation-tv"
+  ],
+  "createdAt": "2026-01-08T07:40:51.884Z",
+  "updatedAt": "2026-01-08T07:40:51.884Z"
+}

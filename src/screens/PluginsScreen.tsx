@@ -14,6 +14,7 @@ import {
   Dimensions,
   Animated,
   Image,
+  Switch,
 } from 'react-native';
 import CustomSwitch from '../components/common/CustomSwitch';
 import CustomAlert from '../components/CustomAlert';
@@ -1793,7 +1794,6 @@ const PluginsScreen: React.FC = () => {
                       value={plugin.enabled && settings.enableLocalScrapers}
                       onValueChange={(enabled: boolean) => handleTogglePlugin(plugin.id, enabled)}
                       disabled={!settings.enableLocalScrapers || plugin.manifestEnabled === false || (plugin.disabledPlatforms && plugin.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
-                    />
                     />
                   </View>
 

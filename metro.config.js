@@ -30,4 +30,14 @@ config.resolver = {
   resolverMainFields: ['react-native', 'browser', 'main'],
 };
 
+// Exclude directories that don't need watching to reduce file watcher count
+config.watchFolders = [__dirname];
+config.resolver.blockList = [
+  /node_modules\/.*\/android\/\.cxx\/.*/,
+  /node_modules\/.*\/\.git\/.*/,
+  /android\/build\/.*/,
+  /android\/app\/build\/.*/,
+  /ios\/Pods\/.*/,
+];
+
 module.exports = config;

@@ -1,0 +1,14 @@
+{
+  "id": "calendar-view-tv-navigation",
+  "category": "UI",
+  "title": "Calendar View TV Navigation",
+  "description": "TV-optimized calendar screen with D-pad date navigation and episode list focus management. Enhances existing CalendarScreen for 10-foot viewing.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "tv-navigation-foundation"
+  ],
+  "createdAt": "2026-01-08T07:40:51.882Z",
+  "updatedAt": "2026-01-08T07:40:51.882Z"
+}

@@ -284,24 +284,15 @@ const BackupScreen: React.FC = () => {
 
       {/* Header */}
       <View style={styles.header}>
-<<<<<<< HEAD
-        <Focusable 
-=======
-        <TouchableOpacity
->>>>>>> origin/main
+        <Focusable
           style={styles.backButton}
           onPress={() => navigation.goBack()}
           hasTVPreferredFocus={true}
         >
           <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.white} />
           <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-<<<<<<< HEAD
         </Focusable>
-        
-=======
-        </TouchableOpacity>
 
->>>>>>> origin/main
         <View style={styles.headerActions}>
           {/* Empty for now, but keeping structure consistent */}
         </View>

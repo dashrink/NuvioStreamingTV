@@ -120,13 +120,8 @@ export const useMetadataAssets = (
           setLoadingBanner(true);
         }
 
-<<<<<<< HEAD
-        // If enrichment is disabled, use addon banner and don't fetch from external sources
-        if (!settings.enrichMetadataWithTMDB) {
-=======
         // If enrichment or banner enrichment is disabled, use addon banner and don't fetch from external sources
         if (!settings.enrichMetadataWithTMDB || !settings.tmdbEnrichBanners) {
->>>>>>> origin/main
           const addonBanner = metadata?.banner || null;
           if (isMountedRef.current && addonBanner && addonBanner !== bannerImage) {
             setBannerImage(addonBanner);
@@ -146,25 +141,20 @@ export const useMetadataAssets = (
           let finalBanner: string | null = bannerImage; // Start with current to prevent flicker
           let bannerSourceType: 'tmdb' | 'default' = (bannerSource === 'tmdb' || bannerSource === 'default') ? bannerSource : 'default';
 
-<<<<<<< HEAD
-          let tmdbId = null;
-
-=======
->>>>>>> origin/main
           // TMDB path only
           if (currentPreference === 'tmdb') {
             if (id.startsWith('tmdb:')) {
-              tmdbId = id.split(':')[1];
+              imdbId = id.split(':')[1];
             } else if (foundTmdbId) {
-              tmdbId = foundTmdbId;
-            } else if ((metadata as any).tmdbId) {
-              tmdbId = (metadata as any).tmdbId;
+              imdbId = foundTmdbId;
+            } else if ((metadata as any).imdbId) {
+              imdbId = (metadata as any).imdbId;
             } else if (imdbId && settings.enrichMetadataWithTMDB) {
               try {
                 const tmdbService = TMDBService.getInstance();
                 const foundId = await tmdbService.findTMDBIdByIMDB(imdbId);
                 if (foundId && isMountedRef.current) {
-                  tmdbId = String(foundId);
+                  imdbId = String(foundId);
                 }
               } catch (error) {
                 // CRITICAL: Don't update state on error if unmounted
@@ -173,33 +163,25 @@ export const useMetadataAssets = (
               }
             }
 
-            if (tmdbId && isMountedRef.current) {
+            if (imdbId && isMountedRef.current) {
               try {
                 const tmdbService = TMDBService.getInstance();
                 const endpoint = contentType === 'tv' ? 'tv' : 'movie';
 
                 // Fetch details (AbortSignal will be used for future implementations)
                 const details = endpoint === 'movie'
-                  ? await tmdbService.getMovieDetails(tmdbId)
-                  : await tmdbService.getTVShowDetails(Number(tmdbId));
+                  ? await tmdbService.getMovieDetails(imdbId)
+                  : await tmdbService.getTVShowDetails(Number(imdbId));
 
                 // Only update if request wasn't aborted and component is still mounted
                 if (!isMountedRef.current) return;
 
-<<<<<<< HEAD
-                if (details?.backdrop_path) {
-                  finalBanner = tmdbService.getImageUrl(details.backdrop_path);
-                  bannerSourceType = 'tmdb';
-
-                  // Preload the image
-=======
                 if (metadata?.banner) {
                   finalBanner = metadata.banner;
                   bannerSourceType = 'default';
                 } else if (details?.backdrop_path) {
                   finalBanner = tmdbService.getImageUrl(details.backdrop_path);
                   bannerSourceType = 'tmdb';
->>>>>>> origin/main
                   if (finalBanner) {
                     FastImage.preload([{ uri: finalBanner }]);
                   }
@@ -225,16 +207,12 @@ export const useMetadataAssets = (
             }
           }
 
-<<<<<<< HEAD
-=======
           // Final fallback to metadata banner only
->>>>>>> origin/main
           if (!finalBanner) {
             finalBanner = metadata?.banner || null;
             bannerSourceType = 'default';
           }
 
-<<<<<<< HEAD
           // Enhanced: Attempt to upgrade quality if it's a known TMDB URL format (even if from addon)
           if (finalBanner && typeof finalBanner === 'string') {
             // Check if it's a TMDB URL with restricted width
@@ -248,8 +226,6 @@ export const useMetadataAssets = (
             }
           }
 
-=======
->>>>>>> origin/main
           // CRITICAL: Batch all state updates into a single call to prevent race conditions
           // This ensures the native view hierarchy doesn't receive conflicting unmount/remount signals
           if (isMountedRef.current && (finalBanner !== bannerImage || bannerSourceType !== bannerSource)) {
@@ -257,7 +233,7 @@ export const useMetadataAssets = (
             console.log(`[useMetadataAssets] Banner resolved for ${id}:`, {
               source: bannerSourceType,
               url: finalBanner,
-              tmdbId: tmdbId,
+              imdbId: imdbId,
               originalMetadataBanner: metadata?.banner
             });
           }

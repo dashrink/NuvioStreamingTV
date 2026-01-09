@@ -348,21 +348,13 @@ const ActionButtons = memo(({
     <Animated.View style={[isTablet ? styles.tabletActionButtons : styles.actionButtons, animatedStyle]}>
       {/* Single Row Layout - Play, Save, and optionally Collection/Ratings */}
       <View style={styles.singleRowLayout}>
-<<<<<<< HEAD
         <Focusable
-=======
-        <TouchableOpacity
->>>>>>> origin/main
           style={[
             playButtonStyle,
             isTablet && styles.tabletPlayButton,
             additionalButtonCount === 0 ? styles.singleRowPlayButtonFullWidth : styles.primaryActionButton
           ]}
           onPress={handleShowStreams}
-<<<<<<< HEAD
-=======
-          activeOpacity={0.85}
->>>>>>> origin/main
         >
           <MaterialIcons
             name={(() => {
@@ -375,15 +367,9 @@ const ActionButtons = memo(({
             color={isWatched && type === 'movie' ? "#fff" : "#000"}
           />
           <Text style={[playButtonTextStyle, isTablet && styles.tabletPlayButtonText]}>{finalPlayButtonText}</Text>
-<<<<<<< HEAD
         </Focusable>
 
         <Focusable
-=======
-        </TouchableOpacity>
-
-        <TouchableOpacity
->>>>>>> origin/main
           style={[
             styles.actionButton,
             styles.infoButton,
@@ -391,10 +377,6 @@ const ActionButtons = memo(({
             additionalButtonCount === 0 ? styles.singleRowSaveButtonFullWidth : styles.primaryActionButton
           ]}
           onPress={handleSaveAction}
-<<<<<<< HEAD
-=======
-          activeOpacity={0.85}
->>>>>>> origin/main
         >
           {Platform.OS === 'ios' ? (
             GlassViewComp && liquidGlassAvailable ? (
@@ -416,7 +398,6 @@ const ActionButtons = memo(({
           <Text style={[styles.infoButtonText, isTablet && styles.tabletInfoButtonText]}>
             {inLibrary ? 'Saved' : 'Save'}
           </Text>
-<<<<<<< HEAD
         </Focusable>
 
         {/* Trakt Collection Button */}
@@ -424,16 +405,6 @@ const ActionButtons = memo(({
           <Focusable
             style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
             onPress={handleCollectionAction}
-=======
-        </TouchableOpacity>
-
-        {/* Trakt Collection Button */}
-        {hasTraktCollection && (
-          <TouchableOpacity
-            style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
-            onPress={handleCollectionAction}
-            activeOpacity={0.85}
->>>>>>> origin/main
           >
             {Platform.OS === 'ios' ? (
               GlassViewComp && liquidGlassAvailable ? (
@@ -452,25 +423,14 @@ const ActionButtons = memo(({
               size={isTablet ? 28 : 24}
               color={isInCollection ? "#3498DB" : currentTheme.colors.white}
             />
-<<<<<<< HEAD
           </Focusable>
-=======
-          </TouchableOpacity>
->>>>>>> origin/main
         )}
 
         {/* Ratings Button (for series) */}
         {hasRatings && (
-<<<<<<< HEAD
           <Focusable
             style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
             onPress={handleRatingsPress}
-=======
-          <TouchableOpacity
-            style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
-            onPress={handleRatingsPress}
-            activeOpacity={0.85}
->>>>>>> origin/main
           >
             {Platform.OS === 'ios' ? (
               GlassViewComp && liquidGlassAvailable ? (
@@ -489,11 +449,7 @@ const ActionButtons = memo(({
               size={isTablet ? 28 : 24}
               color={currentTheme.colors.white}
             />
-<<<<<<< HEAD
           </Focusable>
-=======
-          </TouchableOpacity>
->>>>>>> origin/main
         )}
       </View>
     </Animated.View>
@@ -829,16 +785,9 @@ const WatchProgressDisplay = memo(({
 
               {/* Enhanced manual Trakt sync button - moved inline */}
               {isTraktAuthenticated && forceSyncTraktProgress && (
-<<<<<<< HEAD
                 <Focusable
                   style={styles.traktSyncButtonInline}
                   onPress={handleTraktSync}
-=======
-                <TouchableOpacity
-                  style={styles.traktSyncButtonInline}
-                  onPress={handleTraktSync}
-                  activeOpacity={0.7}
->>>>>>> origin/main
                   disabled={isSyncing}
                 >
                   <LinearGradient
@@ -853,11 +802,7 @@ const WatchProgressDisplay = memo(({
                       />
                     </Animated.View>
                   </LinearGradient>
-<<<<<<< HEAD
                 </Focusable>
-=======
-                </TouchableOpacity>
->>>>>>> origin/main
               )}
             </View>
           )}

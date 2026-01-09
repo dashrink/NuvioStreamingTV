@@ -1,0 +1,14 @@
+{
+  "id": "episode-list-tv-navigation",
+  "category": "UI",
+  "title": "Episode List TV Navigation",
+  "description": "TV-optimized episode list for series with season navigation and episode details. Enhances metadata screen episode section with horizontal season selector.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [
+    "metadata-screen-tv-layout"
+  ],
+  "createdAt": "2026-01-08T07:40:51.886Z",
+  "updatedAt": "2026-01-08T07:40:51.886Z"
+}

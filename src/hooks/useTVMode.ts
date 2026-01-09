@@ -26,9 +26,15 @@ export const useTVMode = () => {
     }
 
     const backAction = useCallback(() => {
-        if (navigation?.canGoBack()) {
-            navigation.goBack();
-            return true;
+        try {
+            if (navigation?.canGoBack()) {
+                navigation.goBack();
+                return true;
+            }
+        } catch (error) {
+            if (__DEV__) {
+                console.log('[useTVMode] backAction error:', error);
+            }
         }
         return false;
     }, [navigation]);

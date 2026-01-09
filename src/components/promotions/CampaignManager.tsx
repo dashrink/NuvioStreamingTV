@@ -211,7 +211,17 @@ const BottomSheetCampaign: React.FC<BottomSheetProps> = ({ campaign, onDismiss, 
 export const CampaignManager: React.FC = () => {
     const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
     const [isVisible, setIsVisible] = useState(false);
-    const navigation = useNavigation();
+    
+    // Safely try to get navigation - might be called outside a navigator context
+    let navigation: any = null;
+    try {
+        navigation = useNavigation();
+    } catch (e) {
+        if (__DEV__) {
+            console.log('[CampaignManager] Navigation context not available');
+        }
+    }
+    
     const { user } = useAccount();
 
     const checkForCampaigns = useCallback(async () => {
@@ -260,7 +270,11 @@ export const CampaignManager: React.FC = () => {
             handleDismiss();
             setTimeout(() => {
                 try {
-                    (navigation as any).navigate(action.value);
+                    if (navigation) {
+                        (navigation as any).navigate(action.value);
+                    } else {
+                        console.warn('[CampaignManager] Cannot navigate: navigation object not available');
+                    }
                 } catch (error) {
                     console.warn('[CampaignManager] Navigation failed:', error);
                 }
