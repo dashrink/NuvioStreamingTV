@@ -920,9 +920,55 @@ const LibraryScreen = () => {
       <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
         {!showTraktContent && (
           <View style={styles.filtersContainer}>
-            {renderFilter('trakt', 'Trakt', 'pan-tool')}
-            {renderFilter('movies', 'Movies', 'movie')}
-            {renderFilter('series', 'TV Shows', 'live-tv')}
+            {/* Search Input Bar */}
+            <View style={[styles.searchBarContainer]}>
+              <View style={[
+                styles.searchBar,
+                {
+                  backgroundColor: currentTheme.colors.elevation2,
+                  borderColor: 'rgba(255,255,255,0.1)',
+                }
+              ]}>
+                <MaterialIcons
+                  name="search"
+                  size={24}
+                  color={currentTheme.colors.lightGray}
+                  style={styles.searchIcon}
+                />
+                <TextInput
+                  style={[
+                    styles.searchInput,
+                    { color: currentTheme.colors.white }
+                  ]}
+                  placeholder="Search your library..."
+                  placeholderTextColor={currentTheme.colors.lightGray}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  returnKeyType="search"
+                  keyboardAppearance="dark"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setSearchQuery('')}
+                    style={styles.clearButton}
+                    hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                  >
+                    <MaterialIcons
+                      name="close"
+                      size={20}
+                      color={currentTheme.colors.lightGray}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Filter Buttons */}
+            <View style={styles.filterButtonsRow}>
+              {renderFilter('trakt', 'Trakt', 'pan-tool')}
+              {renderFilter('movies', 'Movies', 'movie')}
+              {renderFilter('series', 'TV Shows', 'live-tv')}
+            </View>
           </View>
         )}
 
@@ -1001,14 +1047,47 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filtersContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: 'column',
     paddingHorizontal: 16,
     paddingBottom: 16,
     paddingTop: 8,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
     zIndex: 10,
+  },
+  searchBarContainer: {
+    marginBottom: 12,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
+  },
+  clearButton: {
+    padding: 4,
+  },
+  filterButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   filterButton: {
     flexDirection: 'row',
