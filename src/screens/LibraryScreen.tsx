@@ -37,6 +37,7 @@ import { useTraktContext } from '../contexts/TraktContext';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
+import { EmptyState } from '../components/common';
 import { useSettings } from '../hooks/useSettings';
 
 interface LibraryItem extends StreamingContent {
@@ -709,25 +710,15 @@ const LibraryScreen = () => {
     if (!selectedTraktFolder) {
       if (traktFolders.length === 0) {
         return (
-          <View style={styles.emptyContainer}>
-            <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No Trakt collections</Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-              Your Trakt collections will appear here once you start using Trakt
-            </Text>
-            <TouchableOpacity
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
-              onPress={() => {
-                loadAllCollections();
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
-            </TouchableOpacity>
-          </View>
+          <EmptyState
+            icon={{ name: 'folder-off-outline', size: 64, library: 'MaterialCommunityIcons' }}
+            title="No Trakt collections"
+            subtitle="Your Trakt collections will appear here once you start using Trakt"
+            primaryAction={{
+              label: 'Load Collections',
+              onPress: () => loadAllCollections()
+            }}
+          />
         );
       }
 
@@ -750,25 +741,15 @@ const LibraryScreen = () => {
     if (folderItems.length === 0) {
       const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
       return (
-        <View style={styles.emptyContainer}>
-          <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No content in {folderName}</Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            This collection is empty
-          </Text>
-          <TouchableOpacity
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => {
-              loadAllCollections();
-            }}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon={{ name: 'folder-open-outline', size: 64, library: 'MaterialCommunityIcons' }}
+          title={`No content in ${folderName}`}
+          subtitle="This collection is empty"
+          primaryAction={{
+            label: 'Refresh',
+            onPress: () => loadAllCollections()
+          }}
+        />
       );
     }
 
@@ -844,31 +825,16 @@ const LibraryScreen = () => {
 
     if (filteredItems.length === 0) {
       const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
-      const emptySubtitle = 'Add some content to your library to see it here';
       return (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="video-library"
-            size={64}
-            color={currentTheme.colors.lightGray}
-          />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-            {emptyTitle}
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            {emptySubtitle}
-          </Text>
-          <TouchableOpacity
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => navigation.navigate('Search')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon={{ name: 'video-library', size: 64, library: 'MaterialIcons' }}
+          title={emptyTitle}
+          subtitle="Add some content to your library to see it here"
+          primaryAction={{
+            label: 'Find something to watch',
+            onPress: () => navigation.navigate('Search')
+          }}
+        />
       );
     }
 
