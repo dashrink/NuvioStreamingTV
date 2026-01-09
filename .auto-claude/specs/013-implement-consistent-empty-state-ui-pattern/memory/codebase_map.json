@@ -39,7 +39,12 @@
       "description": "CalendarScreen has two empty state scenarios: (1) 'No episodes for {date}' when selectedDate is set but filteredEpisodes.length === 0 (uses event-busy icon size 48 with Show All Episodes action), (2) 'No upcoming episodes found' when calendarData.length === 0 (uses calendar-today icon with subtitle). Both now use EmptyState component with MaterialIcons library.",
       "category": "empty-states",
       "discovered_at": "2026-01-09T21:33:08.149389+00:00"
+    },
+    "src/screens/HomeScreen.tsx": {
+      "description": "HomeScreen has one empty state scenario in ListFooterComponent: 'No content available' when !catalogsLoading && catalogs.filter(c => c).length === 0. Uses EmptyState component with MaterialIcons 'movie-filter' icon (size 48) and 'Add Catalogs' action navigating to Settings. Uses custom emptyCatalogState style (flex: 0, paddingVertical: 48) for compact layout in list footer context.",
+      "category": "component_pattern",
+      "discovered_at": "2026-01-09T21:34:57.097010+00:00"
     }
   },
-  "last_updated": "2026-01-09T21:33:08.149399+00:00"
+  "last_updated": "2026-01-09T21:34:57.097025+00:00"
 }

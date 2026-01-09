@@ -30,6 +30,7 @@ import { logger } from '../utils/logger';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import CustomAlert from '../components/CustomAlert';
+import { EmptyState } from '../components/common';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for AddonsScreen
 let GlassViewComp: any = null;
@@ -597,6 +598,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: colors.darkBackground,
+  },
+  sectionEmptyState: {
+    flex: 0,
+    paddingVertical: 32,
+    paddingBottom: 32,
   },
 });
 
@@ -1241,10 +1247,12 @@ const AddonsScreen = () => {
             </Text>
             <View style={styles.addonList}>
               {addons.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <MaterialIcons name="extension-off" size={32} color={colors.mediumGray} />
-                  <Text style={styles.emptyText}>No addons installed</Text>
-                </View>
+                <EmptyState
+                  icon={{ name: 'extension-off', size: 48, library: 'MaterialCommunityIcons' }}
+                  title="No addons installed"
+                  subtitle="Add addons using a URL or browse community addons below"
+                  style={styles.sectionEmptyState}
+                />
               ) : (
                 addons.map((addon, index) => (
                   <View
@@ -1329,15 +1337,23 @@ const AddonsScreen = () => {
                   <ActivityIndicator size="large" color={colors.primary} />
                 </View>
               ) : communityError ? (
-                <View style={styles.emptyContainer}>
-                  <MaterialIcons name="error-outline" size={32} color={colors.error} />
-                  <Text style={styles.emptyText}>{communityError}</Text>
-                </View>
+                <EmptyState
+                  icon={{ name: 'error-outline', size: 48 }}
+                  title="Failed to load"
+                  subtitle={communityError}
+                  primaryAction={{
+                    label: 'Retry',
+                    onPress: loadCommunityAddons,
+                  }}
+                  style={styles.sectionEmptyState}
+                />
               ) : communityAddons.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <MaterialIcons name="extension-off" size={32} color={colors.mediumGray} />
-                  <Text style={styles.emptyText}>No community addons available</Text>
-                </View>
+                <EmptyState
+                  icon={{ name: 'extension-off', size: 48, library: 'MaterialCommunityIcons' }}
+                  title="No community addons available"
+                  subtitle="Check back later for new addons"
+                  style={styles.sectionEmptyState}
+                />
               ) : (
                 communityAddons.map((item, index) => (
                   <View
