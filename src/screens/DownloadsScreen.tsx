@@ -35,6 +35,7 @@ import type { DownloadItem } from '../contexts/DownloadsContext';
 import { useToast } from '../contexts/ToastContext';
 import CustomAlert from '../components/CustomAlert';
 import ScreenHeader from '../components/common/ScreenHeader';
+import { EmptyState } from '../components/common';
 
 const { height, width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -60,39 +61,6 @@ const optimizePosterUrl = (poster: string | undefined | null): string => {
 };
 
 // Download items come from DownloadsContext
-
-// Empty state component
-const EmptyDownloadsState: React.FC<{ navigation: NavigationProp<RootStackParamList> }> = ({ navigation }) => {
-  const { currentTheme } = useTheme();
-
-  return (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIconContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
-        <MaterialCommunityIcons
-          name="download-outline"
-          size={48}
-          color={currentTheme.colors.mediumEmphasis}
-        />
-      </View>
-      <Text style={[styles.emptyTitle, { color: currentTheme.colors.text }]}>
-        No Downloads Yet
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: currentTheme.colors.mediumEmphasis }]}>
-        Downloaded content will appear here for offline viewing
-      </Text>
-      <TouchableOpacity
-        style={[styles.exploreButton, { backgroundColor: currentTheme.colors.primary }]}
-        onPress={() => {
-          navigation.navigate('Search');
-        }}
-      >
-        <Text style={[styles.exploreButtonText, { color: currentTheme.colors.background }]}>
-          Explore Content
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 // Download item component
 const DownloadItemComponent: React.FC<{
@@ -654,7 +622,15 @@ const DownloadsScreen: React.FC = () => {
 
       {/* Content */}
       {downloads.length === 0 ? (
-        <EmptyDownloadsState navigation={navigation} />
+        <EmptyState
+          icon={{ name: 'download-outline', library: 'MaterialCommunityIcons' }}
+          title="No Downloads Yet"
+          subtitle="Downloaded content will appear here for offline viewing"
+          primaryAction={{
+            label: 'Explore Content',
+            onPress: () => navigation.navigate('Search'),
+          }}
+        />
       ) : (
         <FlatList
           data={filteredDownloads}
@@ -679,19 +655,12 @@ const DownloadsScreen: React.FC = () => {
             />
           }
           ListEmptyComponent={() => (
-            <View style={styles.emptyFilterContainer}>
-              <MaterialCommunityIcons
-                name="filter-off"
-                size={48}
-                color={currentTheme.colors.mediumEmphasis}
-              />
-              <Text style={[styles.emptyFilterTitle, { color: currentTheme.colors.text }]}>
-                No {selectedFilter} downloads
-              </Text>
-              <Text style={[styles.emptyFilterSubtitle, { color: currentTheme.colors.mediumEmphasis }]}>
-                Try selecting a different filter
-              </Text>
-            </View>
+            <EmptyState
+              icon={{ name: 'filter-off', library: 'MaterialCommunityIcons', size: 48 }}
+              title={`No ${selectedFilter} downloads`}
+              subtitle="Try selecting a different filter"
+              style={styles.emptyFilterState}
+            />
           )}
         />
       )}
@@ -911,56 +880,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: isTablet ? 64 : 40,
-    paddingBottom: isTablet ? 120 : 100,
-  },
-  emptyIconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: isTablet ? 28 : 24,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: isTablet ? 18 : 16,
-    textAlign: 'center',
-    lineHeight: isTablet ? 28 : 24,
-    marginBottom: isTablet ? 40 : 32,
-  },
-  exploreButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  exploreButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  emptyFilterContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  emptyFilterState: {
+    flex: 0,
     paddingVertical: isTablet ? 80 : 60,
-  },
-  emptyFilterTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyFilterSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
+    paddingBottom: 0,
   },
 });
 
