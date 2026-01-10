@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp } from '@react-navigation/native';
+import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
+import { TVNavigationProvider, useTVNavigationOptional } from '../contexts/TVNavigationContext';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -81,24 +82,33 @@ if (Platform.OS === 'android') {
   }
 }
 
+// TV Focus restoration params (optional for all screens)
+// When using TV focus restoration, screens will receive/set this param
+export interface TVFocusParams {
+  /** Last focused element ID for focus restoration */
+  lastFocusId?: string;
+}
+
 // Stack navigator types
+// Note: Screens can receive TVFocusParams.lastFocusId through navigation.setParams()
+// This is used by the TV focus restoration system to persist focus state
 export type RootStackParamList = {
-  Onboarding: undefined;
-  MainTabs: undefined;
-  Backup: undefined;
-  Home: undefined;
-  Library: undefined;
-  Settings: undefined;
-  Update: undefined;
-  Search: undefined;
-  Calendar: undefined;
-  Metadata: {
+  Onboarding: TVFocusParams | undefined;
+  MainTabs: TVFocusParams | undefined;
+  Backup: TVFocusParams | undefined;
+  Home: TVFocusParams | undefined;
+  Library: TVFocusParams | undefined;
+  Settings: TVFocusParams | undefined;
+  Update: TVFocusParams | undefined;
+  Search: TVFocusParams | undefined;
+  Calendar: TVFocusParams | undefined;
+  Metadata: TVFocusParams & {
     id: string;
     type: string;
     episodeId?: string;
     addonId?: string;
   };
-  Streams: {
+  Streams: TVFocusParams & {
     id: string;
     type: string;
     title?: string;
@@ -114,7 +124,7 @@ export type RootStackParamList = {
     resumeTime?: number;
     duration?: number;
   };
-  PlayerIOS: {
+  PlayerIOS: TVFocusParams & {
     uri: string;
     title?: string;
     season?: number;
@@ -135,7 +145,7 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  PlayerAndroid: {
+  PlayerAndroid: TVFocusParams & {
     uri: string;
     title?: string;
     season?: number;
@@ -156,26 +166,26 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  Catalog: { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
-  Credits: { mediaId: string; mediaType: string };
-  ShowRatings: { showId: number };
-  Account: undefined;
-  AccountManage: undefined;
-  Payment: undefined;
-  PrivacyPolicy: undefined;
-  About: undefined;
-  Addons: undefined;
-  CatalogSettings: undefined;
-  NotificationSettings: undefined;
-  MDBListSettings: undefined;
-  TMDBSettings: undefined;
-  HomeScreenSettings: undefined;
-  HeroCatalogs: undefined;
-  TraktSettings: undefined;
-  PlayerSettings: undefined;
-  ThemeSettings: undefined;
-  ScraperSettings: undefined;
-  CastMovies: {
+  Catalog: TVFocusParams & { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
+  Credits: TVFocusParams & { mediaId: string; mediaType: string };
+  ShowRatings: TVFocusParams & { showId: number };
+  Account: TVFocusParams | undefined;
+  AccountManage: TVFocusParams | undefined;
+  Payment: TVFocusParams | undefined;
+  PrivacyPolicy: TVFocusParams | undefined;
+  About: TVFocusParams | undefined;
+  Addons: TVFocusParams | undefined;
+  CatalogSettings: TVFocusParams | undefined;
+  NotificationSettings: TVFocusParams | undefined;
+  MDBListSettings: TVFocusParams | undefined;
+  TMDBSettings: TVFocusParams | undefined;
+  HomeScreenSettings: TVFocusParams | undefined;
+  HeroCatalogs: TVFocusParams | undefined;
+  TraktSettings: TVFocusParams | undefined;
+  PlayerSettings: TVFocusParams | undefined;
+  ThemeSettings: TVFocusParams | undefined;
+  ScraperSettings: TVFocusParams | undefined;
+  CastMovies: TVFocusParams & {
     castMember: {
       id: number;
       name: string;
@@ -183,8 +193,8 @@ export type RootStackParamList = {
       character?: string;
     };
   };
-  AISettings: undefined;
-  AIChat: {
+  AISettings: TVFocusParams | undefined;
+  AIChat: TVFocusParams & {
     contentId: string;
     contentType: 'movie' | 'series';
     episodeId?: string;
@@ -192,25 +202,26 @@ export type RootStackParamList = {
     episodeNumber?: number;
     title: string;
   };
-  BackdropGallery: {
+  BackdropGallery: TVFocusParams & {
     tmdbId: number;
     type: 'movie' | 'tv';
     title: string;
   };
-  ContinueWatchingSettings: undefined;
-  Contributors: undefined;
-  DebridIntegration: undefined;
+  ContinueWatchingSettings: TVFocusParams | undefined;
+  Contributors: TVFocusParams | undefined;
+  DebridIntegration: TVFocusParams | undefined;
 };
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Tab navigator types
+// Note: Tab screens also support TVFocusParams.lastFocusId for focus restoration
 export type MainTabParamList = {
-  Home: undefined;
-  Library: undefined;
-  Search: undefined;
-  Downloads: undefined;
-  Settings: undefined;
+  Home: TVFocusParams | undefined;
+  Library: TVFocusParams | undefined;
+  Search: TVFocusParams | undefined;
+  Downloads: TVFocusParams | undefined;
+  Settings: TVFocusParams | undefined;
 };
 
 // Custom fonts that satisfy both theme types
@@ -1607,6 +1618,26 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
   );
 };
 
+/**
+ * AppNavigator with TV Navigation Support
+ *
+ * Wraps the navigation structure with:
+ * - TVNavigationProvider for global TV navigation state (focus history, focus memory, voice search, context menu)
+ * - PostHogProvider for analytics
+ * - LoadingProvider for loading state management
+ *
+ * TV Focus Restoration Integration:
+ * - Focus state is stored in navigation.setParams() for persistence across navigation
+ * - TVNavigationContext provides global access to focus state
+ * - Individual screens can use useTVFocusRestoration hook or TVScreenWrapper component
+ *   to integrate with the focus restoration system
+ *
+ * The TV navigation system follows these patterns:
+ * 1. useFocusEffect for automatic focus restoration on screen navigation
+ * 2. requestAnimationFrame for proper timing (screen focus fires before layout)
+ * 3. useCallback wrapping to prevent infinite loops
+ * 4. setNativeProps({ hasTVPreferredFocus: true }) for runtime focus changes
+ */
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
   <PostHogProvider
     apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
@@ -1614,9 +1645,11 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
       host: "https://us.i.posthog.com",
     }}
   >
-    <LoadingProvider>
-      <InnerNavigator initialRouteName={initialRouteName} />
-    </LoadingProvider>
+    <TVNavigationProvider>
+      <LoadingProvider>
+        <InnerNavigator initialRouteName={initialRouteName} />
+      </LoadingProvider>
+    </TVNavigationProvider>
   </PostHogProvider>
 );
 
