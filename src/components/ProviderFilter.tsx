@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { triggerLight } from '@/hooks/useHaptics';
 
 interface ProviderFilterProps {
   selectedProvider: string;
@@ -22,7 +23,10 @@ const ProviderFilter = memo(({
         styles.filterChip,
         selectedProvider === item.id && styles.filterChipSelected
       ]}
-      onPress={() => onSelect(item.id)}
+      onPress={() => {
+        triggerLight();
+        onSelect(item.id);
+      }}
     >
       <Text style={[
         styles.filterChipText,

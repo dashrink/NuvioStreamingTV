@@ -431,42 +431,45 @@
           "title": "Add haptics to PluginsScreen",
           "description": "Add haptic feedback to plugin toggles and configuration in PluginsScreen.tsx.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/PluginsScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to PluginsScreen.tsx. Uses triggerLight() for: navigation (back button), modal open/close (help, add repository), collapsible section toggles, filter chips, search clear, quality chips, language chips, token visibility toggle, ShowBox clear button. Uses triggerMedium() for: all toggle switches (Enable Plugins, URL Validation, Group Plugin Streams, Sort by Quality, Show Scraper Logos, individual scraper toggles), primary buttons (Add Repository, Switch Repository, Refresh Repository), bulk actions (Enable All, Disable All), ShowBox save button. Uses triggerHeavy() for: Remove Repository button (destructive action). Committed as a9bb12ed.",
+          "updated_at": "2026-01-10T19:11:23.071309+00:00"
         },
         {
           "id": "7.3",
           "title": "Add haptics to ProfilesScreen",
           "description": "Add haptic feedback to profile selection, creation, and editing in ProfilesScreen.tsx.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/ProfilesScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to ProfilesScreen.tsx. Uses triggerLight() for: back button (navigation), Add New Profile button (modal open), Cancel button (modal close). Uses triggerMedium() for: profile selection (theme/profile pattern), Create button (primary action). Uses triggerHeavy() for: delete button (destructive action). Committed as 08c081fd.",
+          "updated_at": "2026-01-10T19:13:33.735726+00:00"
         },
         {
           "id": "7.4",
           "title": "Add haptics to HeroCatalogsScreen",
           "description": "Add haptic feedback to catalog selection and reordering in HeroCatalogsScreen.tsx.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/HeroCatalogsScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to HeroCatalogsScreen.tsx. Uses triggerLight() for: back button (navigation), Select All button (selection action), Clear All button (selection action), and individual catalog toggle (selection). Uses triggerMedium() for: Save button (primary action). Committed as c27440f1.",
+          "updated_at": "2026-01-10T19:15:24.190265+00:00"
         }
       ]
     },
@@ -480,28 +483,30 @@
           "title": "Add haptics to CustomAlert",
           "description": "Add haptic feedback to CustomAlert.tsx button presses with appropriate feedback types based on action severity.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/components/CustomAlert.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to CustomAlert.tsx. Uses triggerMedium() for primary action buttons (confirm, submit, OK - last button in the actions array) and triggerLight() for secondary action buttons (cancel, dismiss - other buttons). Also added triggerLight() for backdrop press to close the modal. Committed as 55c3b4d2.",
+          "updated_at": "2026-01-10T19:16:58.233674+00:00"
         },
         {
           "id": "8.2",
           "title": "Add haptics to StreamCard",
           "description": "Add haptic feedback to StreamCard.tsx for stream selection and long press actions.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/components/StreamCard.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to StreamCard.tsx. Uses triggerMedium() for: stream card press (important stream selection action) and download button (important download action). Uses triggerLight() for: long press to copy URL to clipboard (secondary action). Committed as e73b7675.",
+          "updated_at": "2026-01-10T19:18:38.417598+00:00"
         },
         {
           "id": "8.3",
@@ -637,5 +642,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-10T19:07:20.861403+00:00"
+  "last_updated": "2026-01-10T19:18:38.417608+00:00"
 }
