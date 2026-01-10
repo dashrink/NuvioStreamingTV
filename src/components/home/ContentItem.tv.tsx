@@ -1,0 +1,669 @@
+/**
+ * ContentItem.tv.tsx
+ *
+ * TV-specific content item component with D-pad focusability,
+ * visible focus states, and long-press context menu support.
+ *
+ * This component is automatically loaded when APP_VARIANT=tv (Metro file resolution).
+ *
+ * Features:
+ * - D-pad focusable via Focusable wrapper
+ * - Visible focus states with scale animation (1.0-1.05)
+ * - Long-press (300ms+) triggers TV context menu
+ * - Short press navigates to content detail
+ * - Integration with TVNavigationContext for focus tracking
+ * - tvParallaxProperties for Apple TV depth effects
+ */
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from '../../contexts/ToastContext';
+import { DeviceEventEmitter } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useSettings } from '../../hooks/useSettings';
+import { catalogService, StreamingContent } from '../../services/catalogService';
+import { DropUpMenu } from './DropUpMenu';
+import { mmkvStorage } from '../../services/mmkvStorage';
+import { storageService } from '../../services/storageService';
+import { TraktService } from '../../services/traktService';
+import { useTraktContext } from '../../contexts/TraktContext';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import Focusable from '../common/Focusable';
+import { useContextMenu } from '../../hooks/useContextMenu';
+import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
+
+interface ContentItemProps {
+  item: StreamingContent;
+  onPress: (id: string, type: string) => void;
+  shouldLoadImage?: boolean;
+  deferMs?: number;
+  /** Unique focus ID for TV navigation tracking */
+  focusId?: string;
+  /** Whether this item should receive initial TV focus */
+  hasTVPreferredFocus?: boolean;
+  /** Callback when this item receives TV focus */
+  onFocus?: () => void;
+  /** Callback when this item loses TV focus */
+  onBlur?: () => void;
+}
+
+const { width } = Dimensions.get('window');
+
+// Enhanced responsive breakpoints
+const BREAKPOINTS = {
+  phone: 0,
+  tablet: 768,
+  largeTablet: 1024,
+  tv: 1440,
+};
+
+const getDeviceType = (screenWidth: number) => {
+  if (screenWidth >= BREAKPOINTS.tv) return 'tv';
+  if (screenWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
+  if (screenWidth >= BREAKPOINTS.tablet) return 'tablet';
+  return 'phone';
+};
+
+// Dynamic poster calculation based on screen width - show 1/4 of next poster
+const calculatePosterLayout = (screenWidth: number) => {
+  const deviceType = getDeviceType(screenWidth);
+
+  // Responsive sizing based on device type
+  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 180 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
+  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 220 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
+  const LEFT_PADDING = deviceType === 'tv' ? 32 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
+  const SPACING = deviceType === 'tv' ? 12 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
+
+  // Calculate available width for posters (reserve space for left padding)
+  const availableWidth = screenWidth - LEFT_PADDING;
+
+  // Try different numbers of full posters to find the best fit
+  let bestLayout = {
+    numFullPosters: 3,
+    posterWidth: deviceType === 'tv' ? 200 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120
+  };
+
+  for (let n = 3; n <= 6; n++) {
+    // Calculate poster width needed for N full posters + 0.25 partial poster
+    // Formula: N * posterWidth + (N-1) * spacing + 0.25 * posterWidth = availableWidth - rightPadding
+    // Simplified: posterWidth * (N + 0.25) + (N-1) * spacing = availableWidth - rightPadding
+    // We'll use minimal right padding (8px) to maximize space
+    const usableWidth = availableWidth - 8;
+    const posterWidth = (usableWidth - (n - 1) * SPACING) / (n + 0.25);
+
+    if (posterWidth >= MIN_POSTER_WIDTH && posterWidth <= MAX_POSTER_WIDTH) {
+      bestLayout = { numFullPosters: n, posterWidth };
+    }
+  }
+
+  return {
+    numFullPosters: bestLayout.numFullPosters,
+    posterWidth: bestLayout.posterWidth,
+    spacing: SPACING,
+    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+  };
+};
+
+const posterLayout = calculatePosterLayout(width);
+const POSTER_WIDTH = posterLayout.posterWidth;
+
+const ContentItem = ({
+  item,
+  onPress,
+  shouldLoadImage: shouldLoadImageProp,
+  deferMs = 0,
+  focusId,
+  hasTVPreferredFocus = false,
+  onFocus: onFocusProp,
+  onBlur: onBlurProp,
+}: ContentItemProps) => {
+  // Track inLibrary status locally to force re-render
+  const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
+
+  useEffect(() => {
+    // Subscribe to library updates and update local state if this item's status changes
+    const unsubscribe = catalogService.subscribeToLibraryUpdates((items) => {
+      const found = items.find((libItem) => libItem.id === item.id && libItem.type === item.type);
+      const newInLibrary = !!found;
+      // Only update state if the value actually changed to prevent unnecessary re-renders
+      setInLibrary(prev => prev !== newInLibrary ? newInLibrary : prev);
+    });
+    return () => unsubscribe();
+  }, [item.id, item.type]);
+
+  // Load watched state from AsyncStorage when item changes
+  useEffect(() => {
+    const updateWatched = () => {
+      mmkvStorage.getItem(`watched:${item.type}:${item.id}`).then((val: string | null) => setIsWatched(val === 'true'));
+    };
+    updateWatched();
+    const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
+    return () => sub.remove();
+  }, [item.id, item.type]);
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Trakt integration
+  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+
+  // TV Navigation context for focus tracking
+  const tvNav = useTVNavigationOptional();
+
+  // TV Context Menu hook
+  const { openContextMenu, isAvailable: isContextMenuAvailable } = useContextMenu();
+
+  useEffect(() => {
+    // Reset image error state when item changes, allowing for retry on re-render
+    setImageError(false);
+  }, [item.id, item.poster]);
+
+  const { currentTheme } = useTheme();
+  const { settings, isLoaded } = useSettings();
+  const { showSuccess, showInfo } = useToast();
+  const posterRadius = typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12;
+  // Memoize poster width calculation to avoid recalculating on every render
+  const posterWidth = React.useMemo(() => {
+    const deviceType = getDeviceType(width);
+    const sizeMultiplier = deviceType === 'tv' ? 1.2 : deviceType === 'largeTablet' ? 1.1 : deviceType === 'tablet' ? 1.0 : 0.9;
+
+    switch (settings.posterSize) {
+      case 'small':
+        return Math.max(90, POSTER_WIDTH - 15) * sizeMultiplier;
+      case 'medium':
+        return Math.max(110, POSTER_WIDTH + 10) * sizeMultiplier;
+      case 'large':
+        return Math.max(130, POSTER_WIDTH + 25) * sizeMultiplier;
+      default:
+        return POSTER_WIDTH * sizeMultiplier;
+    }
+  }, [settings.posterSize, width]);
+
+  // Determine dimensions based on poster shape
+  const { finalWidth, finalAspectRatio, borderRadius } = React.useMemo(() => {
+    const shape = item.posterShape || 'poster';
+    const baseHeight = posterWidth / (2 / 3); // Standard height derived from portrait width
+
+    let w = posterWidth;
+    let ratio = 2 / 3;
+
+    if (shape === 'landscape') {
+      ratio = 16 / 9;
+      // Maintain same height as portrait posters
+      w = baseHeight * ratio;
+    } else if (shape === 'square') {
+      ratio = 1;
+      w = baseHeight;
+    }
+
+    return {
+      finalWidth: w,
+      finalAspectRatio: ratio,
+      borderRadius: typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12
+    };
+  }, [posterWidth, item.posterShape, settings.posterBorderRadius]);
+
+  // Intersection observer simulation for lazy loading
+  const itemRef = useRef<View>(null);
+
+  /**
+   * Handle long press - open TV context menu on TV, show drop-up menu on non-TV
+   */
+  const handleLongPress = useCallback(() => {
+    if (isContextMenuAvailable) {
+      // Open TV context menu with appropriate actions
+      const itemFocusId = focusId || `content-${item.type}-${item.id}`;
+
+      openContextMenu({
+        targetId: itemFocusId,
+        title: item.name,
+        mediaItem: {
+          id: item.id,
+          title: item.name,
+          type: item.type as 'movie' | 'series',
+          isInList: inLibrary,
+          isWatched: isWatched,
+        },
+        actions: inLibrary
+          ? ['removeFromList', isWatched ? 'markUnwatched' : 'markWatched', 'share', 'info']
+          : ['addToList', isWatched ? 'markUnwatched' : 'markWatched', 'share', 'info'],
+        onAddToList: () => {
+          catalogService.addToLibrary(item);
+          showSuccess('Added to Library', 'Added to your local library');
+        },
+        onRemoveFromList: () => {
+          catalogService.removeFromLibrary(item.type, item.id);
+          showInfo('Removed from Library', 'Removed from your local library');
+        },
+        onMarkWatched: async () => {
+          setIsWatched(true);
+          try {
+            await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'true');
+          } catch { }
+          showInfo('Marked as Watched', 'Item marked as watched');
+          setTimeout(() => {
+            DeviceEventEmitter.emit('watchedStatusChanged');
+          }, 100);
+
+          // Best-effort sync with Trakt
+          try {
+            await storageService.setWatchProgress(
+              item.id,
+              item.type,
+              { currentTime: 1, duration: 1, lastUpdated: Date.now() },
+              undefined,
+              { forceNotify: true, forceWrite: true }
+            );
+          } catch { }
+
+          if (item.type === 'movie') {
+            try {
+              const trakt = TraktService.getInstance();
+              if (await trakt.isAuthenticated()) {
+                await trakt.addToWatchedMovies(item.id);
+                try {
+                  await storageService.updateTraktSyncStatus(item.id, item.type, true, 100);
+                } catch { }
+              }
+            } catch { }
+          }
+        },
+        onMarkUnwatched: async () => {
+          setIsWatched(false);
+          try {
+            await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'false');
+          } catch { }
+          showInfo('Marked as Unwatched', 'Item marked as unwatched');
+          setTimeout(() => {
+            DeviceEventEmitter.emit('watchedStatusChanged');
+          }, 100);
+        },
+        onShare: () => {
+          let url = '';
+          if (item.id) {
+            url = `https://www.imdb.com/title/${item.id}/`;
+          }
+          const message = `${item.name}\n${url}`;
+          Share.share({ message, url, title: item.name });
+        },
+        onGetInfo: () => {
+          // Navigate to detail view
+          if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
+            onPress(item.id, item.type);
+          }
+        },
+      });
+    } else {
+      // Fall back to DropUpMenu for non-TV
+      setMenuVisible(true);
+    }
+  }, [
+    isContextMenuAvailable,
+    openContextMenu,
+    focusId,
+    item,
+    inLibrary,
+    isWatched,
+    showSuccess,
+    showInfo,
+    onPress,
+  ]);
+
+  /**
+   * Handle short press - navigate to detail
+   */
+  const handlePress = useCallback(() => {
+    // Validate ID before pressing to prevent errors with NaN/undefined IDs
+    if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
+      onPress(item.id, item.type);
+    }
+  }, [item.id, item.type, onPress]);
+
+  /**
+   * Handle TV focus events - track in context
+   */
+  const handleFocus = useCallback(() => {
+    const itemFocusId = focusId || `content-${item.type}-${item.id}`;
+    tvNav?.setCurrentFocusId(itemFocusId);
+    onFocusProp?.();
+  }, [focusId, item.type, item.id, tvNav, onFocusProp]);
+
+  /**
+   * Handle TV blur events
+   */
+  const handleBlur = useCallback(() => {
+    onBlurProp?.();
+  }, [onBlurProp]);
+
+  const handleOptionSelect = useCallback(async (option: string) => {
+    switch (option) {
+      case 'library':
+        if (inLibrary) {
+          catalogService.removeFromLibrary(item.type, item.id);
+          showInfo('Removed from Library', 'Removed from your local library');
+        } else {
+          catalogService.addToLibrary(item);
+          showSuccess('Added to Library', 'Added to your local library');
+        }
+        break;
+      case 'watched': {
+        const targetWatched = !isWatched;
+        setIsWatched(targetWatched);
+        try {
+          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, targetWatched ? 'true' : 'false');
+        } catch { }
+        showInfo(targetWatched ? 'Marked as Watched' : 'Marked as Unwatched', targetWatched ? 'Item marked as watched' : 'Item marked as unwatched');
+        setTimeout(() => {
+          DeviceEventEmitter.emit('watchedStatusChanged');
+        }, 100);
+
+        // Best-effort sync: record local progress and push to Trakt if available
+        if (targetWatched) {
+          try {
+            await storageService.setWatchProgress(
+              item.id,
+              item.type,
+              { currentTime: 1, duration: 1, lastUpdated: Date.now() },
+              undefined,
+              { forceNotify: true, forceWrite: true }
+            );
+          } catch { }
+
+          if (item.type === 'movie') {
+            try {
+              const trakt = TraktService.getInstance();
+              if (await trakt.isAuthenticated()) {
+                await trakt.addToWatchedMovies(item.id);
+                try {
+                  await storageService.updateTraktSyncStatus(item.id, item.type, true, 100);
+                } catch { }
+              }
+            } catch { }
+          }
+        }
+        setMenuVisible(false);
+        break;
+      }
+      case 'playlist':
+        break;
+      case 'share': {
+        let url = '';
+        if (item.id) {
+          url = `https://www.imdb.com/title/${item.id}/`;
+        }
+        const message = `${item.name}\n${url}`;
+        Share.share({ message, url, title: item.name });
+        break;
+      }
+      case 'trakt-watchlist': {
+        if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
+          await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
+          showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
+        } else {
+          await addToWatchlist(item.id, item.type as 'movie' | 'show');
+          showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
+        }
+        setMenuVisible(false);
+        break;
+      }
+      case 'trakt-collection': {
+        if (isInCollection(item.id, item.type as 'movie' | 'show')) {
+          await removeFromCollection(item.id, item.type as 'movie' | 'show');
+          showInfo('Removed from Collection', 'Removed from your Trakt collection');
+        } else {
+          await addToCollection(item.id, item.type as 'movie' | 'show');
+          showSuccess('Added to Collection', 'Added to your Trakt collection');
+        }
+        setMenuVisible(false);
+        break;
+      }
+    }
+  }, [item, inLibrary, isWatched, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, showSuccess, showInfo]);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuVisible(false);
+  }, []);
+
+  // Memoize optimized poster URL to prevent recalculating
+  const optimizedPosterUrl = React.useMemo(() => {
+    if (!item.poster || item.poster.includes('placeholder')) {
+      return 'https://via.placeholder.com/154x231/333/666?text=No+Image';
+    }
+    if (item.poster.includes('image.tmdb.org')) {
+      return item.poster.replace(/\/w\d+\//, '/w154/');
+    }
+    if (item.poster.includes('placeholder')) {
+      return item.poster.replace('/medium/', '/small/');
+    }
+    return item.poster;
+  }, [item.poster, item.id]);
+
+  // Generate unique focus ID
+  const itemFocusId = focusId || `content-${item.type}-${item.id}`;
+
+  if (!isLoaded) {
+    return (
+      <View style={[styles.itemContainer, { width: finalWidth }]}>
+        <View
+          style={[
+            styles.contentItem,
+            {
+              width: finalWidth,
+              aspectRatio: finalAspectRatio,
+              borderRadius,
+              backgroundColor: currentTheme.colors.elevation1,
+            },
+          ]}
+        />
+        <View style={{ height: 18, marginTop: 4 }} />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
+        <Focusable
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          hasTVPreferredFocus={hasTVPreferredFocus}
+          isTVSelectable={true}
+          focusId={itemFocusId}
+          style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
+          focusStyle={styles.focusedItem}
+          animationConfig={{
+            focusScale: 1.05,
+            unfocusedOpacity: 0.9,
+            showFocusBorder: true,
+            focusBorderColor: currentTheme.colors.primary || '#007AFF',
+            focusBorderWidth: 3,
+            animateShadow: Platform.OS === 'ios',
+          }}
+          tvParallaxProperties={{
+            enabled: Platform.OS === 'ios',
+            shiftDistanceX: 2,
+            shiftDistanceY: 2,
+            tiltAngle: 0.05,
+            magnification: 1.0,
+            pressMagnification: 1.02,
+            pressDuration: 0.3,
+          }}
+          accessibilityLabel={`${item.name}, ${item.type}`}
+          accessibilityHint={inLibrary ? 'In your library. Press to view details. Long press for more options.' : 'Press to view details. Long press for more options.'}
+          testID={`content-item-${item.id}`}
+        >
+          <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
+            {/* Image with FastImage for aggressive caching */}
+            {item.poster ? (
+              <FastImage
+                source={{
+                  uri: optimizedPosterUrl,
+                  priority: FastImage.priority.normal,
+                  cache: FastImage.cacheControl.immutable
+                }}
+                style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, borderRadius }]}
+                resizeMode={FastImage.resizeMode.cover}
+                onLoad={() => {
+                  setImageError(false);
+                }}
+                onError={() => {
+                  if (__DEV__) console.warn('Image load error for:', item.poster);
+                  setImageError(true);
+                }}
+              />
+            ) : (
+              // Show placeholder for items without posters
+              <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center', borderRadius: posterRadius }]}>
+                <Text style={{ color: currentTheme.colors.textMuted, fontSize: 10, textAlign: 'center' }}>
+                  {item.name.substring(0, 20)}...
+                </Text>
+              </View>
+            )}
+            {imageError && (
+              <View style={[styles.loadingOverlay, { backgroundColor: currentTheme.colors.elevation1 }]}>
+                <MaterialIcons name="broken-image" size={24} color={currentTheme.colors.textMuted} />
+              </View>
+            )}
+            {isWatched && (
+              <View style={styles.watchedIndicator}>
+                <MaterialIcons name="check-circle" size={22} color={currentTheme.colors.success} />
+              </View>
+            )}
+            {inLibrary && (
+              <View style={styles.libraryBadge}>
+                <Feather name="bookmark" size={16} color={currentTheme.colors.white} />
+              </View>
+            )}
+            {isAuthenticated && isInWatchlist(item.id, item.type as 'movie' | 'show') && (
+              <View style={styles.traktWatchlistIcon}>
+                <MaterialIcons name="playlist-add-check" size={16} color="#E74C3C" />
+              </View>
+            )}
+            {isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show') && (
+              <View style={styles.traktCollectionIcon}>
+                <MaterialIcons name="video-library" size={16} color="#3498DB" />
+              </View>
+            )}
+          </View>
+        </Focusable>
+        {settings.showPosterTitles && (
+          <Text
+            style={[
+              styles.title,
+              {
+                color: currentTheme.colors.mediumEmphasis,
+                fontSize: getDeviceType(width) === 'tv' ? 16 : getDeviceType(width) === 'largeTablet' ? 15 : getDeviceType(width) === 'tablet' ? 14 : 13
+              }
+            ]}
+            numberOfLines={2}
+          >
+            {item.name}
+          </Text>
+        )}
+      </Animated.View>
+
+      <DropUpMenu
+        visible={menuVisible}
+        onClose={handleMenuClose}
+        item={item}
+        onOptionSelect={handleOptionSelect}
+        isSaved={inLibrary}
+        isWatched={isWatched}
+      />
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  itemContainer: {
+    width: POSTER_WIDTH,
+  },
+  contentItem: {
+    width: POSTER_WIDTH,
+    aspectRatio: 2 / 3,
+    margin: 0,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    elevation: Platform.OS === 'android' ? 1 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    marginBottom: 8,
+  },
+  focusedItem: {
+    // Additional styles applied when focused (handled by Focusable animation)
+    // Border is animated by Focusable component
+  },
+  contentItemContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  poster: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  watchedIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    borderRadius: 12,
+    padding: 2,
+  },
+  libraryBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    borderRadius: 8,
+    padding: 4,
+  },
+  traktWatchlistIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 2,
+  },
+  traktCollectionIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 32, // Positioned to the left of watchlist icon
+    padding: 2,
+  },
+  title: {
+    fontSize: 13, // Will be overridden responsively
+    fontWeight: '500',
+    marginTop: 4,
+    textAlign: 'center',
+  }
+});
+
+export default React.memo(ContentItem, (prev, next) => {
+  // Re-render when identity or poster changes. Caching is handled by FastImage.
+  if (prev.item.id !== next.item.id) return false;
+  if (prev.item.poster !== next.item.poster) return false;
+  if (prev.hasTVPreferredFocus !== next.hasTVPreferredFocus) return false;
+  if (prev.focusId !== next.focusId) return false;
+  return true;
+});
