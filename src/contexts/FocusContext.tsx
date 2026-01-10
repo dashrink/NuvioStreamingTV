@@ -36,6 +36,15 @@ export interface FocusMemoryEntry {
   focusedElementId: string | null;
   /** Optional focus group that was active */
   focusGroupId?: string;
+  /** Optional scroll position for lists/scroll views */
+  scrollPosition?: {
+    /** Scroll offset X */
+    x: number;
+    /** Scroll offset Y */
+    y: number;
+    /** Optional list index for virtualized lists */
+    index?: number;
+  };
   /** Timestamp for cache management */
   timestamp: number;
 }
@@ -93,13 +102,15 @@ export interface FocusContextValue {
 
   // ===== Focus Memory =====
   /** Save current focus state for a screen */
-  saveFocusMemory: (screenName: string) => void;
+  saveFocusMemory: (screenName: string, scrollPosition?: FocusMemoryEntry['scrollPosition']) => void;
   /** Restore focus state for a screen */
   restoreFocusMemory: (screenName: string) => boolean;
   /** Clear focus memory for a screen */
   clearFocusMemory: (screenName: string) => void;
   /** Get stored focus memory for a screen */
   getFocusMemory: (screenName: string) => FocusMemoryEntry | null;
+  /** Clear all focus memory (used on app reset or logout) */
+  clearAllFocusMemory: () => void;
 }
 
 // =============================================================================
@@ -376,13 +387,16 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
 
   /**
    * Save current focus state for a screen
+   * @param screenName - The screen/route name to save focus for
+   * @param scrollPosition - Optional scroll position to save alongside focus
    */
   const saveFocusMemory = useCallback(
-    (screenName: string) => {
+    (screenName: string, scrollPosition?: FocusMemoryEntry['scrollPosition']) => {
       const entry: FocusMemoryEntry = {
         screenName,
         focusedElementId: currentFocusId,
         focusGroupId: currentGroupId || undefined,
+        scrollPosition,
         timestamp: Date.now(),
       };
       focusMemoryRef.current.set(screenName, entry);
@@ -439,6 +453,13 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
     []
   );
 
+  /**
+   * Clear all focus memory (useful for app reset or logout)
+   */
+  const clearAllFocusMemory = useCallback(() => {
+    focusMemoryRef.current.clear();
+  }, []);
+
   // ===== Context Value =====
 
   const value: FocusContextValue = {
@@ -472,6 +493,7 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
     restoreFocusMemory,
     clearFocusMemory,
     getFocusMemory,
+    clearAllFocusMemory,
   };
 
   return (
