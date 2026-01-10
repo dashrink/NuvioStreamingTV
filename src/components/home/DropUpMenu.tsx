@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Modal,
   Pressable,
-  TouchableOpacity,
   useColorScheme,
   Dimensions,
   Platform
@@ -14,6 +13,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import FastImage from '@d11/react-native-fast-image';
 import { useTraktContext } from '../../contexts/TraktContext';
 import { colors } from '../../styles/colors';
+import Focusable from '../common/Focusable';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -184,17 +184,24 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
               </View>
               <View style={styles.menuOptions}>
                 {menuOptions.map((option, index) => (
-                  <TouchableOpacity
+                  <Focusable
                     key={option.action}
+                    variant="modal"
+                    borderRadius={0}
+                    enableScale={false}
+                    enableGlow={false}
+                    hasTVPreferredFocus={index === 0}
+                    onPress={() => {
+                      onOptionSelect(option.action);
+                      onClose();
+                    }}
+                    accessibilityLabel={option.label}
+                    accessibilityHint={`Activate to ${option.label.toLowerCase()}`}
                     style={[
                       styles.menuOption,
                       { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
                       index === menuOptions.length - 1 && styles.lastMenuOption
                     ]}
-                    onPress={() => {
-                      onOptionSelect(option.action);
-                      onClose();
-                    }}
                   >
                     <MaterialIcons
                       name={option.icon as "bookmark" | "check-circle" | "playlist-add" | "share" | "bookmark-border"}
@@ -207,9 +214,31 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
                     ]}>
                       {option.label}
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 ))}
               </View>
+
+              {/* Close button for TV remote navigation */}
+              <Focusable
+                variant="button"
+                borderRadius={12}
+                enableScale={false}
+                enableGlow={false}
+                onPress={onClose}
+                accessibilityLabel="Close menu"
+                accessibilityHint="Dismiss this menu"
+                style={[
+                  styles.closeButton,
+                  { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
+                ]}
+              >
+                <Text style={[
+                  styles.closeButtonText,
+                  { color: isDarkMode ? '#FFFFFF' : '#000000' }
+                ]}>
+                  Close
+                </Text>
+              </Focusable>
             </Animated.View>
           </GestureDetector>
         </Animated.View>
@@ -291,6 +320,20 @@ const styles = StyleSheet.create({
   menuOptionText: {
     fontSize: 16,
     marginLeft: 16,
+  },
+  closeButton: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
