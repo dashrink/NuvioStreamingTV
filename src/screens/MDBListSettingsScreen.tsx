@@ -8,13 +8,13 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-  ActivityIndicator,
   Linking,
   ScrollView,
   Keyboard,
   Clipboard,
   Switch,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import CustomAlert from '../components/CustomAlert';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -553,8 +553,7 @@ const MDBListSettingsScreen = () => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading Settings...</Text>
+          <UnifiedSpinner size="large" text="Loading Settings..." />
         </View>
       </SafeAreaView>
     );
