@@ -10,9 +10,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
-  ActivityIndicator,
   Keyboard,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import CustomAlert from '../components/CustomAlert';
 // Removed duplicate AIChatScreen definition and alert state at the top. The correct component is defined after SuggestionChip.
 import { useRoute, useNavigation, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -646,10 +646,7 @@ const AIChatScreen: React.FC = () => {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-        <Text style={[styles.loadingText, { color: currentTheme.colors.mediumEmphasis }]}>
-          Loading AI context...
-        </Text>
+        <UnifiedSpinner size="large" text="Loading AI context..." />
       </View>
     );
   }
@@ -862,11 +859,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
   },
   header: {
     paddingHorizontal: 16,
