@@ -254,7 +254,7 @@
           "id": "4.1",
           "title": "Enhance ContentItem with TV focus",
           "description": "Add TV focus support to home screen content cards with visible focus states",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/home/ContentItem.tsx"
           ],
@@ -263,13 +263,15 @@
             "Focus state is clearly visible (scale/border)",
             "Long-press triggers context menu",
             "Short press navigates to detail"
-          ]
+          ],
+          "notes": "Created ContentItem.tv.tsx with complete TV focus support:\n\n1. **D-pad Focusability**: Wrapped content in Focusable component for TV navigation\n2. **Visible Focus States**: \n   - Scale animation: 1.0 \u2192 1.05 on focus\n   - Animated border: 3px primary color border on focus\n   - Shadow animation for Apple TV\n   - Opacity: 0.9 \u2192 1.0 on focus\n3. **Long-press Context Menu**: \n   - Triggers TV context menu on 300ms+ press via useContextMenu hook\n   - Actions: Add/Remove from List, Mark Watched/Unwatched, Share, Get Info\n   - Falls back to DropUpMenu on non-TV platforms\n4. **Short Press Navigation**: Navigates to content detail view\n5. **Focus Tracking**: \n   - Integrates with TVNavigationContext via useTVNavigationOptional\n   - Sets currentFocusId on focus for global tracking\n6. **Apple TV Support**: tvParallaxProperties for depth effects\n7. **New Props**: focusId, hasTVPreferredFocus, onFocus, onBlur\n8. **Accessibility**: Proper accessibilityLabel and accessibilityHint\n\nCommitted as f486b843.",
+          "updated_at": "2026-01-10T23:11:33.608090+00:00"
         },
         {
           "id": "4.2",
           "title": "Enhance CatalogSection with TV navigation",
           "description": "Add horizontal scrolling TV navigation to catalog rows",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/home/CatalogSection.tsx"
           ],
@@ -278,13 +280,15 @@
             "Focus memory persists within row",
             "Scrolls to keep focused item visible",
             "Up/down moves between rows"
-          ]
+          ],
+          "notes": "Created CatalogSection.tv.tsx with complete TV navigation support:\n\n1. **Horizontal D-pad Navigation**: Left/right navigation through content items using FlatList\n2. **Focus Memory Persistence**: Saves focused item index to TVNavigationContext per-section (unique ID: catalog-{addon}-{id})\n3. **Auto-scroll**: Uses FlatList.scrollToIndex with viewPosition 0.3 to keep focused item visible, with fallback scrollToOffset\n4. **Inter-row Navigation**: Supports nextFocusUp/Down props for parent to wire up navigation between catalog rows\n5. **TV-focusable View All Button**: Wrapped in Focusable component with scale animation and focus border\n6. **ContentItem Integration**: Passes focusId, onFocus, onBlur props to ContentItem.tv.tsx for item-level tracking\n7. **Accessibility**: Proper accessibilityLabel and accessibilityRole for screen readers\n\nCommitted as 6500ca4f.",
+          "updated_at": "2026-01-10T23:14:26.702859+00:00"
         },
         {
           "id": "4.3",
           "title": "Enhance HeroCarousel with TV focus",
           "description": "Add TV focus support to hero carousel with smooth transitions",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/home/HeroCarousel.tsx",
             "src/components/home/AppleTVHero.tsx"
@@ -294,13 +298,15 @@
             "Left/right changes hero selection",
             "Focus state is visible",
             "Auto-rotation pauses on focus"
-          ]
+          ],
+          "notes": "Created TV-specific hero carousel components:\n\n1. **HeroCarousel.tv.tsx**: \n   - D-pad left/right navigation between carousel items\n   - Visible focus states (scale 1.03, primary color border)\n   - Auto-rotation pauses when focused\n   - Integration with TVNavigationContext for focus memory\n   - Support for nextFocusUp/Down for inter-section navigation\n   - Uses Focusable wrapper and useTVEventHandler for D-pad input\n   - Navigation hints (chevron icons) when focused\n\n2. **AppleTVHero.tv.tsx**:\n   - D-pad left/right navigation for hero items\n   - Focusable Play and Save buttons with nextFocus navigation between them\n   - Visible focus states on hero (border indicator) and buttons (scale, border)\n   - Auto-rotation pauses when any element is focused\n   - Trailer support with focus-aware playback\n   - Smooth crossfade transitions between items\n   - Pagination dots with focus indication\n   - Navigation hints showing left/right when hero is focused\n\nCommitted as 5f560507.",
+          "updated_at": "2026-01-10T23:21:51.605497+00:00"
         },
         {
           "id": "4.4",
           "title": "Enhance SeriesContent with TV navigation",
           "description": "Add TV navigation to episode lists and season selection",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/metadata/SeriesContent.tsx"
           ],
@@ -309,7 +315,9 @@
             "Episode list scrolls with focus",
             "Episodes are selectable with focus states",
             "Long-press on episode opens context menu"
-          ]
+          ],
+          "notes": "Created SeriesContent.tv.tsx with complete TV navigation support:\n\n1. **Season tabs navigable via D-pad**:\n   - Wrapped each season button in Focusable component\n   - Horizontal D-pad navigation (left/right) through seasons\n   - Auto-scrolls to keep focused season visible\n   - Focus memory persistence per section via TVNavigationContext\n   - Support for both poster and text view modes\n\n2. **Episode list scrolls with focus**:\n   - Both vertical (FlashList) and horizontal (FlatList) layouts supported\n   - Auto-scrolls to focused episode using scrollToIndex with viewPosition 0.3\n   - Focus memory saves current episode index per season\n\n3. **Episodes are selectable with focus states**:\n   - Wrapped in Focusable component with scale animation (1.03-1.05)\n   - Animated border (3px primary color) on focus\n   - tvParallaxProperties for Apple TV depth effects\n   - Shadow animation on iOS\n\n4. **Long-press on episode opens context menu**:\n   - Uses useContextMenu hook for TV context menu integration\n   - 300ms+ long-press triggers context menu with actions: Mark Watched/Unwatched, Play, Get Info\n   - Falls back to Modal for non-TV platforms\n   - Modal actions are also TV-focusable\n\nAdditional features:\n- View mode toggle button is TV focusable\n- Integration with TVNavigationContext for global focus state\n- Proper accessibility labels and hints\n- All interactive elements have proper haptic feedback on TV",
+          "updated_at": "2026-01-10T23:28:46.120016+00:00"
         },
         {
           "id": "4.5",
@@ -675,5 +683,5 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-10T23:07:00.133493+00:00"
+  "last_updated": "2026-01-10T23:28:46.120037+00:00"
 }
