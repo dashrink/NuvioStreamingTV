@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Platform,
   TextInput,
-  ScrollView
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -28,6 +29,9 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
+
+// TV detection breakpoint
+const TV_BREAKPOINT = 1440;
 
 // Extended Profile interface with PIN support
 export interface ProfileWithPin extends Profile {
@@ -68,6 +72,28 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
   const [selectedProfile, setSelectedProfile] = useState<ProfileWithPin | null>(null);
   const [profilePins, setProfilePins] = useState<Record<string, string>>({});
 
+  // TV focus management state
+  const [focusedProfileId, setFocusedProfileId] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const profileRefs = useRef<Record<string, TouchableOpacity | null>>({});
+  const closeButtonRef = useRef<TouchableOpacity | null>(null);
+  const pinCancelRef = useRef<TouchableOpacity | null>(null);
+  const pinSubmitRef = useRef<TouchableOpacity | null>(null);
+  const pinInputRef = useRef<TextInput | null>(null);
+
+  // Detect TV mode based on screen dimensions
+  const isTV = useMemo(() => {
+    return dimensions.width >= TV_BREAKPOINT || Platform.isTV;
+  }, [dimensions.width]);
+
+  // Listen for dimension changes
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
+
   // Load profile PINs from storage
   useEffect(() => {
     const loadPins = async () => {
@@ -91,6 +117,13 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
       opacity.value = withTiming(1, { duration: 200 });
       translateY.value = withTiming(0, { duration: 300 });
       loadProfiles();
+
+      // Set initial focus for TV mode
+      if (isTV && profiles.length > 0) {
+        // Focus on active profile or first profile
+        const initialFocusId = activeProfile?.id || profiles[0]?.id;
+        setFocusedProfileId(initialFocusId || null);
+      }
     } else {
       opacity.value = withTiming(0, { duration: 200 });
       translateY.value = withTiming(400, { duration: 300 });
@@ -99,8 +132,10 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
       setPinInput('');
       setPinError('');
       setSelectedProfile(null);
+      // Reset focus state
+      setFocusedProfileId(null);
     }
-  }, [visible]);
+  }, [visible, isTV, profiles, activeProfile]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -201,48 +236,91 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
 
   const backgroundColor = currentTheme.colors.elevation2 || '#1A1A1A';
 
-  const renderProfileItem = (profile: Profile) => {
+  // TV focus event handlers
+  const handleProfileFocus = useCallback((profileId: string) => {
+    setFocusedProfileId(profileId);
+  }, []);
+
+  const handleProfileBlur = useCallback(() => {
+    // Don't clear focus immediately to prevent flicker during navigation
+  }, []);
+
+  // Get the profile that should have initial TV focus
+  const getInitialFocusProfile = useCallback((profileId: string) => {
+    if (!isTV || !visible) return false;
+    const targetId = activeProfile?.id || profiles[0]?.id;
+    return profileId === targetId;
+  }, [isTV, visible, activeProfile, profiles]);
+
+  const renderProfileItem = (profile: Profile, index: number) => {
     const isActive = profile.id === activeProfile?.id;
     const hasPinProtection = hasPin(profile.id);
+    const isFocused = isTV && focusedProfileId === profile.id;
+    const shouldHaveInitialFocus = getInitialFocusProfile(profile.id);
 
     return (
       <TouchableOpacity
         key={profile.id}
+        ref={(ref) => { profileRefs.current[profile.id] = ref; }}
         style={[
           styles.profileItem,
+          isTV && styles.profileItemTV,
           isActive && {
             backgroundColor: `${currentTheme.colors.primary}30`,
             borderColor: currentTheme.colors.primary,
             borderWidth: 1,
+          },
+          // TV focus indicator styles
+          isFocused && {
+            backgroundColor: `${currentTheme.colors.primary}40`,
+            borderColor: currentTheme.colors.primary,
+            borderWidth: 3,
+            transform: [{ scale: 1.05 }],
           }
         ]}
         onPress={() => handleProfileSelect(profile)}
+        onFocus={() => handleProfileFocus(profile.id)}
+        onBlur={handleProfileBlur}
         activeOpacity={0.7}
+        accessible={true}
+        accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${hasPinProtection ? ', PIN protected' : ''}`}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isActive }}
+        // TV-specific props for focus management
+        {...(isTV && {
+          hasTVPreferredFocus: shouldHaveInitialFocus,
+          isTVSelectable: true,
+        })}
       >
-        <View style={styles.avatarContainer}>
+        <View style={[styles.avatarContainer, isTV && styles.avatarContainerTV]}>
           <MaterialIcons
             name="account-circle"
-            size={48}
-            color={isActive ? currentTheme.colors.primary : currentTheme.colors.text}
+            size={isTV ? 64 : 48}
+            color={isFocused ? currentTheme.colors.primary : (isActive ? currentTheme.colors.primary : currentTheme.colors.text)}
           />
           {hasPinProtection && (
-            <View style={[styles.pinBadge, { backgroundColor: currentTheme.colors.primary }]}>
-              <MaterialIcons name="lock" size={12} color="#FFFFFF" />
+            <View style={[styles.pinBadge, { backgroundColor: currentTheme.colors.primary }, isTV && styles.pinBadgeTV]}>
+              <MaterialIcons name="lock" size={isTV ? 14 : 12} color="#FFFFFF" />
             </View>
           )}
         </View>
         <Text
           style={[
             styles.profileName,
+            isTV && styles.profileNameTV,
             { color: currentTheme.colors.text },
-            isActive && { color: currentTheme.colors.primary, fontWeight: '600' }
+            (isActive || isFocused) && { color: currentTheme.colors.primary, fontWeight: '600' }
           ]}
           numberOfLines={1}
         >
           {profile.name}
         </Text>
         {isActive && (
-          <View style={[styles.activeIndicator, { backgroundColor: currentTheme.colors.primary }]} />
+          <View style={[styles.activeIndicator, { backgroundColor: currentTheme.colors.primary }, isTV && styles.activeIndicatorTV]} />
+        )}
+        {/* TV focus ring indicator */}
+        {isFocused && (
+          <View style={[styles.tvFocusRing, { borderColor: currentTheme.colors.primary }]} />
         )}
       </TouchableOpacity>
     );
@@ -264,16 +342,25 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               <View style={styles.dragHandle} />
 
               {/* Header */}
-              <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
+              <View style={[styles.header, isTV && styles.headerTV]}>
+                <Text style={[
+                  styles.headerTitle,
+                  isTV && styles.headerTitleTV,
+                  { color: currentTheme.colors.text }
+                ]}>
                   Switch Profile
                 </Text>
                 <TouchableOpacity
-                  style={styles.closeButton}
+                  ref={closeButtonRef}
+                  style={[styles.closeButton, isTV && styles.closeButtonTV]}
                   onPress={onClose}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  accessible={true}
+                  accessibilityLabel="Close profile switcher"
+                  accessibilityRole="button"
+                  {...(isTV && { isTVSelectable: true })}
                 >
-                  <MaterialIcons name="close" size={24} color={currentTheme.colors.textMuted} />
+                  <MaterialIcons name="close" size={isTV ? 32 : 24} color={currentTheme.colors.textMuted} />
                 </TouchableOpacity>
               </View>
 
@@ -281,9 +368,12 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.profilesContainer}
+                contentContainerStyle={[
+                  styles.profilesContainer,
+                  isTV && styles.profilesContainerTV
+                ]}
               >
-                {profiles.map(renderProfileItem)}
+                {profiles.map((profile, index) => renderProfileItem(profile, index))}
               </ScrollView>
 
               {/* Active Profile Info */}
@@ -311,17 +401,27 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
         onRequestClose={handlePinCancel}
       >
         <View style={styles.pinModalOverlay}>
-          <View style={[styles.pinModalContent, { backgroundColor }]}>
-            <Text style={[styles.pinModalTitle, { color: currentTheme.colors.text }]}>
+          <View style={[styles.pinModalContent, isTV && styles.pinModalContentTV, { backgroundColor }]}>
+            <Text style={[
+              styles.pinModalTitle,
+              isTV && styles.pinModalTitleTV,
+              { color: currentTheme.colors.text }
+            ]}>
               Enter PIN
             </Text>
-            <Text style={[styles.pinModalSubtitle, { color: currentTheme.colors.textMuted }]}>
+            <Text style={[
+              styles.pinModalSubtitle,
+              isTV && styles.pinModalSubtitleTV,
+              { color: currentTheme.colors.textMuted }
+            ]}>
               {selectedProfile?.name} is protected by a PIN
             </Text>
 
             <TextInput
+              ref={pinInputRef}
               style={[
                 styles.pinInput,
+                isTV && styles.pinInputTV,
                 {
                   backgroundColor: `${currentTheme.colors.textMuted}20`,
                   color: currentTheme.colors.text,
@@ -340,31 +440,58 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               keyboardType="number-pad"
               secureTextEntry
               maxLength={4}
-              autoFocus
+              autoFocus={!isTV}
+              accessible={true}
+              accessibilityLabel="Enter 4 digit PIN"
+              {...(isTV && {
+                hasTVPreferredFocus: showPinModal,
+                isTVSelectable: true,
+              })}
             />
 
             {pinError ? (
-              <Text style={[styles.pinError, { color: currentTheme.colors.error }]}>
+              <Text style={[
+                styles.pinError,
+                isTV && styles.pinErrorTV,
+                { color: currentTheme.colors.error }
+              ]}>
                 {pinError}
               </Text>
             ) : null}
 
-            <View style={styles.pinModalButtons}>
+            <View style={[styles.pinModalButtons, isTV && styles.pinModalButtonsTV]}>
               <TouchableOpacity
-                style={[styles.pinButton, styles.pinCancelButton]}
+                ref={pinCancelRef}
+                style={[styles.pinButton, styles.pinCancelButton, isTV && styles.pinButtonTV]}
                 onPress={handlePinCancel}
+                accessible={true}
+                accessibilityLabel="Cancel PIN entry"
+                accessibilityRole="button"
+                {...(isTV && { isTVSelectable: true })}
               >
-                <Text style={{ color: currentTheme.colors.textMuted }}>Cancel</Text>
+                <Text style={[
+                  { color: currentTheme.colors.textMuted },
+                  isTV && styles.pinButtonTextTV
+                ]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                ref={pinSubmitRef}
                 style={[
                   styles.pinButton,
                   styles.pinSubmitButton,
+                  isTV && styles.pinButtonTV,
                   { backgroundColor: currentTheme.colors.primary }
                 ]}
                 onPress={handlePinSubmit}
+                accessible={true}
+                accessibilityLabel="Unlock profile"
+                accessibilityRole="button"
+                {...(isTV && { isTVSelectable: true })}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Unlock</Text>
+                <Text style={[
+                  { color: '#FFFFFF', fontWeight: '600' },
+                  isTV && styles.pinButtonTextTV
+                ]}>Unlock</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -535,6 +662,98 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   pinSubmitButton: {},
+
+  // TV-specific styles
+  headerTV: {
+    paddingHorizontal: 40,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  headerTitleTV: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  closeButtonTV: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  profilesContainerTV: {
+    paddingHorizontal: 32,
+    paddingVertical: 32,
+    gap: 24,
+  },
+  profileItemTV: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderRadius: 20,
+    minWidth: 140,
+    marginRight: 20,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  avatarContainerTV: {
+    marginBottom: 12,
+  },
+  pinBadgeTV: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  profileNameTV: {
+    fontSize: 18,
+    maxWidth: 120,
+  },
+  activeIndicatorTV: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  tvFocusRing: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderWidth: 3,
+    borderRadius: 24,
+    opacity: 0.8,
+  },
+  // TV PIN Modal Styles
+  pinModalContentTV: {
+    maxWidth: 450,
+    padding: 36,
+    borderRadius: 20,
+  },
+  pinModalTitleTV: {
+    fontSize: 28,
+    marginBottom: 12,
+  },
+  pinModalSubtitleTV: {
+    fontSize: 18,
+    marginBottom: 32,
+  },
+  pinInputTV: {
+    height: 72,
+    fontSize: 32,
+    borderRadius: 16,
+    letterSpacing: 12,
+    marginBottom: 24,
+  },
+  pinErrorTV: {
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  pinModalButtonsTV: {
+    gap: 20,
+  },
+  pinButtonTV: {
+    height: 60,
+    borderRadius: 16,
+  },
+  pinButtonTextTV: {
+    fontSize: 18,
+  },
 });
 
 export default ProfileSwitcherBottomSheet;
