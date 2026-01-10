@@ -17,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useTraktContext } from '../contexts/TraktContext';
 import { mmkvStorage } from '../services/mmkvStorage';
 import CustomAlert from '../components/CustomAlert';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 const PROFILE_STORAGE_KEY = 'user_profiles';
@@ -122,6 +123,8 @@ const ProfilesScreen: React.FC = () => {
       return;
     }
 
+    triggerMedium(); // Primary button action
+
     const newProfile: Profile = {
       id: new Date().getTime().toString(),
       name: newProfileName.trim(),
@@ -137,6 +140,8 @@ const ProfilesScreen: React.FC = () => {
   }, [newProfileName, profiles, saveProfiles]);
 
   const handleSelectProfile = useCallback((id: string) => {
+    triggerMedium(); // Profile selection (theme/profile selection pattern)
+
     const updatedProfiles = profiles.map(profile => ({
       ...profile,
       isActive: profile.id === id
@@ -147,6 +152,8 @@ const ProfilesScreen: React.FC = () => {
   }, [profiles, saveProfiles]);
 
   const handleDeleteProfile = useCallback((id: string) => {
+    triggerHeavy(); // Destructive action
+
     // Prevent deleting the active profile
     const isActiveProfile = profiles.find(p => p.id === id)?.isActive;
     if (isActiveProfile) {
@@ -178,6 +185,7 @@ const ProfilesScreen: React.FC = () => {
   }, [profiles, saveProfiles]);
 
   const handleBack = () => {
+    triggerLight(); // Navigation
     navigation.goBack();
   };
 
@@ -265,7 +273,10 @@ const ProfilesScreen: React.FC = () => {
                 styles.addButton,
                 { backgroundColor: currentTheme.colors.elevation2 }
               ]}
-              onPress={() => setShowAddModal(true)}
+              onPress={() => {
+                triggerLight(); // Modal open
+                setShowAddModal(true);
+              }}
             >
               <MaterialIcons name="add" size={24} color={currentTheme.colors.primary} />
               <Text style={[styles.addButtonText, { color: currentTheme.colors.text }]}>
@@ -310,6 +321,7 @@ const ProfilesScreen: React.FC = () => {
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => {
+                  triggerLight(); // Modal close
                   setNewProfileName('');
                   setShowAddModal(false);
                 }}
