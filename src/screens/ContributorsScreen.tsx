@@ -24,6 +24,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchContributors, GitHubContributor } from '../services/githubReleaseService';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -87,6 +88,7 @@ interface ContributorCardProps {
 
 const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentTheme, isTablet, isLargeTablet }) => {
   const handlePress = useCallback(() => {
+    triggerLight();
     Linking.openURL(contributor.html_url);
   }, [contributor.html_url]);
 
@@ -144,6 +146,7 @@ interface SpecialMentionCardProps {
 
 const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, currentTheme, isTablet, isLargeTablet }) => {
   const handlePress = useCallback(() => {
+    triggerLight();
     // Try to open Discord profile
     const discordUrl = `discord://-/users/${mention.discordId}`;
     Linking.canOpenURL(discordUrl).then((supported) => {
@@ -424,7 +427,10 @@ const ContributorsScreen: React.FC = () => {
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => {
+                triggerLight();
+                navigation.goBack();
+              }}
             >
               <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
               <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
@@ -459,7 +465,10 @@ const ContributorsScreen: React.FC = () => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
@@ -486,7 +495,10 @@ const ContributorsScreen: React.FC = () => {
             activeTab === 'contributors' && { backgroundColor: currentTheme.colors.primary },
             isTablet && styles.tabletTab
           ]}
-          onPress={() => setActiveTab('contributors')}
+          onPress={() => {
+            triggerLight();
+            setActiveTab('contributors');
+          }}
           activeOpacity={0.7}
         >
           <Text style={[
@@ -503,7 +515,10 @@ const ContributorsScreen: React.FC = () => {
             activeTab === 'special' && { backgroundColor: currentTheme.colors.primary },
             isTablet && styles.tabletTab
           ]}
-          onPress={() => setActiveTab('special')}
+          onPress={() => {
+            triggerLight();
+            setActiveTab('special');
+          }}
           activeOpacity={0.7}
         >
           <Text style={[
@@ -532,7 +547,10 @@ const ContributorsScreen: React.FC = () => {
                   </Text>
                   <TouchableOpacity
                     style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={() => loadContributors()}
+                    onPress={() => {
+                      triggerMedium();
+                      loadContributors();
+                    }}
                   >
                     <Text style={[styles.retryText, { color: currentTheme.colors.white }]}>
                       Try Again

@@ -16,6 +16,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { TMDBService } from '../services/tmdbService';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const BACKDROP_WIDTH = width * 0.9;
@@ -118,7 +119,10 @@ const BackdropGalleryScreen: React.FC = () => {
     <View style={styles.header}>
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => {
+          triggerLight();
+          navigation.goBack();
+        }}
       >
         <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.highEmphasis} />
       </TouchableOpacity>

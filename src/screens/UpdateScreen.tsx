@@ -25,6 +25,7 @@ import { mmkvStorage } from '../services/mmkvStorage';
 import { useGithubMajorUpdate } from '../hooks/useGithubMajorUpdate';
 import { getDisplayedAppVersion } from '../utils/version';
 import { isAnyUpgrade } from '../services/githubReleaseService';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -131,6 +132,7 @@ const UpdateScreen: React.FC = () => {
 
   // Handle toggling OTA alerts with warning
   const handleOtaAlertsToggle = async (value: boolean) => {
+    triggerMedium();
     if (!value) {
       openAlert(
         'Disable OTA Update Alerts?',
@@ -155,6 +157,7 @@ const UpdateScreen: React.FC = () => {
 
   // Handle toggling Major update alerts with warning
   const handleMajorAlertsToggle = async (value: boolean) => {
+    triggerMedium();
     if (!value) {
       openAlert(
         'Disable Major Update Alerts?',
@@ -404,7 +407,10 @@ const UpdateScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           activeOpacity={0.7}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.highEmphasis} />
@@ -480,7 +486,10 @@ const UpdateScreen: React.FC = () => {
                     { backgroundColor: currentTheme.colors.primary },
                     (isChecking || isInstalling) && styles.disabledAction
                   ]}
-                  onPress={checkForUpdates}
+                  onPress={() => {
+                    triggerMedium();
+                    checkForUpdates();
+                  }}
                   disabled={isChecking || isInstalling}
                   activeOpacity={0.8}
                 >
@@ -502,7 +511,10 @@ const UpdateScreen: React.FC = () => {
                       { backgroundColor: currentTheme.colors.success || '#34C759' },
                       (isInstalling) && styles.disabledAction
                     ]}
-                    onPress={installUpdate}
+                    onPress={() => {
+                      triggerMedium();
+                      installUpdate();
+                    }}
                     disabled={isInstalling}
                     activeOpacity={0.8}
                   >
@@ -629,7 +641,10 @@ const UpdateScreen: React.FC = () => {
                   <View style={{ flexDirection: 'row', gap: 10 }}>
                     <TouchableOpacity
                       style={[styles.modernButton, { backgroundColor: currentTheme.colors.primary, flex: 1 }]}
-                      onPress={() => github.releaseUrl ? Linking.openURL(github.releaseUrl as string) : null}
+                      onPress={() => {
+                        triggerLight();
+                        github.releaseUrl ? Linking.openURL(github.releaseUrl as string) : null;
+                      }}
                       activeOpacity={0.8}
                     >
                       <MaterialIcons name="open-in-new" size={18} color="white" />

@@ -34,6 +34,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import Animated, { FadeIn, SlideInRight, withTiming, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { logger } from '../utils/logger';
+import { triggerLight } from '../hooks/useHaptics';
 
 type RootStackParamList = {
   ShowRatings: { showId: number };
@@ -147,7 +148,10 @@ const RatingSourceToggle = memo(({ ratingSource, setRatingSource, theme }: {
               { borderColor: theme.colors.lightGray },
               isActive && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }
             ]}
-            onPress={() => setRatingSource(source as RatingSource)}
+            onPress={() => {
+              triggerLight();
+              setRatingSource(source as RatingSource);
+            }}
           >
             <Text 
               style={{
