@@ -45,6 +45,7 @@ import { useTraktContext } from '../../contexts/TraktContext';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
 import { streamCacheService } from '../../services/streamCacheService';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 interface AppleTVHeroProps {
   featuredContent: StreamingContent | null;
@@ -561,6 +562,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Update the handleSaveAction function:
   const handleSaveAction = useCallback(async (e?: any) => {
+    triggerMedium();
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -605,6 +607,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Play button handler - navigates to Streams screen with progress data if available
   const handlePlayAction = useCallback(async () => {
+    triggerMedium();
     logger.info('[AppleTVHero] Play button pressed for:', currentItem?.name);
     if (!currentItem) return;
 
@@ -710,6 +713,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Handle fullscreen toggle
   const handleFullscreenToggle = useCallback(async () => {
+    triggerLight();
     try {
       logger.info('[AppleTVHero] Fullscreen button pressed');
       if (trailerVideoRef.current) {
@@ -722,6 +726,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Handle mute toggle
   const handleMuteToggle = useCallback(() => {
+    triggerLight();
     logger.info('[AppleTVHero] Mute toggle pressed, current:', trailerMuted);
     updateSetting('trailerMuted', !trailerMuted);
   }, [trailerMuted, updateSetting]);
@@ -962,6 +967,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   });
 
   const handleDotPress = useCallback((index: number) => {
+    triggerLight();
     lastInteractionRef.current = Date.now();
     setCurrentIndex(index);
   }, []);
@@ -988,7 +994,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           <MaterialIcons name="theaters" size={48} color="rgba(255,255,255,0.5)" />
           <Text style={styles.noContentText}>No featured content available</Text>
           {onRetry && (
-            <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.retryButton} onPress={() => { triggerLight(); onRetry(); }} activeOpacity={0.7}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           )}
@@ -1181,6 +1187,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
+                  triggerLight();
                   if (currentItem) {
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
@@ -1217,6 +1224,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
+                  triggerLight();
                   if (currentItem) {
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
