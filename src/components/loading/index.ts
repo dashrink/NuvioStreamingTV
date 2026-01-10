@@ -115,3 +115,28 @@ export type {
 // Trakt branded spinner - used for Trakt-specific operations
 export { TraktLoadingSpinner, BRANDED_PULSE_DURATION } from '../common/TraktLoadingSpinner';
 export type { TraktLoadingSpinnerProps } from '../common/TraktLoadingSpinner';
+
+// ============================================================================
+// Global Loading State Management
+// ============================================================================
+
+/**
+ * Context and hooks for global loading state management.
+ * Use these for app-wide loading overlays and multi-step operations.
+ *
+ * @example
+ * // In any component within LoadingProvider
+ * import { useGlobalLoading } from '@/components/loading';
+ *
+ * const { showLoading, hideLoading } = useGlobalLoading();
+ * showLoading({ text: 'Syncing...' });
+ * await syncData();
+ * hideLoading();
+ */
+export {
+  LoadingProvider,
+  useLoading,
+  useGlobalLoading,
+} from '../../contexts/LoadingContext';
+
+export type { GlobalLoadingOptions } from '../../contexts/LoadingContext';
