@@ -23,6 +23,7 @@ import { colors } from '../styles/colors';
 import { useTheme, Theme, DEFAULT_THEMES } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import CustomAlert from '../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
@@ -45,26 +46,41 @@ interface ThemeCardProps {
   onDelete?: () => void;
 }
 
-const ThemeCard: React.FC<ThemeCardProps> = ({ 
-  theme, 
-  isSelected, 
+const ThemeCard: React.FC<ThemeCardProps> = ({
+  theme,
+  isSelected,
   onSelect,
   onEdit,
   onDelete
 }) => {
+  const handleSelect = () => {
+    triggerMedium();
+    onSelect();
+  };
+
+  const handleEdit = () => {
+    triggerLight();
+    onEdit?.();
+  };
+
+  const handleDelete = () => {
+    triggerHeavy();
+    onDelete?.();
+  };
+
   return (
     <TouchableOpacity
       style={[
         styles.themeCard,
         isSelected && styles.selectedThemeCard,
-        { 
+        {
           borderColor: isSelected ? theme.colors.primary : 'transparent',
-          backgroundColor: Platform.OS === 'ios' 
-            ? `${theme.colors.darkBackground}60` 
+          backgroundColor: Platform.OS === 'ios'
+            ? `${theme.colors.darkBackground}60`
             : 'rgba(255, 255, 255, 0.07)'
         }
       ]}
-      onPress={onSelect}
+      onPress={handleSelect}
       activeOpacity={0.7}
     >
       <View style={styles.themeCardHeader}>
@@ -85,17 +101,17 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
       {theme.isEditable && (
         <View style={styles.themeCardActions}>
           {onEdit && (
-            <TouchableOpacity 
-              style={[styles.themeCardAction, styles.buttonShadow]} 
-              onPress={onEdit}
+            <TouchableOpacity
+              style={[styles.themeCardAction, styles.buttonShadow]}
+              onPress={handleEdit}
             >
               <MaterialIcons name="edit" size={16} color={theme.colors.primary} />
             </TouchableOpacity>
           )}
           {onDelete && (
-            <TouchableOpacity 
-              style={[styles.themeCardAction, styles.buttonShadow]} 
-              onPress={onDelete}
+            <TouchableOpacity
+              style={[styles.themeCardAction, styles.buttonShadow]}
+              onPress={handleDelete}
             >
               <MaterialIcons name="delete" size={16} color={theme.colors.error} />
             </TouchableOpacity>
@@ -114,30 +130,37 @@ interface FilterTabProps {
   primaryColor: string;
 }
 
-const FilterTab: React.FC<FilterTabProps> = ({ 
-  category, 
-  isActive, 
+const FilterTab: React.FC<FilterTabProps> = ({
+  category,
+  isActive,
   onPress,
-  primaryColor 
-}) => (
-  <TouchableOpacity
-    style={[
-      styles.filterTab,
-      isActive && { backgroundColor: primaryColor },
-      styles.buttonShadow
-    ]}
-    onPress={onPress}
-  >
-    <Text 
+  primaryColor
+}) => {
+  const handlePress = () => {
+    triggerLight();
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity
       style={[
-        styles.filterTabText, 
-        isActive && { color: '#FFFFFF' }
+        styles.filterTab,
+        isActive && { backgroundColor: primaryColor },
+        styles.buttonShadow
       ]}
+      onPress={handlePress}
     >
-      {category.name}
-    </Text>
-  </TouchableOpacity>
-);
+      <Text
+        style={[
+          styles.filterTabText,
+          isActive && { color: '#FFFFFF' }
+        ]}
+      >
+        {category.name}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 type ColorKey = 'primary' | 'secondary' | 'darkBackground';
 
@@ -187,6 +210,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps & {
   }, [selectedColorKey]);
 
   const handleSave = () => {
+    triggerMedium();
     if (!themeName.trim()) {
       setAlertTitle('Invalid Name');
       setAlertMessage('Please enter a valid theme name');
@@ -194,10 +218,20 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps & {
       setAlertVisible(true);
       return;
     }
-    onSave({ 
+    onSave({
       ...themeColors,
-      name: themeName 
+      name: themeName
     });
+  };
+
+  const handleCancel = () => {
+    triggerLight();
+    onCancel();
+  };
+
+  const handleColorKeySelect = (colorKey: ColorKey) => {
+    triggerLight();
+    setSelectedColorKey(colorKey);
   };
 
   // Compact preview component
@@ -244,7 +278,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps & {
       <View style={styles.editorHeader}>
         <TouchableOpacity
           style={styles.editorBackButton}
-          onPress={onCancel}
+          onPress={handleCancel}
         >
           <MaterialIcons name="arrow-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -274,29 +308,29 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps & {
                 selectedColorKey === 'primary' && styles.selectedColorButton,
                 { backgroundColor: themeColors.primary }
               ]}
-              onPress={() => setSelectedColorKey('primary')}
+              onPress={() => handleColorKeySelect('primary')}
             >
               <Text style={styles.colorButtonText}>Primary</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={[
                 styles.colorSelectorButton,
                 selectedColorKey === 'secondary' && styles.selectedColorButton,
                 { backgroundColor: themeColors.secondary }
               ]}
-              onPress={() => setSelectedColorKey('secondary')}
+              onPress={() => handleColorKeySelect('secondary')}
             >
               <Text style={styles.colorButtonText}>Secondary</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={[
                 styles.colorSelectorButton,
                 selectedColorKey === 'darkBackground' && styles.selectedColorButton,
                 { backgroundColor: themeColors.darkBackground }
               ]}
-              onPress={() => setSelectedColorKey('darkBackground')}
+              onPress={() => handleColorKeySelect('darkBackground')}
             >
               <Text style={styles.colorButtonText}>Background</Text>
             </TouchableOpacity>
@@ -535,9 +569,12 @@ const ThemeScreen: React.FC = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={[styles.header, { paddingTop: headerTopPadding }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
@@ -595,13 +632,16 @@ const ThemeScreen: React.FC = () => {
           ))}
         </View>
         
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
-            styles.createButton, 
+            styles.createButton,
             { backgroundColor: currentTheme.colors.primary },
             styles.buttonShadow
-          ]} 
-          onPress={handleCreateTheme}
+          ]}
+          onPress={() => {
+            triggerMedium();
+            handleCreateTheme();
+          }}
         >
           <MaterialIcons name="add" size={20} color="#FFFFFF" />
           <Text style={styles.createButtonText}>Create Custom Theme</Text>
@@ -617,7 +657,10 @@ const ThemeScreen: React.FC = () => {
           </Text>
           <Switch
             value={settings.useDominantBackgroundColor}
-            onValueChange={(value) => updateSetting('useDominantBackgroundColor', value)}
+            onValueChange={(value) => {
+              triggerMedium();
+              updateSetting('useDominantBackgroundColor', value);
+            }}
             trackColor={{ false: '#767577', true: currentTheme.colors.primary }}
             thumbColor={Platform.OS === 'android' ? currentTheme.colors.primary : '#f4f3f4'}
           />
