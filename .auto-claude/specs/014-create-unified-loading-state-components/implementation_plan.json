@@ -424,7 +424,7 @@
           "id": "4.5",
           "title": "Migrate CastDetailsModal loading",
           "description": "Replace ActivityIndicator in CastDetailsModal with UnifiedSpinner",
-          "status": "in_progress",
+          "status": "completed",
           "files": [
             "src/components/metadata/CastDetailsModal.tsx"
           ],
@@ -432,8 +432,8 @@
             "Replace ActivityIndicator with UnifiedSpinner",
             "Theme-aware colors"
           ],
-          "notes": "Starting migration of ActivityIndicator to UnifiedSpinner in CastDetailsModal",
-          "updated_at": "2026-01-10T01:35:28.924285+00:00"
+          "notes": "Successfully replaced ActivityIndicator with UnifiedSpinner in CastDetailsModal. Uses size=\"large\" and text=\"Loading details...\" for consistent loading UI.",
+          "updated_at": "2026-01-10T01:36:14.431773+00:00"
         },
         {
           "id": "4.6",
@@ -588,5 +588,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T01:35:28.924294+00:00"
+  "last_updated": "2026-01-10T01:36:14.431782+00:00"
 }

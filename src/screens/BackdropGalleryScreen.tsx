@@ -6,9 +6,9 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
   StatusBar,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FastImage from '@d11/react-native-fast-image';
@@ -139,8 +139,7 @@ const BackdropGalleryScreen: React.FC = () => {
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         {renderHeader()}
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: currentTheme.colors.textMuted }]}>Loading backdrops...</Text>
+          <UnifiedSpinner size="large" text="Loading backdrops..." />
         </View>
       </SafeAreaView>
     );
@@ -238,10 +237,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
   },
   errorContainer: {
     flex: 1,

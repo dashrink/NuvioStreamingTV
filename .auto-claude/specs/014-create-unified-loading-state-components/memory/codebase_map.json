@@ -119,7 +119,12 @@
       "description": "CollectionSection now uses UnifiedSpinner from '../loading' for loading state. Uses size=\"small\" in a centered loadingContainer View. Displays while loadingCollection prop is true.",
       "category": "component",
       "discovered_at": "2026-01-10T01:34:50.972132+00:00"
+    },
+    "src/components/metadata/CastDetailsModal.tsx": {
+      "description": "CastDetailsModal now uses UnifiedSpinner from '../loading' for person details loading state. Uses size=\"large\" with text=\"Loading details...\" prop. The modal fetches person details from TMDB when opened.",
+      "category": "component",
+      "discovered_at": "2026-01-10T01:36:14.466115+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:34:50.972141+00:00"
+  "last_updated": "2026-01-10T01:36:14.466124+00:00"
 }
