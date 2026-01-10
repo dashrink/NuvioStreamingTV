@@ -2967,6 +2967,43 @@ export class TraktService {
   }
 
   /**
+   * Get the user's rating for a specific item
+   * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
+   * @param type - Content type: 'movie' or 'show'
+   * @returns Promise<number | null> - The user's rating (1-10) or null if not rated
+   */
+  public async getUserRating(imdbId: string, type: 'movie' | 'show'): Promise<number | null> {
+    try {
+      if (!await this.isAuthenticated()) {
+        return null;
+      }
+
+      // Ensure IMDb ID includes the 'tt' prefix for comparison
+      const imdbIdWithPrefix = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+      // Fetch ratings for the specific type (movies or shows)
+      const ratingsType = type === 'movie' ? 'movies' : 'shows';
+      const ratings = await this.getRatings(ratingsType);
+
+      // Find the rating for the specific item
+      const ratingItem = ratings.find((item: TraktRatingItem) => {
+        const itemIds = type === 'movie' ? item.movie?.ids : item.show?.ids;
+        return itemIds?.imdb === imdbIdWithPrefix;
+      });
+
+      if (ratingItem) {
+        logger.log(`[TraktService] Found rating ${ratingItem.rating} for ${type}: ${imdbId}`);
+        return ratingItem.rating;
+      }
+
+      return null;
+    } catch (error) {
+      logger.error(`[TraktService] Failed to get user rating for ${type}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Handle app state changes to reduce memory pressure
    */
   private handleAppStateChange = (nextState: AppStateStatus) => {
