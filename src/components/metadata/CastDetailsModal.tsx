@@ -42,6 +42,7 @@ import { tmdbService } from '../../services/tmdbService';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface CastDetailsModalProps {
   visible: boolean;
@@ -118,6 +119,7 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
   }));
 
   const handleClose = () => {
+    triggerLight();
     modalOpacity.value = withTiming(0, { duration: 200 });
     modalScale.value = withTiming(0.9, { duration: 200 }, () => {
       runOnJS(onClose)();
