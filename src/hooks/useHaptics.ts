@@ -35,6 +35,105 @@ export const HapticNotifications = {
 } as const;
 
 /**
+ * Haptic Feedback Pattern Constants
+ *
+ * This object maps specific UI interaction types to the appropriate haptic feedback.
+ * Use these constants to ensure consistent haptic feedback throughout the app.
+ *
+ * Each pattern is documented with its intended use case to maintain consistency.
+ */
+export const HAPTIC_PATTERNS = {
+  // ============================================
+  // NAVIGATION & SELECTION (Light Impact)
+  // ============================================
+  /** Navigating to a new screen (back button, menu item tap) */
+  NAVIGATION: 'light',
+  /** Selecting an item from a list (content item, search result) */
+  SELECTION: 'light',
+  /** Tapping a filter chip or tab */
+  FILTER_TAP: 'light',
+  /** Scrolling through picker or carousel */
+  SCROLL_SNAP: 'light',
+  /** Opening a dropdown or modal */
+  MODAL_OPEN: 'light',
+  /** Closing a modal or dismissing overlay */
+  MODAL_CLOSE: 'light',
+  /** Tapping secondary/subtle buttons */
+  SECONDARY_BUTTON: 'light',
+
+  // ============================================
+  // IMPORTANT ACTIONS (Medium Impact)
+  // ============================================
+  /** Play/pause media controls */
+  PLAYBACK_TOGGLE: 'medium',
+  /** Toggle switch state changes */
+  TOGGLE_SWITCH: 'medium',
+  /** Primary action buttons (Submit, Save, Confirm) */
+  PRIMARY_BUTTON: 'medium',
+  /** Adding item to library/favorites */
+  ADD_TO_LIBRARY: 'medium',
+  /** Selecting a stream or source */
+  STREAM_SELECT: 'medium',
+  /** Theme or profile selection */
+  THEME_SELECT: 'medium',
+  /** Skip forward/backward in player */
+  PLAYBACK_SKIP: 'medium',
+  /** Form submission */
+  FORM_SUBMIT: 'medium',
+  /** Refresh or sync action */
+  REFRESH: 'medium',
+
+  // ============================================
+  // CRITICAL/DESTRUCTIVE ACTIONS (Heavy Impact)
+  // ============================================
+  /** Deleting content or data */
+  DELETE: 'heavy',
+  /** Logging out of account */
+  LOGOUT: 'heavy',
+  /** Removing items from library */
+  REMOVE_FROM_LIBRARY: 'heavy',
+  /** Uninstalling addon or plugin */
+  UNINSTALL: 'heavy',
+  /** Clearing cache or data */
+  CLEAR_DATA: 'heavy',
+  /** Destructive confirmation dialogs */
+  DESTRUCTIVE_CONFIRM: 'heavy',
+
+  // ============================================
+  // FEEDBACK NOTIFICATIONS (Notification Types)
+  // ============================================
+  /** Operation completed successfully */
+  SUCCESS: 'success',
+  /** Login/authentication success */
+  AUTH_SUCCESS: 'success',
+  /** Download or save completed */
+  DOWNLOAD_COMPLETE: 'success',
+  /** Backup completed */
+  BACKUP_COMPLETE: 'success',
+
+  /** Warning state or approaching limits */
+  WARNING: 'warning',
+  /** Low storage or quota warning */
+  QUOTA_WARNING: 'warning',
+  /** Connection issues detected */
+  CONNECTION_WARNING: 'warning',
+
+  /** Operation failed */
+  ERROR: 'error',
+  /** Form validation failed */
+  VALIDATION_ERROR: 'error',
+  /** Authentication failed */
+  AUTH_ERROR: 'error',
+  /** Network request failed */
+  NETWORK_ERROR: 'error',
+} as const;
+
+/**
+ * Type for haptic pattern values
+ */
+export type HapticPatternType = typeof HAPTIC_PATTERNS[keyof typeof HAPTIC_PATTERNS];
+
+/**
  * Check if haptics are supported on the current platform
  * Haptics are fully supported on iOS, and supported on Android with some limitations
  */
@@ -117,6 +216,39 @@ export const triggerError = async (): Promise<void> => {
     await Haptics.notificationAsync(HapticNotifications.ERROR);
   } catch {
     // Silently fail - haptics are non-critical
+  }
+};
+
+/**
+ * Helper function to get the trigger function for a pattern
+ * @param pattern - The haptic pattern key from HAPTIC_PATTERNS
+ * @returns The appropriate trigger function
+ *
+ * @example
+ * ```tsx
+ * import { HAPTIC_PATTERNS, getHapticTrigger } from '@/hooks/useHaptics';
+ *
+ * // Get trigger for a specific pattern
+ * const trigger = getHapticTrigger(HAPTIC_PATTERNS.NAVIGATION);
+ * await trigger();
+ * ```
+ */
+export const getHapticTrigger = (pattern: HapticPatternType): (() => Promise<void>) => {
+  switch (pattern) {
+    case 'light':
+      return triggerLight;
+    case 'medium':
+      return triggerMedium;
+    case 'heavy':
+      return triggerHeavy;
+    case 'success':
+      return triggerSuccess;
+    case 'warning':
+      return triggerWarning;
+    case 'error':
+      return triggerError;
+    default:
+      return triggerLight;
   }
 };
 
