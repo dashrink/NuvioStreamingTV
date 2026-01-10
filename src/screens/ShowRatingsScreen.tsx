@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   SafeAreaView,
   TouchableOpacity,
   Platform,
@@ -13,6 +12,7 @@ import {
 import FastImage from '@d11/react-native-fast-image';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../contexts/ThemeContext';
+import { UnifiedSpinner } from '../components/loading';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for ShowRatingsScreen
 let GlassViewComp: any = null;
@@ -384,8 +384,7 @@ const ShowRatingsScreen = ({ route }: Props) => {
         />
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.lightGray }]}>Loading show data...</Text>
+            <UnifiedSpinner size="large" text="Loading show data..." />
           </View>
         </SafeAreaView>
       </View>
@@ -416,8 +415,7 @@ const ShowRatingsScreen = ({ route }: Props) => {
       <SafeAreaView style={{ flex: 1 }}>
         <Suspense fallback={
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.lightGray }]}>Loading content...</Text>
+            <UnifiedSpinner size="large" text="Loading content..." />
           </View>
         }>
           <ScrollView 
@@ -513,7 +511,7 @@ const ShowRatingsScreen = ({ route }: Props) => {
                           {loadingSeasons && (
                             <View style={[styles.ratingColumn, styles.loadingColumn]}>
                               <View style={styles.loadingProgressContainer}>
-                                <ActivityIndicator size="small" color={colors.primary} />
+                                <UnifiedSpinner size="small" />
                                 {loadingProgress > 0 && (
                                   <Text style={[styles.loadingProgressText, { color: colors.primary }]}>
                                     {Math.round(loadingProgress)}%
@@ -578,11 +576,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 14,
-    fontWeight: '500',
   },
   showInfoContainer: {
     marginBottom: 12,
