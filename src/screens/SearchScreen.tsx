@@ -44,6 +44,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ScreenHeader from '../components/common/ScreenHeader';
+import Focusable from '../components/common/Focusable';
 
 const { width, height } = Dimensions.get('window');
 
@@ -570,13 +571,19 @@ const SearchScreen = () => {
           Recent Searches
         </Text>
         {recentSearches.map((search, index) => (
-          <TouchableOpacity
+          <Focusable
             key={index}
-            style={styles.recentSearchItem}
+            variant="listItem"
+            borderRadius={8}
+            enableScale={false}
+            enableGlow={false}
             onPress={() => {
               setQuery(search);
               Keyboard.dismiss();
             }}
+            accessibilityLabel={`Recent search: ${search}`}
+            accessibilityHint="Double tap to search for this term"
+            style={styles.recentSearchItem}
           >
             <MaterialIcons
               name="history"
@@ -587,19 +594,24 @@ const SearchScreen = () => {
             <Text style={[styles.recentSearchText, { color: currentTheme.colors.white }]}>
               {search}
             </Text>
-            <TouchableOpacity
+            <Focusable
+              variant="button"
+              borderRadius={12}
+              enableScale={false}
+              enableGlow={false}
               onPress={() => {
                 const newRecentSearches = [...recentSearches];
                 newRecentSearches.splice(index, 1);
                 setRecentSearches(newRecentSearches);
                 mmkvStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecentSearches));
               }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel={`Remove ${search} from recent searches`}
+              accessibilityHint="Double tap to remove this search from history"
               style={styles.recentSearchDeleteButton}
             >
               <MaterialIcons name="close" size={16} color={currentTheme.colors.lightGray} />
-            </TouchableOpacity>
-          </TouchableOpacity>
+            </Focusable>
+          </Focusable>
         ))}
       </View>
     );
@@ -651,7 +663,9 @@ const SearchScreen = () => {
     }, [item.id, item.type]);
 
     return (
-      <TouchableOpacity
+      <Focusable
+        variant="card"
+        borderRadius={16}
         style={[styles.horizontalItem, { width: itemWidth }]}
         onPress={() => {
           navigation.navigate('Metadata', { id: item.id, type: item.type });
@@ -661,12 +675,13 @@ const SearchScreen = () => {
           setMenuVisible(true);
           // Do NOT toggle refreshFlag here
         }}
-        delayLongPress={300}
         activeOpacity={0.7}
+        accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}${item.type ? `, ${item.type}` : ''}`}
+        accessibilityHint="Double tap to view details, long press for more options"
       >
         <View style={[styles.horizontalItemPosterContainer, {
           width: itemWidth,
-          height: undefined, // Let aspect ratio control height or keep fixed height with width? 
+          height: undefined, // Let aspect ratio control height or keep fixed height with width?
           // Actually, since we derived width from fixed height, we can keep height fixed or use aspect.
           // Using aspect ratio is safer if baseHeight changes.
           aspectRatio: aspectRatio,
@@ -716,7 +731,7 @@ const SearchScreen = () => {
             {item.year}
           </Text>
         )}
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -906,14 +921,24 @@ const SearchScreen = () => {
             styles.searchBarWrapper,
             { width: '100%' }
           ]}>
-            <View style={[
-              styles.searchBar,
-              {
-                backgroundColor: currentTheme.colors.elevation2,
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1,
-              }
-            ]}>
+            <Focusable
+              variant="button"
+              borderRadius={12}
+              enableScale={false}
+              enableGlow
+              hasTVPreferredFocus={true}
+              onPress={() => inputRef.current?.focus()}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              accessibilityLabel="Search input"
+              accessibilityHint="Select to search for movies and shows"
+              style={[
+                styles.searchBar,
+                {
+                  backgroundColor: currentTheme.colors.elevation2,
+                }
+              ]}
+            >
               <MaterialIcons
                 name="search"
                 size={24}
@@ -932,21 +957,28 @@ const SearchScreen = () => {
                 returnKeyType="search"
                 keyboardAppearance="dark"
                 ref={inputRef}
+                accessibilityLabel="Search movies and shows"
+                accessibilityHint="Type to search for content"
               />
               {query.length > 0 && (
-                <TouchableOpacity
+                <Focusable
+                  variant="button"
+                  borderRadius={16}
+                  enableScale={false}
+                  enableGlow={false}
                   onPress={handleClearSearch}
                   style={styles.clearButton}
-                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                  accessibilityLabel="Clear search"
+                  accessibilityHint="Double tap to clear the search field"
                 >
                   <MaterialIcons
                     name="close"
                     size={20}
                     color={currentTheme.colors.lightGray}
                   />
-                </TouchableOpacity>
+                </Focusable>
               )}
-            </View>
+            </Focusable>
           </View>
         </View>
       </ScreenHeader>
