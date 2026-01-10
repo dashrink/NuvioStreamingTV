@@ -16,6 +16,7 @@ import { Stream } from '../types/streams';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { PostHogProvider } from 'posthog-react-native';
+import Focusable from '../components/common/Focusable';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback
 let GlassViewComp: any = null;
@@ -682,17 +683,23 @@ const MainTabs = () => {
               };
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={route.key}
-                  activeOpacity={0.8}
+                  variant="nav"
+                  borderRadius={24}
+                  enableScale={false}
+                  enableGlow={false}
                   onPress={onPress}
+                  hasTVPreferredFocus={index === 0}
+                  accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
+                  accessibilityHint={isFocused ? 'Currently selected' : `Navigate to ${typeof label === 'string' ? label : route.name}`}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 10,
                     marginHorizontal: 2,
-                    borderRadius: 24,
                     backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
                   }}
+                  activeOpacity={0.8}
                 >
                   <Text style={{
                     color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
@@ -702,7 +709,7 @@ const MainTabs = () => {
                   }}>
                     {typeof label === 'string' ? label : ''}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
           </View>
@@ -822,16 +829,25 @@ const MainTabs = () => {
               }
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={route.key}
-                  activeOpacity={0.7}
+                  variant="nav"
+                  borderRadius={12}
+                  enableScale={false}
+                  enableGlow={false}
                   onPress={onPress}
+                  hasTVPreferredFocus={index === 0}
+                  accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
+                  accessibilityHint={isFocused ? 'Currently selected' : `Navigate to ${typeof label === 'string' ? label : route.name}`}
                   style={{
                     flex: 1,
                     justifyContent: 'center',
                     alignItems: 'center',
                     backgroundColor: 'transparent',
+                    paddingVertical: 8,
+                    marginHorizontal: 4,
                   }}
+                  activeOpacity={0.7}
                 >
                   <TabIcon
                     focused={isFocused}
@@ -850,7 +866,7 @@ const MainTabs = () => {
                   >
                     {typeof label === 'string' ? label : ''}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
           </View>
