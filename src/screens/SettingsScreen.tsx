@@ -39,6 +39,8 @@ import PluginIcon from '../components/icons/PluginIcon';
 import TraktIcon from '../components/icons/TraktIcon';
 import TMDBIcon from '../components/icons/TMDBIcon';
 import MDBListIcon from '../components/icons/MDBListIcon';
+import { ProfileSwitcherBottomSheet } from '../components/profile/ProfileSwitcherBottomSheet';
+import { useActiveProfile } from '../contexts/ProfileContext';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -272,6 +274,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
 const SettingsScreen: React.FC = () => {
   const { settings, updateSetting } = useSettings();
   const [hasUpdateBadge, setHasUpdateBadge] = useState(false);
+  const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
+  const activeProfile = useActiveProfile();
   // CustomAlert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -532,6 +536,14 @@ const SettingsScreen: React.FC = () => {
               customIcon={<TraktIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />}
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('TraktSettings')}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Switch Profile"
+              description={activeProfile?.name || 'Default'}
+              icon="users"
+              renderControl={ChevronRight}
+              onPress={() => setShowProfileSwitcher(true)}
               isLast={true}
               isTablet={isTablet}
             />
@@ -1010,6 +1022,10 @@ const SettingsScreen: React.FC = () => {
           actions={alertActions}
           onClose={() => setAlertVisible(false)}
         />
+        <ProfileSwitcherBottomSheet
+          visible={showProfileSwitcher}
+          onClose={() => setShowProfileSwitcher(false)}
+        />
       </View>
     );
   }
@@ -1133,6 +1149,10 @@ const SettingsScreen: React.FC = () => {
         message={alertMessage}
         actions={alertActions}
         onClose={() => setAlertVisible(false)}
+      />
+      <ProfileSwitcherBottomSheet
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
       />
     </View>
   );

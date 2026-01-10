@@ -1,0 +1,153 @@
+=== AUTO-BUILD PROGRESS ===
+
+Project: Enhanced Multi-Profile Support
+Workspace: Spec 003
+Started: January 10, 2026
+
+Workflow Type: feature
+Rationale: Enhancement of existing profile system with new capabilities including profile-scoped watch history, profile-specific recommendations, quick profile switcher with TV optimization, and PIN-protected profile switching.
+
+Session 1 (Planner):
+- Completed Phase 0: Deep codebase investigation
+- Created implementation_plan.json with 5 phases and 13 subtasks
+- Created init.sh startup script
+- Created build-progress.txt
+
+=== INVESTIGATION FINDINGS ===
+
+Existing Infrastructure:
+✅ Profile types, context, service already exist
+✅ PIN protection already implemented (src/services/PinService.ts)
+✅ Avatar system with MaterialIcons in place
+✅ Profile UI components: ProfileCard, ProfileEditModal, AvatarSelector
+✅ Profile screens: ProfilesScreen, ProfileSelectorScreen
+✅ TV navigation patterns: useTVMode, useTVEventHandler, useFocusGroup
+✅ Watch history service exists (src/services/watchedService.ts)
+✅ Storage uses MMKV (not Supabase as spec suggested)
+
+What Needs Enhancement:
+❌ Watch history NOT profile-scoped (currently account-wide)
+❌ Recommendations not profile-aware
+❌ No quick profile switcher (current is full-screen)
+❌ Continue watching needs profile filtering
+❌ TV-optimized quick switcher needed
+
+Key Files Identified:
+- src/types/profile.ts - Profile types with PIN, avatars
+- src/contexts/ProfileContext.tsx - Global profile state
+- src/services/ProfileService.ts - Profile CRUD with MMKV
+- src/services/PinService.ts - PIN management
+- src/services/watchedService.ts - Watch history tracking
+- src/hooks/useWatchProgress.ts - Watch progress hook
+- src/components/profile/* - Profile UI components
+- src/hooks/useTVMode.ts - TV navigation hook
+- src/components/home/DropUpMenu.tsx - BottomSheet pattern reference
+
+=== PHASE SUMMARY ===
+
+Phase 1: Profile-Scoped Watch History (3 subtasks)
+  - Add profile_id to watch history storage
+  - Update watch progress hook for profile filtering
+  - Filter continue watching by profile
+  Dependencies: None (parallel-safe)
+
+Phase 2: Profile-Specific Recommendations (2 subtasks)
+  - Add profile filtering to recommendation hooks
+  - Update home screen recommendations
+  Dependencies: Phase 1 (watch history)
+
+Phase 3: Quick Profile Switcher Component (3 subtasks)
+  - Create ProfileSwitcherBottomSheet component
+  - Add switcher button to navigation header
+  - Add switcher to settings menu
+  Dependencies: None (parallel-safe)
+
+Phase 4: TV-Optimized Profile Switcher (3 subtasks)
+  - Add TV focus management to switcher
+  - Add TV-specific styling to profile cards
+  - Test on tvOS and Android TV
+  Dependencies: Phase 3 (quick switcher)
+
+Phase 5: Integration & Testing (3 subtasks)
+  - End-to-end profile isolation verification
+  - PIN protection E2E verification
+  - TV platform integration testing
+  Dependencies: Phase 2 + Phase 4
+
+Services Involved:
+- main (React Native + TypeScript)
+
+Parallelism Analysis:
+- Max parallel phases: 2
+- Parallel groups:
+  * Phase 1 (watch history) + Phase 3 (quick switcher) can run in parallel
+  * No file conflicts between these phases
+- Recommended workers: 2
+- Speedup estimate: 1.3x faster than sequential
+
+Verification Strategy:
+- Risk level: HIGH (PIN security + cross-cutting changes)
+- Test types: unit, integration, e2e
+- Security scanning: REQUIRED (PIN hashing, data isolation)
+- Minimum coverage: 80% for new profile code
+- TV testing: REQUIRED on tvOS + Android TV
+
+=== STARTUP COMMAND ===
+
+To continue building this spec, run:
+
+  cd /home/dashrink/Desktop/NuvioStreamingTV
+  npm run start
+
+For TV testing:
+  npm run start:tv
+  npm run ios -- --simulator="Apple TV"
+  npm run android -- --deviceId=AndroidTV
+
+Parallel build (2 workers):
+  source auto-claude/.venv/bin/activate && python auto-claude/run.py --spec 003 --parallel 2
+
+Sequential build (1 worker):
+  source auto-claude/.venv/bin/activate && python auto-claude/run.py --spec 003
+
+=== IMPORTANT NOTES ===
+
+1. Storage Pattern: Codebase uses MMKV local storage, NOT Supabase
+   - All watch history stored in MMKV
+   - Profile data stored locally
+   - Need to add profile_id scoping to storage keys
+
+2. PIN Protection: Already implemented but needs verification
+   - PinService.ts handles PIN hashing
+   - Profile context includes PIN operations
+   - Verify security: no plaintext PINs
+
+3. TV Navigation: Well-established patterns exist
+   - Use useTVMode, useFocusGroup, useSpatialNavigation
+   - Follow src/utils/tvStyles/focus.ts patterns
+   - Reference src/components/common/FocusableList.tsx
+
+4. BottomSheet Pattern: Use @gorhom/bottom-sheet
+   - Reference src/components/home/DropUpMenu.tsx
+   - TV-compatible with proper focus management
+   - Animate with react-native-reanimated
+
+5. Testing Priority:
+   - Profile isolation (watch history leakage)
+   - PIN security (hashing, lockout)
+   - TV remote navigation (focus, selection)
+   - Performance (<200ms profile switch)
+
+=== NEXT SESSION ===
+
+A separate coder agent will:
+1. Read implementation_plan.json
+2. Find next pending subtask (respecting dependencies)
+3. Implement code changes following patterns
+4. Verify implementation
+5. Mark subtask as completed
+6. Commit changes to git
+
+DO NOT push to remote until user reviews and approves.
+
+=== END SESSION 1 ===

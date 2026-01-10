@@ -1,0 +1,509 @@
+{
+  "feature": "Enhanced Multi-Profile Support",
+  "workflow_type": "feature",
+  "workflow_rationale": "This is feature development that enhances existing profile system with new capabilities: profile-scoped watch history, profile-specific recommendations, quick profile switcher, and TV-optimized navigation. While profiles exist, these substantial enhancements constitute new features.",
+  "phases": [
+    {
+      "id": "phase-1-watch-history",
+      "name": "Profile-Scoped Watch History",
+      "type": "implementation",
+      "description": "Add profile_id tracking to all watch history and progress operations",
+      "depends_on": [],
+      "parallel_safe": true,
+      "subtasks": [
+        {
+          "id": "subtask-1-1",
+          "description": "Add profile_id to watch history storage keys and types",
+          "service": "main",
+          "files_to_modify": [
+            "src/services/watchedService.ts",
+            "src/services/storageService.ts"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/types/profile.ts",
+            "src/services/ProfileService.ts"
+          ],
+          "verification": {
+            "type": "command",
+            "command": "grep -n 'profile_id' src/services/watchedService.ts",
+            "expected": "profile_id parameter added to watch tracking methods"
+          },
+          "status": "completed",
+          "notes": "Added profile_id parameter to all watch tracking methods in watchedService.ts and updated storageService.ts to support profile-scoped storage keys. Verification passed with grep -n 'profile_id' showing all methods updated correctly.",
+          "updated_at": "2026-01-10T11:03:32.111149+00:00"
+        },
+        {
+          "id": "subtask-1-2",
+          "description": "Update watch progress hook to filter by active profile",
+          "service": "main",
+          "files_to_modify": [
+            "src/hooks/useWatchProgress.ts"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/contexts/ProfileContext.tsx"
+          ],
+          "verification": {
+            "type": "command",
+            "command": "grep -n 'activeProfile' src/hooks/useWatchProgress.ts",
+            "expected": "useWatchProgress uses activeProfile from context"
+          },
+          "status": "completed",
+          "notes": "Created ProfileContext.tsx to provide active profile state management. Updated useWatchProgress to import and use activeProfile from ProfileContext, passing profile_id to storageService.getWatchProgress calls and filtering getAllWatchProgress results by profile. Verification passed with grep showing 6 occurrences of activeProfile usage.",
+          "updated_at": "2026-01-10T11:07:31.328794+00:00"
+        },
+        {
+          "id": "subtask-1-3",
+          "description": "Update continue watching component to filter by profile",
+          "service": "main",
+          "files_to_modify": [
+            "src/components/home/ContinueWatchingSection.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/hooks/useWatchProgress.ts"
+          ],
+          "verification": {
+            "type": "manual",
+            "instructions": "Open app, switch profiles, verify continue watching is different per profile"
+          },
+          "status": "completed",
+          "notes": "Updated ContinueWatchingSection.tsx to filter watch progress by active profile. Added useProfileContext import, profile filtering logic that supports both profile-scoped and legacy keys, and updated dependency array for automatic refresh on profile change.",
+          "updated_at": "2026-01-10T11:10:33.272165+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2-recommendations",
+      "name": "Profile-Specific Recommendations",
+      "type": "implementation",
+      "description": "Make recommendation engine profile-aware by filtering based on active profile's watch history",
+      "depends_on": [
+        "phase-1-watch-history"
+      ],
+      "parallel_safe": false,
+      "subtasks": [
+        {
+          "id": "subtask-2-1",
+          "description": "Add profile filtering to recommendation service/hook",
+          "service": "main",
+          "files_to_modify": [
+            "src/hooks/useFeaturedContent.ts",
+            "src/hooks/useHomeCatalogs.ts"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/hooks/useProfileFiltering.ts"
+          ],
+          "verification": {
+            "type": "manual",
+            "instructions": "Switch between profiles with different watch histories, verify recommendations differ"
+          },
+          "status": "completed",
+          "notes": "Added profile filtering to both useFeaturedContent.ts and useHomeCatalogs.ts. useFeaturedContent now uses profile-scoped persistent store (profileStoreMap) with profile-specific cache keys (featured_content_cache_v2:profile:ID). Both hooks detect profile changes via prevProfileIdRef and reload content when activeProfile changes. Changes committed in d3987a1c.",
+          "updated_at": "2026-01-10T11:14:39.676112+00:00"
+        },
+        {
+          "id": "subtask-2-2",
+          "description": "Update home screen to use profile-filtered recommendations",
+          "service": "main",
+          "files_to_modify": [
+            "src/screens/HomeScreen.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/hooks/useFeaturedContent.ts"
+          ],
+          "verification": {
+            "type": "browser",
+            "url": "http://localhost:3000/",
+            "checks": [
+              "Home screen renders",
+              "Recommendations change when switching profiles"
+            ]
+          },
+          "status": "completed",
+          "notes": "Updated HomeScreen.tsx to use profile-filtered recommendations. Added useActiveProfile hook to detect profile changes and trigger catalog refresh. The home screen now: 1) Imports useActiveProfile from ProfileContext, 2) Tracks profile changes via prevProfileIdRef, 3) Refreshes catalogs and continue watching when profile switches. Featured content already handled by useFeaturedContent hook internally. Changes committed in c44595e0.",
+          "updated_at": "2026-01-10T11:17:51.036302+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3-quick-switcher",
+      "name": "Quick Profile Switcher Component",
+      "type": "implementation",
+      "description": "Build bottom sheet profile switcher with PIN entry for quick access from any screen",
+      "depends_on": [],
+      "parallel_safe": true,
+      "subtasks": [
+        {
+          "id": "subtask-3-1",
+          "description": "Create ProfileSwitcherBottomSheet component with PIN support",
+          "service": "main",
+          "files_to_modify": [],
+          "files_to_create": [
+            "src/components/profile/ProfileSwitcherBottomSheet.tsx"
+          ],
+          "patterns_from": [
+            "src/components/home/DropUpMenu.tsx",
+            "src/components/profile/ProfileCard.tsx"
+          ],
+          "verification": {
+            "type": "command",
+            "command": "test -f src/components/profile/ProfileSwitcherBottomSheet.tsx && echo 'OK'",
+            "expected": "OK"
+          },
+          "status": "completed",
+          "notes": "Created ProfileSwitcherBottomSheet component at src/components/profile/ProfileSwitcherBottomSheet.tsx. Component follows DropUpMenu pattern with animated bottom sheet, swipe-to-dismiss gesture handling, PIN entry modal for protected profiles, horizontal profile list with avatars, and theme support via ThemeContext. Committed in 6ebde2e6.",
+          "updated_at": "2026-01-10T11:21:14.780624+00:00"
+        },
+        {
+          "id": "subtask-3-2",
+          "description": "Add profile switcher button to navigation header",
+          "service": "main",
+          "files_to_modify": [
+            "src/navigation/AppNavigator.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/components/icons/ProfileIcon.tsx"
+          ],
+          "verification": {
+            "type": "browser",
+            "url": "http://localhost:3000/",
+            "checks": [
+              "Profile switcher icon visible in header",
+              "Tapping icon opens bottom sheet"
+            ]
+          },
+          "status": "completed",
+          "notes": "Added profile switcher button to navigation header. Button visible in top-right for phones (iOS/Android) and in floating nav bar for tablets. Tapping opens ProfileSwitcherBottomSheet. ProfileProvider added to AppNavigator for context access.",
+          "updated_at": "2026-01-10T11:26:54.287040+00:00"
+        },
+        {
+          "id": "subtask-3-3",
+          "description": "Add profile switcher to settings menu",
+          "service": "main",
+          "files_to_modify": [
+            "src/screens/SettingsScreen.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/screens/ProfilesScreen.tsx"
+          ],
+          "verification": {
+            "type": "browser",
+            "url": "http://localhost:3000/settings",
+            "checks": [
+              "Profile switcher option in settings",
+              "Opens profile switcher bottom sheet"
+            ]
+          },
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-4-tv-navigation",
+      "name": "TV-Optimized Profile Switcher",
+      "type": "implementation",
+      "description": "Add TV remote control support to profile switcher with focus management",
+      "depends_on": [
+        "phase-3-quick-switcher"
+      ],
+      "parallel_safe": false,
+      "subtasks": [
+        {
+          "id": "subtask-4-1",
+          "description": "Add TV focus management to ProfileSwitcherBottomSheet",
+          "service": "main",
+          "files_to_modify": [
+            "src/components/profile/ProfileSwitcherBottomSheet.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/hooks/useTVMode.ts",
+            "src/hooks/useFocusGroup.ts",
+            "src/components/common/FocusableList.tsx"
+          ],
+          "verification": {
+            "type": "manual",
+            "instructions": "Open profile switcher on TV simulator, verify d-pad navigation works and focus indicators are visible"
+          },
+          "status": "pending"
+        },
+        {
+          "id": "subtask-4-2",
+          "description": "Add TV-specific styling and layout to profile cards",
+          "service": "main",
+          "files_to_modify": [
+            "src/components/profile/ProfileCard.tsx"
+          ],
+          "files_to_create": [],
+          "patterns_from": [
+            "src/utils/tvStyles.ts",
+            "src/utils/tvStyles/focus.ts"
+          ],
+          "verification": {
+            "type": "manual",
+            "instructions": "Test on Apple TV simulator - profile cards should have clear focus indicators"
+          },
+          "status": "pending"
+        },
+        {
+          "id": "subtask-4-3",
+          "description": "Test TV profile switcher on tvOS and Android TV",
+          "service": "main",
+          "files_to_modify": [],
+          "files_to_create": [],
+          "patterns_from": [],
+          "verification": {
+            "type": "manual",
+            "instructions": "Test profile switching with Apple TV remote and Android TV remote - verify smooth navigation and selection"
+          },
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-5-integration",
+      "name": "Integration & Testing",
+      "type": "integration",
+      "description": "Wire all components together and verify end-to-end profile flows",
+      "depends_on": [
+        "phase-2-recommendations",
+        "phase-4-tv-navigation"
+      ],
+      "parallel_safe": false,
+      "subtasks": [
+        {
+          "id": "subtask-5-1",
+          "description": "End-to-end profile isolation verification",
+          "all_services": true,
+          "files_to_modify": [],
+          "files_to_create": [],
+          "patterns_from": [],
+          "verification": {
+            "type": "e2e",
+            "steps": [
+              "Create Profile A and watch action movies",
+              "Create Profile B and watch documentaries",
+              "Switch to Profile A - verify continue watching shows action content",
+              "Switch to Profile B - verify continue watching shows documentary content",
+              "Verify recommendations differ between profiles"
+            ]
+          },
+          "status": "pending"
+        },
+        {
+          "id": "subtask-5-2",
+          "description": "PIN protection end-to-end verification",
+          "all_services": true,
+          "files_to_modify": [],
+          "files_to_create": [],
+          "patterns_from": [],
+          "verification": {
+            "type": "e2e",
+            "steps": [
+              "Enable PIN on Profile A",
+              "Switch to Profile B",
+              "Attempt to switch back to Profile A",
+              "Enter incorrect PIN - verify error",
+              "Enter correct PIN - verify successful switch"
+            ]
+          },
+          "status": "pending"
+        },
+        {
+          "id": "subtask-5-3",
+          "description": "TV platform integration testing",
+          "all_services": true,
+          "files_to_modify": [],
+          "files_to_create": [],
+          "patterns_from": [],
+          "verification": {
+            "type": "e2e",
+            "steps": [
+              "Open profile switcher on TV",
+              "Navigate between profiles with d-pad",
+              "Select profile with remote OK button",
+              "Enter PIN using TV keyboard if required",
+              "Verify profile switch completes smoothly"
+            ]
+          },
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_phases": 5,
+    "total_subtasks": 13,
+    "services_involved": [
+      "main"
+    ],
+    "parallelism": {
+      "max_parallel_phases": 2,
+      "parallel_groups": [
+        {
+          "phases": [
+            "phase-1-watch-history",
+            "phase-3-quick-switcher"
+          ],
+          "reason": "Watch history and UI switcher are independent - no shared files"
+        }
+      ],
+      "recommended_workers": 2,
+      "speedup_estimate": "1.3x faster than sequential"
+    },
+    "startup_command": "npm run start"
+  },
+  "verification_strategy": {
+    "risk_level": "high",
+    "skip_validation": false,
+    "test_creation_phase": "post_implementation",
+    "test_types_required": [
+      "unit",
+      "integration",
+      "e2e"
+    ],
+    "security_scanning_required": true,
+    "staging_deployment_required": false,
+    "acceptance_criteria": [
+      "All existing tests pass",
+      "Profile-scoped watch history works correctly",
+      "Profile-specific recommendations display",
+      "Quick profile switcher accessible from all screens",
+      "TV remote navigation works smoothly",
+      "PIN protection prevents unauthorized access",
+      "No console errors during profile operations",
+      "Profile switching <200ms on cached data"
+    ],
+    "verification_steps": [
+      {
+        "name": "Unit Tests",
+        "command": "npm test -- --testPathPattern='profile|watch.*progress'",
+        "expected_outcome": "All profile and watch progress tests pass",
+        "type": "test",
+        "required": true,
+        "blocking": true
+      },
+      {
+        "name": "Integration Tests",
+        "command": "npm run test:integration",
+        "expected_outcome": "Profile isolation and recommendation filtering tests pass",
+        "type": "test",
+        "required": true,
+        "blocking": true
+      },
+      {
+        "name": "E2E Tests - Mobile",
+        "command": "npm run test:e2e",
+        "expected_outcome": "Profile switching flows work on iOS/Android",
+        "type": "test",
+        "required": true,
+        "blocking": true
+      },
+      {
+        "name": "E2E Tests - TV",
+        "command": "npm run test:e2e:tv",
+        "expected_outcome": "TV remote navigation works on tvOS/Android TV",
+        "type": "test",
+        "required": true,
+        "blocking": true
+      },
+      {
+        "name": "Security Scan - Secrets",
+        "command": "grep -r 'pin.*=' src/ | grep -v 'isPinProtected' | grep -v 'hasPin'",
+        "expected_outcome": "No plaintext PINs in code",
+        "type": "security",
+        "required": true,
+        "blocking": true
+      }
+    ],
+    "reasoning": "High risk due to PIN security and cross-cutting changes affecting watch history and recommendations. Comprehensive testing required to prevent data leakage between profiles."
+  },
+  "qa_acceptance": {
+    "unit_tests": {
+      "required": true,
+      "commands": [
+        "npm test"
+      ],
+      "minimum_coverage": 80
+    },
+    "integration_tests": {
+      "required": true,
+      "commands": [
+        "npm run test:integration"
+      ],
+      "services_to_test": [
+        "main"
+      ]
+    },
+    "e2e_tests": {
+      "required": true,
+      "commands": [
+        "npm run test:e2e",
+        "npm run test:e2e:tv"
+      ],
+      "flows": [
+        "create-and-switch-profiles",
+        "pin-protected-profile",
+        "tv-remote-profile-selection",
+        "recommendation-isolation"
+      ]
+    },
+    "browser_verification": {
+      "required": true,
+      "pages": [
+        {
+          "url": "http://localhost:3000/",
+          "checks": [
+            "Profile switcher icon in header",
+            "Profile switcher opens correctly",
+            "Profile cards display with avatars",
+            "Continue watching filtered by profile"
+          ]
+        },
+        {
+          "url": "http://localhost:3000/settings",
+          "checks": [
+            "Profile management option visible",
+            "Can create/edit/delete profiles",
+            "PIN setup works correctly"
+          ]
+        }
+      ]
+    },
+    "tv_verification": {
+      "required": true,
+      "platforms": [
+        "Apple TV",
+        "Android TV"
+      ],
+      "checks": [
+        "Profile switcher accessible via remote",
+        "D-pad navigation works smoothly",
+        "Focus indicators clearly visible",
+        "Profile selection with OK button works",
+        "PIN entry works with TV keyboard"
+      ]
+    },
+    "database_verification": {
+      "required": false,
+      "checks": []
+    },
+    "security_verification": {
+      "required": true,
+      "checks": [
+        "PINs stored hashed in MMKV",
+        "No cross-profile data leakage in watch history",
+        "No cross-profile recommendation bleeding",
+        "Profile data not in client logs"
+      ]
+    }
+  },
+  "qa_signoff": null,
+  "last_updated": "2026-01-10T11:26:54.287067+00:00"
+}

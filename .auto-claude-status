@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "003-enhanced-multi-profile-support",
+  "state": "building",
+  "subtasks": {
+    "completed": 7,
+    "total": 14,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Quick Profile Switcher Component",
+    "id": null,
+    "total": 3
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 368,
+    "started_at": "2026-01-10T14:00:36.873764"
+  },
+  "last_update": "2026-01-10T15:27:14.810436"
+}
