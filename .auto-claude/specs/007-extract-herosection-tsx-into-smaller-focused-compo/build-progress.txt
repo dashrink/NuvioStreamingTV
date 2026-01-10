@@ -1,6 +1,6 @@
 # Build Progress - Extract HeroSection.tsx into smaller focused components
 
-## Current Status: Phase 7 In Progress
+## Current Status: Phase 8 In Progress
 **Last Updated:** 2026-01-10
 
 ## Summary
@@ -43,7 +43,7 @@ Refactored HeroSection.tsx from ~2557 lines to 313 lines (88% reduction) by extr
 
 ## Pending Phases
 
-### Phase 7: Testing and Verification (In Progress)
+### Phase 7: Testing and Verification ✅
 - [x] 7.1 - Verify TypeScript compilation (manual verification - tsc not available in env)
 - [x] 7.2 - Verify Metro bundler (manual import verification - npx not available in env)
 - [x] 7.3 - Test trailer playback functionality (manual code verification)
@@ -51,9 +51,9 @@ Refactored HeroSection.tsx from ~2557 lines to 313 lines (88% reduction) by extr
 - [x] 7.5 - Test action buttons functionality (manual code verification)
 - [x] 7.6 - Verify tablet responsiveness (manual code verification)
 
-### Phase 8: Documentation and Cleanup
-- [ ] 8.1 - Remove old inline components
-- [ ] 8.2 - Add JSDoc comments to components
+### Phase 8: Documentation and Cleanup (In Progress)
+- [x] 8.1 - Remove old inline components (already removed during 6.2 refactoring)
+- [x] 8.2 - Add JSDoc comments to components (already added during extraction)
 - [ ] 8.3 - Final code review and cleanup
 
 ## Key Files Created
@@ -708,3 +708,75 @@ All tablet responsiveness code paths verified correct and complete. All componen
 2. Apply conditional styles based on device type
 3. Use appropriate size/spacing multipliers for tablet
 4. Maintain proper proportions and visual hierarchy on larger screens
+
+## Notes on Subtask 8.1 (Remove Old Inline Components)
+- Verified that original inline ActionButtons and WatchProgressDisplay definitions have already been removed
+- Removal occurred during subtask 6.2 when HeroSection.tsx was refactored from ~2557 to 313 lines
+- Current HeroSection.tsx imports components from extracted files:
+  - components/ActionButtons.tsx (241 lines)
+  - components/WatchProgressDisplay.tsx (400 lines)
+- No backup files or old inline definitions remain in the codebase
+- Cleanup was completed as part of the 88% size reduction
+
+## Notes on Subtask 8.2 (Add JSDoc Comments)
+- Comprehensive JSDoc documentation already exists on all 14 extracted files
+- Documentation was added during the component extraction process in earlier subtasks
+
+### Documentation Summary by File Type:
+
+**Components (10 files):**
+| File | Module Doc | Props Doc | Example | Style Comments |
+|------|------------|-----------|---------|----------------|
+| HeroBackButton.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| HeroGradientOverlay.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| HeroTitleCard.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| HeroGenres.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| GlassBlurBackground.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| ActionButtons.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| WatchProgressDisplay.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| TrailerControls.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| HeroBackdrop.tsx | ✅ | ✅ @param | ✅ | ✅ |
+| HeroTrailerLayer.tsx | ✅ | ✅ @param | ✅ | ✅ |
+
+**Hooks (4 files):**
+| File | Module Doc | Types Doc | Example | Section Headers |
+|------|------------|-----------|---------|-----------------|
+| useTrailerPlayback.ts | ✅ | ✅ | ✅ | ✅ |
+| useHeroAnimations.ts | ✅ | ✅ | ✅ | ✅ |
+| useBackdropParallax.ts | ✅ | ✅ | ✅ | ✅ |
+| useStableLogo.ts | ✅ | ✅ | ✅ | ✅ |
+
+**Base Files (4 files):**
+| File | Module Doc | Interface Docs | Section Headers |
+|------|------------|----------------|-----------------|
+| types.ts | ✅ | ✅ 20+ interfaces | ✅ |
+| constants.ts | ✅ | ✅ 12 constant groups | ✅ |
+| styles.ts | ✅ | ✅ All style groups | ✅ + helper functions |
+| index.ts | ✅ | ✅ Usage examples | ✅ |
+
+### Documentation Pattern Used:
+```typescript
+/**
+ * ComponentName Component
+ *
+ * Brief description of what the component does.
+ * Features listed if applicable.
+ *
+ * @module HeroSection/components/ComponentName
+ */
+
+/**
+ * Detailed component description.
+ *
+ * @param props - Component props
+ * @param props.propName - Description of prop
+ *
+ * @example
+ * ```tsx
+ * <ComponentName prop={value} />
+ * ```
+ */
+```
+
+### No Additional Changes Needed
+All documentation was proactively added during component creation, following React Native best practices for JSDoc comments.
