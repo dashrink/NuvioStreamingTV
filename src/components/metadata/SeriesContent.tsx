@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
+import Focusable from '../common/Focusable';
 import { Episode } from '../../types/metadata';
 import { tmdbService, IMDbRatings } from '../../services/tmdbService';
 import { storageService } from '../../services/storageService';
@@ -779,7 +780,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           ]}>Seasons</Text>
 
           {/* Dropdown Toggle Button */}
-          <TouchableOpacity
+          <Focusable
+            variant="button"
+            borderRadius={isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6}
+            enableScale={false}
+            enableGlow={false}
             style={[
               styles.seasonViewToggle,
               {
@@ -800,6 +805,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               if (__DEV__) console.log('[SeriesContent] View mode changed to:', newMode, 'Current ref value:', seasonViewMode);
             }}
             activeOpacity={0.7}
+            accessibilityLabel={`Season view mode: ${seasonViewMode}`}
+            accessibilityHint="Double tap to toggle between poster and text view"
           >
             <Text style={[
               styles.seasonViewToggleText,
@@ -812,7 +819,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             ]}>
               {seasonViewMode === 'posters' ? 'Posters' : 'Text'}
             </Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
 
         <FlatList
@@ -850,7 +857,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   key={season}
                   style={{ opacity: textViewVisible ? 1 : 0 }}
                 >
-                  <TouchableOpacity
+                  <Focusable
+                    variant="button"
+                    borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12}
+                    enableScale={true}
+                    enableGlow={false}
+                    hasTVPreferredFocus={selectedSeason === season}
                     style={[
                       styles.seasonTextButton,
                       {
@@ -863,6 +875,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                       selectedSeason === season && styles.selectedSeasonTextButton
                     ]}
                     onPress={() => onSeasonChange(season)}
+                    accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
+                    accessibilityHint="Double tap to view episodes"
                   >
                     <Text style={[
                       styles.seasonTextButtonText,
@@ -876,7 +890,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     ]} numberOfLines={1}>
                       {season === 0 ? 'Specials' : `Season ${season}`}
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 </View>
               );
             }
@@ -888,7 +902,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 key={season}
                 style={{ opacity: posterViewVisible ? 1 : 0 }}
               >
-                <TouchableOpacity
+                <Focusable
+                  variant="card"
+                  borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8}
+                  enableScale={true}
+                  enableGlow={true}
+                  hasTVPreferredFocus={selectedSeason === season}
                   style={[
                     styles.seasonButton,
                     {
@@ -898,6 +917,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     selectedSeason === season && [styles.selectedSeasonButton, { borderColor: currentTheme.colors.primary }]
                   ]}
                   onPress={() => onSeasonChange(season)}
+                  accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
+                  accessibilityHint="Double tap to view episodes"
                 >
                   <View style={[
                     styles.seasonPosterContainer,
@@ -939,7 +960,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   >
                     {season === 0 ? 'Specials' : `Season ${season}`}
                   </Text>
-                </TouchableOpacity>
+                </Focusable>
               </View>
             );
           }}
@@ -1024,8 +1045,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     const showProgress = progress && progressPercent < 85;
 
     return (
-      <TouchableOpacity
+      <Focusable
         key={episode.id}
+        variant="listItem"
+        borderRadius={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+        enableScale={true}
+        enableGlow={true}
         style={[
           styles.episodeCardVertical,
           {
@@ -1037,8 +1062,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
-        delayLongPress={400}
         activeOpacity={0.7}
+        accessibilityLabel={`${episodeString} ${episode.name}`}
+        accessibilityHint="Double tap to play episode, long press for more options"
       >
         <View style={[
           styles.episodeImageContainer,
@@ -1229,7 +1255,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
           </Text>
         </View>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -1299,8 +1325,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     const showProgress = progress && progressPercent < 85;
 
     return (
-      <TouchableOpacity
+      <Focusable
         key={episode.id}
+        variant="card"
+        borderRadius={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+        enableScale={true}
+        enableGlow={true}
         style={[
           styles.episodeCardHorizontal,
           {
@@ -1320,8 +1350,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
-        delayLongPress={400}
         activeOpacity={0.85}
+        accessibilityLabel={`${episodeString} ${episode.name}`}
+        accessibilityHint="Double tap to play episode, long press for more options"
       >
         {/* Solid outline replaces gradient border */}
 
@@ -1522,7 +1553,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           )}
 
         </LinearGradient>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 

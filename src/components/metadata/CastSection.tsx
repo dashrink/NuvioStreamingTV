@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
@@ -13,6 +12,7 @@ import Animated, {
   FadeIn,
 } from 'react-native-reanimated';
 import { useTheme } from '../../contexts/ThemeContext';
+import Focusable from '../common/Focusable';
 
 // Enhanced responsive breakpoints for Cast Section
 const BREAKPOINTS = {
@@ -149,10 +149,14 @@ export const CastSection: React.FC<CastSectionProps> = ({
         ]}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (
-          <Animated.View 
-            entering={FadeIn.duration(300).delay(50 + index * 30)} 
+          <Animated.View
+            entering={FadeIn.duration(300).delay(50 + index * 30)}
           >
-            <TouchableOpacity 
+            <Focusable
+              variant="card"
+              borderRadius={castImageSize / 2}
+              enableScale={true}
+              enableGlow={true}
               style={[
                 styles.castCard,
                 {
@@ -162,6 +166,8 @@ export const CastSection: React.FC<CastSectionProps> = ({
               ]}
               onPress={() => onSelectCastMember(item)}
               activeOpacity={0.7}
+              accessibilityLabel={`${item.name}${item.character ? `, playing ${item.character}` : ''}`}
+              accessibilityHint="Double tap to view cast member details"
             >
               <View style={[
                 styles.castImageContainer,
@@ -182,15 +188,15 @@ export const CastSection: React.FC<CastSectionProps> = ({
                   />
                 ) : (
                   <View style={[
-                    styles.castImagePlaceholder, 
-                    { 
+                    styles.castImagePlaceholder,
+                    {
                       backgroundColor: currentTheme.colors.darkBackground,
                       borderRadius: castImageSize / 2
                     }
                   ]}>
                     <Text style={[
-                      styles.placeholderText, 
-                      { 
+                      styles.placeholderText,
+                      {
                         color: currentTheme.colors.textMuted,
                         fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24
                       }
@@ -201,8 +207,8 @@ export const CastSection: React.FC<CastSectionProps> = ({
                 )}
               </View>
               <Text style={[
-                styles.castName, 
-                { 
+                styles.castName,
+                {
                   color: currentTheme.colors.text,
                   fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
                   width: castCardWidth
@@ -210,8 +216,8 @@ export const CastSection: React.FC<CastSectionProps> = ({
               ]} numberOfLines={1}>{item.name}</Text>
               {isTmdbEnrichmentEnabled && item.character && (
                 <Text style={[
-                  styles.characterName, 
-                  { 
+                  styles.characterName,
+                  {
                     color: currentTheme.colors.textMuted,
                     fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12,
                     width: castCardWidth,
@@ -219,7 +225,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
                   }
                 ]} numberOfLines={1}>{item.character}</Text>
               )}
-            </TouchableOpacity>
+            </Focusable>
           </Animated.View>
         )}
       />
