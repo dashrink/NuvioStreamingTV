@@ -109,7 +109,12 @@
       "description": "ShowRatingsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: main loading (size=\"large\" with text), Suspense fallback (size=\"large\" with text), and loading seasons indicator (size=\"small\"). The screen displays episode ratings in a grid format with support for multiple rating sources (TMDB, IMDb, TVMaze).",
       "category": "loading-migration",
       "discovered_at": "2026-01-10T01:32:00.725241+00:00"
+    },
+    "src/components/metadata/MoreLikeThisSection.tsx": {
+      "description": "MoreLikeThisSection now uses UnifiedSpinner from '../loading' for its loading state. Uses size=\"small\" with automatic theme-aware colors. The component displays a horizontal FlatList of recommendation posters with responsive sizing based on device type (phone/tablet/largeTablet/tv).",
+      "category": "Loading state migration",
+      "discovered_at": "2026-01-10T01:33:38.736439+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:32:00.725249+00:00"
+  "last_updated": "2026-01-10T01:33:38.736447+00:00"
 }
