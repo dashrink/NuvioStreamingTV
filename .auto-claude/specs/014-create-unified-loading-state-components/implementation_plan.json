@@ -409,27 +409,31 @@
           "id": "4.4",
           "title": "Migrate CollectionSection loading",
           "description": "Replace ActivityIndicator in CollectionSection with UnifiedSpinner or skeleton",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/metadata/CollectionSection.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Consider using skeleton for collection items"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator with UnifiedSpinner in CollectionSection. Changes: (1) Removed ActivityIndicator from react-native imports, (2) Added UnifiedSpinner import from '../loading', (3) Replaced ActivityIndicator with UnifiedSpinner (size=\"small\") in loading state. UnifiedSpinner provides theme-aware colors automatically via currentTheme.colors.primary and Lottie animation with ActivityIndicator fallback. Committed as aea711e.",
+          "updated_at": "2026-01-10T01:34:50.938715+00:00"
         },
         {
           "id": "4.5",
           "title": "Migrate CastDetailsModal loading",
           "description": "Replace ActivityIndicator in CastDetailsModal with UnifiedSpinner",
-          "status": "pending",
+          "status": "in_progress",
           "files": [
             "src/components/metadata/CastDetailsModal.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Theme-aware colors"
-          ]
+          ],
+          "notes": "Starting migration of ActivityIndicator to UnifiedSpinner in CastDetailsModal",
+          "updated_at": "2026-01-10T01:35:28.924285+00:00"
         },
         {
           "id": "4.6",
@@ -584,5 +588,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T01:33:33.264254+00:00"
+  "last_updated": "2026-01-10T01:35:28.924294+00:00"
 }

@@ -114,7 +114,12 @@
       "description": "MoreLikeThisSection now uses UnifiedSpinner from '../loading' for its loading state. Uses size=\"small\" with automatic theme-aware colors. The component displays a horizontal FlatList of recommendation posters with responsive sizing based on device type (phone/tablet/largeTablet/tv).",
       "category": "Loading state migration",
       "discovered_at": "2026-01-10T01:33:38.736439+00:00"
+    },
+    "src/components/metadata/CollectionSection.tsx": {
+      "description": "CollectionSection now uses UnifiedSpinner from '../loading' for loading state. Uses size=\"small\" in a centered loadingContainer View. Displays while loadingCollection prop is true.",
+      "category": "component",
+      "discovered_at": "2026-01-10T01:34:50.972132+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:33:38.736447+00:00"
+  "last_updated": "2026-01-10T01:34:50.972141+00:00"
 }
