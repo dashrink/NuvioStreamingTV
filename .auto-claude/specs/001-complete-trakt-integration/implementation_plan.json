@@ -1,0 +1,362 @@
+{
+  "spec_id": "001-complete-trakt-integration",
+  "title": "Complete Trakt Integration",
+  "description": "Complete the Trakt.tv integration for Nuvio Streaming TV by wiring up the existing service layer to the UI, implementing bidirectional sync for watch progress, ratings, and collections, and adding visual status indicators throughout the application.",
+  "estimated_hours": 8,
+  "created_at": "2026-01-09T21:14:47.741Z",
+  "updated_at": "2026-01-10T00:00:00Z",
+  "status": "in_progress",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Fix Critical TODOs in AppleTVHero",
+      "description": "Replace placeholder code in AppleTVHero.tsx with actual Trakt service calls",
+      "estimated_hours": 0.5,
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Replace Math.random() watchlist placeholder with TraktContext call",
+          "description": "In AppleTVHero.tsx line ~555, replace `setIsInWatchlist(Math.random() > 0.5)` with actual `isInWatchlist(imdbId, type)` call from TraktContext. The context is already imported and destructured.",
+          "file": "src/components/home/AppleTVHero.tsx",
+          "status": "completed",
+          "priority": "high",
+          "notes": "Replaced Math.random() > 0.5 placeholder with actual isInWatchlist call from TraktContext. Destructured checkTraktWatchlist from useTraktContext, converted 'series' type to 'show' for Trakt API compatibility, and added proper error handling for missing imdb_id.",
+          "updated_at": "2026-01-10T06:08:52.408958+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Wire up handleSaveAction to use Trakt watchlist methods",
+          "description": "In AppleTVHero.tsx handleSaveAction function (~line 592), replace the TODO comment with actual addToWatchlist/removeFromWatchlist calls from TraktContext. Need to get IMDb ID from currentItem and handle the type conversion.",
+          "file": "src/components/home/AppleTVHero.tsx",
+          "status": "completed",
+          "priority": "high",
+          "notes": "Replaced TODO comment in handleSaveAction function with actual Trakt watchlist API calls. Destructured addToWatchlist and removeFromWatchlist from useTraktContext. Implemented optimistic UI updates with proper error rollback. Handled type conversion ('series' to 'show') for Trakt API compatibility. Added graceful handling for missing IMDb IDs. Toast notifications show on successful add/remove operations.",
+          "updated_at": "2026-01-10T06:10:46.273835+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Implement Rating System in TraktService",
+      "description": "Add addRating, updateRating, and removeRating methods to traktService.ts following existing patterns",
+      "estimated_hours": 1.5,
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Add addRating method to TraktService",
+          "description": "Add `addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean>` method to traktService.ts. Should POST to /sync/ratings endpoint with proper format. Rating is 1-10 scale.",
+          "file": "src/services/traktService.ts",
+          "status": "completed",
+          "priority": "high",
+          "notes": "Added addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> method to traktService.ts. Method POSTs to /sync/ratings endpoint with proper format. Includes validation for 1-10 integer rating scale, 'tt' prefix handling for IMDb IDs, authentication check, and comprehensive error handling.",
+          "updated_at": "2026-01-10T06:12:41.646701+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Add removeRating method to TraktService",
+          "description": "Add `removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean>` method to traktService.ts. Should POST to /sync/ratings/remove endpoint.",
+          "file": "src/services/traktService.ts",
+          "status": "completed",
+          "priority": "high",
+          "notes": "Added removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean> method to traktService.ts. Method POSTs to /sync/ratings/remove endpoint with proper format. Follows the same pattern as removeFromWatchlist and removeFromCollection methods - checks authentication, handles 'tt' prefix for IMDb IDs, and includes comprehensive error handling.",
+          "updated_at": "2026-01-10T06:14:16.268049+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Add getUserRating helper method to TraktService",
+          "description": "Add `getUserRating(imdbId: string, type: 'movie' | 'show'): Promise<number | null>` method that checks the user's rating for a specific item from the cached ratings.",
+          "file": "src/services/traktService.ts",
+          "status": "completed",
+          "priority": "medium",
+          "notes": "Added getUserRating(imdbId: string, type: 'movie' | 'show'): Promise<number | null> method to traktService.ts. Method fetches the user's ratings from the API (leveraging existing getRatings method), handles 'tt' prefix for IMDb IDs, finds the matching rating item, and returns the rating value (1-10) or null if not rated. Includes authentication check and comprehensive error handling.",
+          "updated_at": "2026-01-10T06:16:32.305807+00:00"
+        },
+        {
+          "id": "2.4",
+          "title": "Export rating types if needed",
+          "description": "Ensure TraktRatingItem and any new rating-related types are properly exported from traktService.ts for use in components.",
+          "file": "src/services/traktService.ts",
+          "status": "completed",
+          "priority": "low",
+          "notes": "Verified that TraktRatingItem is already properly exported from traktService.ts (line 119). All rating methods (addRating, removeRating, getUserRating) return simple types (boolean or number | null) that don't require additional type exports. Both useTraktIntegration.ts and TraktContext.tsx already import TraktRatingItem correctly. No additional rating-related types needed to be created or exported.",
+          "updated_at": "2026-01-10T06:18:20.411566+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Update useTraktIntegration Hook with Rating Methods",
+      "description": "Add rating management methods to the useTraktIntegration hook",
+      "estimated_hours": 1,
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Add addRating callback to useTraktIntegration",
+          "description": "Add `addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean>` callback that calls traktService.addRating and updates local state.",
+          "file": "src/hooks/useTraktIntegration.ts",
+          "status": "pending",
+          "priority": "high",
+          "notes": ""
+        },
+        {
+          "id": "3.2",
+          "title": "Add removeRating callback to useTraktIntegration",
+          "description": "Add `removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean>` callback that calls traktService.removeRating and updates local state.",
+          "file": "src/hooks/useTraktIntegration.ts",
+          "status": "pending",
+          "priority": "high",
+          "notes": ""
+        },
+        {
+          "id": "3.3",
+          "title": "Add getUserRating helper to useTraktIntegration",
+          "description": "Add `getUserRating(imdbId: string, type: 'movie' | 'show'): number | null` method that returns the user's rating for a specific item from cached ratedContent state.",
+          "file": "src/hooks/useTraktIntegration.ts",
+          "status": "pending",
+          "priority": "medium",
+          "notes": ""
+        },
+        {
+          "id": "3.4",
+          "title": "Update TraktContext interface with rating methods",
+          "description": "Update TraktContextProps interface in TraktContext.tsx to include the new rating methods.",
+          "file": "src/contexts/TraktContext.tsx",
+          "status": "pending",
+          "priority": "high",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Create Rating UI Component",
+      "description": "Build a reusable rating component for displaying and setting 1-10 Trakt ratings",
+      "estimated_hours": 2,
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Create TraktRatingComponent",
+          "description": "Create new component `src/components/trakt/TraktRatingComponent.tsx` with 1-10 star display, tap-to-rate functionality, and loading/error states. Should show current rating if exists and allow setting new rating.",
+          "file": "src/components/trakt/TraktRatingComponent.tsx",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Design to match existing app theme, use MaterialIcons for stars"
+        },
+        {
+          "id": "4.2",
+          "title": "Create TraktRatingModal for rating selection",
+          "description": "Create a modal component `src/components/trakt/TraktRatingModal.tsx` that shows a rating selector (1-10 scale) when user wants to rate content. Include confirm/cancel buttons.",
+          "file": "src/components/trakt/TraktRatingModal.tsx",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Could use slider or tappable stars"
+        },
+        {
+          "id": "4.3",
+          "title": "Add index export for trakt components",
+          "description": "Create index.ts file in src/components/trakt/ to export the new components cleanly.",
+          "file": "src/components/trakt/index.ts",
+          "status": "pending",
+          "priority": "low",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Integrate Rating UI into MetadataScreen",
+      "description": "Add the rating component to the metadata/detail screens",
+      "estimated_hours": 1.5,
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Add TraktRatingComponent to HeroSection",
+          "description": "Integrate TraktRatingComponent into HeroSection.tsx action buttons area. Show current rating and allow rating when authenticated. Should appear near the save/collection buttons.",
+          "file": "src/components/metadata/HeroSection.tsx",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Only show when authenticated with Trakt"
+        },
+        {
+          "id": "5.2",
+          "title": "Add rating modal to MetadataScreen",
+          "description": "Add TraktRatingModal to MetadataScreen.tsx with state management for showing/hiding the modal.",
+          "file": "src/screens/MetadataScreen.tsx",
+          "status": "pending",
+          "priority": "high",
+          "notes": ""
+        },
+        {
+          "id": "5.3",
+          "title": "Pass rating props through component hierarchy",
+          "description": "Ensure rating-related props (getUserRating, addRating, removeRating) are passed from MetadataScreen through to HeroSection and rating components.",
+          "file": "src/screens/MetadataScreen.tsx",
+          "status": "pending",
+          "priority": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Verify Status Badges on Content Cards",
+      "description": "Ensure watchlist/collection badges are properly displayed on all content cards",
+      "estimated_hours": 0.5,
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Verify ContentItem badges work correctly",
+          "description": "ContentItem.tsx already has watchlist (playlist-add-check) and collection (video-library) badges at lines 354-363. Verify they display correctly when authenticated and items are in watchlist/collection.",
+          "file": "src/components/home/ContentItem.tsx",
+          "status": "pending",
+          "priority": "medium",
+          "notes": "Badges already implemented - just needs testing/verification"
+        },
+        {
+          "id": "6.2",
+          "title": "Add rating badge to ContentItem if applicable",
+          "description": "Optionally add a small rating indicator (e.g., star with number) to ContentItem for items the user has rated. This is lower priority.",
+          "file": "src/components/home/ContentItem.tsx",
+          "status": "pending",
+          "priority": "low",
+          "notes": "Optional enhancement"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Testing and Verification",
+      "description": "Test all Trakt integration features and verify performance requirements",
+      "estimated_hours": 1.5,
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Test watchlist add/remove functionality",
+          "description": "Test adding and removing items from watchlist via AppleTVHero and HeroSection. Verify optimistic UI updates and Trakt.tv sync.",
+          "file": "",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Manual testing"
+        },
+        {
+          "id": "7.2",
+          "title": "Test rating functionality",
+          "description": "Test adding, updating, and removing ratings. Verify ratings sync to Trakt.tv within 30 seconds.",
+          "file": "",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Manual testing"
+        },
+        {
+          "id": "7.3",
+          "title": "Test collection functionality",
+          "description": "Test adding and removing items from collections. Verify bidirectional sync.",
+          "file": "",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Manual testing"
+        },
+        {
+          "id": "7.4",
+          "title": "Verify watch progress sync timing",
+          "description": "Test that watch progress syncs to Trakt within 30 seconds. Existing scrobble system should meet this requirement.",
+          "file": "",
+          "status": "pending",
+          "priority": "high",
+          "notes": "Manual testing - scrobble already implemented"
+        },
+        {
+          "id": "7.5",
+          "title": "Test edge cases",
+          "description": "Test offline mode, token expiration, rate limiting, missing IMDb IDs, and duplicate action prevention.",
+          "file": "",
+          "status": "pending",
+          "priority": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "name": "Documentation and Cleanup",
+      "description": "Remove resolved TODOs and add documentation",
+      "estimated_hours": 0.5,
+      "subtasks": [
+        {
+          "id": "8.1",
+          "title": "Remove all Trakt-related TODOs from AppleTVHero",
+          "description": "Verify all TODO comments related to Trakt integration in AppleTVHero.tsx have been resolved and remove them.",
+          "file": "src/components/home/AppleTVHero.tsx",
+          "status": "pending",
+          "priority": "medium",
+          "notes": ""
+        },
+        {
+          "id": "8.2",
+          "title": "Add code comments for Trakt integration patterns",
+          "description": "Add clear JSDoc comments to new methods explaining Trakt API patterns, rate limiting, and data flow for future maintainers.",
+          "file": "src/services/traktService.ts",
+          "status": "pending",
+          "priority": "low",
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "qa_checklist": {
+    "unit_tests": [
+      "Rating method tests in traktService",
+      "Watchlist status tests",
+      "IMDb ID validation tests"
+    ],
+    "integration_tests": [
+      "Watchlist sync flow (Nuvio \u2194 Trakt)",
+      "Rating sync flow (Nuvio \u2194 Trakt)",
+      "Collection sync flow (Nuvio \u2194 Trakt)"
+    ],
+    "e2e_tests": [
+      "New user watchlist flow",
+      "Rating flow",
+      "Watch progress flow",
+      "Status indicator flow"
+    ],
+    "performance_verification": [
+      "Progress sync latency < 30 seconds",
+      "UI responsiveness with optimistic updates",
+      "Rate limit compliance (no 429 errors)"
+    ],
+    "status": "pending",
+    "issues": "",
+    "tests_passed": ""
+  },
+  "dependencies": {
+    "existing_files": [
+      "src/services/traktService.ts",
+      "src/hooks/useTraktIntegration.ts",
+      "src/contexts/TraktContext.tsx",
+      "src/components/home/AppleTVHero.tsx",
+      "src/components/home/ContentItem.tsx",
+      "src/components/metadata/HeroSection.tsx",
+      "src/screens/MetadataScreen.tsx"
+    ],
+    "new_files": [
+      "src/components/trakt/TraktRatingComponent.tsx",
+      "src/components/trakt/TraktRatingModal.tsx",
+      "src/components/trakt/index.ts"
+    ]
+  },
+  "risk_assessment": {
+    "high": [
+      "Token expiration edge cases - auto-refresh failure could degrade UX"
+    ],
+    "medium": [
+      "API rate limiting with aggressive sync",
+      "Missing IMDb IDs on some content"
+    ],
+    "low": [
+      "UI performance with status checks on every card",
+      "Progress sync accuracy at 80% threshold"
+    ]
+  },
+  "last_updated": "2026-01-10T06:18:20.411576+00:00"
+}

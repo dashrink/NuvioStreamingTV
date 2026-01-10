@@ -1,0 +1,128 @@
+# Build Progress: Complete Trakt Integration
+## Spec ID: 001-complete-trakt-integration
+
+---
+
+## Summary
+Complete the Trakt.tv integration for Nuvio Streaming TV by:
+- Fixing TODO items in AppleTVHero.tsx
+- Implementing rating methods in traktService.ts
+- Adding rating UI component to media detail screens
+- Verifying watchlist/collection status badges
+- Testing <30-second sync performance
+
+Estimated Time: 8 hours
+Status: In Progress
+
+---
+
+## Phase Progress
+
+### Phase 1: Fix Critical TODOs in AppleTVHero (Est: 0.5 hrs) ✅
+- [x] 1.1 Replace Math.random() watchlist placeholder with TraktContext call
+- [x] 1.2 Wire up handleSaveAction to use Trakt watchlist methods
+
+### Phase 2: Implement Rating System in TraktService (Est: 1.5 hrs) ✅
+- [x] 2.1 Add addRating method to TraktService
+- [x] 2.2 Add removeRating method to TraktService
+- [x] 2.3 Add getUserRating helper method to TraktService
+- [x] 2.4 Export rating types if needed
+
+### Phase 3: Update useTraktIntegration Hook (Est: 1 hr)
+- [ ] 3.1 Add addRating callback to useTraktIntegration
+- [ ] 3.2 Add removeRating callback to useTraktIntegration
+- [ ] 3.3 Add getUserRating helper to useTraktIntegration
+- [ ] 3.4 Update TraktContext interface with rating methods
+
+### Phase 4: Create Rating UI Component (Est: 2 hrs)
+- [ ] 4.1 Create TraktRatingComponent
+- [ ] 4.2 Create TraktRatingModal for rating selection
+- [ ] 4.3 Add index export for trakt components
+
+### Phase 5: Integrate Rating UI into MetadataScreen (Est: 1.5 hrs)
+- [ ] 5.1 Add TraktRatingComponent to HeroSection
+- [ ] 5.2 Add rating modal to MetadataScreen
+- [ ] 5.3 Pass rating props through component hierarchy
+
+### Phase 6: Verify Status Badges (Est: 0.5 hrs)
+- [ ] 6.1 Verify ContentItem badges work correctly
+- [ ] 6.2 Add rating badge to ContentItem (optional)
+
+### Phase 7: Testing and Verification (Est: 1.5 hrs)
+- [ ] 7.1 Test watchlist add/remove functionality
+- [ ] 7.2 Test rating functionality
+- [ ] 7.3 Test collection functionality
+- [ ] 7.4 Verify watch progress sync timing (<30s)
+- [ ] 7.5 Test edge cases
+
+### Phase 8: Documentation and Cleanup (Est: 0.5 hrs)
+- [ ] 8.1 Remove all Trakt-related TODOs from AppleTVHero
+- [ ] 8.2 Add code comments for Trakt integration patterns
+
+---
+
+## Key Findings from Codebase Analysis
+
+### Already Implemented:
+1. **TraktService** (`src/services/traktService.ts`):
+   - ✅ Singleton pattern with rate limiting queue
+   - ✅ Token auto-refresh
+   - ✅ addToWatchlist/removeFromWatchlist methods
+   - ✅ addToCollection/removeFromCollection methods
+   - ✅ getRatings/getRatingsWithImages methods
+   - ❌ Missing: addRating, removeRating methods
+
+2. **useTraktIntegration** (`src/hooks/useTraktIntegration.ts`):
+   - ✅ Watchlist management (add/remove)
+   - ✅ Collection management (add/remove)
+   - ✅ isInWatchlist/isInCollection helpers
+   - ❌ Missing: rating management methods
+
+3. **TraktContext** (`src/contexts/TraktContext.tsx`):
+   - ✅ Provides cached data access
+   - ✅ ratedContent state exists
+   - ❌ Missing: rating methods in interface
+
+4. **ContentItem** (`src/components/home/ContentItem.tsx`):
+   - ✅ Watchlist badge (playlist-add-check icon)
+   - ✅ Collection badge (video-library icon)
+   - Just needs verification
+
+5. **AppleTVHero** (`src/components/home/AppleTVHero.tsx`):
+   - ❌ Line ~555: Uses Math.random() for watchlist status (TODO)
+   - ❌ Line ~592: Trakt toggle commented out (TODO)
+
+6. **HeroSection** (`src/components/metadata/HeroSection.tsx`):
+   - ✅ Has Trakt integration props
+   - ✅ Save button handles Trakt watchlist
+   - ✅ Collection button exists
+   - ❌ Missing: Rating button/component
+
+---
+
+## Session Log
+
+### Session 1 - 2026-01-10
+- Read spec.md and analyzed requirements
+- Explored codebase to understand existing implementation
+- Identified existing patterns and gaps
+- Created comprehensive implementation plan with 8 phases, 20 subtasks
+- Key insight: Much of the Trakt integration already exists, main gaps are:
+  - Rating methods not implemented
+  - AppleTVHero TODOs not resolved
+  - Rating UI component missing
+
+### Session 2 - 2026-01-10
+- Completed subtask 2.3: Add getUserRating helper method to TraktService
+- Added `getUserRating(imdbId: string, type: 'movie' | 'show'): Promise<number | null>` method
+- Method fetches ratings via existing getRatings API and finds the specific item's rating
+- Handles 'tt' prefix for IMDb IDs, authentication check, and error handling
+- Committed: e52cecc4
+
+### Session 3 - 2026-01-10
+- Completed subtask 2.4: Verify rating types are exported
+- Confirmed `TraktRatingItem` is already properly exported from traktService.ts (line 119)
+- All rating methods return simple types (boolean or number | null) - no additional exports needed
+- useTraktIntegration.ts and TraktContext.tsx already import TraktRatingItem correctly
+- Phase 2 complete! All rating system methods implemented in TraktService
+
