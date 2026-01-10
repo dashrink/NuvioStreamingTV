@@ -37,6 +37,10 @@ interface TraktContextProps {
   removeFromCollection: (imdbId: string, type: 'movie' | 'show') => Promise<boolean>;
   isInWatchlist: (imdbId: string, type: 'movie' | 'show') => boolean;
   isInCollection: (imdbId: string, type: 'movie' | 'show') => boolean;
+  // Trakt rating management
+  addRating: (imdbId: string, type: 'movie' | 'show', rating: number) => Promise<boolean>;
+  removeRating: (imdbId: string, type: 'movie' | 'show') => Promise<boolean>;
+  getUserRating: (imdbId: string, type: 'movie' | 'show') => number | null;
 }
 
 const TraktContext = createContext<TraktContextProps | undefined>(undefined);
