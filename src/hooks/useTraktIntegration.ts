@@ -337,6 +337,33 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
+  // Remove rating from Trakt
+  const removeRating = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
+    if (!isAuthenticated) return false;
+
+    try {
+      const success = await traktService.removeRating(imdbId, type);
+      if (success) {
+        // Ensure consistent IMDb ID format (with 'tt' prefix)
+        const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+        // Update local ratedContent state by removing the rating for this item
+        setRatedContent(prev => {
+          return prev.filter(item => {
+            const existingImdbId = type === 'movie'
+              ? item.movie?.ids?.imdb
+              : item.show?.ids?.imdb;
+            return existingImdbId !== normalizedImdbId;
+          });
+        });
+      }
+      return success;
+    } catch (error) {
+      logger.error('[useTraktIntegration] Error removing rating:', error);
+      return false;
+    }
+  }, [isAuthenticated]);
+
   // Mark an episode as watched
   const markEpisodeAsWatched = useCallback(async (
     imdbId: string,
@@ -738,6 +765,7 @@ export function useTraktIntegration() {
     isInWatchlist,
     isInCollection,
     // Trakt rating management
-    addRating
+    addRating,
+    removeRating
   };
 }
