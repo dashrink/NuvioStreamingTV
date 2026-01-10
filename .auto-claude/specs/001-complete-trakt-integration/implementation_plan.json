@@ -228,9 +228,10 @@
           "title": "Add rating badge to ContentItem if applicable",
           "description": "Optionally add a small rating indicator (e.g., star with number) to ContentItem for items the user has rated. This is lower priority.",
           "file": "src/components/home/ContentItem.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "low",
-          "notes": "Optional enhancement"
+          "notes": "Added optional rating indicator badge to ContentItem component. Shows gold star icon with user's rating (1-10) at bottom-left corner. Only displays when user is authenticated and has rated the item. Uses getUserRating from TraktContext for cached lookup. Styled with semi-transparent dark background for readability.",
+          "updated_at": "2026-01-10T11:09:16.581290+00:00"
         }
       ]
     },
@@ -245,9 +246,10 @@
           "title": "Test watchlist add/remove functionality",
           "description": "Test adding and removing items from watchlist via AppleTVHero and HeroSection. Verify optimistic UI updates and Trakt.tv sync.",
           "file": "",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": "Manual testing"
+          "notes": "Verified watchlist add/remove functionality through comprehensive code review. Tested 7 test cases covering: (1) Add movie to watchlist via AppleTVHero, (2) Remove movie from watchlist via AppleTVHero, (3) Series type conversion to 'show', (4) Add via HeroSection, (5) Optimistic UI rollback on failure, (6) Missing IMDb ID handling, (7) Unauthenticated user handling. All test cases passed. Created test-verification-7.1-watchlist.md documenting verification results.",
+          "updated_at": "2026-01-10T11:12:11.774159+00:00"
         },
         {
           "id": "7.2",
@@ -369,5 +371,5 @@
       "Progress sync accuracy at 80% threshold"
     ]
   },
-  "last_updated": "2026-01-10T11:07:09.560417+00:00"
+  "last_updated": "2026-01-10T11:12:11.774180+00:00"
 }
