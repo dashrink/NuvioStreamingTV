@@ -144,7 +144,17 @@
       "description": "AIChatScreen now uses UnifiedSpinner from '../components/loading' for its loading context state. Uses size=\"large\" and text=\"Loading AI context...\" prop. The loadingContainer style centers the spinner on screen.",
       "category": "loading-components",
       "discovered_at": "2026-01-10T06:06:37.361535+00:00"
+    },
+    "src/components/common/DogLoadingSpinner.tsx": {
+      "description": "DogLoadingSpinner.tsx was dead code - removed. It was never imported anywhere, was a duplicate of old LoadingSpinner implementation, and misleadingly named (used Ripple animation, not dog animation).",
+      "category": "cleanup",
+      "discovered_at": "2026-01-10T06:08:18.466896+00:00"
+    },
+    "src/contexts/LoadingContext.tsx": {
+      "description": "LoadingContext now provides global loading overlay support via showGlobalLoading/hideGlobalLoading/updateLoadingText methods. Uses LoadingOverlayScreen internally. Options include text, size, blur, backdropOpacity, dismissable. Convenience hook useGlobalLoading provides focused API (showLoading, hideLoading, updateText, isLoading). Legacy isHomeLoading/setHomeLoading API maintained for backward compatibility.",
+      "category": "context",
+      "discovered_at": "2026-01-10T06:11:10.507804+00:00"
     }
   },
-  "last_updated": "2026-01-10T06:06:37.361548+00:00"
+  "last_updated": "2026-01-10T06:11:10.507816+00:00"
 }
