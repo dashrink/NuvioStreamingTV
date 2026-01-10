@@ -35,6 +35,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 
@@ -102,7 +103,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={handleBack}
+              onPress={() => {
+                triggerLight();
+                handleBack();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons
@@ -130,7 +134,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
 
             <TouchableOpacity
               style={styles.headerActionButton}
-              onPress={handleToggleLibrary}
+              onPress={() => {
+                triggerMedium();
+                handleToggleLibrary();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
@@ -145,18 +152,21 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           ]}
         >
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
-            <TouchableOpacity 
-              style={styles.backButton} 
-              onPress={handleBack}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                triggerLight();
+                handleBack();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <MaterialIcons 
-                name="arrow-back" 
-                size={24} 
+              <MaterialIcons
+                name="arrow-back"
+                size={24}
                 color={currentTheme.colors.highEmphasis}
               />
             </TouchableOpacity>
-            
+
             <View style={styles.headerTitleContainer}>
               {metadata.logo && !logoLoadError ? (
                 <Image
@@ -172,10 +182,13 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
                 <Text style={[styles.floatingHeaderTitle, { color: currentTheme.colors.highEmphasis }]} numberOfLines={1}>{metadata.name}</Text>
               )}
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.headerActionButton}
-              onPress={handleToggleLibrary}
+              onPress={() => {
+                triggerMedium();
+                handleToggleLibrary();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />

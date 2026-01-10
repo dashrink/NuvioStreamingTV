@@ -10,6 +10,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { triggerLight } from '../../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -133,7 +134,10 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                             {showBackButton ? (
                                 <TouchableOpacity
                                     style={styles.backButton}
-                                    onPress={onBackPress}
+                                    onPress={() => {
+                                        triggerLight();
+                                        onBackPress?.();
+                                    }}
                                     activeOpacity={0.7}
                                 >
                                     <IconComponent
@@ -166,7 +170,10 @@ const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                             ) : rightActionIcon && onRightActionPress ? (
                                 <TouchableOpacity
                                     style={styles.rightActionButton}
-                                    onPress={onRightActionPress}
+                                    onPress={() => {
+                                        triggerLight();
+                                        onRightActionPress();
+                                    }}
                                     activeOpacity={0.7}
                                 >
                                     <IconComponent
