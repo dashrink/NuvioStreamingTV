@@ -16,7 +16,7 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 
-import { useTVFocus, UseTVFocusOptions } from '../../hooks/useTVFocus';
+import { useTVFocus, UseTVFocusOptions, TVParallaxProperties } from '../../hooks/useTVFocus';
 import {
   FocusVariant,
   getFocusStyleConfig,
@@ -71,6 +71,11 @@ export interface FocusableProps extends UseTVFocusOptions {
    * Other Focusable components can use this ID in nextFocusDown/Up/Left/Right
    */
   nativeID?: string;
+  /**
+   * tvOS: Parallax properties for Siri Remote navigation effect
+   * Creates a subtle 3D tilt effect when navigating with Siri Remote
+   */
+  tvParallaxProperties?: TVParallaxProperties;
 }
 
 /**
@@ -144,6 +149,8 @@ const Focusable = forwardRef<View, FocusableProps>(
       nextFocusLeft,
       nextFocusRight,
       nextFocusForward,
+      // tvOS parallax options
+      tvParallaxProperties,
     },
     ref
   ) => {
@@ -167,6 +174,8 @@ const Focusable = forwardRef<View, FocusableProps>(
       nextFocusLeft,
       nextFocusRight,
       nextFocusForward,
+      // tvOS parallax options
+      tvParallaxProperties,
     });
 
     // Get style configuration for the variant

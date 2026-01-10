@@ -150,8 +150,10 @@ const FocusDebugOverlay: React.FC<FocusDebugOverlayProps> = ({
 
           <Text style={styles.sectionTitle}>Testing Tips</Text>
           <Text style={styles.tip}>
-            {platformInfo.isTV
-              ? '• Use D-pad to navigate\n• Select button = press\n• Back button = go back'
+            {platformInfo.isTVOS
+              ? '• Swipe on Siri Remote to navigate\n• Click/Press to select\n• Menu button = go back\n• Play/Pause for media'
+              : platformInfo.isAndroidTV
+              ? '• Use D-pad to navigate\n• Select/Enter = press\n• Back button = go back'
               : '• Long-press to simulate focus\n• Tap to interact'}
           </Text>
         </View>

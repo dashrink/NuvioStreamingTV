@@ -38,6 +38,27 @@ export const isTV = (): boolean => {
 };
 
 /**
+ * tvOS parallax effect properties
+ * Controls the 3D tilt effect when navigating with Siri Remote
+ */
+export interface TVParallaxProperties {
+  /** Enable parallax effects (default: true on tvOS) */
+  enabled?: boolean;
+  /** Amount of horizontal parallax shift (default: 2.0) */
+  shiftDistanceX?: number;
+  /** Amount of vertical parallax shift (default: 2.0) */
+  shiftDistanceY?: number;
+  /** Tilt angle in degrees (default: 0.05) */
+  tiltAngle?: number;
+  /** Magnification factor on focus (default: 1.0) */
+  magnification?: number;
+  /** Press depth effect (default: 0.2) */
+  pressMagnification?: number;
+  /** Press duration in seconds (default: 0.3) */
+  pressDuration?: number;
+}
+
+/**
  * Check if the app is running on Apple TV (tvOS)
  */
 export const isTVOS = (): boolean => {
@@ -91,11 +112,16 @@ export interface UseTVFocusOptions {
    * Android TV: ID of the element to focus when pressing the forward navigation button
    */
   nextFocusForward?: number;
+  /**
+   * tvOS: Enable parallax effect on focused element
+   * Creates a subtle 3D tilt effect when swiping on Siri Remote
+   */
+  tvParallaxProperties?: TVParallaxProperties;
 }
 
 /**
  * Focus props to spread onto focusable elements
- * Includes Android TV-specific D-pad navigation props
+ * Includes Android TV-specific D-pad navigation props and tvOS parallax props
  */
 export interface TVFocusProps {
   focusable: boolean;
@@ -114,6 +140,8 @@ export interface TVFocusProps {
   nextFocusForward?: number;
   /** Android TV: Disable focus when component is disabled (accessibility) */
   inaccessibleWhenDisabled?: boolean;
+  /** tvOS: Parallax effect properties for Siri Remote navigation */
+  tvParallaxProperties?: TVParallaxProperties;
 }
 
 /**
@@ -183,6 +211,8 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
     nextFocusLeft,
     nextFocusRight,
     nextFocusForward,
+    // tvOS parallax options
+    tvParallaxProperties,
   } = options;
 
   // Determine if we're on a TV platform
@@ -259,7 +289,7 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
   }, [focusAnim]);
 
   // Props to spread onto the focusable element
-  // Includes Android TV-specific D-pad navigation props when provided
+  // Includes Android TV-specific D-pad navigation props and tvOS parallax props when provided
   const focusProps: TVFocusProps = {
     focusable: isTVFocusEnabled,
     hasTVPreferredFocus: isTVFocusEnabled && hasTVPreferredFocus,
@@ -273,6 +303,8 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
     ...(isAndroidTVPlatform && nextFocusForward !== undefined && { nextFocusForward }),
     // Accessibility: Make disabled elements non-focusable on Android TV
     ...(isAndroidTVPlatform && disabled && { inaccessibleWhenDisabled: true }),
+    // tvOS parallax properties (only include if provided and on tvOS)
+    ...(isTVOSPlatform && tvParallaxProperties && { tvParallaxProperties }),
   };
 
   return {
