@@ -25,6 +25,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { mmkvStorage } from '../services/mmkvStorage';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -196,6 +197,7 @@ const OnboardingScreen = () => {
   });
 
   const handleNext = () => {
+    triggerMedium();
     if (currentIndex < onboardingData.length - 1) {
       const nextIndex = currentIndex + 1;
       flatListRef.current?.scrollToOffset({
@@ -208,6 +210,7 @@ const OnboardingScreen = () => {
   };
 
   const handleSkip = () => {
+    triggerLight();
     (async () => {
       try {
         await mmkvStorage.setItem('hasCompletedOnboarding', 'true');
