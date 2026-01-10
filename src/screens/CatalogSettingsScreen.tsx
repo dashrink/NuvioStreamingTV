@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   Switch,
-  ActivityIndicator,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
@@ -15,6 +14,7 @@ import {
   Pressable,
   Button,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -519,7 +519,7 @@ const CatalogSettingsScreen = () => {
         </View>
         <Text style={styles.headerTitle}>Catalogs</Text>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <UnifiedSpinner size="large" />
         </View>
       </SafeAreaView>
     );
