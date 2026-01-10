@@ -94,7 +94,22 @@
       "description": "BackupScreen now uses UnifiedSpinner from '../components/loading' for button loading state. Uses size=\"small\" and color=\"#FFFFFF\" for white spinner contrast on primary button background. Only the Create Backup button has loading state - Restore button doesn't need one since it opens a file picker dialog.",
       "category": "migration",
       "discovered_at": "2026-01-10T01:27:08.097063+00:00"
+    },
+    "src/screens/AccountManageScreen.tsx": {
+      "description": "AccountManageScreen now uses UnifiedSpinner from '../components/loading' for save button loading state. Uses size=\"small\" and color={currentTheme.colors.white} for white spinner contrast on elevation2 button background. The saving state variable controls visibility of the spinner vs save button content.",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:28:31.236491+00:00"
+    },
+    "src/screens/HeroCatalogsScreen.tsx": {
+      "description": "HeroCatalogsScreen now uses UnifiedSpinner from '../components/loading' for its loading state. Uses size=\"large\" and text=\"Loading catalogs...\" prop. The screen displays catalog selection for hero section with loading state while fetching addons from catalogService.",
+      "category": "loading_migration",
+      "discovered_at": "2026-01-10T01:30:16.228496+00:00"
+    },
+    "src/screens/ShowRatingsScreen.tsx": {
+      "description": "ShowRatingsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: main loading (size=\"large\" with text), Suspense fallback (size=\"large\" with text), and loading seasons indicator (size=\"small\"). The screen displays episode ratings in a grid format with support for multiple rating sources (TMDB, IMDb, TVMaze).",
+      "category": "loading-migration",
+      "discovered_at": "2026-01-10T01:32:00.725241+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:27:08.097072+00:00"
+  "last_updated": "2026-01-10T01:32:00.725249+00:00"
 }

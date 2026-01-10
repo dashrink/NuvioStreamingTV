@@ -341,14 +341,16 @@
           "id": "3.6",
           "title": "Migrate AccountManageScreen loading",
           "description": "Replace ActivityIndicator in AccountManageScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/AccountManageScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Maintain appropriate color for context"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator with UnifiedSpinner in AccountManageScreen. Changes: 1) Removed ActivityIndicator from react-native imports, 2) Added UnifiedSpinner import from '../components/loading', 3) Replaced ActivityIndicator with UnifiedSpinner (size=\"small\", color={currentTheme.colors.white}) in save button loading state. Maintains theme-aware white color for contrast on elevated button background.",
+          "updated_at": "2026-01-10T01:28:31.203366+00:00"
         }
       ]
     },
@@ -362,27 +364,31 @@
           "id": "4.1",
           "title": "Migrate HeroCatalogsScreen loading",
           "description": "Replace ActivityIndicator in HeroCatalogsScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/HeroCatalogsScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Theme-aware colors"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator with UnifiedSpinner in HeroCatalogsScreen. Used UnifiedSpinner's built-in text prop to combine spinner and loading text into single component. Removed unused loadingText style.",
+          "updated_at": "2026-01-10T01:30:10.531064+00:00"
         },
         {
           "id": "4.2",
           "title": "Migrate ShowRatingsScreen loading",
           "description": "Replace ActivityIndicator instances in ShowRatingsScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/ShowRatingsScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace all ActivityIndicator instances with UnifiedSpinner",
             "Use appropriate sizes for different contexts"
-          ]
+          ],
+          "notes": "Replaced all 3 ActivityIndicator instances in ShowRatingsScreen with UnifiedSpinner: (1) Main loading state - size=\"large\" with text=\"Loading show data...\", (2) Suspense fallback - size=\"large\" with text=\"Loading content...\", (3) Loading seasons indicator - size=\"small\". Removed unused loadingText style since UnifiedSpinner has built-in text support. Committed as f8440f0.",
+          "updated_at": "2026-01-10T01:32:00.692448+00:00"
         },
         {
           "id": "4.3",
@@ -576,5 +582,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T01:27:08.049845+00:00"
+  "last_updated": "2026-01-10T01:32:00.692457+00:00"
 }

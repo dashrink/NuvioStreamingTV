@@ -11646,6 +11646,42 @@
         }
       ],
       "status": "completed"
+    },
+    "3.6": {
+      "attempts": [
+        {
+          "session": 1653,
+          "timestamp": "2026-01-10T05:28:37.262952",
+          "approach": "Implemented: Replace ActivityIndicator in AccountManageScreen with UnifiedSpinner",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "4.1": {
+      "attempts": [
+        {
+          "session": 1654,
+          "timestamp": "2026-01-10T05:30:27.563074",
+          "approach": "Implemented: Replace ActivityIndicator in HeroCatalogsScreen with UnifiedSpinner",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "4.2": {
+      "attempts": [
+        {
+          "session": 1655,
+          "timestamp": "2026-01-10T05:32:11.477266",
+          "approach": "Implemented: Replace ActivityIndicator instances in ShowRatingsScreen with UnifiedSpinner",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [
@@ -11658,6 +11694,6 @@
   ],
   "metadata": {
     "created_at": "2026-01-10T01:17:49.781269",
-    "last_updated": "2026-01-10T05:27:17.563537"
+    "last_updated": "2026-01-10T05:32:11.477273"
   }
 }
