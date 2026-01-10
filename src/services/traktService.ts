@@ -2904,6 +2904,41 @@ export class TraktService {
   }
 
   /**
+   * Add a rating for content on Trakt (1-10 scale)
+   * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
+   * @param type - Content type: 'movie' or 'show'
+   * @param rating - Rating value from 1 to 10
+   * @returns Promise<boolean> - true if rating was added successfully
+   */
+  public async addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> {
+    try {
+      if (!await this.isAuthenticated()) {
+        return false;
+      }
+
+      // Validate rating is within 1-10 range
+      if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
+        logger.error(`[TraktService] Invalid rating value: ${rating}. Must be an integer between 1 and 10.`);
+        return false;
+      }
+
+      // Ensure IMDb ID includes the 'tt' prefix
+      const imdbIdWithPrefix = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+      const payload = type === 'movie'
+        ? { movies: [{ ids: { imdb: imdbIdWithPrefix }, rating }] }
+        : { shows: [{ ids: { imdb: imdbIdWithPrefix }, rating }] };
+
+      await this.apiRequest('/sync/ratings', 'POST', payload);
+      logger.log(`[TraktService] Added rating ${rating} for ${type}: ${imdbId}`);
+      return true;
+    } catch (error) {
+      logger.error(`[TraktService] Failed to add rating for ${type}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Handle app state changes to reduce memory pressure
    */
   private handleAppStateChange = (nextState: AppStateStatus) => {
