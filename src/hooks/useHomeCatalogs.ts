@@ -3,6 +3,7 @@ import { CatalogContent, catalogService } from '../services/catalogService';
 import { logger } from '../utils/logger';
 import { useCatalogContext } from '../contexts/CatalogContext';
 import { addonEmitter, ADDON_EVENTS } from '../services/stremioService';
+import { useActiveProfile } from '../contexts/ProfileContext';
 
 export function useHomeCatalogs() {
   const [catalogs, setCatalogs] = useState<CatalogContent[]>([]);
@@ -10,6 +11,13 @@ export function useHomeCatalogs() {
   const [refreshing, setRefreshing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const { lastUpdate } = useCatalogContext();
+
+  // Get active profile for profile-specific catalogs
+  const { activeProfile } = useActiveProfile();
+  const profileId = activeProfile?.id;
+
+  // Track previous profile ID to detect profile switches
+  const prevProfileIdRef = useRef<string | undefined>(profileId);
 
   const cleanup = useCallback(() => {
     if (abortControllerRef.current) {
@@ -72,6 +80,16 @@ export function useHomeCatalogs() {
   useEffect(() => {
     loadCatalogs();
   }, [loadCatalogs, lastUpdate]);
+
+  // Handle profile changes - reload catalogs when profile switches
+  useEffect(() => {
+    if (prevProfileIdRef.current !== profileId) {
+      logger.info('[useHomeCatalogs] Profile changed, refreshing catalogs');
+      prevProfileIdRef.current = profileId;
+      // Reload catalogs for the new profile
+      loadCatalogs();
+    }
+  }, [profileId, loadCatalogs]);
 
   // Subscribe to addon events to refresh catalogs when addons change
   useEffect(() => {

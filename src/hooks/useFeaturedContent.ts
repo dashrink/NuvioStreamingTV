@@ -8,29 +8,59 @@ import * as Haptics from 'expo-haptics';
 import { useGenres } from '../contexts/GenreContext';
 import { useSettings, settingsEmitter } from './useSettings';
 import { isTmdbUrl } from '../utils/logoUtils';
+import { useActiveProfile } from '../contexts/ProfileContext';
 
-// Create a persistent store outside of the hook to maintain state between navigation
-const persistentStore = {
-  featuredContent: null as StreamingContent | null,
-  allFeaturedContent: [] as StreamingContent[],
-  lastFetchTime: 0,
-  isFirstLoad: true,
-  // Track last used settings to detect changes on app restart
-  lastSettings: {
-    showHeroSection: true,
-    featuredContentSource: 'tmdb' as 'tmdb' | 'catalogs',
-    selectedHeroCatalogs: [] as string[],
-    logoSourcePreference: 'tmdb' as 'metahub' | 'tmdb',
-    tmdbLanguagePreference: 'en'
+// Profile-scoped persistent store to maintain state between navigation per profile
+interface ProfileStoreData {
+  featuredContent: StreamingContent | null;
+  allFeaturedContent: StreamingContent[];
+  lastFetchTime: number;
+  isFirstLoad: boolean;
+}
+
+// Map of profile ID to store data (undefined key = no profile / default)
+const profileStoreMap = new Map<string | undefined, ProfileStoreData>();
+
+// Get or create store data for a profile
+const getProfileStore = (profileId: string | undefined): ProfileStoreData => {
+  if (!profileStoreMap.has(profileId)) {
+    profileStoreMap.set(profileId, {
+      featuredContent: null,
+      allFeaturedContent: [],
+      lastFetchTime: 0,
+      isFirstLoad: true,
+    });
   }
+  return profileStoreMap.get(profileId)!;
+};
+
+// Global settings tracker (not profile-specific)
+const lastSettingsTracker = {
+  showHeroSection: true,
+  featuredContentSource: 'tmdb' as 'tmdb' | 'catalogs',
+  selectedHeroCatalogs: [] as string[],
+  logoSourcePreference: 'tmdb' as 'metahub' | 'tmdb',
+  tmdbLanguagePreference: 'en'
 };
 
 // Cache timeout in milliseconds (e.g., 5 minutes)
 const CACHE_TIMEOUT = 5 * 60 * 1000;
-const STORAGE_KEY = 'featured_content_cache_v1';
+const STORAGE_KEY_PREFIX = 'featured_content_cache_v2';
 const DISABLE_CACHE = true;
 
+// Helper to get profile-specific storage key
+const getStorageKey = (profileId: string | undefined): string => {
+  return profileId ? `${STORAGE_KEY_PREFIX}:profile:${profileId}` : STORAGE_KEY_PREFIX;
+};
+
 export function useFeaturedContent() {
+  // Get active profile for profile-specific content
+  const { activeProfile } = useActiveProfile();
+  const profileId = activeProfile?.id;
+
+  // Get profile-specific persistent store
+  const persistentStore = getProfileStore(profileId);
+
   const [featuredContent, setFeaturedContent] = useState<StreamingContent | null>(persistentStore.featuredContent);
   const [allFeaturedContent, setAllFeaturedContent] = useState<StreamingContent[]>(persistentStore.allFeaturedContent);
   const [isSaved, setIsSaved] = useState(false);
@@ -40,6 +70,9 @@ export function useFeaturedContent() {
   const { settings } = useSettings();
   const [contentSource, setContentSource] = useState<'tmdb' | 'catalogs'>('catalogs');
   const [selectedCatalogs, setSelectedCatalogs] = useState<string[]>(settings.selectedHeroCatalogs || []);
+
+  // Track previous profile ID to detect profile switches
+  const prevProfileIdRef = useRef<string | undefined>(profileId);
 
   const { genreMap, loadingGenres } = useGenres();
 
@@ -258,7 +291,7 @@ export function useFeaturedContent() {
       // Handle case where we finished all fetches but found NOTHING
       if (accumulatedContent.length === 0) {
         // Fall back to any cached featured item so UI can render something
-        const cachedJson = await mmkvStorage.getItem(STORAGE_KEY).catch(() => null);
+        const cachedJson = await mmkvStorage.getItem(getStorageKey(profileId)).catch(() => null);
         if (cachedJson) {
           try {
             const parsed = JSON.parse(cachedJson);
@@ -287,7 +320,7 @@ export function useFeaturedContent() {
         persistentStore.lastFetchTime = now;
         try {
           await mmkvStorage.setItem(
-            STORAGE_KEY,
+            getStorageKey(profileId),
             JSON.stringify({
               ts: now,
               featuredContent: accumulatedContent[0],
@@ -305,7 +338,7 @@ export function useFeaturedContent() {
         setLoading(false);
       }
     }
-  }, [cleanup, genreMap, loadingGenres, selectedCatalogs]);
+  }, [cleanup, genreMap, loadingGenres, selectedCatalogs, profileId]);
 
   // Hydrate from persisted cache immediately for instant render
   useEffect(() => {
@@ -316,7 +349,7 @@ export function useFeaturedContent() {
     let cancelled = false;
     (async () => {
       try {
-        const json = await mmkvStorage.getItem(STORAGE_KEY);
+        const json = await mmkvStorage.getItem(getStorageKey(profileId));
         if (!json) return;
         const parsed = JSON.parse(json);
         if (cancelled) return;
@@ -335,25 +368,23 @@ export function useFeaturedContent() {
       } catch { }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [profileId]);
 
   // Check for settings changes, including during app restart
   useEffect(() => {
     // Check if settings changed while app was closed
     const settingsChanged =
-      persistentStore.lastSettings.showHeroSection !== settings.showHeroSection ||
-      JSON.stringify(persistentStore.lastSettings.selectedHeroCatalogs) !== JSON.stringify(settings.selectedHeroCatalogs) ||
-      persistentStore.lastSettings.logoSourcePreference !== settings.logoSourcePreference ||
-      persistentStore.lastSettings.tmdbLanguagePreference !== settings.tmdbLanguagePreference;
+      lastSettingsTracker.showHeroSection !== settings.showHeroSection ||
+      JSON.stringify(lastSettingsTracker.selectedHeroCatalogs) !== JSON.stringify(settings.selectedHeroCatalogs) ||
+      lastSettingsTracker.logoSourcePreference !== settings.logoSourcePreference ||
+      lastSettingsTracker.tmdbLanguagePreference !== settings.tmdbLanguagePreference;
 
     // Update our tracking of last used settings
-    persistentStore.lastSettings = {
-      showHeroSection: settings.showHeroSection,
-      featuredContentSource: 'catalogs',
-      selectedHeroCatalogs: [...settings.selectedHeroCatalogs],
-      logoSourcePreference: settings.logoSourcePreference,
-      tmdbLanguagePreference: settings.tmdbLanguagePreference
-    };
+    lastSettingsTracker.showHeroSection = settings.showHeroSection;
+    lastSettingsTracker.featuredContentSource = 'catalogs';
+    lastSettingsTracker.selectedHeroCatalogs = [...settings.selectedHeroCatalogs];
+    lastSettingsTracker.logoSourcePreference = settings.logoSourcePreference;
+    lastSettingsTracker.tmdbLanguagePreference = settings.tmdbLanguagePreference;
 
     // Force refresh if settings changed during app restart, but only if we have content
     if (settingsChanged && persistentStore.featuredContent) {
@@ -370,16 +401,16 @@ export function useFeaturedContent() {
       const nextTmdbLang = settings.tmdbLanguagePreference;
 
       const catalogsChanged = JSON.stringify(selectedCatalogs) !== JSON.stringify(nextSelected);
-      const logoPrefChanged = persistentStore.lastSettings.logoSourcePreference !== nextLogoPref;
-      const tmdbLangChanged = persistentStore.lastSettings.tmdbLanguagePreference !== nextTmdbLang;
+      const logoPrefChanged = lastSettingsTracker.logoSourcePreference !== nextLogoPref;
+      const tmdbLangChanged = lastSettingsTracker.tmdbLanguagePreference !== nextTmdbLang;
 
       if (catalogsChanged || logoPrefChanged || tmdbLangChanged) {
 
         // Update internal state immediately so dependent effects are in sync
         setSelectedCatalogs(nextSelected);
         // Update tracked last settings for subsequent comparisons
-        persistentStore.lastSettings.logoSourcePreference = nextLogoPref;
-        persistentStore.lastSettings.tmdbLanguagePreference = nextTmdbLang;
+        lastSettingsTracker.logoSourcePreference = nextLogoPref;
+        lastSettingsTracker.tmdbLanguagePreference = nextTmdbLang;
 
         // Only clear current data if it's a significant change (source or catalogs)
         if (catalogsChanged) {
@@ -399,6 +430,22 @@ export function useFeaturedContent() {
 
     return unsubscribe;
   }, [loadFeaturedContent, settings, contentSource, selectedCatalogs]);
+
+  // Handle profile changes - reload content when profile switches
+  useEffect(() => {
+    if (prevProfileIdRef.current !== profileId) {
+      // Profile changed, update state from the new profile's persistent store
+      const newStore = getProfileStore(profileId);
+      setFeaturedContent(newStore.featuredContent);
+      setAllFeaturedContent(newStore.allFeaturedContent);
+      setLoading(newStore.isFirstLoad);
+      currentIndexRef.current = 0;
+      prevProfileIdRef.current = profileId;
+
+      // Trigger a fresh load for the new profile
+      loadFeaturedContent(true);
+    }
+  }, [profileId, loadFeaturedContent]);
 
   useEffect(() => {
     // Always use catalogs
