@@ -19,6 +19,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import Focusable from '../components/common/Focusable';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -64,11 +65,16 @@ const SettingItem: React.FC<SettingItemProps> = ({
   const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
 
   return (
-    <TouchableOpacity 
-      activeOpacity={onPress ? 0.7 : 1}
+    <Focusable
+      variant="listItem"
       onPress={onPress}
+      enableScale={false}
+      enableGlow={false}
+      borderRadius={0}
+      accessibilityLabel={title}
+      accessibilityHint={description || `Setting for ${title}`}
       style={[
-        styles.settingItem, 
+        styles.settingItem,
         !isLast && styles.settingItemBorder,
         { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }
       ]}
@@ -91,7 +97,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
       <View style={styles.settingControl}>
         {renderControl()}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 };
 
@@ -184,26 +190,31 @@ const HomeScreenSettings: React.FC = () => {
 
   // Radio button component for content source selection
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
-    <TouchableOpacity 
-      style={styles.radioOption} 
+    <Focusable
+      variant="listItem"
       onPress={onPress}
-      activeOpacity={0.7}
+      enableScale={false}
+      enableGlow={false}
+      borderRadius={8}
+      accessibilityLabel={label}
+      accessibilityHint={selected ? 'Currently selected' : 'Tap to select'}
+      style={styles.radioOption}
     >
       <View style={styles.radioContainer}>
         <View style={[
-          styles.radio, 
+          styles.radio,
           { borderColor: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }
         ]}>
           {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
         </View>
         <Text style={[
-          styles.radioLabel, 
+          styles.radioLabel,
           { color: isDarkMode ? colors.highEmphasis : colors.textDark }
         ]}>
           {label}
         </Text>
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   // Compact segmented control for nicer toggles
@@ -220,10 +231,15 @@ const HomeScreenSettings: React.FC = () => {
       {options.map((opt, idx) => {
         const selected = value === opt.value;
         return (
-          <TouchableOpacity
+          <Focusable
             key={opt.value}
+            variant="button"
             onPress={() => onChange(opt.value)}
-            activeOpacity={0.85}
+            enableScale={false}
+            enableGlow={false}
+            borderRadius={8}
+            accessibilityLabel={opt.label}
+            accessibilityHint={selected ? 'Currently selected' : 'Tap to select'}
             style={[
               styles.segment,
               idx === 0 && styles.segmentFirst,
@@ -238,7 +254,7 @@ const HomeScreenSettings: React.FC = () => {
             }}>
               {opt.label}
             </Text>
-          </TouchableOpacity>
+          </Focusable>
         );
       })}
     </View>
@@ -268,16 +284,26 @@ const HomeScreenSettings: React.FC = () => {
     ]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? colors.highEmphasis : colors.textDark} 
+        <Focusable
+          variant="button"
+          onPress={handleBack}
+          enableScale={false}
+          enableGlow={false}
+          borderRadius={8}
+          hasTVPreferredFocus={true}
+          accessibilityLabel="Back to Settings"
+          accessibilityHint="Navigate back to the main settings screen"
+          style={styles.backButton}
+        >
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? colors.highEmphasis : colors.textDark}
           />
           <Text style={[styles.backText, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
             Settings
           </Text>
-        </TouchableOpacity>
+        </Focusable>
         
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
@@ -356,14 +382,19 @@ const HomeScreenSettings: React.FC = () => {
             <View style={styles.segmentCard}>
               <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
               <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Using Catalogs</Text>
-              <TouchableOpacity
+              <Focusable
+                variant="listItem"
                 onPress={() => navigation.navigate('HeroCatalogs')}
+                enableScale={false}
+                enableGlow={false}
+                borderRadius={10}
+                accessibilityLabel="Manage selected catalogs"
+                accessibilityHint="Navigate to catalog selection screen"
                 style={[styles.manageLink, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' }]}
-                activeOpacity={0.8}
               >
                 <Text style={{ color: isDarkMode ? colors.highEmphasis : colors.textDark, fontWeight: '600' }}>Manage selected catalogs</Text>
                 <MaterialIcons name="chevron-right" size={20} color={isDarkMode ? colors.mediumEmphasis : colors.textMutedDark} />
-              </TouchableOpacity>
+              </Focusable>
             </View>
 
             {settings.heroStyle === 'carousel' && (
