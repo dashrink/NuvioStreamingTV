@@ -17,6 +17,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { TMDBService } from '../../services/tmdbService';
 import { catalogService } from '../../services/catalogService';
 import CustomAlert from '../../components/CustomAlert';
+import { triggerLight } from '../../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 
@@ -88,19 +89,20 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
   const [alertActions, setAlertActions] = React.useState<any[]>([]);
 
   const handleItemPress = async (item: StreamingContent) => {
+    triggerLight(); // Haptic feedback for item selection/navigation
     try {
       // Extract TMDB ID from the tmdb:123456 format
       const tmdbId = item.id.replace('tmdb:', '');
-      
+
       // Get Stremio ID directly using catalogService
       // The catalogService.getStremioId method already handles the conversion internally
       const stremioId = await catalogService.getStremioId(item.type, tmdbId);
-      
+
       if (stremioId) {
         navigation.dispatch(
-          StackActions.push('Metadata', { 
-            id: stremioId, 
-            type: item.type 
+          StackActions.push('Metadata', {
+            id: stremioId,
+            type: item.type
           })
         );
       } else {
