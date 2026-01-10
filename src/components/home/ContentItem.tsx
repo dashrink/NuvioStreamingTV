@@ -238,22 +238,26 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
         break;
       }
       case 'trakt-watchlist': {
-        if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
-          await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
+        // Convert 'series' to 'show' for Trakt API compatibility
+        const watchlistType = item.type === 'movie' ? 'movie' : 'show';
+        if (isInWatchlist(item.id, watchlistType)) {
+          await removeFromWatchlist(item.id, watchlistType);
           showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
         } else {
-          await addToWatchlist(item.id, item.type as 'movie' | 'show');
+          await addToWatchlist(item.id, watchlistType);
           showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
         }
         setMenuVisible(false);
         break;
       }
       case 'trakt-collection': {
-        if (isInCollection(item.id, item.type as 'movie' | 'show')) {
-          await removeFromCollection(item.id, item.type as 'movie' | 'show');
+        // Convert 'series' to 'show' for Trakt API compatibility
+        const collectionType = item.type === 'movie' ? 'movie' : 'show';
+        if (isInCollection(item.id, collectionType)) {
+          await removeFromCollection(item.id, collectionType);
           showInfo('Removed from Collection', 'Removed from your Trakt collection');
         } else {
-          await addToCollection(item.id, item.type as 'movie' | 'show');
+          await addToCollection(item.id, collectionType);
           showSuccess('Added to Collection', 'Added to your Trakt collection');
         }
         setMenuVisible(false);
@@ -351,12 +355,12 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 <Feather name="bookmark" size={16} color={currentTheme.colors.white} />
               </View>
             )}
-            {isAuthenticated && isInWatchlist(item.id, item.type as 'movie' | 'show') && (
+            {isAuthenticated && isInWatchlist(item.id, item.type === 'movie' ? 'movie' : 'show') && (
               <View style={styles.traktWatchlistIcon}>
                 <MaterialIcons name="playlist-add-check" size={16} color="#E74C3C" />
               </View>
             )}
-            {isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show') && (
+            {isAuthenticated && isInCollection(item.id, item.type === 'movie' ? 'movie' : 'show') && (
               <View style={styles.traktCollectionIcon}>
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
