@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -12,6 +11,7 @@ import {
   Linking,
   Switch,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import { useNavigation } from '@react-navigation/native';
 import { makeRedirectUri, useAuthRequest, ResponseType, Prompt, CodeChallengeMethod } from 'expo-auth-session';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -253,7 +253,7 @@ const TraktSettingsScreen: React.FC = () => {
         ]}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+              <UnifiedSpinner size="large" />
             </View>
           ) : isAuthenticated && userProfile ? (
             <View style={styles.profileContainer}>
@@ -341,7 +341,7 @@ const TraktSettingsScreen: React.FC = () => {
                 disabled={!request || isExchangingCode} // Disable while waiting for response or exchanging code
               >
                 {isExchangingCode ? (
-                  <ActivityIndicator size="small" color="white" />
+                  <UnifiedSpinner size="small" color="#FFFFFF" />
                 ) : (
                   <Text style={styles.buttonText}>
                     Sign In with Trakt
@@ -440,10 +440,7 @@ const TraktSettingsScreen: React.FC = () => {
                 }}
               >
                 {isSyncing ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={currentTheme.colors.primary}
-                  />
+                  <UnifiedSpinner size="small" />
                 ) : (
                   <Text style={[
                     styles.buttonText,

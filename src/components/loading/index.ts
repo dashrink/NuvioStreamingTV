@@ -102,3 +102,16 @@ export type {
   CastRowSkeletonProps,
   PosterGridSkeletonProps,
 } from './ContentSkeleton';
+
+// ============================================================================
+// Branded Loading Components
+// ============================================================================
+
+/**
+ * Branded loading spinners maintain service-specific visual identity
+ * while integrating with the unified loading system's timing and props.
+ */
+
+// Trakt branded spinner - used for Trakt-specific operations
+export { TraktLoadingSpinner, BRANDED_PULSE_DURATION } from '../common/TraktLoadingSpinner';
+export type { TraktLoadingSpinnerProps } from '../common/TraktLoadingSpinner';
