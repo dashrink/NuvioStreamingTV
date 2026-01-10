@@ -8,6 +8,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import ContentItem from './ContentItem';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface CatalogSectionProps {
   catalog: CatalogContent;
@@ -131,13 +132,14 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
           />
         </View>
         <TouchableOpacity
-          onPress={() =>
+          onPress={() => {
+            triggerLight(); // Haptic feedback for navigation
             navigation.navigate('Catalog', {
               id: catalog.id,
               type: catalog.type,
               addonId: catalog.addon
-            })
-          }
+            });
+          }}
           style={[
             styles.viewAllButton,
             {
