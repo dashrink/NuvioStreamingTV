@@ -8,6 +8,7 @@ import Animated, {
   SlideOutRight,
 } from 'react-native-reanimated';
 import { Stream } from '../../../types/streams';
+import Focusable from '../../common/Focusable';
 
 interface SourcesModalProps {
   showSourcesModal: boolean;
@@ -165,10 +166,21 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                   {providerData.streams.map((stream, index) => {
                     const isSelected = isStreamSelected(stream);
                     const quality = getQualityFromTitle(stream.title) || stream.quality;
+                    // First stream of first provider gets initial focus for TV navigation
+                    const isFirstStream = sortedProviders[0]?.[0] === providerId && index === 0;
 
                     return (
-                      <TouchableOpacity
+                      <Focusable
                         key={`${providerId}-${index}`}
+                        variant="modal"
+                        borderRadius={12}
+                        enableScale={false}
+                        enableGlow={false}
+                        onPress={() => handleStreamSelect(stream)}
+                        disabled={isChangingSource === true}
+                        hasTVPreferredFocus={isFirstStream}
+                        accessibilityLabel={`${stream.title || stream.name || `Stream ${index + 1}`}${quality ? `, ${quality}p quality` : ''}`}
+                        accessibilityHint={isSelected ? 'Currently selected' : 'Double tap to select this source'}
                         style={{
                           backgroundColor: isSelected ? 'white' : 'rgba(255,255,255,0.06)',
                           borderRadius: 12,
@@ -177,9 +189,6 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                           borderColor: isSelected ? 'white' : 'rgba(255,255,255,0.1)',
                           opacity: (isChangingSource && !isSelected) ? 0.6 : 1,
                         }}
-                        onPress={() => handleStreamSelect(stream)}
-                        activeOpacity={0.7}
-                        disabled={isChangingSource === true}
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                           <View style={{ flex: 1 }}>
@@ -240,7 +249,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                             )}
                           </View>
                         </View>
-                      </TouchableOpacity>
+                      </Focusable>
                     );
                   })}
                 </View>

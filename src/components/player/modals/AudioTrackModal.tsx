@@ -8,6 +8,7 @@ import Animated, {
   SlideOutRight,
 } from 'react-native-reanimated';
 import { getTrackDisplayName } from '../utils/playerUtils';
+import Focusable from '../../common/Focusable';
 
 interface AudioTrackModalProps {
   showAudioModal: boolean;
@@ -62,16 +63,24 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
           contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
         >
           <View style={{ gap: 8 }}>
-            {ksAudioTracks.map((track) => {
+            {ksAudioTracks.map((track, index) => {
               const isSelected = selectedAudioTrack === track.id;
+              const trackDisplayName = getTrackDisplayName(track);
 
               return (
-                <TouchableOpacity
+                <Focusable
                   key={track.id}
+                  variant="modal"
+                  borderRadius={12}
+                  enableScale={false}
+                  enableGlow={false}
                   onPress={() => {
                     selectAudioTrack(track.id);
                     setTimeout(handleClose, 200);
                   }}
+                  hasTVPreferredFocus={index === 0}
+                  accessibilityLabel={trackDisplayName}
+                  accessibilityHint={isSelected ? 'Currently selected audio track' : 'Double tap to select this audio track'}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 12,
@@ -90,11 +99,11 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                       fontWeight: isSelected ? '700' : '500',
                       fontSize: 15
                     }}>
-                      {getTrackDisplayName(track)}
+                      {trackDisplayName}
                     </Text>
                   </View>
                   {isSelected && <MaterialIcons name="check" size={18} color="black" />}
-                </TouchableOpacity>
+                </Focusable>
               );
             })}
 

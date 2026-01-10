@@ -11,6 +11,7 @@ import { StyleSheet } from 'react-native';
 import { WyzieSubtitle, SubtitleCue } from '../utils/playerTypes';
 import { getTrackDisplayName, formatLanguage } from '../utils/playerUtils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Focusable from '../../common/Focusable';
 
 interface SubtitleModalsProps {
   showSubtitleModal: boolean;
@@ -223,10 +224,17 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
               { key: 'built-in', label: 'Built‑in' },
               { key: 'addon', label: 'Addons' },
               { key: 'appearance', label: 'Appearance' },
-            ] as const).map(tab => (
-              <TouchableOpacity
+            ] as const).map((tab, index) => (
+              <Focusable
                 key={tab.key}
+                variant="button"
+                borderRadius={16}
+                enableScale={false}
+                enableGlow={false}
                 onPress={() => setActiveTab(tab.key)}
+                hasTVPreferredFocus={index === 0}
+                accessibilityLabel={`${tab.label} tab`}
+                accessibilityHint={activeTab === tab.key ? 'Currently selected' : `Double tap to switch to ${tab.label}`}
                 style={{
                   paddingHorizontal: chipPadH,
                   paddingVertical: chipPadV,
@@ -237,7 +245,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                 }}
               >
                 <Text style={{ color: '#fff', fontWeight: '600', fontSize: isCompact ? 12 : 13 }}>{tab.label}</Text>
-              </TouchableOpacity>
+              </Focusable>
             ))}
           </View>
 
@@ -293,7 +301,17 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                 )}
 
                 {/* Disable Subtitles Button */}
-                <TouchableOpacity
+                <Focusable
+                  variant="modal"
+                  borderRadius={16}
+                  enableScale={false}
+                  enableGlow={false}
+                  onPress={() => {
+                    selectTextTrack(-1);
+                    setSelectedOnlineSubtitleId(null);
+                  }}
+                  accessibilityLabel="Disable all subtitles"
+                  accessibilityHint={selectedTextTrack === -1 ? 'Subtitles are currently disabled' : 'Double tap to disable subtitles'}
                   style={{
                     backgroundColor: selectedTextTrack === -1 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                     borderRadius: 16,
@@ -302,11 +320,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     borderColor: selectedTextTrack === -1 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                     marginBottom: 8,
                   }}
-                  onPress={() => {
-                    selectTextTrack(-1);
-                    setSelectedOnlineSubtitleId(null);
-                  }}
-                  activeOpacity={0.7}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{
@@ -321,16 +334,27 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       <MaterialIcons name="check" size={20} color="#EF4444" />
                     )}
                   </View>
-                </TouchableOpacity>
+                </Focusable>
 
                 {/* Always show built-in subtitles */}
                 {ksTextTracks.length > 0 && (
                   <View style={{ gap: 8 }}>
                     {ksTextTracks.map((track) => {
                       const isSelected = selectedTextTrack === track.id && !useCustomSubtitles;
+                      const trackDisplayName = getTrackDisplayName(track);
                       return (
-                        <TouchableOpacity
+                        <Focusable
                           key={track.id}
+                          variant="modal"
+                          borderRadius={16}
+                          enableScale={false}
+                          enableGlow={false}
+                          onPress={() => {
+                            selectTextTrack(track.id);
+                            setSelectedOnlineSubtitleId(null);
+                          }}
+                          accessibilityLabel={trackDisplayName}
+                          accessibilityHint={isSelected ? 'Currently selected subtitle track' : 'Double tap to select this subtitle track'}
                           style={{
                             backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 16,
@@ -338,11 +362,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                             borderWidth: 1,
                             borderColor: isSelected ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                           }}
-                          onPress={() => {
-                            selectTextTrack(track.id);
-                            setSelectedOnlineSubtitleId(null);
-                          }}
-                          activeOpacity={0.7}
                         >
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={{
@@ -351,13 +370,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                               fontWeight: '500',
                               flex: 1,
                             }}>
-                              {getTrackDisplayName(track)}
+                              {trackDisplayName}
                             </Text>
                             {isSelected && (
                               <MaterialIcons name="check" size={20} color="#3B82F6" />
                             )}
                           </View>
-                        </TouchableOpacity>
+                        </Focusable>
                       );
                     })}
                   </View>
@@ -384,7 +403,17 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     {useCustomSubtitles && (
-                      <TouchableOpacity
+                      <Focusable
+                        variant="button"
+                        borderRadius={12}
+                        enableScale={false}
+                        enableGlow={false}
+                        onPress={() => {
+                          disableCustomSubtitles();
+                          setSelectedOnlineSubtitleId(null);
+                        }}
+                        accessibilityLabel="Disable addon subtitles"
+                        accessibilityHint="Double tap to disable addon subtitles"
                         style={{
                           backgroundColor: 'rgba(239, 68, 68, 0.15)',
                           borderRadius: 12,
@@ -393,11 +422,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                           flexDirection: 'row',
                           alignItems: 'center',
                         }}
-                        onPress={() => {
-                          disableCustomSubtitles();
-                          setSelectedOnlineSubtitleId(null);
-                        }}
-                        activeOpacity={0.7}
                       >
                         <MaterialIcons name="close" size={16} color="#EF4444" />
                         <Text style={{
@@ -408,9 +432,17 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                         }}>
                           Disable
                         </Text>
-                      </TouchableOpacity>
+                      </Focusable>
                     )}
-                    <TouchableOpacity
+                    <Focusable
+                      variant="button"
+                      borderRadius={12}
+                      enableScale={false}
+                      enableGlow={false}
+                      onPress={() => fetchAvailableSubtitles()}
+                      disabled={isLoadingSubtitleList}
+                      accessibilityLabel={isLoadingSubtitleList ? 'Searching for subtitles' : 'Refresh subtitle list'}
+                      accessibilityHint="Double tap to search for available subtitles"
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.15)',
                         borderRadius: 12,
@@ -419,8 +451,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}
-                      onPress={() => fetchAvailableSubtitles()}
-                      disabled={isLoadingSubtitleList}
                     >
                       {isLoadingSubtitleList ? (
                         <ActivityIndicator size="small" color="#22C55E" />
@@ -435,12 +465,19 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       }}>
                         {isLoadingSubtitleList ? 'Searching' : 'Refresh'}
                       </Text>
-                    </TouchableOpacity>
+                    </Focusable>
                   </View>
                 </View>
 
                 {(availableSubtitles.length === 0) && !isLoadingSubtitleList ? (
-                  <TouchableOpacity
+                  <Focusable
+                    variant="modal"
+                    borderRadius={16}
+                    enableScale={false}
+                    enableGlow={false}
+                    onPress={() => fetchAvailableSubtitles()}
+                    accessibilityLabel="Fetch subtitles from addons"
+                    accessibilityHint="Double tap to search for available subtitles"
                     style={{
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       borderRadius: 16,
@@ -450,8 +487,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       borderColor: 'rgba(255, 255, 255, 0.1)',
                       borderStyle: 'dashed',
                     }}
-                    onPress={() => fetchAvailableSubtitles()}
-                    activeOpacity={0.7}
                   >
                     <MaterialIcons name="cloud-download" size={24} color="rgba(255,255,255,0.4)" />
                     <Text style={{
@@ -462,7 +497,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     }}>
                       Tap to fetch from addons
                     </Text>
-                  </TouchableOpacity>
+                  </Focusable>
                 ) : isLoadingSubtitleList ? (
                   <View style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -481,11 +516,22 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   </View>
                 ) : (
                   <View style={{ gap: 8 }}>
-                    {availableSubtitles.map((sub) => {
+                    {availableSubtitles.map((sub, index) => {
                       const isSelected = useCustomSubtitles && selectedOnlineSubtitleId === sub.id;
                       return (
-                        <TouchableOpacity
+                        <Focusable
                           key={sub.id}
+                          variant="modal"
+                          borderRadius={16}
+                          enableScale={false}
+                          enableGlow={false}
+                          onPress={() => {
+                            handleLoadWyzieSubtitle(sub);
+                          }}
+                          disabled={isLoadingSubtitles}
+                          hasTVPreferredFocus={index === 0}
+                          accessibilityLabel={`${sub.display}, ${formatLanguage(sub.language)}${sub.source ? `, from ${sub.source}` : ''}`}
+                          accessibilityHint={isSelected ? 'Currently selected subtitle' : 'Double tap to load this subtitle'}
                           style={{
                             backgroundColor: isSelected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 16,
@@ -493,11 +539,6 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                             borderWidth: 1,
                             borderColor: isSelected ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                           }}
-                          onPress={() => {
-                            handleLoadWyzieSubtitle(sub);
-                          }}
-                          activeOpacity={0.7}
-                          disabled={isLoadingSubtitles}
                         >
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <View style={{ flex: 1 }}>
@@ -525,7 +566,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                               <MaterialIcons name="download" size={20} color="rgba(255,255,255,0.4)" />
                             )}
                           </View>
-                        </TouchableOpacity>
+                        </Focusable>
                       );
                     })}
                   </View>
