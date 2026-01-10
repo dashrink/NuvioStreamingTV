@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { DeviceEventEmitter } from 'react-native';
-import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,6 +13,7 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import Focusable from '../common/Focusable';
 
 interface ContentItemProps {
   item: StreamingContent;
@@ -302,12 +303,15 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   return (
     <>
       <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
-        <TouchableOpacity
+        <Focusable
+          variant="card"
+          borderRadius={borderRadius}
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
           activeOpacity={0.7}
           onPress={handlePress}
           onLongPress={handleLongPress}
-          delayLongPress={300}
+          accessibilityLabel={item.name}
+          accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'show'} details`}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}
@@ -362,7 +366,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
               </View>
             )}
           </View>
-        </TouchableOpacity>
+        </Focusable>
         {settings.showPosterTitles && (
           <Text
             style={[
@@ -402,13 +406,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
-    elevation: Platform.OS === 'android' ? 1 : 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
+    // Note: Border, shadow, and elevation are now handled by Focusable component
+    // which animates border/glow on focus for TV remote navigation
     marginBottom: 8,
   },
   contentItemContainer: {
