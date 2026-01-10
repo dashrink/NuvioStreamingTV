@@ -19,6 +19,7 @@ import { StreamingContent, catalogService } from '../../services/catalogService'
 import { LinearGradient } from 'expo-linear-gradient';
 import FastImage from '@d11/react-native-fast-image';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useProfileContext } from '../../contexts/ProfileContext';
 import { storageService } from '../../services/storageService';
 import { logger } from '../../utils/logger';
 import * as Haptics from 'expo-haptics';
@@ -101,6 +102,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
+  const { activeProfile } = useProfileContext();
   const [continueWatchingItems, setContinueWatchingItems] = useState<ContinueWatchingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const appState = useRef(AppState.currentState);
@@ -346,11 +348,38 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
         return;
       }
 
-      // Group progress items by content ID
+      // Get the active profile ID for filtering watch progress
+      const profileId = activeProfile?.id;
+
+      // Group progress items by content ID, filtered by profile
       const contentGroups: Record<string, { type: string; id: string; episodes: Array<{ key: string; episodeId?: string; progress: any; progressPercent: number }> }> = {};
       for (const key in allProgress) {
-        const keyParts = key.split(':');
-        const [type, id, ...episodeIdParts] = keyParts;
+        // Filter by profile if activeProfile is set
+        // Keys with profile have format: profile:${profileId}:${type}:${id}:...
+        // Keys without profile (legacy) have format: ${type}:${id}:...
+        if (profileId) {
+          const hasProfilePrefix = key.startsWith(`profile:${profileId}:`);
+          const isLegacyKey = !key.startsWith('profile:');
+          // Include both profile-specific keys and legacy keys (for migration)
+          if (!hasProfilePrefix && !isLegacyKey) continue;
+        }
+
+        // Parse key, handling both profile-scoped and legacy formats
+        let type: string;
+        let id: string;
+        let episodeIdParts: string[];
+
+        if (key.startsWith('profile:')) {
+          // Profile-scoped key: profile:${profileId}:${type}:${id}:${episodeId}
+          const afterProfile = key.replace(/^profile:[^:]+:/, '');
+          const keyParts = afterProfile.split(':');
+          [type, id, ...episodeIdParts] = keyParts;
+        } else {
+          // Legacy key: ${type}:${id}:${episodeId}
+          const keyParts = key.split(':');
+          [type, id, ...episodeIdParts] = keyParts;
+        }
+
         const episodeId = episodeIdParts.length > 0 ? episodeIdParts.join(':') : undefined;
         const progress = allProgress[key];
         const progressPercent = (progress.currentTime / progress.duration) * 100;
@@ -814,7 +843,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       setLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [getCachedMetadata]);
+  }, [getCachedMetadata, activeProfile?.id]); // Added activeProfile.id dependency for profile filtering
 
   // Clear cache when component unmounts or when needed
   useEffect(() => {
