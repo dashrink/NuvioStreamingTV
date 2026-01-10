@@ -12,9 +12,9 @@ import {
   Linking,
   RefreshControl,
   FlatList,
-  ActivityIndicator,
   Alert
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -181,7 +181,7 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
             isTablet && styles.tabletAvatar,
             { backgroundColor: currentTheme.colors.elevation2, justifyContent: 'center', alignItems: 'center' }
           ]}>
-            <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+            <UnifiedSpinner size="small" />
           </View>
         ) : (
           <FastImage
@@ -439,10 +439,7 @@ const ContributorsScreen: React.FC = () => {
           </Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: currentTheme.colors.mediumEmphasis }]}>
-            Loading contributors...
-          </Text>
+          <UnifiedSpinner size="large" text="Loading contributors..." />
         </View>
       </View>
     );

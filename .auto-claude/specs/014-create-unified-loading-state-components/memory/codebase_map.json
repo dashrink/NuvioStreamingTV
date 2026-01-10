@@ -124,7 +124,17 @@
       "description": "CastDetailsModal now uses UnifiedSpinner from '../loading' for person details loading state. Uses size=\"large\" with text=\"Loading details...\" prop. The modal fetches person details from TMDB when opened.",
       "category": "component",
       "discovered_at": "2026-01-10T01:36:14.466115+00:00"
+    },
+    "src/screens/BackdropGalleryScreen.tsx": {
+      "description": "BackdropGalleryScreen now uses UnifiedSpinner from '../components/loading' for loading state. Uses size=\"large\" and text=\"Loading backdrops...\" prop. The loadingContainer style centers the spinner. Replaced ActivityIndicator and separate Text element with unified component.",
+      "category": "loading-migration",
+      "discovered_at": "2026-01-10T06:01:17.591113+00:00"
+    },
+    "src/screens/PluginsScreen.tsx": {
+      "description": "PluginsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: status badge (small, scaled-down for 12px context), Switch Repository button (small, primary color), Refresh Repository button (small, mediumGray), Add Repository modal button (small, white). Uses style prop with transform scale for very small inline contexts.",
+      "category": "migration",
+      "discovered_at": "2026-01-10T06:03:07.319770+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:36:14.466124+00:00"
+  "last_updated": "2026-01-10T06:03:07.319779+00:00"
 }

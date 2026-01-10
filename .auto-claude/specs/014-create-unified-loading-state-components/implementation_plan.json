@@ -439,14 +439,16 @@
           "id": "4.6",
           "title": "Migrate BackdropGalleryScreen loading",
           "description": "Replace ActivityIndicator in BackdropGalleryScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/BackdropGalleryScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Theme-aware colors"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator with UnifiedSpinner in BackdropGalleryScreen. Removed ActivityIndicator from imports, added UnifiedSpinner import, and replaced the loading UI with UnifiedSpinner using size=\"large\" and text=\"Loading backdrops...\" props. Removed unused loadingText style since UnifiedSpinner handles text styling internally.",
+          "updated_at": "2026-01-10T06:01:11.038882+00:00"
         }
       ]
     },
@@ -460,7 +462,7 @@
           "id": "5.1",
           "title": "Migrate PluginsScreen loading",
           "description": "Replace multiple ActivityIndicator instances in PluginsScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/PluginsScreen.tsx"
           ],
@@ -468,7 +470,9 @@
             "Replace all ActivityIndicator instances",
             "Use appropriate sizes and colors for each context",
             "Button loading states use small white spinner"
-          ]
+          ],
+          "notes": "Replaced all 4 ActivityIndicator instances in PluginsScreen with UnifiedSpinner: (1) Status badge \"Switching...\" indicator with scaled-down small spinner, (2) Switch Repository button with primary color, (3) Refresh Repository button with mediumGray color, (4) Add Repository modal button with white color. Removed ActivityIndicator from react-native imports, added UnifiedSpinner import from '../components/loading'. Committed as 5c3015e.",
+          "updated_at": "2026-01-10T06:03:02.084709+00:00"
         },
         {
           "id": "5.2",
@@ -588,5 +592,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T01:36:14.431782+00:00"
+  "last_updated": "2026-01-10T06:03:02.084719+00:00"
 }
