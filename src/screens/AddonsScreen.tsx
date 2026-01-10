@@ -250,23 +250,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   addonList: {
     paddingHorizontal: 16,
   },
-  emptyContainer: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 12,
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  emptyText: {
-    marginTop: 8,
-    color: colors.mediumGray,
-    fontSize: 15,
-  },
   addonItem: {
     backgroundColor: colors.elevation2,
     borderRadius: 12,

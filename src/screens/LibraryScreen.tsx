@@ -1093,37 +1093,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 4,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingBottom: 90,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  exploreButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    elevation: 3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  exploreButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   playsCount: {
     fontSize: 11,
     color: 'rgba(255,255,255,0.6)',

@@ -1208,24 +1208,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: isTablet ? 64 : 32,
-    paddingBottom: isTablet ? 120 : 100,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
   skeletonContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

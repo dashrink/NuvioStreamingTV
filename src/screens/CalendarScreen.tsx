@@ -452,24 +452,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontWeight: 'bold',
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
-    paddingHorizontal: 32,
-  },
   filterInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
