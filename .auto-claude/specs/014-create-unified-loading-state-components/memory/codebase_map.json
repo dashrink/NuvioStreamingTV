@@ -89,7 +89,12 @@
       "description": "CatalogSettingsScreen now uses UnifiedSpinner from '../components/loading' for its loading state. Uses size=\"large\" with theme-aware colors (automatically uses currentTheme.colors.primary). The loadingContainer style centers the spinner in the screen.",
       "category": "Loading state migration",
       "discovered_at": "2026-01-10T01:25:44.650514+00:00"
+    },
+    "src/screens/BackupScreen.tsx": {
+      "description": "BackupScreen now uses UnifiedSpinner from '../components/loading' for button loading state. Uses size=\"small\" and color=\"#FFFFFF\" for white spinner contrast on primary button background. Only the Create Backup button has loading state - Restore button doesn't need one since it opens a file picker dialog.",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:27:08.097063+00:00"
     }
   },
-  "last_updated": "2026-01-10T01:25:44.650524+00:00"
+  "last_updated": "2026-01-10T01:27:08.097072+00:00"
 }

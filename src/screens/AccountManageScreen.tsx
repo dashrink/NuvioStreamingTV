@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Animated, Easing, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Animated, Easing, TextInput } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import CustomAlert from '../components/CustomAlert';
+import { UnifiedSpinner } from '../components/loading';
 
 const AccountManageScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -192,7 +193,7 @@ const AccountManageScreen: React.FC = () => {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color={currentTheme.colors.white} />
+            <UnifiedSpinner size="small" color={currentTheme.colors.white} />
           ) : (
             <>
               <MaterialIcons name="save-alt" size={18} color={currentTheme.colors.white} style={{ marginRight: 8 }} />
