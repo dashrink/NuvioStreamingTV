@@ -232,3 +232,82 @@ export interface HeroThemeColors {
   textSecondary: string;
   background: string;
 }
+
+// =============================================================================
+// Hook Types
+// =============================================================================
+
+/**
+ * Props for the useTrailerPlayback hook
+ */
+export interface UseTrailerPlaybackProps {
+  /** Content metadata containing name, year, and optional tmdbId */
+  metadata: {
+    name?: string;
+    year?: number;
+    tmdbId?: number;
+    id?: string;
+    [key: string]: any;
+  } | null;
+  /** Optional TMDB ID for more accurate trailer lookup */
+  tmdbId?: number | null;
+  /** Content type: 'movie' or 'series' */
+  type: ContentType;
+  /** Shared value tracking scroll position */
+  scrollY: SharedValue<number>;
+  /** Shared value tracking hero section height */
+  heroHeight: SharedValue<number>;
+  /** Whether trailers are enabled in settings */
+  showTrailers: boolean;
+  /** Callback for watch progress opacity animation on trailer end */
+  watchProgressOpacity?: SharedValue<number>;
+  /** Callback for buttons opacity animation on trailer end */
+  buttonsOpacity?: SharedValue<number>;
+}
+
+/**
+ * Return type for the useTrailerPlayback hook
+ */
+export interface UseTrailerPlaybackReturn {
+  // Trailer state
+  /** The fetched trailer URL, or null if not loaded/available */
+  trailerUrl: string | null;
+  /** Whether trailer is currently being fetched */
+  trailerLoading: boolean;
+  /** Whether trailer fetch encountered an error */
+  trailerError: boolean;
+  /** Whether trailer is preloaded (loaded in hidden player) */
+  trailerPreloaded: boolean;
+  /** Whether trailer is ready to play (visible and playable) */
+  trailerReady: boolean;
+
+  // Animation values
+  /** Shared value for trailer layer opacity (0 = hidden, 1 = visible) */
+  trailerOpacity: SharedValue<number>;
+  /** Shared value for thumbnail image opacity (inverse of trailer) */
+  thumbnailOpacity: SharedValue<number>;
+  /** Shared value for action buttons opacity during unmuted playback */
+  actionButtonsOpacity: SharedValue<number>;
+  /** Shared value for title card vertical offset during unmuted playback */
+  titleCardTranslateY: SharedValue<number>;
+  /** Shared value for genre text opacity during unmuted playback */
+  genreOpacity: SharedValue<number>;
+
+  // Refs
+  /** Ref to the TrailerPlayer component for fullscreen control */
+  trailerVideoRef: React.RefObject<any>;
+
+  // Handlers
+  /** Called when preload player finishes loading */
+  handleTrailerPreloaded: () => void;
+  /** Called when visible trailer is ready to play */
+  handleTrailerReady: () => void;
+  /** Called when trailer encounters an error */
+  handleTrailerError: () => void;
+  /** Called when trailer playback ends */
+  handleTrailerEnd: () => Promise<void>;
+  /** Called to toggle fullscreen mode */
+  handleFullscreenToggle: () => Promise<void>;
+  /** Resets trailer state (used when unfocused) */
+  resetTrailerState: () => void;
+}
