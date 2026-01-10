@@ -67,6 +67,53 @@ export interface UseTVFocusOptions {
   animationDuration?: number;
   /** Disable focus handling entirely */
   disabled?: boolean;
+  /**
+   * Android TV: ID of the element to focus when pressing D-pad down
+   * Use with findNodeHandle() or direct nativeID reference
+   */
+  nextFocusDown?: number;
+  /**
+   * Android TV: ID of the element to focus when pressing D-pad up
+   * Use with findNodeHandle() or direct nativeID reference
+   */
+  nextFocusUp?: number;
+  /**
+   * Android TV: ID of the element to focus when pressing D-pad left
+   * Use with findNodeHandle() or direct nativeID reference
+   */
+  nextFocusLeft?: number;
+  /**
+   * Android TV: ID of the element to focus when pressing D-pad right
+   * Use with findNodeHandle() or direct nativeID reference
+   */
+  nextFocusRight?: number;
+  /**
+   * Android TV: ID of the element to focus when pressing the forward navigation button
+   */
+  nextFocusForward?: number;
+}
+
+/**
+ * Focus props to spread onto focusable elements
+ * Includes Android TV-specific D-pad navigation props
+ */
+export interface TVFocusProps {
+  focusable: boolean;
+  hasTVPreferredFocus: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
+  /** Android TV: Element to focus on D-pad down */
+  nextFocusDown?: number;
+  /** Android TV: Element to focus on D-pad up */
+  nextFocusUp?: number;
+  /** Android TV: Element to focus on D-pad left */
+  nextFocusLeft?: number;
+  /** Android TV: Element to focus on D-pad right */
+  nextFocusRight?: number;
+  /** Android TV: Element to focus on forward navigation */
+  nextFocusForward?: number;
+  /** Android TV: Disable focus when component is disabled (accessibility) */
+  inaccessibleWhenDisabled?: boolean;
 }
 
 /**
@@ -78,18 +125,17 @@ export interface UseTVFocusReturn {
   /** Animated value for focus state (0 = unfocused, 1 = focused) */
   focusAnim: SharedValue<number>;
   /** Props to spread onto the focusable element */
-  focusProps: {
-    focusable: boolean;
-    hasTVPreferredFocus: boolean;
-    onFocus: () => void;
-    onBlur: () => void;
-  };
+  focusProps: TVFocusProps;
   /** Manually trigger focus animation (useful for non-TV testing) */
   setFocused: (focused: boolean) => void;
   /** Whether the app is running on a TV platform */
   isTV: boolean;
   /** Whether TV focus features are enabled */
   isTVFocusEnabled: boolean;
+  /** Whether the app is running on Android TV specifically */
+  isAndroidTV: boolean;
+  /** Whether the app is running on Apple TV (tvOS) specifically */
+  isTVOS: boolean;
 }
 
 /**
@@ -131,10 +177,18 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
     focusable = true,
     animationDuration = FOCUS_ANIMATION_CONFIG.timing.duration,
     disabled = false,
+    // Android TV D-pad navigation options
+    nextFocusDown,
+    nextFocusUp,
+    nextFocusLeft,
+    nextFocusRight,
+    nextFocusForward,
   } = options;
 
   // Determine if we're on a TV platform
   const isTVPlatform = isTV();
+  const isAndroidTVPlatform = isAndroidTV();
+  const isTVOSPlatform = isTVOS();
 
   // Whether focus features should be active
   const isTVFocusEnabled = isTVPlatform && !disabled && focusable;
@@ -205,11 +259,20 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
   }, [focusAnim]);
 
   // Props to spread onto the focusable element
-  const focusProps = {
+  // Includes Android TV-specific D-pad navigation props when provided
+  const focusProps: TVFocusProps = {
     focusable: isTVFocusEnabled,
     hasTVPreferredFocus: isTVFocusEnabled && hasTVPreferredFocus,
     onFocus: handleFocus,
     onBlur: handleBlur,
+    // Android TV D-pad navigation (only include if provided and on Android TV)
+    ...(isAndroidTVPlatform && nextFocusDown !== undefined && { nextFocusDown }),
+    ...(isAndroidTVPlatform && nextFocusUp !== undefined && { nextFocusUp }),
+    ...(isAndroidTVPlatform && nextFocusLeft !== undefined && { nextFocusLeft }),
+    ...(isAndroidTVPlatform && nextFocusRight !== undefined && { nextFocusRight }),
+    ...(isAndroidTVPlatform && nextFocusForward !== undefined && { nextFocusForward }),
+    // Accessibility: Make disabled elements non-focusable on Android TV
+    ...(isAndroidTVPlatform && disabled && { inaccessibleWhenDisabled: true }),
   };
 
   return {
@@ -219,6 +282,8 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
     setFocused,
     isTV: isTVPlatform,
     isTVFocusEnabled,
+    isAndroidTV: isAndroidTVPlatform,
+    isTVOS: isTVOSPlatform,
   };
 };
 

@@ -66,6 +66,11 @@ export interface FocusableProps extends UseTVFocusOptions {
   accessibilityLabel?: string;
   /** Accessibility hint for screen readers */
   accessibilityHint?: string;
+  /**
+   * Android TV: Native ID for D-pad navigation references
+   * Other Focusable components can use this ID in nextFocusDown/Up/Left/Right
+   */
+  nativeID?: string;
 }
 
 /**
@@ -126,12 +131,19 @@ const Focusable = forwardRef<View, FocusableProps>(
       usePressable = false,
       accessibilityLabel,
       accessibilityHint,
+      nativeID,
       // Focus hook options
       onFocus,
       onBlur,
       hasTVPreferredFocus,
       focusable = true,
       animationDuration,
+      // Android TV D-pad navigation options
+      nextFocusDown,
+      nextFocusUp,
+      nextFocusLeft,
+      nextFocusRight,
+      nextFocusForward,
     },
     ref
   ) => {
@@ -149,6 +161,12 @@ const Focusable = forwardRef<View, FocusableProps>(
       focusable: focusable && !disabled,
       animationDuration,
       disabled,
+      // Android TV D-pad navigation options
+      nextFocusDown,
+      nextFocusUp,
+      nextFocusLeft,
+      nextFocusRight,
+      nextFocusForward,
     });
 
     // Get style configuration for the variant
@@ -242,6 +260,8 @@ const Focusable = forwardRef<View, FocusableProps>(
       onLongPress,
       onPressIn,
       onPressOut,
+      // Android TV: nativeID for D-pad navigation references
+      ...(nativeID && { nativeID }),
       ...focusProps,
     };
 
