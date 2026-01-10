@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "014-create-unified-loading-state-components",
+  "state": "building",
+  "subtasks": {
+    "completed": 17,
+    "total": 32,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Migrate Settings and Auth Screens",
+    "id": null,
+    "total": 6
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 1652,
+    "started_at": "2026-01-10T01:17:49.781471"
+  },
+  "last_update": "2026-01-10T05:25:57.776243"
+}

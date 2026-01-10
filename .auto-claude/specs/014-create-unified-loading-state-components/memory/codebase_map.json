@@ -1,0 +1,95 @@
+{
+  "discovered_files": {
+    "src/components/loading/": {
+      "description": "Loading components directory already exists with MetadataLoadingScreen.tsx - comprehensive shimmer skeleton with react-native-reanimated, responsive breakpoints, and staggered animations",
+      "category": "architecture",
+      "discovered_at": "2026-01-09T21:21:44.683592+00:00"
+    },
+    "src/components/common/LoadingSpinner.tsx": {
+      "description": "LoadingSpinner now wraps UnifiedSpinner for backward compatibility. Marked as @deprecated - new code should import UnifiedSpinner directly from 'src/components/loading'. Maintains existing props interface (text, size, style, source, offsetY).",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:03:23.225429+00:00"
+    },
+    "src/contexts/ThemeContext.tsx": {
+      "description": "Theme system provides currentTheme.colors.primary for consistent theming - all loading components should use this for color",
+      "category": "pattern",
+      "discovered_at": "2026-01-09T21:21:44.717438+00:00"
+    },
+    "src/components/loading/types.ts": {
+      "description": "Unified loading system types - defines LoadingVariant, LoadingSize types, size dimension constants (LOADING_SIZE_DIMENSIONS, LOTTIE_SIZE_DIMENSIONS), BaseLoadingProps/SpinnerLoadingProps/SkeletonLoadingProps interfaces, LoadingColorTokens with getLoadingColorTokens helper for theme integration",
+      "category": "types",
+      "discovered_at": "2026-01-09T21:23:39.699228+00:00"
+    },
+    "src/components/loading/UnifiedSpinner.tsx": {
+      "description": "UnifiedSpinner component - theme-aware spinner with Lottie + ActivityIndicator fallback. Uses SpinnerLoadingProps from types.ts. Sizes: small(24px), medium(40px), large(60px). Default color is theme primary. Has accessibility support.",
+      "category": "component",
+      "discovered_at": "2026-01-09T21:26:05.280505+00:00"
+    },
+    "src/components/loading/ShimmerSkeleton.tsx": {
+      "description": "ShimmerSkeleton component - reusable shimmer skeleton extracted from MetadataLoadingScreen. Provides useShimmerProgress hook for synchronized animations, theme-aware colors via getLoadingColorTokens, supports both standalone and synchronized animation modes, works with number or percentage widths.",
+      "category": "component",
+      "discovered_at": "2026-01-09T21:27:57.354261+00:00"
+    },
+    "src/components/loading/SkeletonGroup.tsx": {
+      "description": "SkeletonGroup component - renders multiple skeleton elements with synchronized shimmer animation. Provides presets for list, grid, textBlock, poster, episode, cast, and catalogRow patterns. Includes specialized components: CastSkeletonGroup, EpisodeSkeletonGroup, CatalogRowSkeletonGroup. Supports staggered fade-in animations and custom renderItem function.",
+      "category": "component",
+      "discovered_at": "2026-01-09T21:31:02.675644+00:00"
+    },
+    "src/components/loading/LoadingOverlayScreen.tsx": {
+      "description": "LoadingOverlayScreen component - Full-screen loading overlay with Modal, UnifiedSpinner, SafeArea support via useSafeAreaInsets, optional BlurView (iOS only), fade-in/fade-out animations using react-native-reanimated, theme-aware colors via getLoadingColorTokens, dismissable via onBackdropPress callback.",
+      "category": "component",
+      "discovered_at": "2026-01-09T21:32:52.780951+00:00"
+    },
+    "src/components/loading/ContentSkeleton.tsx": {
+      "description": "ContentSkeleton presets - Provides specialized skeleton components matching actual content component dimensions: PosterSkeleton (2:3 aspect ratio, responsive widths), EpisodeSkeleton (120px height horizontal card), CastSkeleton (circular avatar with name/character), CatalogRowSkeleton (title + poster row), plus bonus EpisodeListSkeleton, CastRowSkeleton, PosterGridSkeleton. All use responsive sizing based on device type (phone/tablet/largeTablet/tv).",
+      "category": "loading",
+      "discovered_at": "2026-01-09T21:36:13.760158+00:00"
+    },
+    "src/screens/HomeScreen.tsx": {
+      "description": "HomeScreen now uses CatalogRowSkeleton from unified loading components for placeholder rendering. The old SkeletonLoaders import (SkeletonFeatured, SkeletonCatalog) is no longer used here. LoadingSpinner is still used for the main loading state (renderLoadingScreen).",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:06:52.755165+00:00"
+    },
+    "src/screens/SearchScreen.tsx": {
+      "description": "SearchScreen now uses UnifiedSpinner from '../components/loading' for its loading state. Contains unused local variables (isDarkMode, insets, TAB_BAR_HEIGHT, AnimatedTouchable) that were pre-existing and not cleaned up to minimize scope of changes.",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:12:39.980953+00:00"
+    },
+    "src/screens/LibraryScreen.tsx": {
+      "description": "LibraryScreen now uses unified loading components: UnifiedSpinner (small size) for TraktItem poster loading and LibrarySkeletonLoader wrapper using PosterGridSkeleton with responsive column count based on getGridLayout() helper. The screen previously used RNAnimated pulse animation for skeleton loading which has been replaced with synchronized shimmer animation from the unified system.",
+      "category": "Loading state migration",
+      "discovered_at": "2026-01-10T01:15:16.991962+00:00"
+    },
+    "src/screens/CatalogScreen.tsx": {
+      "description": "CatalogScreen now uses unified loading components: PosterGridSkeleton with responsive columns (effectiveNumColumns) for initial loading state and UnifiedSpinner (small size) for ListFooterComponent infinite scroll loading. The screen calculates responsive columns via calculateCatalogLayout() based on screen width breakpoints.",
+      "category": "loading-migration",
+      "discovered_at": "2026-01-10T01:17:53.259093+00:00"
+    },
+    "src/screens/AuthScreen.tsx": {
+      "description": "AuthScreen now uses UnifiedSpinner for button loading state. Uses size=\"small\" and color=\"#FFFFFF\" for white spinner contrast on primary button background. Maintains existing loading state behavior controlled by loading state variable.",
+      "category": "loading-migration",
+      "discovered_at": "2026-01-10T01:19:53.116653+00:00"
+    },
+    "src/components/common/TraktLoadingSpinner.tsx": {
+      "description": "TraktLoadingSpinner is now integrated with unified loading system: uses LOADING_ANIMATION_DURATIONS constant (750ms pulse), supports LoadingSize prop (small/medium/large with 40/80/120px), includes TraktLoadingSpinnerProps interface with size/text/style/testID/offsetY. Re-exported from src/components/loading/index.ts as branded loading variant.",
+      "category": "component",
+      "discovered_at": "2026-01-10T01:22:11.119114+00:00"
+    },
+    "src/screens/TraktSettingsScreen.tsx": {
+      "description": "TraktSettingsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: main loading (size=\"large\"), button loading during code exchange (size=\"small\", color=\"#FFFFFF\"), and sync button loading (size=\"small\" with theme primary via default).",
+      "category": "migration",
+      "discovered_at": "2026-01-10T01:22:11.160228+00:00"
+    },
+    "src/screens/MDBListSettingsScreen.tsx": {
+      "description": "MDBListSettingsScreen now uses UnifiedSpinner from '../components/loading' for loading state. Uses size=\"large\" and text=\"Loading Settings...\" prop. The screen has a loadingContainer style for centering the spinner.",
+      "category": "loading-migration",
+      "discovered_at": "2026-01-10T01:24:18.066038+00:00"
+    },
+    "src/screens/CatalogSettingsScreen.tsx": {
+      "description": "CatalogSettingsScreen now uses UnifiedSpinner from '../components/loading' for its loading state. Uses size=\"large\" with theme-aware colors (automatically uses currentTheme.colors.primary). The loadingContainer style centers the spinner in the screen.",
+      "category": "Loading state migration",
+      "discovered_at": "2026-01-10T01:25:44.650514+00:00"
+    }
+  },
+  "last_updated": "2026-01-10T01:25:44.650524+00:00"
+}

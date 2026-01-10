@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Platform,
   SafeAreaView,
   StatusBar,
@@ -13,6 +12,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -506,7 +506,7 @@ const BackupScreen: React.FC = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="white" size="small" />
+                <UnifiedSpinner size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <MaterialIcons name="backup" size={20} color="white" />

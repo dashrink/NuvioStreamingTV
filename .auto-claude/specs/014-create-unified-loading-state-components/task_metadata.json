@@ -1,0 +1,17 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "ui_ux_improvements",
+  "ideaId": "uiux-003",
+  "rationale": "Inconsistent loading states create a disjointed user experience. Users see different loading indicators on different screens, making the app feel unpolished. A unified system improves perceived quality and predictability.",
+  "category": "ui_ux",
+  "uiuxCategory": "visual",
+  "affectedFiles": [
+    "src/components/common/LoadingSpinner.tsx",
+    "src/components/common/TraktLoadingSpinner.tsx",
+    "src/components/common/DogLoadingSpinner.tsx",
+    "src/components/home/SkeletonLoaders.tsx",
+    "src/components/loading/MetadataLoadingScreen.tsx",
+    "src/components/search/SearchSkeletonLoader.tsx"
+  ],
+  "problemSolved": "Multiple loading approaches: 1) Lottie-based LoadingSpinner with sizes small/medium/large, 2) TraktLoadingSpinner for Trakt operations, 3) DogLoadingSpinner, 4) SkeletonLoaders for home screen, 5) SearchSkeletonLoader, 6) Raw ActivityIndicator scattered throughout. Some screens use skeleton shimmer, others use spinners, creating visual inconsistency."
+}

@@ -1,0 +1,46 @@
+# Build Progress: Unified Loading State Components
+# Spec: 014-create-unified-loading-state-components
+# Created: 2026-01-10
+
+## Summary
+Standardize loading states across the app by creating a unified loading component system.
+
+## Current Status: Phase 2 In Progress (6/6 subtasks complete for Phase 2)
+
+## Problem Statement
+Currently there is inconsistent usage of loading states:
+- ActivityIndicator used directly in 30+ files
+- LoadingSpinner (Lottie-based) with sizes small/medium/large
+- DogLoadingSpinner (duplicate Lottie variant)
+- TraktLoadingSpinner (branded pulsing animation)
+- SkeletonLoaders (shimmer-based for home screen)
+- MetadataLoadingScreen (comprehensive shimmer skeleton)
+- LoadingOverlay (player loading state)
+
+## Solution
+Create unified loading component system:
+1. UnifiedSpinner - theme-aware spinner replacing ActivityIndicator
+2. ShimmerSkeleton - reusable shimmer skeleton component
+3. SkeletonGroup - synchronized skeleton animations
+4. LoadingOverlayScreen - full-screen loading overlay
+5. ContentSkeleton - preset skeletons for common content types
+
+## Implementation Plan Created
+- 6 phases, 29 subtasks total
+- Estimated effort: 2-3 days
+
+## Progress Log
+- [2026-01-10] Implementation plan created with 6 phases and 29 subtasks
+- [2026-01-10] Completed 1.1: Created unified loading types and constants (types.ts)
+- [2026-01-10] Completed 1.2: Created UnifiedSpinner component
+- [2026-01-10] Completed 1.3: Created ShimmerSkeleton component
+- [2026-01-10] Completed 1.4: Created SkeletonGroup component
+- [2026-01-10] Completed 1.5: Created LoadingOverlayScreen component - full-screen loading overlay with Modal, SafeArea support, optional blur effect, fade animations
+- [2026-01-10] Completed 1.6: Created ContentSkeleton presets (PosterSkeleton, EpisodeSkeleton, CastSkeleton, CatalogRowSkeleton, PosterGridSkeleton)
+- [2026-01-10] Completed 1.7: Created index barrel export for all loading components
+- [2026-01-10] Completed 2.1: Updated LoadingSpinner to wrap UnifiedSpinner with backward compatibility
+- [2026-01-10] Completed 2.2: Migrated HomeScreen to use CatalogRowSkeleton
+- [2026-01-10] Completed 2.3: Migrated CalendarScreen to use UnifiedSpinner
+- [2026-01-10] Completed 2.4: Migrated SearchScreen to use UnifiedSpinner
+- [2026-01-10] Completed 2.5: Migrated LibraryScreen to use UnifiedSpinner and PosterGridSkeleton
+- [2026-01-10] Completed 2.6: Migrated CatalogScreen to use PosterGridSkeleton (responsive columns) and UnifiedSpinner (footer loading)
