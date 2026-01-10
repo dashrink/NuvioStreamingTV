@@ -44,7 +44,17 @@
       "description": "HomeScreen has one empty state scenario in ListFooterComponent: 'No content available' when !catalogsLoading && catalogs.filter(c => c).length === 0. Uses EmptyState component with MaterialIcons 'movie-filter' icon (size 48) and 'Add Catalogs' action navigating to Settings. Uses custom emptyCatalogState style (flex: 0, paddingVertical: 48) for compact layout in list footer context.",
       "category": "component_pattern",
       "discovered_at": "2026-01-09T21:34:57.097010+00:00"
+    },
+    "src/screens/AddonsScreen.tsx": {
+      "description": "AddonsScreen has three empty state scenarios: (1) 'No addons installed' when addons.length === 0 in Installed Addons section (uses extension-off icon size 48 from MaterialCommunityIcons with subtitle), (2) 'Failed to load' error state when communityError is set in Community Addons section (uses error-outline icon from MaterialIcons with 'Retry' action), (3) 'No community addons available' when communityAddons.length === 0 in Community Addons section (uses extension-off icon from MaterialCommunityIcons with subtitle). All now use EmptyState component with sectionEmptyState style for compact layout.",
+      "category": "screen-patterns",
+      "discovered_at": "2026-01-09T21:36:45.121527+00:00"
+    },
+    "src/screens/*": {
+      "description": "Cleaned up 102 lines of unused empty state styles (emptyContainer, emptyText, emptySubtext, exploreButton, exploreButtonText) from SearchScreen, LibraryScreen, PluginsScreen, AddonsScreen, and CalendarScreen after migrating to the shared EmptyState component.",
+      "category": "cleanup",
+      "discovered_at": "2026-01-10T01:01:45.496980+00:00"
     }
   },
-  "last_updated": "2026-01-09T21:34:57.097025+00:00"
+  "last_updated": "2026-01-10T01:01:45.496989+00:00"
 }
