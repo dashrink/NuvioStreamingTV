@@ -14,8 +14,6 @@ import {
   useWindowDimensions,
   SafeAreaView,
   StatusBar,
-  Animated as RNAnimated,
-  ActivityIndicator,
   Platform,
   ScrollView,
   BackHandler,
@@ -37,6 +35,7 @@ import { useTraktContext } from '../contexts/TraktContext';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
+import { UnifiedSpinner, PosterGridSkeleton } from '../components/loading';
 import { useSettings } from '../hooks/useSettings';
 
 interface LibraryItem extends StreamingContent {
@@ -136,7 +135,7 @@ const TraktItem = React.memo(({
             />
           ) : (
             <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center' }]}>
-              <ActivityIndicator color={currentTheme.colors.primary} />
+              <UnifiedSpinner size="small" />
             </View>
           )}
         </View>
@@ -150,61 +149,22 @@ const TraktItem = React.memo(({
   );
 });
 
-const SkeletonLoader = () => {
-  const pulseAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { width, height } = useWindowDimensions();
-  const { numColumns, itemWidth } = getGridLayout(width);
-  const { currentTheme } = useTheme();
+/**
+ * LibrarySkeletonLoader - Uses unified PosterGridSkeleton for consistent loading UI
+ * Displays a grid of poster placeholders while library content loads
+ */
+const LibrarySkeletonLoader = () => {
+  const { width } = useWindowDimensions();
+  const { numColumns } = getGridLayout(width);
 
-  React.useEffect(() => {
-    const pulse = RNAnimated.loop(
-      RNAnimated.sequence([
-        RNAnimated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        RNAnimated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const opacity = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-
-  const renderSkeletonItem = () => (
-    <View style={[styles.itemContainer, { width: itemWidth }]}>
-      <RNAnimated.View
-        style={[
-          styles.posterContainer,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]}
-      />
-      <RNAnimated.View
-        style={[
-          styles.skeletonTitle,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]}
-      />
-    </View>
-  );
-
-  const skeletonCount = numColumns * 2;
   return (
     <View style={styles.skeletonContainer}>
-      {Array.from({ length: skeletonCount }).map((_, index) => (
-        <View key={index} style={{ width: itemWidth, marginBottom: 16 }}>
-          {renderSkeletonItem()}
-        </View>
-      ))}
+      <PosterGridSkeleton
+        columns={numColumns}
+        rows={2}
+        gap={12}
+        testID="library-skeleton"
+      />
     </View>
   );
 };
@@ -839,7 +799,7 @@ const LibraryScreen = () => {
 
   const renderContent = () => {
     if (loading) {
-      return <SkeletonLoader />;
+      return <LibrarySkeletonLoader />;
     }
 
     if (filteredItems.length === 0) {
@@ -1121,11 +1081,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
-  },
-  skeletonTitle: {
-    height: 14,
-    marginTop: 8,
-    borderRadius: 4,
   },
   emptyContainer: {
     flex: 1,
