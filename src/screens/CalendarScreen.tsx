@@ -30,6 +30,7 @@ import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 import { useCalendarData } from '../hooks/useCalendarData';
+import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -91,6 +92,7 @@ const CalendarScreen = () => {
   }, []);
   
   const handleSeriesPress = useCallback((seriesId: string, episode?: CalendarEpisode) => {
+    triggerLight();
     navigation.navigate('Metadata', {
       id: seriesId,
       type: 'series',
@@ -104,8 +106,9 @@ const CalendarScreen = () => {
       handleSeriesPress(episode.seriesId, episode);
       return;
     }
-    
+
     // For episodes with dates, go to the stream screen
+    triggerLight();
     const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
     navigation.navigate('Streams', {
       id: episode.seriesId,
@@ -249,6 +252,7 @@ const CalendarScreen = () => {
   
   // Handle date selection from calendar
   const handleDateSelect = useCallback((date: Date) => {
+    triggerLight();
     logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
     setSelectedDate(date);
     
@@ -265,6 +269,7 @@ const CalendarScreen = () => {
 
   // Reset date filter
   const clearDateFilter = useCallback(() => {
+    triggerLight();
     logger.log(`[Calendar] Clearing date filter`);
     setSelectedDate(null);
     setFilteredEpisodes([]);
@@ -287,9 +292,12 @@ const CalendarScreen = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
         </TouchableOpacity>
