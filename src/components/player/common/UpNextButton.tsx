@@ -4,6 +4,7 @@ import { Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { logger } from '../../../utils/logger';
 import { LinearGradient } from 'expo-linear-gradient';
+import { triggerMedium } from '../../../hooks/useHaptics';
 
 export interface Insets {
   top: number;
@@ -139,7 +140,10 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
     >
       <TouchableOpacity
         style={{ flex: 1 }}
-        onPress={onPress}
+        onPress={() => {
+          triggerMedium();
+          onPress();
+        }}
         activeOpacity={0.85}
       >
         {/* Thumbnail fills card */}

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from '../utils/playerStyles';
 import { formatTime } from '../utils/playerUtils';
 import { logger } from '../../../utils/logger';
+import { triggerMedium } from '../../../hooks/useHaptics';
 
 interface ResumeOverlayProps {
   showResumeOverlay: boolean;
@@ -71,16 +72,22 @@ export const ResumeOverlay: React.FC<ResumeOverlayProps> = ({
         </View>
 
         <View style={styles.resumeButtons}>
-          <TouchableOpacity 
-            style={styles.resumeButton} 
-            onPress={handleStartFromBeginning}
+          <TouchableOpacity
+            style={styles.resumeButton}
+            onPress={() => {
+              triggerMedium();
+              handleStartFromBeginning();
+            }}
           >
             <Ionicons name="refresh" size={16} color="white" style={styles.buttonIcon} />
             <Text style={styles.resumeButtonText}>Start Over</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.resumeButton, styles.resumeFromButton]} 
-            onPress={handleResume}
+          <TouchableOpacity
+            style={[styles.resumeButton, styles.resumeFromButton]}
+            onPress={() => {
+              triggerMedium();
+              handleResume();
+            }}
           >
             <Ionicons name="play" size={16} color="white" style={styles.buttonIcon} />
             <Text style={styles.resumeButtonText}>Resume</Text>

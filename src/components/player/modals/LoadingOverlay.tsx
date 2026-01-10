@@ -12,6 +12,7 @@ import Reanimated, {
   withDelay
 } from 'react-native-reanimated';
 import { styles } from '../utils/playerStyles';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -118,9 +119,12 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         style={StyleSheet.absoluteFill}
       />
       
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.loadingCloseButton}
-        onPress={onClose}
+        onPress={() => {
+          triggerLight();
+          onClose();
+        }}
         activeOpacity={0.7}
       >
         <MaterialIcons name="close" size={24} color="#ffffff" />
