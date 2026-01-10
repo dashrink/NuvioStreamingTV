@@ -1,9 +1,9 @@
 {
   "discovered_files": {
     "src/services/traktService.ts": {
-      "description": "Scrobble system timing analysis: MIN_API_INTERVAL=500ms, SYNC_DEBOUNCE_MS=5000ms (reduced from 20000ms), STOP_DEBOUNCE_MS=1000ms (reduced from 3000ms). Immediate scrobble methods (scrobblePauseImmediate, scrobbleStopImmediate) bypass queue for <2s response. Queue processing ensures all requests complete within 30 seconds even under stress (50 requests = 25s max). 46-minute scrobble expiry window matches Trakt's deduplication.",
-      "category": "timing",
-      "discovered_at": "2026-01-10T11:22:07.430262+00:00"
+      "description": "Edge case handling implementation: (1) Offline - try/catch in all methods returns false/null on failure, (2) Token - auto-refresh at lines 728-746 and 901-908, (3) Rate limiting - 500ms interval at line 589 + exponential backoff at lines 930-946, (4) Missing IMDb - validation at lines 1709-1743 and 1782-1786 with 'tt' prefix normalization, (5) Duplicate prevention - 46-minute tracking window at lines 593-596 with 409 conflict handling at lines 949-990.",
+      "category": "edge-case-handling",
+      "discovered_at": "2026-01-10T11:26:01.855424+00:00"
     },
     "src/components/home/AppleTVHero.tsx": {
       "description": "handleSaveAction function (line ~572) now properly wired to Trakt watchlist API. Uses addToWatchlist/removeFromWatchlist from TraktContext with optimistic UI updates, error rollback, and type conversion ('series' to 'show'). Toast notifications via showTraktSaved/showTraktRemoved.",
@@ -56,5 +56,5 @@
       "discovered_at": "2026-01-10T11:15:49.953210+00:00"
     }
   },
-  "last_updated": "2026-01-10T11:22:07.430304+00:00"
+  "last_updated": "2026-01-10T11:26:01.855457+00:00"
 }
