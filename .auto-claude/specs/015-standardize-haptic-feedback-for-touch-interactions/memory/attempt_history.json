@@ -179,11 +179,71 @@
         }
       ],
       "status": "completed"
+    },
+    "8.3": {
+      "attempts": [
+        {
+          "session": 16,
+          "timestamp": "2026-01-10T23:20:00.805574",
+          "approach": "Implemented: Add haptic feedback to filter chip selections in ProviderFilter.tsx.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "8.4": {
+      "attempts": [
+        {
+          "session": 17,
+          "timestamp": "2026-01-10T23:22:16.447355",
+          "approach": "Implemented: Add haptic feedback to NuvioHeader.tsx, ScreenHeader.tsx, and FloatingHeader.tsx for back/action but",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "9.1": {
+      "attempts": [
+        {
+          "session": 18,
+          "timestamp": "2026-01-10T23:23:40.076840",
+          "approach": "Implemented: Add haptic feedback to onboarding navigation buttons and selections in OnboardingScreen.tsx.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "9.2": {
+      "attempts": [
+        {
+          "session": 19,
+          "timestamp": "2026-01-10T23:25:19.736826",
+          "approach": "Implemented: Add haptic feedback to send button and suggestion chips in AIChatScreen.tsx.",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "9.3": {
+      "attempts": [
+        {
+          "session": 20,
+          "timestamp": "2026-01-10T23:30:24.396130",
+          "approach": "Implemented: Add haptic feedback to ContributorsScreen.tsx, UpdateScreen.tsx, ShowRatingsScreen.tsx, CastMoviesSc",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [],
   "metadata": {
     "created_at": "2026-01-10T22:41:16.082079",
-    "last_updated": "2026-01-10T23:18:49.481276"
+    "last_updated": "2026-01-10T23:30:24.396134"
   }
 }
