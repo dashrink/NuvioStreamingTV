@@ -195,14 +195,30 @@ export interface HeroBackdropProps {
  * Props for the HeroTrailerLayer component
  */
 export interface HeroTrailerLayerProps {
+  /** URL of the trailer video. Can be null if not yet loaded. */
   trailerUrl: string | null;
+  /** Whether the trailer has been preloaded and is ready to display */
   isReady: boolean;
+  /** Whether the trailer should be visible (vs hidden preload state) */
   isVisible: boolean;
+  /** Whether the trailer audio is muted */
   isMuted: boolean;
+  /** Shared value tracking scroll position for parallax effects */
   scrollY: SharedValue<number>;
+  /** Callback when trailer finishes loading and is ready to play */
   onReady?: () => void;
+  /** Callback when trailer playback ends */
   onEnd?: () => void;
+  /** Callback when trailer encounters an error */
+  onError?: () => void;
+  /** Animated style from parent (typically opacity transitions) */
   animatedStyle?: any;
+  /** Whether to auto-play the trailer when visible */
+  autoPlay?: boolean;
+  /** Callback for playback status updates */
+  onPlaybackStatusUpdate?: (status: { isLoaded: boolean; didJustFinish: boolean }) => void;
+  /** Callback when fullscreen toggle is requested */
+  onFullscreenToggle?: () => void;
 }
 
 /**
