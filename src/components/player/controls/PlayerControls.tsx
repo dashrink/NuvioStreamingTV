@@ -7,6 +7,7 @@ import Slider from '@react-native-community/slider';
 import { styles } from '../utils/playerStyles'; // Updated styles
 import { getTrackDisplayName } from '../utils/playerUtils';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface PlayerControlsProps {
   showControls: boolean;
@@ -130,8 +131,9 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Seek with Animation */
   const handleSeekWithAnimation = (seconds: number) => {
+    triggerLight(); // Haptic feedback for skip buttons
     const isForward = seconds > 0;
-    
+
     if (isForward) {
       setShowForwardSign(true);
     } else {
@@ -212,6 +214,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Play/Pause with Animation */
   const handlePlayPauseWithAnimation = () => {
+    triggerMedium(); // Haptic feedback for play/pause (important action)
     Animated.sequence([
       Animated.timing(playPressAnim, {
         toValue: 1,
@@ -327,7 +330,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               {Platform.OS === 'ios' && onAirPlayPress && playerBackend === 'KSAVPlayer' && (
                 <TouchableOpacity
                   style={{ padding: 8 }}
-                  onPress={onAirPlayPress}
+                  onPress={() => {
+                    triggerLight();
+                    onAirPlayPress();
+                  }}
                 >
                   <Feather
                     name="airplay"
@@ -336,7 +342,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                   />
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+              <TouchableOpacity style={styles.closeButton} onPress={() => {
+                triggerLight();
+                handleClose();
+              }}>
                 <Ionicons name="close" size={closeIconSize} color="white" />
               </TouchableOpacity>
             </View>
@@ -533,14 +542,20 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             {/* Center Buttons Container with rounded background - wraps all buttons */}
             <View style={styles.centerControlsContainer} pointerEvents="box-none">
               {/* Left Side: Aspect Ratio Button */}
-              <TouchableOpacity style={styles.iconButton} onPress={cycleAspectRatio}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => {
+                triggerLight();
+                cycleAspectRatio();
+              }}>
                 <Ionicons name="expand-outline" size={24} color="white" />
               </TouchableOpacity>
 
               {/* Subtitle Button */}
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => setShowSubtitleModal(!isSubtitleModalOpen)}
+                onPress={() => {
+                  triggerLight();
+                  setShowSubtitleModal(!isSubtitleModalOpen);
+                }}
               >
                 <Ionicons name="text" size={24} color="white" />
               </TouchableOpacity>
@@ -549,27 +564,36 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               {setShowSourcesModal && (
                 <TouchableOpacity
                   style={styles.iconButton}
-                  onPress={() => setShowSourcesModal(true)}
+                  onPress={() => {
+                    triggerLight();
+                    setShowSourcesModal(true);
+                  }}
                 >
                   <Ionicons name="cloud-outline" size={24} color="white" />
                 </TouchableOpacity>
               )}
 
               {/* Playback Speed Button */}
-              <TouchableOpacity style={styles.iconButton} onPress={() => setShowSpeedModal(true)}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => {
+                triggerLight();
+                setShowSpeedModal(true);
+              }}>
                 <Ionicons name="speedometer-outline" size={24} color="white" />
               </TouchableOpacity>
 
               {/* Audio Button */}
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => setShowAudioModal(true)}
+                onPress={() => {
+                  triggerLight();
+                  setShowAudioModal(true);
+                }}
                 disabled={ksAudioTracks.length <= 1}
               >
-                <Ionicons 
-                  name="musical-notes-outline" 
-                  size={24} 
-                  color={ksAudioTracks.length <= 1 ? 'grey' : 'white'} 
+                <Ionicons
+                  name="musical-notes-outline"
+                  size={24}
+                  color={ksAudioTracks.length <= 1 ? 'grey' : 'white'}
                 />
               </TouchableOpacity>
 
@@ -577,7 +601,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               {setShowEpisodesModal && (
                 <TouchableOpacity
                   style={styles.iconButton}
-                  onPress={() => setShowEpisodesModal(true)}
+                  onPress={() => {
+                    triggerLight();
+                    setShowEpisodesModal(true);
+                  }}
                 >
                   <Ionicons name="list" size={24} color="white" />
                 </TouchableOpacity>
