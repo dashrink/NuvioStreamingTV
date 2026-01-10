@@ -28,6 +28,7 @@ import { StreamingContent } from '../../services/catalogService';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../../hooks/useSettings';
+import Focusable from '../common/Focusable';
 
 interface HeroCarouselProps {
   items: StreamingContent[];
@@ -851,7 +852,17 @@ const CarouselCard: React.FC<CarouselCardProps> = memo(({ item, colors, logoFail
                   </Text>
                 </ScrollView>
               </View>
-              <TouchableOpacity activeOpacity={0.9} onPress={onPressInfo} style={StyleSheet.absoluteFillObject as any} />
+              <Focusable
+                variant="card"
+                borderRadius={0}
+                enableScale={false}
+                enableGlow={false}
+                onPress={onPressInfo}
+                activeOpacity={0.9}
+                accessibilityLabel={`View details for ${item.name}`}
+                accessibilityHint="Double tap to view content details"
+                style={StyleSheet.absoluteFillObject as any}
+              />
             </>
           ) : (
             <>
@@ -964,13 +975,20 @@ const CarouselCard: React.FC<CarouselCardProps> = memo(({ item, colors, logoFail
 
               {/* FLIP BUTTON */}
               <View style={styles.flipButtonContainer as ViewStyle} pointerEvents="box-none">
-                <TouchableOpacity
-                  activeOpacity={0.8}
+                <Focusable
+                  variant="button"
+                  borderRadius={16}
+                  enableScale={false}
+                  enableGlow={false}
                   onPress={onToggleFlip}
-                  style={styles.flipButton as ViewStyle}
+                  activeOpacity={0.8}
+                  accessibilityLabel={flipped ? "Close details" : "Show details"}
+                  accessibilityHint={flipped ? "Double tap to close card details" : "Double tap to flip card and see details"}
                 >
-                  <Ionicons name={flipped ? 'close' : 'information-outline'} size={18} color={colors.white} />
-                </TouchableOpacity>
+                  <View style={styles.flipButton as ViewStyle}>
+                    <Ionicons name={flipped ? 'close' : 'information-outline'} size={18} color={colors.white} />
+                  </View>
+                </Focusable>
               </View>
             </>
           )}
