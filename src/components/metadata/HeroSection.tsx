@@ -51,6 +51,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useTraktContext } from '../../contexts/TraktContext';
 import { useSettings } from '../../hooks/useSettings';
 import { useTrailer } from '../../contexts/TrailerContext';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 import { logger } from '../../utils/logger';
 import { TMDBService } from '../../services/tmdbService';
 import TrailerService from '../../services/trailerService';
@@ -160,6 +161,7 @@ const ActionButtons = memo(({
   
   // Optimized navigation handler with useCallback
   const handleRatingsPress = useCallback(async () => {
+    triggerLight(); // Haptic feedback for navigation
     // Early return if no ID
     if (!id) return;
     
@@ -198,6 +200,7 @@ const ActionButtons = memo(({
 
   // Enhanced save handler that combines local library + Trakt watchlist
   const handleSaveAction = useCallback(async () => {
+    triggerMedium(); // Haptic feedback for add/remove from library
     const wasInLibrary = inLibrary;
     
     // Always toggle local library first
@@ -226,6 +229,7 @@ const ActionButtons = memo(({
 
   // Enhanced collection handler with toast notifications
   const handleCollectionAction = useCallback(async () => {
+    triggerMedium(); // Haptic feedback for add/remove from collection
     const wasInCollection = isInCollection;
     
     // Toggle collection
@@ -346,11 +350,14 @@ const ActionButtons = memo(({
       <View style={styles.singleRowLayout}>
           <TouchableOpacity
             style={[
-              playButtonStyle, 
-              isTablet && styles.tabletPlayButton, 
+              playButtonStyle,
+              isTablet && styles.tabletPlayButton,
               additionalButtonCount === 0 ? styles.singleRowPlayButtonFullWidth : styles.primaryActionButton
             ]}
-            onPress={handleShowStreams}
+            onPress={() => {
+              triggerMedium(); // Haptic feedback for play action
+              handleShowStreams();
+            }}
             activeOpacity={0.85}
           >
             <MaterialIcons 
@@ -514,6 +521,7 @@ const WatchProgressDisplay = memo(({
   
   // Handle manual Trakt sync
   const handleTraktSync = useMemo(() => async () => {
+    triggerMedium(); // Haptic feedback for sync/refresh action
     if (isTraktAuthenticated && forceSyncTraktProgress) {
       logger.log('[HeroSection] Manual Trakt sync requested');
       setIsSyncing(true);
@@ -969,6 +977,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
 
   // Handle fullscreen toggle
   const handleFullscreenToggle = useCallback(async () => {
+    triggerLight(); // Haptic feedback for fullscreen toggle
     try {
       logger.info('HeroSection', 'Fullscreen button pressed');
       if (trailerVideoRef.current) {
@@ -1668,6 +1677,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
           {/* Unmute button */}
           <TouchableOpacity
             onPress={() => {
+              triggerLight(); // Haptic feedback for mute toggle
               logger.info('HeroSection', 'Mute toggle button pressed, current muted state:', trailerMuted);
               updateSetting('trailerMuted', !trailerMuted);
               if (trailerMuted) {
@@ -1704,6 +1714,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
           {settings?.aiChatEnabled && (
             <TouchableOpacity
               onPress={() => {
+                triggerLight(); // Haptic feedback for navigation to AI Chat
                 // Extract episode info if it's a series
                 let episodeData = null;
                 if (type === 'series' && watchProgress && watchProgress.episodeId) {
@@ -1754,6 +1765,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
         }}>
           <TouchableOpacity
             onPress={() => {
+              triggerLight(); // Haptic feedback for navigation to AI Chat
               // Extract episode info if it's a series
               let episodeData = null;
               if (type === 'series' && watchProgress && watchProgress.episodeId) {
@@ -1792,7 +1804,10 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
       )}
 
       <Animated.View style={styles.backButtonContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <TouchableOpacity style={styles.backButton} onPress={() => {
+          triggerLight(); // Haptic feedback for back navigation
+          handleBack();
+        }}>
           <MaterialIcons 
             name="arrow-back" 
             size={28} 
