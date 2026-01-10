@@ -22,6 +22,7 @@ import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { memoryManager } from '../../utils/memoryManager';
 import { tmdbService } from '../../services/tmdbService';
+import { triggerLight } from '../../hooks/useHaptics';
 
 // Compute base sizes; actual tablet sizes will be adjusted inside component for responsiveness
 const { width } = Dimensions.get('window');
@@ -195,6 +196,7 @@ export const ThisWeekSection = React.memo(() => {
   }, [calendarData]);
 
   const handleEpisodePress = (episode: ThisWeekEpisode) => {
+    triggerLight();
     // For grouped episodes, always go to series details
     if (episode.isGroup) {
       navigation.navigate('Metadata', {
@@ -225,6 +227,7 @@ export const ThisWeekSection = React.memo(() => {
   };
 
   const handleViewAll = () => {
+    triggerLight();
     navigation.navigate('Calendar' as any);
   };
 

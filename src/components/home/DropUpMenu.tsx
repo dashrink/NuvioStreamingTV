@@ -28,6 +28,7 @@ import {
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import { StreamingContent } from '../../services/catalogService';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface DropUpMenuProps {
   visible: boolean;
@@ -76,6 +77,7 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
       if (event.translationY > SNAP_THRESHOLD || event.velocityY > 500) {
         translateY.value = withTiming(300, { duration: 300 });
         opacity.value = withTiming(0, { duration: 200 });
+        runOnJS(triggerLight)();
         runOnJS(onClose)();
       } else {
         translateY.value = withTiming(0, { duration: 300 });
@@ -157,7 +159,10 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Animated.View style={[styles.modalOverlay, overlayStyle]}>
-          <Pressable style={styles.modalOverlayPressable} onPress={onClose} />
+          <Pressable style={styles.modalOverlayPressable} onPress={() => {
+            triggerLight();
+            onClose();
+          }} />
           <GestureDetector gesture={gesture}>
             <Animated.View style={[styles.menuContainer, menuStyle, { backgroundColor }]}>
               <View style={styles.dragHandle} />
@@ -192,6 +197,7 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
                       index === menuOptions.length - 1 && styles.lastMenuOption
                     ]}
                     onPress={() => {
+                      triggerLight();
                       onOptionSelect(option.action);
                       onClose();
                     }}

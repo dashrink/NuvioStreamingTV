@@ -30,6 +30,7 @@ import { SkeletonFeatured } from './SkeletonLoaders';
 import { hasValidLogoFormat, isTmdbUrl } from '../../utils/logoUtils';
 import { logger } from '../../utils/logger';
 import { useTheme } from '../../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 interface FeaturedContentProps {
   featuredContent: StreamingContent | null;
@@ -113,7 +114,10 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
         {onRetry ? (
           <TouchableOpacity
             style={[styles.noContentButton, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={onRetry}
+            onPress={() => {
+              triggerMedium();
+              onRetry();
+            }}
           >
             <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Retry</Text>
           </TouchableOpacity>
@@ -121,13 +125,19 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
           <>
             <TouchableOpacity
               style={[styles.noContentButton, { backgroundColor: currentTheme.colors.primary }]}
-              onPress={() => navigation.navigate('Addons')}
+              onPress={() => {
+                triggerLight();
+                navigation.navigate('Addons');
+              }}
             >
               <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Install Addons</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.noContentButton}
-              onPress={() => navigation.navigate('HomeScreenSettings')}
+              onPress={() => {
+                triggerLight();
+                navigation.navigate('HomeScreenSettings');
+              }}
             >
               <Text style={styles.noContentButtonText}>Settings</Text>
             </TouchableOpacity>
@@ -426,6 +436,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
         <TouchableOpacity
           activeOpacity={0.95}
           onPress={() => {
+            triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
               type: featuredContent.type
@@ -498,6 +509,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
             <TouchableOpacity
               style={[styles.tabletPlayButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
               onPress={() => {
+                triggerMedium();
                 if (featuredContent) {
                   navigation.navigate('Streams', {
                     id: featuredContent.id,
@@ -515,7 +527,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
 
             <TouchableOpacity
               style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.3)' }]}
-              onPress={handleSaveToLibrary}
+              onPress={() => {
+                triggerMedium();
+                handleSaveToLibrary();
+              }}
               activeOpacity={0.7}
             >
               <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color={currentTheme.colors.white} />
@@ -526,7 +541,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
 
             <TouchableOpacity
               style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)' }]}
-              onPress={handleInfoPress}
+              onPress={() => {
+                triggerLight();
+                handleInfoPress();
+              }}
               activeOpacity={0.7}
             >
               <MaterialIcons name="info-outline" size={20} color={currentTheme.colors.white} />
@@ -558,6 +576,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
         <TouchableOpacity
           activeOpacity={0.95}
           onPress={() => {
+            triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
               type: featuredContent.type
@@ -621,7 +640,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                 <Animated.View style={[styles.featuredButtons as ViewStyle, buttonsAnimatedStyle]}>
                   <TouchableOpacity
                     style={styles.myListButton as ViewStyle}
-                    onPress={handleSaveToLibrary}
+                    onPress={() => {
+                      triggerMedium();
+                      handleSaveToLibrary();
+                    }}
                     activeOpacity={0.7}
                   >
                     <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={24} color={currentTheme.colors.white} />
@@ -633,6 +655,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                   <TouchableOpacity
                     style={[styles.playButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
                     onPress={() => {
+                      triggerMedium();
                       if (featuredContent) {
                         navigation.navigate('Streams', {
                           id: featuredContent.id,
@@ -650,7 +673,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
 
                   <TouchableOpacity
                     style={styles.infoButton as ViewStyle}
-                    onPress={handleInfoPress}
+                    onPress={() => {
+                      triggerLight();
+                      handleInfoPress();
+                    }}
                     activeOpacity={0.7}
                   >
                     <MaterialIcons name="info-outline" size={24} color={currentTheme.colors.white} />

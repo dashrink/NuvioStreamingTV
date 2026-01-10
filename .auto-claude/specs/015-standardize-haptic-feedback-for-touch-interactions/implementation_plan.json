@@ -266,14 +266,15 @@
           "title": "Add haptics to StreamsScreen",
           "description": "Add haptic feedback to stream card taps and provider filters in StreamsScreen.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/StreamsScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to StreamsScreen.tsx. Uses triggerLight() for: handleBack (navigation), handleProviderChange (filter taps), and \"Add Sources\" button (navigation). Uses triggerMedium() for handleStreamPress (stream selection - important action). Committed as f028cf0f.",
+          "updated_at": "2026-01-10T18:45:39.636280+00:00"
         }
       ]
     },
@@ -287,35 +288,37 @@
           "title": "Add haptics to ContentItem",
           "description": "Add haptic feedback to ContentItem.tsx for poster taps - using light haptics for navigation to details.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/components/home/ContentItem.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to ContentItem.tsx. Uses triggerLight() for: handlePress (poster tap for navigation to details) and handleLongPress (opening context menu). Committed as 524654ff.",
+          "updated_at": "2026-01-10T18:47:18.701756+00:00"
         },
         {
           "id": "5.2",
           "title": "Add haptics to CatalogSection",
           "description": "Add haptic feedback to CatalogSection.tsx for see all button and item interactions.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/components/home/CatalogSection.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to CatalogSection.tsx. Uses triggerLight() for the \"View All\" button press (navigation action). Item interactions are already handled by ContentItem component which has its own haptic feedback. Committed as b73ef491.",
+          "updated_at": "2026-01-10T18:49:17.375869+00:00"
         },
         {
           "id": "5.3",
           "title": "Add haptics to HeroCarousel and AppleTVHero",
           "description": "Add haptic feedback to hero carousel interactions and play/info button presses.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
@@ -323,7 +326,8 @@
             "src/components/home/HeroCarousel.tsx",
             "src/components/home/AppleTVHero.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to HeroCarousel.tsx and AppleTVHero.tsx. HeroCarousel uses triggerLight() for: pagination dot presses, card tap for navigation to metadata, and flip button press. AppleTVHero uses triggerMedium() for Play button (important playback action) and Save/bookmark button (add to library), and triggerLight() for logo/title press (navigation), pagination dot presses, fullscreen toggle, mute toggle, and retry button. Committed as c0837e8e.",
+          "updated_at": "2026-01-10T18:52:44.615332+00:00"
         },
         {
           "id": "5.4",
@@ -628,5 +632,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-10T18:42:59.381111+00:00"
+  "last_updated": "2026-01-10T18:52:44.615351+00:00"
 }
