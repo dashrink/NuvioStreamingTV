@@ -311,3 +311,39 @@ export interface UseTrailerPlaybackReturn {
   /** Resets trailer state (used when unfocused) */
   resetTrailerState: () => void;
 }
+
+/**
+ * Props for the useStableLogo hook
+ */
+export interface UseStableLogoProps {
+  /** Primary logo URL (typically from TMDB) */
+  logo?: string | null;
+  /** Secondary fallback logo URL (from addon) */
+  addonLogo?: string | null;
+  /** Callback when stable logo URI changes */
+  onStableLogoUriChange?: (logoUri: string | null) => void;
+}
+
+/**
+ * Return type for the useStableLogo hook
+ */
+export interface UseStableLogoReturn {
+  /** The currently stable logo URI to display */
+  stableLogoUri: string | null;
+  /** Whether text fallback should be shown instead of logo */
+  shouldShowTextFallback: boolean;
+  /** Whether a logo has loaded successfully */
+  logoHasLoadedSuccessfully: boolean;
+  /** Shared value for logo load fade-in animation (0 = hidden, 1 = visible) */
+  logoLoadOpacity: SharedValue<number>;
+  /** Handler for successful logo load */
+  handleLogoLoad: () => void;
+  /** Handler for logo load error - implements fallback logic */
+  handleLogoError: () => void;
+  /** Reset logo state to initial values (useful when content changes) */
+  resetLogoState: () => void;
+  /** Manually set the stable logo URI */
+  setStableLogoUri: (uri: string | null) => void;
+  /** Current fallback level: 'primary' | 'addon' | 'text' */
+  fallbackLevel: 'primary' | 'addon' | 'text';
+}
