@@ -20,6 +20,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { SvgXml } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
@@ -147,20 +148,23 @@ const AISettingsScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
+        <TouchableOpacity
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           style={styles.backButton}
         >
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={currentTheme.colors.text} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={currentTheme.colors.text}
           />
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
@@ -255,12 +259,15 @@ const AISettingsScreen: React.FC = () => {
               {!isKeySet ? (
                 <TouchableOpacity
                   style={[styles.saveButton, { backgroundColor: currentTheme.colors.primary }]}
-                  onPress={handleSaveApiKey}
+                  onPress={() => {
+                    triggerMedium();
+                    handleSaveApiKey();
+                  }}
                   disabled={loading}
                 >
-                  <MaterialIcons 
-                    name="save" 
-                    size={20} 
+                  <MaterialIcons
+                    name="save"
+                    size={20}
                     color={currentTheme.colors.white}
                     style={{ marginRight: 8 }}
                   />
@@ -272,25 +279,31 @@ const AISettingsScreen: React.FC = () => {
                 <View style={styles.buttonRow}>
                   <TouchableOpacity
                     style={[styles.updateButton, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={handleSaveApiKey}
+                    onPress={() => {
+                      triggerMedium();
+                      handleSaveApiKey();
+                    }}
                     disabled={loading}
                   >
-                    <MaterialIcons 
-                      name="update" 
-                      size={20} 
+                    <MaterialIcons
+                      name="update"
+                      size={20}
                       color={currentTheme.colors.white}
                       style={{ marginRight: 8 }}
                     />
                     <Text style={styles.updateButtonText}>Update</Text>
                   </TouchableOpacity>
-                  
+
                   <TouchableOpacity
                     style={[styles.removeButton, { borderColor: currentTheme.colors.error }]}
-                    onPress={handleRemoveApiKey}
+                    onPress={() => {
+                      triggerHeavy();
+                      handleRemoveApiKey();
+                    }}
                   >
-                    <MaterialIcons 
-                      name="delete" 
-                      size={20} 
+                    <MaterialIcons
+                      name="delete"
+                      size={20}
                       color={currentTheme.colors.error}
                       style={{ marginRight: 8 }}
                     />
@@ -304,11 +317,14 @@ const AISettingsScreen: React.FC = () => {
 
             <TouchableOpacity
               style={[styles.getKeyButton, { backgroundColor: currentTheme.colors.elevation2 }]}
-              onPress={handleGetApiKey}
+              onPress={() => {
+                triggerLight();
+                handleGetApiKey();
+              }}
             >
-              <MaterialIcons 
-                name="open-in-new" 
-                size={20} 
+              <MaterialIcons
+                name="open-in-new"
+                size={20}
                 color={currentTheme.colors.primary}
                 style={{ marginRight: 8 }}
               />
@@ -320,12 +336,15 @@ const AISettingsScreen: React.FC = () => {
         </View>
 
         {/* Enable Toggle (top) */}
-        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}> 
+        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>Enable AI Chat</Text>
             <Switch
               value={!!settings.aiChatEnabled}
-              onValueChange={(v) => updateSetting('aiChatEnabled', v)}
+              onValueChange={(v) => {
+                triggerMedium();
+                updateSetting('aiChatEnabled', v);
+              }}
               trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
               thumbColor={settings.aiChatEnabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
               ios_backgroundColor={currentTheme.colors.elevation2}

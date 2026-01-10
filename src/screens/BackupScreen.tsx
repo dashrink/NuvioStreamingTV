@@ -23,6 +23,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
 import CustomAlert from '../components/CustomAlert';
 import { useBackupOptions } from '../hooks/useBackupOptions';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const BackupScreen: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -80,6 +81,7 @@ const BackupScreen: React.FC = () => {
 
   // Toggle section collapse/expand
   const toggleSection = useCallback((section: 'coreData' | 'addonsIntegrations' | 'settingsPreferences') => {
+    triggerLight();
     const isExpanded = expandedSections[section];
     
     let heightAnim: Animated.Value;
@@ -281,14 +283,17 @@ const BackupScreen: React.FC = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.white} />
           <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but keeping structure consistent */}
         </View>
@@ -502,7 +507,10 @@ const BackupScreen: React.FC = () => {
                   opacity: isLoading ? 0.6 : 1
                 }
               ]}
-              onPress={handleCreateBackup}
+              onPress={() => {
+                triggerMedium();
+                handleCreateBackup();
+              }}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -523,7 +531,10 @@ const BackupScreen: React.FC = () => {
                   opacity: isLoading ? 0.6 : 1
                 }
               ]}
-              onPress={handleRestoreBackup}
+              onPress={() => {
+                triggerMedium();
+                handleRestoreBackup();
+              }}
               disabled={isLoading}
             >
               <MaterialIcons name="restore" size={20} color="white" />
@@ -569,7 +580,10 @@ const OptionToggle: React.FC<OptionToggleProps> = ({ label, description, value, 
     </View>
     <Switch
       value={value}
-      onValueChange={onValueChange}
+      onValueChange={(val) => {
+        triggerMedium();
+        onValueChange(val);
+      }}
       trackColor={{ false: theme.colors.outline, true: theme.colors.primary }}
       thumbColor={value ? '#fff' : '#f4f3f4'}
     />

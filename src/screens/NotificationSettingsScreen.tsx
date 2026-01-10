@@ -14,6 +14,7 @@ import CustomAlert from '../components/CustomAlert';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { notificationService, NotificationSettings } from '../services/notificationService';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { logger } from '../utils/logger';
@@ -247,9 +248,12 @@ const NotificationSettingsScreen = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
           </TouchableOpacity>
@@ -268,25 +272,28 @@ const NotificationSettingsScreen = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
+
       <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
         Notification Settings
       </Text>
-      
+
       <ScrollView style={styles.content}>
         <Animated.View 
           entering={FadeIn.duration(300)}
@@ -302,18 +309,21 @@ const NotificationSettingsScreen = () => {
               </View>
               <Switch
                 value={settings.enabled}
-                onValueChange={(value) => updateSetting('enabled', value)}
+                onValueChange={(value) => {
+                  triggerMedium();
+                  updateSetting('enabled', value);
+                }}
                 trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
                 thumbColor={settings.enabled ? currentTheme.colors.primary : currentTheme.colors.lightGray}
               />
             </View>
           </View>
-          
+
           {settings.enabled && (
             <>
               <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
                 <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Notification Types</Text>
-                
+
                 <View style={[styles.settingItem, { borderBottomColor: currentTheme.colors.border + '50' }]}>
                   <View style={styles.settingInfo}>
                     <MaterialIcons name="new-releases" size={24} color={currentTheme.colors.text} />
@@ -321,12 +331,15 @@ const NotificationSettingsScreen = () => {
                   </View>
                   <Switch
                     value={settings.newEpisodeNotifications}
-                    onValueChange={(value) => updateSetting('newEpisodeNotifications', value)}
+                    onValueChange={(value) => {
+                      triggerMedium();
+                      updateSetting('newEpisodeNotifications', value);
+                    }}
                     trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
                     thumbColor={settings.newEpisodeNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
                   />
                 </View>
-                
+
                 <View style={[styles.settingItem, { borderBottomColor: currentTheme.colors.border + '50' }]}>
                   <View style={styles.settingInfo}>
                     <MaterialIcons name="event" size={24} color={currentTheme.colors.text} />
@@ -334,12 +347,15 @@ const NotificationSettingsScreen = () => {
                   </View>
                   <Switch
                     value={settings.upcomingShowsNotifications}
-                    onValueChange={(value) => updateSetting('upcomingShowsNotifications', value)}
+                    onValueChange={(value) => {
+                      triggerMedium();
+                      updateSetting('upcomingShowsNotifications', value);
+                    }}
                     trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
                     thumbColor={settings.upcomingShowsNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
                   />
                 </View>
-                
+
                 <View style={[styles.settingItem, { borderBottomColor: currentTheme.colors.border + '50' }]}>
                   <View style={styles.settingInfo}>
                     <MaterialIcons name="alarm" size={24} color={currentTheme.colors.text} />
@@ -347,7 +363,10 @@ const NotificationSettingsScreen = () => {
                   </View>
                   <Switch
                     value={settings.reminderNotifications}
-                    onValueChange={(value) => updateSetting('reminderNotifications', value)}
+                    onValueChange={(value) => {
+                      triggerMedium();
+                      updateSetting('reminderNotifications', value);
+                    }}
                     trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary + '80' }}
                     thumbColor={settings.reminderNotifications ? currentTheme.colors.primary : currentTheme.colors.lightGray}
                   />
@@ -367,16 +386,19 @@ const NotificationSettingsScreen = () => {
                       key={hours}
                       style={[
                         styles.timingOption,
-                        { 
+                        {
                           backgroundColor: currentTheme.colors.elevation1,
-                          borderColor: currentTheme.colors.border 
+                          borderColor: currentTheme.colors.border
                         },
                         settings.timeBeforeAiring === hours && {
                           backgroundColor: currentTheme.colors.primary + '30',
                           borderColor: currentTheme.colors.primary,
                         }
                       ]}
-                      onPress={() => setTimeBeforeAiring(hours)}
+                      onPress={() => {
+                        triggerLight();
+                        setTimeBeforeAiring(hours);
+                      }}
                     >
                       <Text style={[
                         styles.timingText,
@@ -414,20 +436,23 @@ const NotificationSettingsScreen = () => {
                   </View>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[
                     styles.resetButton,
-                    { 
+                    {
                       backgroundColor: currentTheme.colors.primary + '20',
                       borderColor: currentTheme.colors.primary + '50'
                     }
                   ]}
-                  onPress={handleSyncNotifications}
+                  onPress={() => {
+                    triggerMedium();
+                    handleSyncNotifications();
+                  }}
                   disabled={isSyncing}
                 >
-                  <MaterialIcons 
-                    name={isSyncing ? "sync" : "sync"} 
-                    size={24} 
+                  <MaterialIcons
+                    name={isSyncing ? "sync" : "sync"}
+                    size={24}
                     color={currentTheme.colors.primary}
                     style={isSyncing ? { transform: [{ rotate: '360deg' }] } : {}}
                   />
@@ -435,45 +460,51 @@ const NotificationSettingsScreen = () => {
                     {isSyncing ? 'Syncing...' : 'Sync Library & Trakt'}
                   </Text>
                 </TouchableOpacity>
-                
+
                 <Text style={[styles.resetDescription, { color: currentTheme.colors.lightGray }]}>
                   Automatically syncs notifications for all shows in your library and Trakt watchlist/collection.
                 </Text>
               </View>
-              
+
               <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
                 <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Advanced</Text>
-                
-                <TouchableOpacity 
+
+                <TouchableOpacity
                   style={[
                     styles.resetButton,
-                    { 
+                    {
                       backgroundColor: currentTheme.colors.error + '20',
                       borderColor: currentTheme.colors.error + '50'
                     }
                   ]}
-                  onPress={resetAllNotifications}
+                  onPress={() => {
+                    triggerHeavy();
+                    resetAllNotifications();
+                  }}
                 >
                   <MaterialIcons name="refresh" size={24} color={currentTheme.colors.error} />
                   <Text style={[styles.resetButtonText, { color: currentTheme.colors.error }]}>Reset All Notifications</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[
-                    styles.resetButton, 
-                    { 
+                    styles.resetButton,
+                    {
                       marginTop: 12,
                       backgroundColor: currentTheme.colors.primary + '20',
                       borderColor: currentTheme.colors.primary + '50'
                     }
                   ]}
-                  onPress={handleTestNotification}
+                  onPress={() => {
+                    triggerMedium();
+                    handleTestNotification();
+                  }}
                   disabled={countdown !== null}
                 >
                   <MaterialIcons name="bug-report" size={24} color={currentTheme.colors.primary} />
                   <Text style={[styles.resetButtonText, { color: currentTheme.colors.primary }]}>
-                    {countdown !== null 
-                      ? `Notification in ${countdown}s...` 
+                    {countdown !== null
+                      ? `Notification in ${countdown}s...`
                       : 'Test Notification (5 sec)'}
                   </Text>
                 </TouchableOpacity>

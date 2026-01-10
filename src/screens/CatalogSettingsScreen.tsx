@@ -18,6 +18,7 @@ import {
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { stremioService } from '../services/stremioService';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useCatalogContext } from '../contexts/CatalogContext';
@@ -413,6 +414,7 @@ const CatalogSettingsScreen = () => {
 
   // Toggle individual catalog enabled state
   const toggleCatalog = (addonId: string, index: number) => {
+    triggerMedium();
     const newSettings = [...settings];
     const catalogsForAddon = groupedSettings[addonId].catalogs;
     const setting = catalogsForAddon[index];
@@ -443,6 +445,7 @@ const CatalogSettingsScreen = () => {
 
   // Toggle expansion of a group
   const toggleExpansion = (addonId: string) => {
+    triggerLight();
     setGroupedSettings(prev => ({
       ...prev,
       [addonId]: {
@@ -454,6 +457,7 @@ const CatalogSettingsScreen = () => {
 
   // Handle long press on catalog item
   const handleLongPress = (setting: CatalogSetting) => {
+    triggerMedium();
     setCatalogToRename(setting);
     setCurrentRenameValue(setting.customName || setting.name);
     setIsRenameModalVisible(true);
@@ -511,7 +515,10 @@ const CatalogSettingsScreen = () => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
             <Text style={styles.backText}>Settings</Text>
@@ -531,7 +538,10 @@ const CatalogSettingsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
           <Text style={styles.backText}>Settings</Text>
@@ -554,6 +564,7 @@ const CatalogSettingsScreen = () => {
                 <TouchableOpacity
                   style={[styles.optionChip, mobileColumns === 'auto' && styles.optionChipSelected]}
                   onPress={async () => {
+                    triggerLight();
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, 'auto');
                       setMobileColumns('auto');
@@ -566,6 +577,7 @@ const CatalogSettingsScreen = () => {
                 <TouchableOpacity
                   style={[styles.optionChip, mobileColumns === 2 && styles.optionChipSelected]}
                   onPress={async () => {
+                    triggerLight();
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, '2');
                       setMobileColumns(2);
@@ -578,6 +590,7 @@ const CatalogSettingsScreen = () => {
                 <TouchableOpacity
                   style={[styles.optionChip, mobileColumns === 3 && styles.optionChipSelected]}
                   onPress={async () => {
+                    triggerLight();
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, '3');
                       setMobileColumns(3);
@@ -602,6 +615,7 @@ const CatalogSettingsScreen = () => {
                 <Switch
                   value={showTitles}
                   onValueChange={async (value) => {
+                    triggerMedium();
                     try {
                       await mmkvStorage.setItem('catalog_show_titles', value ? 'true' : 'false');
                       setShowTitles(value);

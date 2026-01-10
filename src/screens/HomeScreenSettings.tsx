@@ -19,6 +19,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -63,12 +64,19 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
 
+  const handlePress = onPress
+    ? () => {
+        triggerLight();
+        onPress();
+      }
+    : undefined;
+
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={onPress ? 0.7 : 1}
-      onPress={onPress}
+      onPress={handlePress}
       style={[
-        styles.settingItem, 
+        styles.settingItem,
         !isLast && styles.settingItemBorder,
         { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }
       ]}
@@ -133,6 +141,7 @@ const HomeScreenSettings: React.FC = () => {
   );
 
   const handleBack = useCallback(() => {
+    triggerLight();
     navigation.goBack();
   }, [navigation]);
 
@@ -175,7 +184,10 @@ const HomeScreenSettings: React.FC = () => {
   const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
     <Switch
       value={value}
-      onValueChange={onValueChange}
+      onValueChange={(val) => {
+        triggerMedium();
+        onValueChange(val);
+      }}
       trackColor={{ false: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', true: colors.primary }}
       thumbColor={Platform.OS === 'android' ? (value ? colors.white : colors.white) : ''}
       ios_backgroundColor={isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
@@ -184,9 +196,12 @@ const HomeScreenSettings: React.FC = () => {
 
   // Radio button component for content source selection
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
-    <TouchableOpacity 
-      style={styles.radioOption} 
-      onPress={onPress}
+    <TouchableOpacity
+      style={styles.radioOption}
+      onPress={() => {
+        triggerLight();
+        onPress();
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.radioContainer}>
@@ -222,7 +237,10 @@ const HomeScreenSettings: React.FC = () => {
         return (
           <TouchableOpacity
             key={opt.value}
-            onPress={() => onChange(opt.value)}
+            onPress={() => {
+              triggerLight();
+              onChange(opt.value);
+            }}
             activeOpacity={0.85}
             style={[
               styles.segment,
@@ -357,7 +375,10 @@ const HomeScreenSettings: React.FC = () => {
               <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
               <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Using Catalogs</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('HeroCatalogs')}
+                onPress={() => {
+                  triggerLight();
+                  navigation.navigate('HeroCatalogs');
+                }}
                 style={[styles.manageLink, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' }]}
                 activeOpacity={0.8}
               >
