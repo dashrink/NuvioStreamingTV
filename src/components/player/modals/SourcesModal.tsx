@@ -8,6 +8,7 @@ import Animated, {
   SlideOutRight,
 } from 'react-native-reanimated';
 import { Stream } from '../../../types/streams';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface SourcesModalProps {
   showSourcesModal: boolean;
@@ -73,6 +74,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
   const MENU_WIDTH = Math.min(width * 0.85, 400);
 
   const handleClose = () => {
+    triggerLight();
     setShowSourcesModal(false);
   };
 
@@ -82,6 +84,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
 
   const handleStreamSelect = (stream: Stream) => {
     if (stream.url !== currentStreamUrl && !isChangingSource) {
+      triggerMedium();
       onSelectStream(stream);
     }
   };

@@ -12,6 +12,7 @@ import { EpisodeCard } from '../cards/EpisodeCard';
 import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
 import { logger } from '../../../utils/logger';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -95,7 +96,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowEpisodesModal(false)}>
+      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => { triggerLight(); setShowEpisodesModal(false); }}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
       </TouchableOpacity>
 
@@ -122,7 +123,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
             {seasons.map((season) => (
               <TouchableOpacity
                 key={season}
-                onPress={() => setSelectedSeason(season)}
+                onPress={() => { triggerLight(); setSelectedSeason(season); }}
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: 8,
@@ -156,6 +157,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   episodeProgress={episodeProgress}
                   tmdbEpisodeOverrides={tmdbEpisodeOverrides}
                   onPress={() => {
+                    triggerLight();
                     onSelectEpisode(episode);
                     setShowEpisodesModal(false);
                   }}

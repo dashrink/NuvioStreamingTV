@@ -7,6 +7,7 @@ import Animated, {
   SlideInRight,
   SlideOutRight,
 } from 'react-native-reanimated';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface SpeedModalProps {
   showSpeedModal: boolean;
@@ -36,14 +37,17 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
   const holdSpeedOptions = [1.5, 2.0];
 
   const handleClose = () => {
+    triggerLight();
     setShowSpeedModal(false);
   };
 
   const handleSpeedSelect = (speed: number) => {
+    triggerLight();
     setPlaybackSpeed(speed);
   };
 
   const handleHoldSpeedSelect = (speed: number) => {
+    triggerLight();
     setHoldToSpeedValue(speed);
   };
 
@@ -170,7 +174,7 @@ export const SpeedModal: React.FC<SpeedModalProps> = ({
                   alignItems: holdToSpeedEnabled ? 'flex-end' : 'flex-start',
                   paddingHorizontal: 3
                 }}
-                onPress={() => setHoldToSpeedEnabled(!holdToSpeedEnabled)}
+                onPress={() => { triggerMedium(); setHoldToSpeedEnabled(!holdToSpeedEnabled); }}
               >
                 <View style={{ width: 24, height: 24, backgroundColor: 'white', borderRadius: 12 }} />
               </TouchableOpacity>

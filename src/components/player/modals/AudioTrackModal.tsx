@@ -8,6 +8,7 @@ import Animated, {
   SlideOutRight,
 } from 'react-native-reanimated';
 import { getTrackDisplayName } from '../utils/playerUtils';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface AudioTrackModalProps {
   showAudioModal: boolean;
@@ -27,7 +28,10 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
   const { width } = useWindowDimensions();
   const MENU_WIDTH = Math.min(width * 0.85, 400);
 
-  const handleClose = () => setShowAudioModal(false);
+  const handleClose = () => {
+    triggerLight();
+    setShowAudioModal(false);
+  };
 
   if (!showAudioModal) return null;
 
@@ -69,6 +73,7 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                 <TouchableOpacity
                   key={track.id}
                   onPress={() => {
+                    triggerLight();
                     selectAudioTrack(track.id);
                     setTimeout(handleClose, 200);
                   }}
