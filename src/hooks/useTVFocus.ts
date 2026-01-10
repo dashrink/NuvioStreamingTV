@@ -8,6 +8,7 @@ import {
   cancelAnimation,
   SharedValue,
 } from 'react-native-reanimated';
+import { triggerFocusFeedbackSync } from '../utils/focusSound';
 
 /**
  * Animation configuration for focus transitions
@@ -155,6 +156,9 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
 
     // Animate to focused state using spring for natural feel
     focusAnim.value = withSpring(1, FOCUS_ANIMATION_CONFIG.spring);
+
+    // Trigger haptic feedback for focus change (respects settings)
+    triggerFocusFeedbackSync('navigation');
 
     // Call user's onFocus callback
     onFocus?.();
