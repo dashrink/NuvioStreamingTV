@@ -478,27 +478,31 @@
           "id": "5.2",
           "title": "Migrate ContributorsScreen loading",
           "description": "Replace ActivityIndicator instances in ContributorsScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/ContributorsScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace all ActivityIndicator instances",
             "Theme-aware colors"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator instances in ContributorsScreen with UnifiedSpinner: (1) SpecialMentionCard avatar loading placeholder now uses UnifiedSpinner size=\"small\", (2) Main loading state now uses UnifiedSpinner size=\"large\" with text prop. All ActivityIndicator references removed from the file.",
+          "updated_at": "2026-01-10T06:04:56.065812+00:00"
         },
         {
           "id": "5.3",
           "title": "Migrate AIChatScreen loading",
           "description": "Replace ActivityIndicator in AIChatScreen with UnifiedSpinner",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/AIChatScreen.tsx"
           ],
           "acceptance_criteria": [
             "Replace ActivityIndicator with UnifiedSpinner",
             "Theme-aware colors"
-          ]
+          ],
+          "notes": "Replaced ActivityIndicator with UnifiedSpinner in AIChatScreen loading state. Used size=\"large\" and text prop for loading message. Removed unused loadingText style. Committed: 31b10d8",
+          "updated_at": "2026-01-10T06:06:37.276714+00:00"
         },
         {
           "id": "5.4",
@@ -592,5 +596,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T06:03:02.084719+00:00"
+  "last_updated": "2026-01-10T06:06:37.276726+00:00"
 }

@@ -134,7 +134,17 @@
       "description": "PluginsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: status badge (small, scaled-down for 12px context), Switch Repository button (small, primary color), Refresh Repository button (small, mediumGray), Add Repository modal button (small, white). Uses style prop with transform scale for very small inline contexts.",
       "category": "migration",
       "discovered_at": "2026-01-10T06:03:07.319770+00:00"
+    },
+    "src/screens/ContributorsScreen.tsx": {
+      "description": "ContributorsScreen now uses UnifiedSpinner from '../components/loading' for all loading states: SpecialMentionCard avatar placeholder (size=\"small\") and main loading screen (size=\"large\" with text=\"Loading contributors...\"). The SpecialMention loading state is per-card while the main loading state covers the full screen.",
+      "category": "migration",
+      "discovered_at": "2026-01-10T06:04:56.126852+00:00"
+    },
+    "src/screens/AIChatScreen.tsx": {
+      "description": "AIChatScreen now uses UnifiedSpinner from '../components/loading' for its loading context state. Uses size=\"large\" and text=\"Loading AI context...\" prop. The loadingContainer style centers the spinner on screen.",
+      "category": "loading-components",
+      "discovered_at": "2026-01-10T06:06:37.361535+00:00"
     }
   },
-  "last_updated": "2026-01-10T06:03:07.319779+00:00"
+  "last_updated": "2026-01-10T06:06:37.361548+00:00"
 }
