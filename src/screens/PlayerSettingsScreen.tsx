@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSettings, AppSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -36,9 +37,14 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
+  const handlePress = () => {
+    triggerLight();
+    onPress();
+  };
+
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
       style={[
         styles.settingItem,
@@ -144,6 +150,7 @@ const PlayerSettingsScreen: React.FC = () => {
   ];
 
   const handleBack = () => {
+    triggerLight();
     navigation.goBack();
   };
 
@@ -279,7 +286,10 @@ const PlayerSettingsScreen: React.FC = () => {
                 </View>
                 <Switch
                   value={settings.autoplayBestStream}
-                  onValueChange={(value) => updateSetting('autoplayBestStream', value)}
+                  onValueChange={(value) => {
+                    triggerMedium();
+                    updateSetting('autoplayBestStream', value);
+                  }}
                   thumbColor={settings.autoplayBestStream ? currentTheme.colors.primary : undefined}
                 />
               </View>
@@ -317,7 +327,10 @@ const PlayerSettingsScreen: React.FC = () => {
                 </View>
                 <Switch
                   value={settings.alwaysResume}
-                  onValueChange={(value) => updateSetting('alwaysResume', value)}
+                  onValueChange={(value) => {
+                    triggerMedium();
+                    updateSetting('alwaysResume', value);
+                  }}
                   thumbColor={settings.alwaysResume ? currentTheme.colors.primary : undefined}
                 />
               </View>
@@ -358,7 +371,10 @@ const PlayerSettingsScreen: React.FC = () => {
                     </View>
                     <Switch
                       value={settings.useExternalPlayerForDownloads}
-                      onValueChange={(value) => updateSetting('useExternalPlayerForDownloads', value)}
+                      onValueChange={(value) => {
+                        triggerMedium();
+                        updateSetting('useExternalPlayerForDownloads', value);
+                      }}
                       thumbColor={settings.useExternalPlayerForDownloads ? currentTheme.colors.primary : undefined}
                     />
                   </View>
