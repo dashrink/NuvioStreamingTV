@@ -47,9 +47,10 @@ class StorageService {
     }
   }
 
-  private async getWatchProgressKeyScoped(id: string, type: string, episodeId?: string): Promise<string> {
+  private async getWatchProgressKeyScoped(id: string, type: string, episodeId?: string, profile_id?: string): Promise<string> {
     const scope = await this.getUserScope();
-    return `@user:${scope}:${this.WATCH_PROGRESS_KEY}${type}:${id}${episodeId ? `:${episodeId}` : ''}`;
+    const profileScope = profile_id ? `:profile:${profile_id}` : '';
+    return `@user:${scope}${profileScope}:${this.WATCH_PROGRESS_KEY}${type}:${id}${episodeId ? `:${episodeId}` : ''}`;
   }
 
   private async getContentDurationKeyScoped(id: string, type: string, episodeId?: string): Promise<string> {
@@ -232,10 +233,10 @@ class StorageService {
     type: string,
     progress: WatchProgress,
     episodeId?: string,
-    options?: { preserveTimestamp?: boolean; forceNotify?: boolean; forceWrite?: boolean }
+    options?: { preserveTimestamp?: boolean; forceNotify?: boolean; forceWrite?: boolean; profile_id?: string }
   ): Promise<void> {
     try {
-      const key = await this.getWatchProgressKeyScoped(id, type, episodeId);
+      const key = await this.getWatchProgressKeyScoped(id, type, episodeId, options?.profile_id);
       // Do not resurrect if tombstone exists and is newer than this progress
       try {
         const tombstones = await this.getWatchProgressTombstones();
@@ -351,10 +352,11 @@ class StorageService {
   public async getWatchProgress(
     id: string,
     type: string,
-    episodeId?: string
+    episodeId?: string,
+    profile_id?: string
   ): Promise<WatchProgress | null> {
     try {
-      const key = await this.getWatchProgressKeyScoped(id, type, episodeId);
+      const key = await this.getWatchProgressKeyScoped(id, type, episodeId, profile_id);
       const data = await mmkvStorage.getItem(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
@@ -366,10 +368,11 @@ class StorageService {
   public async removeWatchProgress(
     id: string,
     type: string,
-    episodeId?: string
+    episodeId?: string,
+    profile_id?: string
   ): Promise<void> {
     try {
-      const key = await this.getWatchProgressKeyScoped(id, type, episodeId);
+      const key = await this.getWatchProgressKeyScoped(id, type, episodeId, profile_id);
       await mmkvStorage.removeItem(key);
       await this.addWatchProgressTombstone(id, type, episodeId);
 

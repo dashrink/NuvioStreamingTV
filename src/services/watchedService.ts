@@ -6,9 +6,11 @@ import { logger } from '../utils/logger';
 /**
  * WatchedService - Manages "watched" status for movies, episodes, and seasons.
  * Handles both local storage and Trakt sync transparently.
- * 
+ *
  * When Trakt is authenticated, it syncs to Trakt.
  * When not authenticated, it stores locally.
+ *
+ * Supports profile-scoped watch history via optional profile_id parameter.
  */
 class WatchedService {
     private static instance: WatchedService;
@@ -29,10 +31,12 @@ class WatchedService {
      * Mark a movie as watched
      * @param imdbId - The IMDb ID of the movie
      * @param watchedAt - Optional date when watched
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async markMovieAsWatched(
         imdbId: string,
-        watchedAt: Date = new Date()
+        watchedAt: Date = new Date(),
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean }> {
         try {
             logger.log(`[WatchedService] Marking movie as watched: ${imdbId}`);
@@ -48,7 +52,7 @@ class WatchedService {
             }
 
             // Also store locally as "completed" (100% progress)
-            await this.setLocalWatchedStatus(imdbId, 'movie', true, undefined, watchedAt);
+            await this.setLocalWatchedStatus(imdbId, 'movie', true, undefined, watchedAt, profile_id);
 
             return { success: true, syncedToTrakt };
         } catch (error) {
@@ -64,13 +68,15 @@ class WatchedService {
      * @param season - Season number
      * @param episode - Episode number
      * @param watchedAt - Optional date when watched
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async markEpisodeAsWatched(
         showImdbId: string,
         showId: string,
         season: number,
         episode: number,
-        watchedAt: Date = new Date()
+        watchedAt: Date = new Date(),
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean }> {
         try {
             logger.log(`[WatchedService] Marking episode as watched: ${showImdbId} S${season}E${episode}`);
@@ -92,7 +98,7 @@ class WatchedService {
 
             // Store locally as "completed"
             const episodeId = `${showId}:${season}:${episode}`;
-            await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt);
+            await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt, profile_id);
 
             return { success: true, syncedToTrakt };
         } catch (error) {
@@ -107,12 +113,14 @@ class WatchedService {
      * @param showId - The Stremio ID of the show (for local storage)
      * @param episodes - Array of { season, episode } objects
      * @param watchedAt - Optional date when watched
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async markEpisodesAsWatched(
         showImdbId: string,
         showId: string,
         episodes: Array<{ season: number; episode: number }>,
-        watchedAt: Date = new Date()
+        watchedAt: Date = new Date(),
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean; count: number }> {
         try {
             if (episodes.length === 0) {
@@ -138,7 +146,7 @@ class WatchedService {
             // Store locally as "completed" for each episode
             for (const ep of episodes) {
                 const episodeId = `${showId}:${ep.season}:${ep.episode}`;
-                await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt);
+                await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt, profile_id);
             }
 
             return { success: true, syncedToTrakt, count: episodes.length };
@@ -155,13 +163,15 @@ class WatchedService {
      * @param season - Season number
      * @param episodeNumbers - Array of episode numbers in the season
      * @param watchedAt - Optional date when watched
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async markSeasonAsWatched(
         showImdbId: string,
         showId: string,
         season: number,
         episodeNumbers: number[],
-        watchedAt: Date = new Date()
+        watchedAt: Date = new Date(),
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean; count: number }> {
         try {
             logger.log(`[WatchedService] Marking season ${season} as watched for ${showImdbId}`);
@@ -183,7 +193,7 @@ class WatchedService {
             // Store locally as "completed" for each episode in the season
             for (const epNum of episodeNumbers) {
                 const episodeId = `${showId}:${season}:${epNum}`;
-                await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt);
+                await this.setLocalWatchedStatus(showId, 'series', true, episodeId, watchedAt, profile_id);
             }
 
             return { success: true, syncedToTrakt, count: episodeNumbers.length };
@@ -195,9 +205,12 @@ class WatchedService {
 
     /**
      * Unmark a movie as watched (remove from history)
+     * @param imdbId - The IMDb ID of the movie
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async unmarkMovieAsWatched(
-        imdbId: string
+        imdbId: string,
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean }> {
         try {
             logger.log(`[WatchedService] Unmarking movie as watched: ${imdbId}`);
@@ -211,8 +224,9 @@ class WatchedService {
             }
 
             // Remove local progress
-            await storageService.removeWatchProgress(imdbId, 'movie');
-            await mmkvStorage.removeItem(`watched:movie:${imdbId}`);
+            await storageService.removeWatchProgress(imdbId, 'movie', undefined, profile_id);
+            const watchedKey = profile_id ? `watched:movie:${imdbId}:${profile_id}` : `watched:movie:${imdbId}`;
+            await mmkvStorage.removeItem(watchedKey);
 
             return { success: true, syncedToTrakt };
         } catch (error) {
@@ -223,12 +237,18 @@ class WatchedService {
 
     /**
      * Unmark an episode as watched (remove from history)
+     * @param showImdbId - The IMDb ID of the show
+     * @param showId - The Stremio ID of the show (for local storage)
+     * @param season - Season number
+     * @param episode - Episode number
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async unmarkEpisodeAsWatched(
         showImdbId: string,
         showId: string,
         season: number,
-        episode: number
+        episode: number,
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean }> {
         try {
             logger.log(`[WatchedService] Unmarking episode as watched: ${showImdbId} S${season}E${episode}`);
@@ -247,7 +267,7 @@ class WatchedService {
 
             // Remove local progress
             const episodeId = `${showId}:${season}:${episode}`;
-            await storageService.removeWatchProgress(showId, 'series', episodeId);
+            await storageService.removeWatchProgress(showId, 'series', episodeId, profile_id);
 
             return { success: true, syncedToTrakt };
         } catch (error) {
@@ -262,12 +282,14 @@ class WatchedService {
      * @param showId - The Stremio ID of the show (for local storage)
      * @param season - Season number
      * @param episodeNumbers - Array of episode numbers in the season
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     public async unmarkSeasonAsWatched(
         showImdbId: string,
         showId: string,
         season: number,
-        episodeNumbers: number[]
+        episodeNumbers: number[],
+        profile_id?: string
     ): Promise<{ success: boolean; syncedToTrakt: boolean; count: number }> {
         try {
             logger.log(`[WatchedService] Unmarking season ${season} as watched for ${showImdbId}`);
@@ -287,7 +309,7 @@ class WatchedService {
             // Remove local progress for each episode in the season
             for (const epNum of episodeNumbers) {
                 const episodeId = `${showId}:${season}:${epNum}`;
-                await storageService.removeWatchProgress(showId, 'series', episodeId);
+                await storageService.removeWatchProgress(showId, 'series', episodeId, profile_id);
             }
 
             return { success: true, syncedToTrakt, count: episodeNumbers.length };
@@ -299,17 +321,20 @@ class WatchedService {
 
     /**
      * Check if a movie is marked as watched (locally)
+     * @param imdbId - The IMDb ID of the movie
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
-    public async isMovieWatched(imdbId: string): Promise<boolean> {
+    public async isMovieWatched(imdbId: string, profile_id?: string): Promise<boolean> {
         try {
             // First check local watched flag
-            const localWatched = await mmkvStorage.getItem(`watched:movie:${imdbId}`);
+            const watchedKey = profile_id ? `watched:movie:${imdbId}:${profile_id}` : `watched:movie:${imdbId}`;
+            const localWatched = await mmkvStorage.getItem(watchedKey);
             if (localWatched === 'true') {
                 return true;
             }
 
             // Check local progress
-            const progress = await storageService.getWatchProgress(imdbId, 'movie');
+            const progress = await storageService.getWatchProgress(imdbId, 'movie', undefined, profile_id);
             if (progress) {
                 const progressPercent = (progress.currentTime / progress.duration) * 100;
                 if (progressPercent >= 85) {
@@ -326,13 +351,17 @@ class WatchedService {
 
     /**
      * Check if an episode is marked as watched (locally)
+     * @param showId - The Stremio ID of the show
+     * @param season - Season number
+     * @param episode - Episode number
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
-    public async isEpisodeWatched(showId: string, season: number, episode: number): Promise<boolean> {
+    public async isEpisodeWatched(showId: string, season: number, episode: number, profile_id?: string): Promise<boolean> {
         try {
             const episodeId = `${showId}:${season}:${episode}`;
 
             // Check local progress
-            const progress = await storageService.getWatchProgress(showId, 'series', episodeId);
+            const progress = await storageService.getWatchProgress(showId, 'series', episodeId, profile_id);
             if (progress) {
                 const progressPercent = (progress.currentTime / progress.duration) * 100;
                 if (progressPercent >= 85) {
@@ -349,13 +378,20 @@ class WatchedService {
 
     /**
      * Set local watched status by creating a "completed" progress entry
+     * @param id - Content ID
+     * @param type - Content type ('movie' or 'series')
+     * @param watched - Whether to mark as watched or unwatched
+     * @param episodeId - Optional episode ID for series
+     * @param watchedAt - Optional date when watched
+     * @param profile_id - Optional profile ID for profile-scoped watch history
      */
     private async setLocalWatchedStatus(
         id: string,
         type: 'movie' | 'series',
         watched: boolean,
         episodeId?: string,
-        watchedAt: Date = new Date()
+        watchedAt: Date = new Date(),
+        profile_id?: string
     ): Promise<void> {
         try {
             if (watched) {
@@ -369,18 +405,21 @@ class WatchedService {
                 };
                 await storageService.setWatchProgress(id, type, progress, episodeId, {
                     forceWrite: true,
-                    forceNotify: true
+                    forceNotify: true,
+                    profile_id
                 });
 
                 // Also set the legacy watched flag for movies
                 if (type === 'movie') {
-                    await mmkvStorage.setItem(`watched:${type}:${id}`, 'true');
+                    const watchedKey = profile_id ? `watched:${type}:${id}:${profile_id}` : `watched:${type}:${id}`;
+                    await mmkvStorage.setItem(watchedKey, 'true');
                 }
             } else {
                 // Remove progress
-                await storageService.removeWatchProgress(id, type, episodeId);
+                await storageService.removeWatchProgress(id, type, episodeId, profile_id);
                 if (type === 'movie') {
-                    await mmkvStorage.removeItem(`watched:${type}:${id}`);
+                    const watchedKey = profile_id ? `watched:${type}:${id}:${profile_id}` : `watched:${type}:${id}`;
+                    await mmkvStorage.removeItem(watchedKey);
                 }
             }
         } catch (error) {
