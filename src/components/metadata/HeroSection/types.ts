@@ -134,8 +134,12 @@ export interface HeroBackButtonProps {
  * Props for the HeroGradientOverlay component
  */
 export interface HeroGradientOverlayProps {
+  /** Optional dynamic background color extracted from the content. Falls back to theme darkBackground. */
   dynamicBackgroundColor?: string;
+  /** Optional animated style for scroll-based animations */
   animatedStyle?: any;
+  /** Content to render inside the gradient overlay (title card, genres, action buttons, etc.) */
+  children?: React.ReactNode;
 }
 
 /**
