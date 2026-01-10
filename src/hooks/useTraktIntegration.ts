@@ -364,6 +364,22 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
+  // Get user's rating for a specific item from cached ratedContent
+  const getUserRating = useCallback((imdbId: string, type: 'movie' | 'show'): number | null => {
+    // Ensure consistent IMDb ID format (with 'tt' prefix)
+    const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+    // Search for the rating in cached ratedContent
+    const ratingItem = ratedContent.find(item => {
+      const existingImdbId = type === 'movie'
+        ? item.movie?.ids?.imdb
+        : item.show?.ids?.imdb;
+      return existingImdbId === normalizedImdbId;
+    });
+
+    return ratingItem?.rating ?? null;
+  }, [ratedContent]);
+
   // Mark an episode as watched
   const markEpisodeAsWatched = useCallback(async (
     imdbId: string,
@@ -766,6 +782,7 @@ export function useTraktIntegration() {
     isInCollection,
     // Trakt rating management
     addRating,
-    removeRating
+    removeRating,
+    getUserRating
   };
 }
