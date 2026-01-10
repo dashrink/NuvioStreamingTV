@@ -1,3 +1,16 @@
+/**
+ * @fileoverview UnifiedSpinner Component
+ *
+ * A theme-aware loading spinner component that serves as the primary loading
+ * indicator throughout the application. Replaces direct ActivityIndicator usage
+ * with a consistent, animated loading experience.
+ *
+ * @module loading/UnifiedSpinner
+ *
+ * @see SpinnerLoadingProps - Props interface definition
+ * @see LoadingSpinner - Legacy wrapper (deprecated)
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -18,28 +31,84 @@ import {
 /**
  * UnifiedSpinner - A theme-aware loading spinner component
  *
- * Provides a consistent loading indicator across the app with:
- * - Theme-aware colors (uses currentTheme.colors.primary by default)
- * - Three sizes: small (24px), medium (40px), large (60px)
- * - Lottie animation support with fallback to native ActivityIndicator
- * - Optional loading text with proper styling
- * - Android-specific optimizations for Lottie animations
+ * Provides a consistent loading indicator across the app, replacing direct
+ * ActivityIndicator usage with a polished, animated loading experience.
+ *
+ * ## Features
+ *
+ * - **Theme-aware**: Uses `currentTheme.colors.primary` by default
+ * - **Three sizes**: small (24px), medium (40px), large (60px)
+ * - **Lottie animations**: Smooth animations with ActivityIndicator fallback
+ * - **Optional text**: Loading message displayed below spinner
+ * - **Android optimized**: Includes platform-specific Lottie configurations
+ * - **Accessible**: Proper accessibility role and label
+ *
+ * ## Size Guide
+ *
+ * | Size   | Lottie | Native | Use Case                         |
+ * |--------|--------|--------|----------------------------------|
+ * | small  | 60px   | 24px   | Button loading, inline spinners  |
+ * | medium | 100px  | 40px   | Card/section loading (default)   |
+ * | large  | 150px  | 60px   | Full-screen, prominent loading   |
+ *
+ * @component
+ * @param {SpinnerLoadingProps} props - Component props
  *
  * @example
  * // Basic usage with default size (medium)
- * <UnifiedSpinner />
+ * import { UnifiedSpinner } from '@/components/loading';
+ *
+ * function LoadingState() {
+ *   return <UnifiedSpinner />;
+ * }
  *
  * @example
- * // With loading text
- * <UnifiedSpinner text="Loading content..." size="large" />
+ * // Full-screen loading with message
+ * function ScreenLoading() {
+ *   return (
+ *     <View style={styles.center}>
+ *       <UnifiedSpinner size="large" text="Loading content..." />
+ *     </View>
+ *   );
+ * }
  *
  * @example
- * // With custom color (e.g., white for button context)
- * <UnifiedSpinner size="small" color="#FFFFFF" />
+ * // Button loading state with white spinner
+ * function SubmitButton({ loading, onPress }) {
+ *   return (
+ *     <TouchableOpacity style={styles.button} onPress={onPress}>
+ *       {loading ? (
+ *         <UnifiedSpinner size="small" color="#FFFFFF" />
+ *       ) : (
+ *         <Text style={styles.buttonText}>Submit</Text>
+ *       )}
+ *     </TouchableOpacity>
+ *   );
+ * }
  *
  * @example
- * // With custom Lottie source
- * <UnifiedSpinner source={require('../../../assets/lottie/custom.json')} />
+ * // Custom Lottie animation
+ * function BrandedLoading() {
+ *   return (
+ *     <UnifiedSpinner
+ *       source={require('./assets/custom-spinner.json')}
+ *       size="large"
+ *       text="Please wait..."
+ *     />
+ *   );
+ * }
+ *
+ * @example
+ * // With vertical offset for visual alignment
+ * function CenteredLoading() {
+ *   return (
+ *     <UnifiedSpinner
+ *       size="large"
+ *       offsetY={-50}
+ *       text="Loading..."
+ *     />
+ *   );
+ * }
  */
 const UnifiedSpinner: React.FC<SpinnerLoadingProps> = ({
   text,

@@ -1,3 +1,66 @@
+/**
+ * @fileoverview LoadingOverlayScreen Component
+ *
+ * A full-screen modal loading overlay for page-level loading states.
+ * Used when the entire screen needs to show a loading indicator with
+ * an optional backdrop blur or semi-transparent overlay.
+ *
+ * ## Key Features
+ *
+ * - **Modal-based**: Renders above all content using React Native Modal
+ * - **SafeArea-aware**: Respects device notches and home indicators
+ * - **Backdrop blur**: Optional iOS blur effect (solid fallback on Android)
+ * - **Fade animations**: Smooth fade-in/fade-out transitions
+ * - **Dismissable**: Optional tap-to-dismiss functionality
+ * - **Theme-aware**: Colors derived from current theme
+ *
+ * ## When to Use
+ *
+ * - Full-screen data loading (initial app load, screen transitions)
+ * - Blocking operations (save, sync, upload)
+ * - Multi-step operations with progress updates
+ *
+ * ## Integration with Context
+ *
+ * For global loading state management, use the LoadingContext and
+ * useGlobalLoading hook instead of rendering LoadingOverlayScreen directly.
+ *
+ * @module loading/LoadingOverlayScreen
+ *
+ * @see LoadingOverlayProps - Props interface
+ * @see useGlobalLoading - Hook for global loading state
+ * @see LoadingProvider - Context provider with built-in overlay
+ *
+ * @example
+ * // Direct usage
+ * import { LoadingOverlayScreen } from '@/components/loading';
+ *
+ * function MyScreen() {
+ *   const [loading, setLoading] = useState(false);
+ *
+ *   return (
+ *     <>
+ *       <MyContent />
+ *       <LoadingOverlayScreen visible={loading} text="Saving..." />
+ *     </>
+ *   );
+ * }
+ *
+ * @example
+ * // Via context (recommended for global loading)
+ * import { useGlobalLoading } from '@/components/loading';
+ *
+ * function MyComponent() {
+ *   const { showLoading, hideLoading } = useGlobalLoading();
+ *
+ *   const handleSave = async () => {
+ *     showLoading({ text: 'Saving...' });
+ *     await saveData();
+ *     hideLoading();
+ *   };
+ * }
+ */
+
 import React, { useEffect } from 'react';
 import {
   View,

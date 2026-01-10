@@ -1,24 +1,73 @@
 /**
- * Unified Loading Components
+ * @fileoverview Unified Loading Components Module
  *
- * A comprehensive set of loading state components for consistent UI feedback.
- * All components are theme-aware and follow responsive design patterns.
+ * A comprehensive set of loading state components for consistent UI feedback
+ * across the application. All components are theme-aware, responsive, and
+ * follow accessibility best practices.
+ *
+ * ## Component Categories
+ *
+ * ### Core Components
+ * - **UnifiedSpinner** - Theme-aware animated spinner (Lottie + fallback)
+ * - **ShimmerSkeleton** - Animated shimmer placeholder
+ * - **SkeletonGroup** - Multiple synchronized skeletons
+ * - **LoadingOverlayScreen** - Full-screen modal loading overlay
+ *
+ * ### Content-Specific Skeletons
+ * - **PosterSkeleton** - Movie/show poster placeholder
+ * - **EpisodeSkeleton** - Episode card placeholder
+ * - **CastSkeleton** - Cast member placeholder
+ * - **CatalogRowSkeleton** - Horizontal catalog row
+ * - **EpisodeListSkeleton** - Vertical episode list
+ * - **CastRowSkeleton** - Horizontal cast section
+ * - **PosterGridSkeleton** - Library-style grid
+ *
+ * ### Branded Loading
+ * - **TraktLoadingSpinner** - Trakt-branded loading indicator
+ *
+ * ### Global State Management
+ * - **LoadingProvider** - Context provider for app-wide loading
+ * - **useLoading** - Hook for HomeScreen loading state
+ * - **useGlobalLoading** - Hook for global loading overlay
+ *
+ * ## Quick Start
  *
  * @example
- * // Import individual components
- * import { UnifiedSpinner, ShimmerSkeleton, LoadingOverlayScreen } from '@/components/loading';
+ * // Basic spinner
+ * import { UnifiedSpinner } from '@/components/loading';
+ * <UnifiedSpinner size="large" text="Loading..." />
  *
  * @example
- * // Import types
- * import type { LoadingSize, SpinnerLoadingProps } from '@/components/loading';
+ * // Skeleton placeholder
+ * import { ShimmerSkeleton, useShimmerProgress } from '@/components/loading';
+ * const progress = useShimmerProgress();
+ * <ShimmerSkeleton width={200} height={40} shimmerProgress={progress} />
  *
  * @example
- * // Import hooks
- * import { useShimmerProgress } from '@/components/loading';
+ * // Content-specific skeleton
+ * import { CatalogRowSkeleton } from '@/components/loading';
+ * <CatalogRowSkeleton posterCount={5} />
  *
  * @example
- * // Import content-specific skeletons
- * import { PosterSkeleton, EpisodeSkeleton, CatalogRowSkeleton } from '@/components/loading';
+ * // Global loading overlay
+ * import { useGlobalLoading } from '@/components/loading';
+ * const { showLoading, hideLoading } = useGlobalLoading();
+ * showLoading({ text: 'Saving...' });
+ *
+ * ## Migration from ActivityIndicator
+ *
+ * Replace direct ActivityIndicator usage with UnifiedSpinner:
+ *
+ * @example
+ * // Before (deprecated)
+ * import { ActivityIndicator } from 'react-native';
+ * <ActivityIndicator size="large" color="#FF0000" />
+ *
+ * // After (recommended)
+ * import { UnifiedSpinner } from '@/components/loading';
+ * <UnifiedSpinner size="large" color="#FF0000" />
+ *
+ * @module loading
  */
 
 // ============================================================================

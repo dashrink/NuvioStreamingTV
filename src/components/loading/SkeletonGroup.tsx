@@ -1,3 +1,41 @@
+/**
+ * @fileoverview SkeletonGroup Component
+ *
+ * A component that renders multiple skeleton elements with synchronized shimmer
+ * animation. Includes preset configurations for common UI patterns and support
+ * for custom skeleton layouts.
+ *
+ * ## Key Features
+ *
+ * - **Synchronized Animation**: All skeletons share the same animation progress
+ * - **Preset Patterns**: Pre-configured layouts for list, grid, text, poster, etc.
+ * - **Staggered Fade-in**: Optional progressive reveal animation
+ * - **Custom Rendering**: renderItem prop for complex skeleton layouts
+ * - **Responsive**: Dimensions adjust based on device type
+ *
+ * ## Available Presets
+ *
+ * | Preset      | Layout     | Use Case                      |
+ * |-------------|------------|-------------------------------|
+ * | list        | Vertical   | Settings menus, menu items    |
+ * | grid        | Grid wrap  | Library, search results       |
+ * | textBlock   | Vertical   | Description paragraphs        |
+ * | poster      | Horizontal | Poster carousels              |
+ * | episode     | Vertical   | Episode card lists            |
+ * | cast        | Horizontal | Cast member rows              |
+ * | catalogRow  | Horizontal | Home screen catalog rows      |
+ *
+ * @module loading/SkeletonGroup
+ *
+ * @see SkeletonGroupProps - Props interface
+ * @see ShimmerSkeleton - Base skeleton component
+ * @see useShimmerProgress - Animation synchronization hook
+ *
+ * @example
+ * // Import SkeletonGroup
+ * import { SkeletonGroup } from '@/components/loading';
+ */
+
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ViewStyle, Dimensions } from 'react-native';
 import Animated, {
@@ -22,7 +60,10 @@ import {
 const { width: screenWidth } = Dimensions.get('window');
 
 /**
- * Preset configuration definitions for common skeleton patterns
+ * Configuration for a skeleton preset pattern.
+ *
+ * @internal
+ * @interface PresetConfig
  */
 interface PresetConfig {
   /** Width of each skeleton item (number or percentage) */

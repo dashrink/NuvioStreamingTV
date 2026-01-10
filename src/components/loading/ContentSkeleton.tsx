@@ -1,3 +1,44 @@
+/**
+ * @fileoverview Content-Specific Skeleton Components
+ *
+ * Pre-configured skeleton components that match the dimensions and layout of
+ * actual content components in the app. These provide pixel-perfect loading
+ * placeholders for common content types.
+ *
+ * ## Available Components
+ *
+ * | Component            | Matches                    | Use Case                   |
+ * |----------------------|----------------------------|----------------------------|
+ * | PosterSkeleton       | ContentItem                | Movie/show poster cards    |
+ * | EpisodeSkeleton      | EpisodeCard                | Episode list items         |
+ * | CastSkeleton         | CastSection member         | Cast member circles        |
+ * | CatalogRowSkeleton   | HomeScreen catalog rows    | Horizontal poster rows     |
+ * | EpisodeListSkeleton  | Episode lists              | Multiple episode cards     |
+ * | CastRowSkeleton      | CastSection                | Horizontal cast row        |
+ * | PosterGridSkeleton   | LibraryScreen grid         | Grid of poster cards       |
+ *
+ * ## Responsive Behavior
+ *
+ * All components automatically adjust their dimensions based on device type:
+ * - **Phone**: Compact sizing for mobile screens
+ * - **Tablet**: Medium sizing for tablet screens
+ * - **Large Tablet**: Larger sizing for iPad Pro, etc.
+ * - **TV**: Maximum sizing for TV displays
+ *
+ * @module loading/ContentSkeleton
+ *
+ * @see ShimmerSkeleton - Base skeleton component
+ * @see useShimmerProgress - Hook for synchronized animations
+ *
+ * @example
+ * // Import content skeletons
+ * import {
+ *   PosterSkeleton,
+ *   EpisodeSkeleton,
+ *   CatalogRowSkeleton,
+ * } from '@/components/loading';
+ */
+
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Dimensions, ViewStyle } from 'react-native';
 import ShimmerSkeleton, { useShimmerProgress } from './ShimmerSkeleton';
@@ -6,8 +47,13 @@ import { getDeviceType, DeviceType } from './types';
 const { width: screenWidth } = Dimensions.get('window');
 
 /**
- * Get responsive dimensions based on device type
+ * Calculate responsive dimensions based on device type.
  * Matches the breakpoints and sizing patterns used in actual content components
+ * to ensure skeleton placeholders are pixel-perfect matches.
+ *
+ * @internal
+ * @param {DeviceType} deviceType - Current device classification
+ * @returns {Object} Object containing all dimension values
  */
 function getResponsiveDimensions(deviceType: DeviceType) {
   const isTV = deviceType === 'tv';
@@ -44,40 +90,120 @@ function getResponsiveDimensions(deviceType: DeviceType) {
 }
 
 /**
- * Props for PosterSkeleton component
+ * Props for PosterSkeleton component.
+ *
+ * @interface PosterSkeletonProps
+ *
+ * @example
+ * // All available props
+ * <PosterSkeleton
+ *   width={120}
+ *   aspectRatio={2/3}
+ *   borderRadius={8}
+ *   showTitle={true}
+ *   style={{ margin: 8 }}
+ *   testID="poster-skeleton"
+ * />
  */
 export interface PosterSkeletonProps {
-  /** Override default width (defaults to responsive width based on device) */
+  /**
+   * Override default poster width in pixels.
+   * Defaults to responsive width based on device type.
+   *
+   * @type {number}
+   * @default Responsive (100-140px based on device)
+   */
   width?: number;
-  /** Custom aspect ratio (defaults to 2/3 for portrait poster) */
+
+  /**
+   * Poster aspect ratio (height = width / aspectRatio).
+   * Standard movie/show posters use 2/3 (portrait).
+   *
+   * @type {number}
+   * @default 2/3 (portrait poster)
+   *
+   * @example
+   * aspectRatio={1}    // Square
+   * aspectRatio={16/9} // Landscape
+   * aspectRatio={2/3}  // Portrait (default)
+   */
   aspectRatio?: number;
-  /** Border radius (defaults to 8) */
+
+  /**
+   * Border radius for the poster skeleton.
+   *
+   * @type {number}
+   * @default 8
+   */
   borderRadius?: number;
-  /** Whether to show title skeleton below poster */
+
+  /**
+   * Whether to show a title skeleton below the poster.
+   * The title skeleton is 80% of poster width.
+   *
+   * @type {boolean}
+   * @default false
+   */
   showTitle?: boolean;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
 /**
  * PosterSkeleton - Skeleton placeholder that matches ContentItem poster dimensions
  *
- * Displays a poster-shaped skeleton with optional title placeholder below.
- * Uses responsive sizing based on device type (phone, tablet, TV).
+ * Displays a poster-shaped skeleton with synchronized shimmer animation.
+ * Dimensions are responsive and match the actual ContentItem component.
+ *
+ * ## Responsive Dimensions
+ *
+ * | Device      | Width  | Height (2:3) |
+ * |-------------|--------|--------------|
+ * | Phone       | 100px  | 150px        |
+ * | Tablet      | 110px  | 165px        |
+ * | Large Tablet| 120px  | 180px        |
+ * | TV          | 140px  | 210px        |
+ *
+ * @component
+ * @param {PosterSkeletonProps} props - Component props
  *
  * @example
- * // Basic usage
- * <PosterSkeleton />
+ * // Basic usage - responsive sizing
+ * import { PosterSkeleton } from '@/components/loading';
+ *
+ * function MovieCardLoading() {
+ *   return <PosterSkeleton />;
+ * }
  *
  * @example
- * // With title and custom width
- * <PosterSkeleton width={120} showTitle />
+ * // With title placeholder
+ * function MovieCardWithTitleLoading() {
+ *   return <PosterSkeleton showTitle />;
+ * }
  *
  * @example
- * // Square poster (for special cards)
- * <PosterSkeleton aspectRatio={1} />
+ * // Custom width for specific layout
+ * function LargeMovieCard() {
+ *   return <PosterSkeleton width={160} showTitle />;
+ * }
+ *
+ * @example
+ * // Square aspect ratio for album art
+ * function AlbumCoverLoading() {
+ *   return <PosterSkeleton aspectRatio={1} />;
+ * }
  */
 export const PosterSkeleton: React.FC<PosterSkeletonProps> = ({
   width: customWidth,
@@ -117,30 +243,81 @@ export const PosterSkeleton: React.FC<PosterSkeletonProps> = ({
 };
 
 /**
- * Props for EpisodeSkeleton component
+ * Props for EpisodeSkeleton component.
+ *
+ * @interface EpisodeSkeletonProps
  */
 export interface EpisodeSkeletonProps {
-  /** Show description line (defaults to true) */
+  /**
+   * Whether to show description placeholder lines.
+   * When true, displays two lines of text below the metadata row.
+   *
+   * @type {boolean}
+   * @default true
+   */
   showDescription?: boolean;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
 /**
  * EpisodeSkeleton - Skeleton placeholder that matches EpisodeCard layout
  *
- * Displays a horizontal card skeleton with square thumbnail on left and
- * info section on right, matching the EpisodeCard component structure.
+ * Displays a horizontal card skeleton that matches the EpisodeCard component:
+ * - Left: Square thumbnail (120px)
+ * - Right: Title, metadata row, and optional description lines
+ *
+ * ## Layout Structure
+ *
+ * ```
+ * ┌────────────┬─────────────────────────┐
+ * │            │ Title placeholder       │
+ * │  Thumbnail │ Rating | Runtime        │
+ * │            │ Description line 1      │
+ * │            │ Description line 2      │
+ * └────────────┴─────────────────────────┘
+ * ```
+ *
+ * @component
+ * @param {EpisodeSkeletonProps} props - Component props
  *
  * @example
- * // Basic usage
- * <EpisodeSkeleton />
+ * // Basic usage with description
+ * import { EpisodeSkeleton } from '@/components/loading';
+ *
+ * function EpisodeLoading() {
+ *   return <EpisodeSkeleton />;
+ * }
  *
  * @example
- * // Without description line
- * <EpisodeSkeleton showDescription={false} />
+ * // Compact version without description
+ * function CompactEpisodeLoading() {
+ *   return <EpisodeSkeleton showDescription={false} />;
+ * }
+ *
+ * @example
+ * // Multiple episodes loading
+ * function EpisodeListLoading() {
+ *   return (
+ *     <View>
+ *       <EpisodeSkeleton />
+ *       <EpisodeSkeleton />
+ *       <EpisodeSkeleton />
+ *     </View>
+ *   );
+ * }
  */
 export const EpisodeSkeleton: React.FC<EpisodeSkeletonProps> = ({
   showDescription = true,
@@ -217,14 +394,31 @@ export const EpisodeSkeleton: React.FC<EpisodeSkeletonProps> = ({
 };
 
 /**
- * Props for CastSkeleton component
+ * Props for CastSkeleton component.
+ *
+ * @interface CastSkeletonProps
  */
 export interface CastSkeletonProps {
-  /** Show character name line (defaults to true) */
+  /**
+   * Whether to show character name placeholder below actor name.
+   *
+   * @type {boolean}
+   * @default true
+   */
   showCharacter?: boolean;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
@@ -232,15 +426,43 @@ export interface CastSkeletonProps {
  * CastSkeleton - Skeleton placeholder that matches CastSection cast member layout
  *
  * Displays a circular avatar skeleton with name and optional character name below.
- * Uses responsive sizing matching the actual CastSection component.
+ * Dimensions are responsive and match the actual CastSection component.
+ *
+ * ## Layout Structure
+ *
+ * ```
+ *     ┌──────┐
+ *     │  ●   │  ← Circular avatar (80-100px)
+ *     └──────┘
+ *    Actor Name  ← Name placeholder
+ *  Character Name ← Character placeholder (optional)
+ * ```
+ *
+ * ## Responsive Dimensions
+ *
+ * | Device      | Avatar | Card Width |
+ * |-------------|--------|------------|
+ * | Phone       | 80px   | 90px       |
+ * | Tablet      | 85px   | 100px      |
+ * | Large Tablet| 90px   | 110px      |
+ * | TV          | 100px  | 120px      |
+ *
+ * @component
+ * @param {CastSkeletonProps} props - Component props
  *
  * @example
  * // Basic usage
- * <CastSkeleton />
+ * import { CastSkeleton } from '@/components/loading';
+ *
+ * function CastMemberLoading() {
+ *   return <CastSkeleton />;
+ * }
  *
  * @example
- * // Without character name
- * <CastSkeleton showCharacter={false} />
+ * // Without character name (actor only)
+ * function ActorLoading() {
+ *   return <CastSkeleton showCharacter={false} />;
+ * }
  */
 export const CastSkeleton: React.FC<CastSkeletonProps> = ({
   showCharacter = true,
@@ -286,18 +508,48 @@ export const CastSkeleton: React.FC<CastSkeletonProps> = ({
 };
 
 /**
- * Props for CatalogRowSkeleton component
+ * Props for CatalogRowSkeleton component.
+ *
+ * @interface CatalogRowSkeletonProps
  */
 export interface CatalogRowSkeletonProps {
-  /** Number of poster placeholders to show (defaults to 5) */
+  /**
+   * Number of poster placeholders to show in the row.
+   *
+   * @type {number}
+   * @default 5
+   */
   posterCount?: number;
-  /** Show section title (defaults to true) */
+
+  /**
+   * Whether to show section title placeholder.
+   *
+   * @type {boolean}
+   * @default true
+   */
   showTitle?: boolean;
-  /** Horizontal padding (defaults to responsive value) */
+
+  /**
+   * Horizontal padding for the row.
+   * Defaults to responsive value based on device type.
+   *
+   * @type {number}
+   * @default Responsive (16-32px based on device)
+   */
   horizontalPadding?: number;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
@@ -307,21 +559,46 @@ export interface CatalogRowSkeletonProps {
  * Displays a section title skeleton followed by a horizontal row of poster skeletons.
  * Matches the structure of HomeScreen catalog rows and CatalogSection.
  *
- * @example
- * // Basic usage
- * <CatalogRowSkeleton />
+ * ## Layout Structure
+ *
+ * ```
+ * ┌─────────────────────────────────────────────┐
+ * │ Section Title                               │
+ * │ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐         │
+ * │ │    │ │    │ │    │ │    │ │    │  →→→    │
+ * │ │    │ │    │ │    │ │    │ │    │         │
+ * │ └────┘ └────┘ └────┘ └────┘ └────┘         │
+ * └─────────────────────────────────────────────┘
+ * ```
+ *
+ * @component
+ * @param {CatalogRowSkeletonProps} props - Component props
  *
  * @example
- * // With more posters and without title
- * <CatalogRowSkeleton posterCount={8} showTitle={false} />
+ * // Basic usage - HomeScreen loading
+ * import { CatalogRowSkeleton } from '@/components/loading';
+ *
+ * function HomeLoading() {
+ *   return (
+ *     <View>
+ *       <CatalogRowSkeleton />
+ *       <CatalogRowSkeleton />
+ *       <CatalogRowSkeleton />
+ *     </View>
+ *   );
+ * }
  *
  * @example
- * // Multiple rows for loading state
- * <View>
- *   <CatalogRowSkeleton />
- *   <CatalogRowSkeleton />
- *   <CatalogRowSkeleton />
- * </View>
+ * // More posters for wider screens
+ * function WideCatalogLoading() {
+ *   return <CatalogRowSkeleton posterCount={8} />;
+ * }
+ *
+ * @example
+ * // Without title (continuation row)
+ * function ContinuationRow() {
+ *   return <CatalogRowSkeleton showTitle={false} />;
+ * }
  */
 export const CatalogRowSkeleton: React.FC<CatalogRowSkeletonProps> = ({
   posterCount = 5,
@@ -374,30 +651,56 @@ export const CatalogRowSkeleton: React.FC<CatalogRowSkeletonProps> = ({
 };
 
 /**
- * Props for EpisodeListSkeleton component
+ * Props for EpisodeListSkeleton component.
+ *
+ * @interface EpisodeListSkeletonProps
  */
 export interface EpisodeListSkeletonProps {
-  /** Number of episode cards to show (defaults to 3) */
+  /**
+   * Number of episode cards to render.
+   *
+   * @type {number}
+   * @default 3
+   */
   count?: number;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
 /**
  * EpisodeListSkeleton - Skeleton placeholder for a vertical list of episodes
  *
- * Renders multiple EpisodeSkeleton components with proper spacing.
- * Useful for episode list loading states in SeriesContent.
+ * Renders multiple EpisodeSkeleton components in a vertical list.
+ * Useful for episode list loading states in SeriesContent and ShowRatingsScreen.
+ *
+ * @component
+ * @param {EpisodeListSkeletonProps} props - Component props
  *
  * @example
- * // Basic usage
- * <EpisodeListSkeleton />
+ * // Basic usage - 3 episodes
+ * import { EpisodeListSkeleton } from '@/components/loading';
+ *
+ * function SeasonLoading() {
+ *   return <EpisodeListSkeleton />;
+ * }
  *
  * @example
- * // With more episodes
- * <EpisodeListSkeleton count={5} />
+ * // Show more episodes for full season
+ * function FullSeasonLoading() {
+ *   return <EpisodeListSkeleton count={10} />;
+ * }
  */
 export const EpisodeListSkeleton: React.FC<EpisodeListSkeletonProps> = ({
   count = 3,
@@ -416,18 +719,48 @@ export const EpisodeListSkeleton: React.FC<EpisodeListSkeletonProps> = ({
 };
 
 /**
- * Props for CastRowSkeleton component
+ * Props for CastRowSkeleton component.
+ *
+ * @interface CastRowSkeletonProps
  */
 export interface CastRowSkeletonProps {
-  /** Number of cast members to show (defaults to 5) */
+  /**
+   * Number of cast member skeletons to show.
+   *
+   * @type {number}
+   * @default 5
+   */
   count?: number;
-  /** Horizontal padding (defaults to responsive value) */
+
+  /**
+   * Horizontal padding for the row.
+   * Defaults to responsive value based on device type.
+   *
+   * @type {number}
+   * @default Responsive (16-32px based on device)
+   */
   horizontalPadding?: number;
-  /** Show section title (defaults to true) */
+
+  /**
+   * Whether to show "Cast" section title placeholder.
+   *
+   * @type {boolean}
+   * @default true
+   */
   showTitle?: boolean;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
@@ -435,15 +768,41 @@ export interface CastRowSkeletonProps {
  * CastRowSkeleton - Skeleton placeholder for cast section with title
  *
  * Renders a section title followed by a horizontal row of cast member skeletons.
- * Matches the structure of CastSection component.
+ * Matches the structure of CastSection component in metadata screens.
+ *
+ * ## Layout Structure
+ *
+ * ```
+ * ┌─────────────────────────────────────────────┐
+ * │ Cast                                        │
+ * │  ●     ●     ●     ●     ●                 │
+ * │ Name  Name  Name  Name  Name   →→→         │
+ * │ Char  Char  Char  Char  Char               │
+ * └─────────────────────────────────────────────┘
+ * ```
+ *
+ * @component
+ * @param {CastRowSkeletonProps} props - Component props
  *
  * @example
  * // Basic usage
- * <CastRowSkeleton />
+ * import { CastRowSkeleton } from '@/components/loading';
+ *
+ * function CastLoading() {
+ *   return <CastRowSkeleton />;
+ * }
  *
  * @example
- * // With more cast members
- * <CastRowSkeleton count={8} />
+ * // More cast members for large screens
+ * function LargeCastLoading() {
+ *   return <CastRowSkeleton count={8} />;
+ * }
+ *
+ * @example
+ * // Without title (embedded in larger skeleton)
+ * function EmbeddedCastLoading() {
+ *   return <CastRowSkeleton showTitle={false} />;
+ * }
  */
 export const CastRowSkeleton: React.FC<CastRowSkeletonProps> = ({
   count = 5,
@@ -488,34 +847,95 @@ export const CastRowSkeleton: React.FC<CastRowSkeletonProps> = ({
 };
 
 /**
- * Props for PosterGridSkeleton component
+ * Props for PosterGridSkeleton component.
+ *
+ * @interface PosterGridSkeletonProps
  */
 export interface PosterGridSkeletonProps {
-  /** Number of columns (defaults to responsive calculation) */
+  /**
+   * Number of columns in the grid.
+   * Defaults to responsive calculation based on device type.
+   *
+   * @type {number}
+   * @default Responsive (3-6 based on device)
+   */
   columns?: number;
-  /** Number of rows to show (defaults to 3) */
+
+  /**
+   * Number of rows to display.
+   *
+   * @type {number}
+   * @default 3
+   */
   rows?: number;
-  /** Gap between items (defaults to responsive value) */
+
+  /**
+   * Gap between grid items in pixels.
+   * Defaults to responsive value (12-16px).
+   *
+   * @type {number}
+   * @default Responsive (12-16px based on device)
+   */
   gap?: number;
-  /** Custom container style */
+
+  /**
+   * Custom container style.
+   *
+   * @type {ViewStyle}
+   */
   style?: ViewStyle;
-  /** Test identifier */
+
+  /**
+   * Test identifier for testing frameworks.
+   *
+   * @type {string}
+   */
   testID?: string;
 }
 
 /**
  * PosterGridSkeleton - Skeleton placeholder for grid layouts like Library screen
  *
- * Renders a grid of poster skeletons with responsive columns.
- * Useful for library and search result loading states.
+ * Renders a responsive grid of poster skeletons. Column count adjusts
+ * automatically based on device type, or can be customized via props.
+ *
+ * ## Responsive Columns
+ *
+ * | Device      | Default Columns | Gap  |
+ * |-------------|-----------------|------|
+ * | Phone       | 3               | 12px |
+ * | Tablet      | 4               | 12px |
+ * | Large Tablet| 5               | 12px |
+ * | TV          | 6               | 16px |
+ *
+ * @component
+ * @param {PosterGridSkeletonProps} props - Component props
  *
  * @example
- * // Basic usage
- * <PosterGridSkeleton />
+ * // Basic usage - LibraryScreen loading
+ * import { PosterGridSkeleton } from '@/components/loading';
+ *
+ * function LibraryLoading() {
+ *   return <PosterGridSkeleton />;
+ * }
  *
  * @example
- * // Custom grid size
- * <PosterGridSkeleton columns={4} rows={4} />
+ * // Specific grid dimensions
+ * function SearchResultsLoading() {
+ *   return <PosterGridSkeleton columns={4} rows={4} />;
+ * }
+ *
+ * @example
+ * // Custom gap for specific layout
+ * function TightGridLoading() {
+ *   return <PosterGridSkeleton columns={5} gap={8} />;
+ * }
+ *
+ * @example
+ * // Match CatalogScreen layout
+ * function CatalogLoading({ columns }: { columns: number }) {
+ *   return <PosterGridSkeleton columns={columns} rows={5} />;
+ * }
  */
 export const PosterGridSkeleton: React.FC<PosterGridSkeletonProps> = ({
   columns: customColumns,
