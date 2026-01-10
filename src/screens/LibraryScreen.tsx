@@ -38,6 +38,7 @@ import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 interface LibraryItem extends StreamingContent {
   progress?: number;
@@ -115,6 +116,7 @@ const TraktItem = React.memo(({
   }, [item.images]);
 
   const handlePress = useCallback(() => {
+    triggerLight();
     if (item.imdbId) {
       navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
     }
@@ -388,8 +390,12 @@ const LibraryScreen = () => {
   const renderItem = ({ item }: { item: LibraryItem }) => (
     <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
-      onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type })}
+      onPress={() => {
+        triggerLight();
+        navigation.navigate('Metadata', { id: item.id, type: item.type });
+      }}
       onLongPress={() => {
+        triggerLight();
         setSelectedItem(item);
         setMenuVisible(true);
       }}
@@ -431,6 +437,7 @@ const LibraryScreen = () => {
     <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
+        triggerLight();
         setSelectedTraktFolder(folder.id);
         loadAllCollections();
       }}
@@ -459,6 +466,7 @@ const LibraryScreen = () => {
     <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
+        triggerLight();
         if (!traktAuthenticated) {
           navigation.navigate('TraktSettings');
         } else {
@@ -721,6 +729,7 @@ const LibraryScreen = () => {
                 shadowColor: currentTheme.colors.black
               }]}
               onPress={() => {
+                triggerMedium();
                 loadAllCollections();
               }}
               activeOpacity={0.7}
@@ -762,6 +771,7 @@ const LibraryScreen = () => {
               shadowColor: currentTheme.colors.black
             }]}
             onPress={() => {
+              triggerMedium();
               loadAllCollections();
             }}
             activeOpacity={0.7}
@@ -798,6 +808,7 @@ const LibraryScreen = () => {
           { shadowColor: currentTheme.colors.black }
         ]}
         onPress={() => {
+          triggerLight();
           if (filterType === 'trakt') {
             if (!traktAuthenticated) {
               navigation.navigate('TraktSettings');
@@ -863,7 +874,10 @@ const LibraryScreen = () => {
               backgroundColor: currentTheme.colors.primary,
               shadowColor: currentTheme.colors.black
             }]}
-            onPress={() => navigation.navigate('Search')}
+            onPress={() => {
+              triggerMedium();
+              navigation.navigate('Search');
+            }}
             activeOpacity={0.7}
           >
             <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
