@@ -60,6 +60,7 @@ import StreamCard from '../components/StreamCard';
 import AnimatedImage from '../components/AnimatedImage';
 import AnimatedText from '../components/AnimatedText';
 import AnimatedView from '../components/AnimatedView';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 // Lazy-safe community blur import for Android
 let AndroidBlurView: any = null;
@@ -515,6 +516,7 @@ export const StreamsScreen = () => {
 
   // Memoize handlers
   const handleBack = useCallback(() => {
+    triggerLight();
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
@@ -523,6 +525,7 @@ export const StreamsScreen = () => {
   }, [navigation]);
 
   const handleProviderChange = useCallback((provider: string) => {
+    triggerLight();
     setSelectedProvider(provider);
   }, []);
 
@@ -938,6 +941,7 @@ export const StreamsScreen = () => {
 
   // Update handleStreamPress
   const handleStreamPress = useCallback(async (stream: Stream) => {
+    triggerMedium();
     try {
       if (stream.url) {
         // Block magnet links - not supported yet
@@ -2114,7 +2118,10 @@ export const StreamsScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.addSourcesButton}
-                    onPress={() => navigation.navigate('Addons')}
+                    onPress={() => {
+                      triggerLight();
+                      navigation.navigate('Addons');
+                    }}
                   >
                     <Text style={styles.addSourcesButtonText}>Add Sources</Text>
                   </TouchableOpacity>

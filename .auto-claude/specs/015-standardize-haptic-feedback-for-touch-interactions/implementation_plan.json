@@ -206,56 +206,60 @@
           "title": "Add haptics to SearchScreen",
           "description": "Add haptic feedback to search result taps, filter selections, and clear button in SearchScreen.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/SearchScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to SearchScreen.tsx. Uses triggerLight() for: search result taps (navigation to metadata), search result long press (open context menu), recent search item taps (select previous search), recent search delete buttons (remove from history), and clear search button (clear input field). Committed as e2232213.",
+          "updated_at": "2026-01-10T18:25:05.796489+00:00"
         },
         {
           "id": "4.2",
           "title": "Add haptics to LibraryScreen",
           "description": "Add haptic feedback to library item taps, filter tabs, and action buttons in LibraryScreen.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/LibraryScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to LibraryScreen.tsx. Uses triggerLight() for: library item taps (navigation to metadata), library item long press (open context menu), filter tab selections (Movies/TV Shows/Trakt), TraktItem taps, and Trakt folder selections. Uses triggerMedium() for action buttons: \"Find something to watch\", \"Load Collections\", and \"Refresh\". Committed as 287eb073.",
+          "updated_at": "2026-01-10T18:27:26.698921+00:00"
         },
         {
           "id": "4.3",
           "title": "Add haptics to CatalogScreen",
           "description": "Add haptic feedback to catalog items, category filters, and sorting options in CatalogScreen.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/CatalogScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to CatalogScreen.tsx. Uses triggerLight() for: catalog item taps (navigation to metadata), back button presses (navigation), and filter chip selections (category/genre filters). Uses triggerMedium() for Try Again/Retry buttons (refresh actions). Committed as 0c0fb7b1.",
+          "updated_at": "2026-01-10T18:30:40.891115+00:00"
         },
         {
           "id": "4.4",
           "title": "Add haptics to CalendarScreen",
           "description": "Add haptic feedback to calendar date selections, show items, and navigation in CalendarScreen.tsx.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/CalendarScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to CalendarScreen.tsx. Uses triggerLight() for: handleEpisodePress (stream navigation), handleDateSelect (calendar date selections), clearDateFilter (clearing date filter), and back button press (navigation). Note: handleSeriesPress already had triggerLight() from previous state. Committed as 7368cbb3.",
+          "updated_at": "2026-01-10T18:42:59.381070+00:00"
         },
         {
           "id": "4.5",
@@ -624,5 +628,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-10T18:23:02.257182+00:00"
+  "last_updated": "2026-01-10T18:42:59.381111+00:00"
 }
