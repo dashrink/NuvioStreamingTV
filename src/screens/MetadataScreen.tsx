@@ -64,6 +64,7 @@ import { useWatchProgress } from '../hooks/useWatchProgress';
 import { TraktService, TraktPlaybackItem } from '../services/traktService';
 import { tmdbService } from '../services/tmdbService';
 import { catalogService } from '../services/catalogService';
+import { TraktRatingModal } from '../components/trakt';
 
 const { height } = Dimensions.get('window');
 
@@ -153,6 +154,9 @@ const MetadataScreen: React.FC = () => {
   const [commentBottomSheetVisible, setCommentBottomSheetVisible] = useState(false);
   const [selectedComment, setSelectedComment] = useState<any>(null);
   const [revealedSpoilers, setRevealedSpoilers] = useState<Set<string>>(new Set());
+
+  // Trakt Rating Modal state
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const loadingScreenRef = useRef<MetadataLoadingScreenRef>(null);
   const [loadingScreenExited, setLoadingScreenExited] = useState(false);
   // Delay flag to show sections 800ms after cast is rendered (if present)
@@ -393,6 +397,10 @@ const MetadataScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (showRatingModal) {
+          setShowRatingModal(false);
+          return true; // Prevent default back behavior
+        }
         if (showCastModal) {
           setShowCastModal(false);
           return true; // Prevent default back behavior
@@ -401,7 +409,7 @@ const MetadataScreen: React.FC = () => {
       });
 
       return () => backHandler.remove();
-    }, [showCastModal])
+    }, [showCastModal, showRatingModal])
   );
 
   // Optimize secondary data loading
@@ -1422,6 +1430,17 @@ const MetadataScreen: React.FC = () => {
           isSpoilerRevealed={selectedComment ? revealedSpoilers.has(selectedComment.id.toString()) : false}
           onSpoilerPress={() => selectedComment && handleSpoilerPress(selectedComment)}
         />
+
+        {/* Trakt Rating Modal */}
+        {isAuthenticated && imdbId && metadata && (
+          <TraktRatingModal
+            visible={showRatingModal}
+            onClose={() => setShowRatingModal(false)}
+            imdbId={imdbId}
+            type={Object.keys(groupedEpisodes).length > 0 ? 'show' : 'movie'}
+            contentTitle={metadata.name || (metadata as any)?.title || 'Unknown'}
+          />
+        )}
       </AnimatedSafeAreaView>
     </Animated.View>
   );
