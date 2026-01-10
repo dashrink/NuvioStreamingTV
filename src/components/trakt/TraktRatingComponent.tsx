@@ -42,12 +42,33 @@ interface TraktRatingComponentProps {
  * Displays a 1-10 star rating interface that syncs with Trakt.tv.
  * Shows the current rating if exists and allows users to set/update/remove ratings.
  *
- * Features:
- * - 1-10 star display (5 stars with half-star precision)
- * - Tap-to-rate functionality
+ * ## Features
+ * - 1-10 rating scale displayed as 5 stars (each star = 2 points)
+ * - Half-star precision for odd ratings (e.g., 7 shows 3.5 stars)
+ * - Tap-to-rate functionality with immediate visual feedback
  * - Loading states during API calls
- * - Error states for failed operations
- * - Displays current rating from Trakt
+ * - Error states with retry capability
+ * - Responsive sizing for phone/tablet/TV
+ *
+ * ## Trakt API Integration
+ * - Uses useTraktContext for getUserRating, addRating, removeRating
+ * - Performs optimistic UI updates before API confirmation
+ * - Rate limited via traktService (500ms between requests)
+ * - IMDb IDs are normalized automatically (with 'tt' prefix)
+ *
+ * ## Data Flow
+ * ```
+ * User taps star → handleRatingPress()
+ *       ↓
+ * Optimistic update (setLocalRating)
+ *       ↓
+ * API call (addRating from context)
+ *       ↓
+ * Success → keep local state, trigger onRatingChange
+ * Failure → rollback local state, show error
+ * ```
+ *
+ * @see TraktRatingModal for modal-based rating alternative
  */
 const TraktRatingComponent: React.FC<TraktRatingComponentProps> = memo(({
   imdbId,

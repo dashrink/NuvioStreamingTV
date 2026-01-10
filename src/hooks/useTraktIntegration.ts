@@ -13,6 +13,86 @@ import {
 import { storageService } from '../services/storageService';
 import { logger } from '../utils/logger';
 
+/**
+ * useTraktIntegration - React hook for Trakt.tv integration
+ *
+ * This hook provides a complete interface for syncing user content with Trakt.tv,
+ * including watchlist management, collections, ratings, and watch progress.
+ *
+ * ## Architecture Overview
+ *
+ * ```
+ * UI Components
+ *       ↓
+ * useTraktIntegration (this hook) - Local state + optimistic updates
+ *       ↓
+ * TraktService (singleton) - API calls with rate limiting
+ *       ↓
+ * Trakt.tv API
+ * ```
+ *
+ * ## Key Patterns
+ *
+ * ### 1. Rate Limiting
+ * All Trakt API calls go through traktService which enforces:
+ * - 500ms minimum interval between API requests
+ * - Exponential backoff on 429 (rate limit) responses
+ * - Request queuing for burst protection
+ *
+ * ### 2. Optimistic Updates
+ * UI state is updated immediately before API confirmation for better UX:
+ * - Local state (watchlistItems, collectionItems, ratedContent) updates instantly
+ * - API call happens in background
+ * - On failure, state rolls back to previous value
+ *
+ * ### 3. IMDb ID Normalization
+ * All methods normalize IMDb IDs to include the 'tt' prefix:
+ * - Input: "1234567" or "tt1234567"
+ * - Normalized: "tt1234567"
+ *
+ * ### 4. Content Type Handling
+ * IMPORTANT: Trakt uses 'show' not 'series' for TV content
+ * - StreamingContent.type: 'movie' | 'series'
+ * - Trakt API types: 'movie' | 'show'
+ * - Always convert before passing to this hook
+ *
+ * ### 5. Data Flow
+ * ```
+ * Initial Load:
+ * checkAuthStatus() → loadAllCollections() → populates local Sets
+ *
+ * Status Checks (read-heavy):
+ * isInWatchlist() → reads from local Set (O(1), no API call)
+ * isInCollection() → reads from local Set (O(1), no API call)
+ * getUserRating() → reads from local ratedContent array
+ *
+ * Mutations (write operations):
+ * addToWatchlist() → optimistic update → API call → success/rollback
+ * addRating() → optimistic update → API call → success/rollback
+ * ```
+ *
+ * @returns Hook state and methods for Trakt integration
+ *
+ * @example
+ * ```tsx
+ * const {
+ *   isAuthenticated,
+ *   isInWatchlist,
+ *   addToWatchlist,
+ *   getUserRating,
+ *   addRating
+ * } = useTraktIntegration();
+ *
+ * // Check if movie is in watchlist (fast, uses cached Set)
+ * const inWatchlist = isInWatchlist('tt1234567', 'movie');
+ *
+ * // Add to watchlist (optimistic update)
+ * await addToWatchlist('tt1234567', 'movie');
+ *
+ * // Rate content (1-10 scale)
+ * await addRating('tt1234567', 'movie', 8);
+ * ```
+ */
 export function useTraktIntegration() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -198,7 +278,27 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated, loadWatchedItems]);
 
-  // Add content to Trakt watchlist
+  /**
+   * Add content to user's Trakt watchlist
+   *
+   * Performs an optimistic update: the local watchlistItems Set is updated immediately,
+   * then the API call is made. If the API call fails, no rollback is performed as
+   * the data will sync correctly on next app focus.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   *
+   * @example
+   * ```tsx
+   * // For movies
+   * await addToWatchlist('tt1234567', 'movie');
+   *
+   * // For TV shows - convert 'series' to 'show'
+   * const type = item.type === 'movie' ? 'movie' : 'show';
+   * await addToWatchlist(item.imdbId, type);
+   * ```
+   */
   const addToWatchlist = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -218,7 +318,16 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Remove content from Trakt watchlist
+  /**
+   * Remove content from user's Trakt watchlist
+   *
+   * Performs an optimistic update: the local watchlistItems Set is updated immediately
+   * by removing the item, then the API call is made.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const removeFromWatchlist = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -241,7 +350,16 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Add content to Trakt collection
+  /**
+   * Add content to user's Trakt collection
+   *
+   * Collections represent content the user owns (e.g., DVDs, digital purchases).
+   * This is different from the watchlist which represents content to watch.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const addToCollection = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -260,7 +378,13 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Remove content from Trakt collection
+  /**
+   * Remove content from user's Trakt collection
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const removeFromCollection = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -283,21 +407,74 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Check if content is in Trakt watchlist
+  /**
+   * Check if content is in user's Trakt watchlist (synchronous, uses cached data)
+   *
+   * This is a fast O(1) lookup against the locally cached watchlistItems Set.
+   * No API call is made - data is populated by loadAllCollections() on auth
+   * and refreshed on app focus.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns boolean - true if item is in watchlist
+   *
+   * @example
+   * ```tsx
+   * // Safe for render functions - no async, no side effects
+   * const isBookmarked = isInWatchlist(item.imdbId, 'movie');
+   * ```
+   */
   const isInWatchlist = useCallback((imdbId: string, type: 'movie' | 'show'): boolean => {
     // Ensure consistent IMDb ID format (with 'tt' prefix)
     const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
     return watchlistItems.has(`${type}:${normalizedImdbId}`);
   }, [watchlistItems]);
 
-  // Check if content is in Trakt collection
+  /**
+   * Check if content is in user's Trakt collection (synchronous, uses cached data)
+   *
+   * Fast O(1) lookup against locally cached collectionItems Set.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns boolean - true if item is in collection
+   */
   const isInCollection = useCallback((imdbId: string, type: 'movie' | 'show'): boolean => {
     // Ensure consistent IMDb ID format (with 'tt' prefix)
     const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
     return collectionItems.has(`${type}:${normalizedImdbId}`);
   }, [collectionItems]);
 
-  // Add rating to Trakt
+  /**
+   * Add or update a rating for content on Trakt (1-10 scale)
+   *
+   * Trakt uses a 1-10 integer scale for ratings. This method:
+   * 1. Validates the rating is an integer between 1-10
+   * 2. Performs an optimistic update to ratedContent state
+   * 3. Calls the Trakt API via traktService.addRating()
+   * 4. If API fails, the optimistic update remains (will sync on next refresh)
+   *
+   * ## Rating Scale Reference
+   * - 1-2: Weak Sauce / Terrible
+   * - 3-4: Bad / Poor
+   * - 5-6: Meh / Fair
+   * - 7-8: Good / Great
+   * - 9-10: Superb / Totally Ninja!
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @param rating - Integer rating from 1 to 10
+   * @returns Promise<boolean> - true if API call succeeded
+   *
+   * @example
+   * ```tsx
+   * // Rate a movie 8/10
+   * const success = await addRating('tt1234567', 'movie', 8);
+   *
+   * // Update an existing rating
+   * await addRating('tt1234567', 'movie', 9); // Overwrites previous
+   * ```
+   */
   const addRating = useCallback(async (imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -337,7 +514,16 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Remove rating from Trakt
+  /**
+   * Remove a rating for content on Trakt
+   *
+   * Removes the user's rating from Trakt. Performs an optimistic update
+   * to the local ratedContent state by filtering out the item.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const removeRating = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -364,7 +550,24 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Get user's rating for a specific item from cached ratedContent
+  /**
+   * Get user's rating for content from cached data (synchronous)
+   *
+   * Looks up the rating from the locally cached ratedContent array.
+   * No API call is made - this is safe for use in render functions.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns number | null - The rating (1-10) or null if not rated
+   *
+   * @example
+   * ```tsx
+   * const rating = getUserRating('tt1234567', 'movie');
+   * if (rating !== null) {
+   *   console.log(`User rated this ${rating}/10`);
+   * }
+   * ```
+   */
   const getUserRating = useCallback((imdbId: string, type: 'movie' | 'show'): number | null => {
     // Ensure consistent IMDb ID format (with 'tt' prefix)
     const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;

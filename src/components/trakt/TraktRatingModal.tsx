@@ -46,13 +46,39 @@ interface TraktRatingModalProps {
  * Includes confirm/cancel buttons and handles API interactions with
  * loading states and error handling.
  *
- * Features:
- * - 1-10 rating selector with visual feedback
- * - Current rating display if previously rated
- * - Confirm/Cancel buttons
+ * ## Features
+ * - 1-10 rating selector with two rows of buttons
+ * - Visual feedback on selection with Trakt brand colors
+ * - Current rating display with badge if previously rated
+ * - Rating descriptions (e.g., "Totally Ninja!" for 10, "Weak Sauce" for 1)
+ * - Confirm/Cancel/Clear action buttons
  * - Loading states during API calls
- * - Error handling with retry option
- * - Responsive sizing for different devices
+ * - Error handling with descriptive messages
+ * - Responsive sizing for phone/tablet/TV
+ *
+ * ## Trakt API Integration
+ * - Uses useTraktContext for getUserRating, addRating, removeRating
+ * - Calls API only on confirm (not on selection)
+ * - Rate limited via traktService (500ms between requests)
+ * - IMDb IDs are normalized automatically (with 'tt' prefix)
+ *
+ * ## Data Flow
+ * ```
+ * Modal opens → loads current rating from context
+ *       ↓
+ * User selects rating → updates selectedRating state
+ *       ↓
+ * User taps Confirm → API call (addRating)
+ *       ↓
+ * Success → triggers onRatingSubmit, closes modal
+ * Failure → shows error, stays open for retry
+ *
+ * User taps Clear → API call (removeRating)
+ *       ↓
+ * Success → triggers onRatingClear, closes modal
+ * ```
+ *
+ * @see TraktRatingComponent for inline rating alternative
  */
 const TraktRatingModal: React.FC<TraktRatingModalProps> = memo(({
   visible,
