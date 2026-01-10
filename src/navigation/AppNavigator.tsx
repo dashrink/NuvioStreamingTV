@@ -4,6 +4,8 @@ import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNa
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
 import { TVNavigationProvider, useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { TVBackHandler } from '../components/tv/TVBackHandler';
+import { TVNavigationBackHandlerProvider } from '../components/tv/TVNavigationBackHandlerProvider';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -1126,6 +1128,11 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
             opacity: 1,
           })
         }}>
+          {/* TV Navigation: Register navigation-aware back handler */}
+          <TVNavigationBackHandlerProvider
+            rootScreens={['MainTabs', 'Home', 'Onboarding']}
+            preventAppExit={true}
+          />
           <Stack.Navigator
             initialRouteName={initialRouteName || 'MainTabs'}
             screenOptions={{
@@ -1622,8 +1629,9 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
  * AppNavigator with TV Navigation Support
  *
  * Wraps the navigation structure with:
- * - TVNavigationProvider for global TV navigation state (focus history, focus memory, voice search, context menu)
  * - PostHogProvider for analytics
+ * - TVNavigationProvider for global TV navigation state (focus history, focus memory, voice search, context menu)
+ * - TVBackHandler for consistent back button behavior on TV platforms
  * - LoadingProvider for loading state management
  *
  * TV Focus Restoration Integration:
@@ -1631,6 +1639,12 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
  * - TVNavigationContext provides global access to focus state
  * - Individual screens can use useTVFocusRestoration hook or TVScreenWrapper component
  *   to integrate with the focus restoration system
+ *
+ * TV Back Button Behavior:
+ * - Closes context menus and voice search modals first
+ * - Then navigates back through the navigation stack
+ * - Prevents unexpected app exits at root screens (MainTabs, Home, Onboarding)
+ * - Works with both Apple TV menu button and Android TV back button
  *
  * The TV navigation system follows these patterns:
  * 1. useFocusEffect for automatic focus restoration on screen navigation
@@ -1646,9 +1660,11 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
     }}
   >
     <TVNavigationProvider>
-      <LoadingProvider>
-        <InnerNavigator initialRouteName={initialRouteName} />
-      </LoadingProvider>
+      <TVBackHandler>
+        <LoadingProvider>
+          <InnerNavigator initialRouteName={initialRouteName} />
+        </LoadingProvider>
+      </TVBackHandler>
     </TVNavigationProvider>
   </PostHogProvider>
 );

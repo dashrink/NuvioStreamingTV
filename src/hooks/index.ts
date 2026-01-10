@@ -40,3 +40,9 @@ export type {
   UseTVFocusRestorationOptions,
   UseTVFocusRestorationReturn,
 } from './useTVFocusRestoration';
+
+export { useTVBackHandler, useTVBackHandlerSimple, useTVBackWithFocusRestore, useTVNavigationBackHandler } from './useTVBackHandler';
+export type {
+  UseTVBackHandlerOptions,
+  UseTVBackHandlerReturn,
+} from './useTVBackHandler';
