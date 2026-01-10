@@ -1003,6 +1003,7 @@ const MetadataScreen: React.FC = () => {
                 dynamicBackgroundColor={dynamicBackgroundColor}
                 handleBack={handleBack}
                 tmdbId={tmdbId}
+                imdbId={imdbId}
               />
 
               {/* Main Content - Optimized */}
