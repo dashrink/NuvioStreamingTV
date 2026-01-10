@@ -1,0 +1,679 @@
+{
+  "feature": "Enhanced TV Navigation System",
+  "spec_id": "002-enhanced-tv-navigation-system",
+  "description": "Production-grade, remote-first navigation system for Apple TV and Android TV platforms with D-pad support, focus management, long-press interactions, and spatial navigation with memory.",
+  "created_at": "2026-01-09T21:14:50.914Z",
+  "updated_at": "2026-01-11T00:00:00.000Z",
+  "status": "in_progress",
+  "planStatus": "approved",
+  "total_subtasks": 35,
+  "estimated_effort": "3-4 weeks",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Foundation & Core Infrastructure",
+      "description": "Set up core TV navigation infrastructure including context, hooks, and configuration",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Update babel.config.js for reanimated plugin",
+          "description": "Add react-native-reanimated/plugin as the last plugin in the plugins array (required for TV animations)",
+          "status": "completed",
+          "files": [
+            "babel.config.js"
+          ],
+          "acceptance_criteria": [
+            "react-native-reanimated/plugin is the last plugin in the array",
+            "Build succeeds without errors"
+          ],
+          "notes": "Added react-native-reanimated/plugin as the last plugin in babel.config.js plugins array. Verified react-native-reanimated v4.2.0 is already installed. Committed change.",
+          "updated_at": "2026-01-10T21:03:56.086234+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Create TVNavigationContext.tsx",
+          "description": "Create global context for TV navigation state management including focus history, last focused items per screen, voice search state, and context menu visibility",
+          "status": "completed",
+          "files": [
+            "src/contexts/TVNavigationContext.tsx"
+          ],
+          "acceptance_criteria": [
+            "Context provides focus history state",
+            "Context provides last focused items per screen",
+            "Context provides voice search state",
+            "Context provides context menu visibility state",
+            "Uses proper React Context patterns matching ThemeContext.tsx"
+          ],
+          "notes": "Created TVNavigationContext.tsx with complete TV navigation state management: focus history stack, per-screen focus memory, voice search state, context menu state, and utility functions. Follows ThemeContext.tsx patterns with proper TypeScript types, createContext/Provider pattern, and custom hooks (useTVNavigation, useTVNavigationOptional).",
+          "updated_at": "2026-01-10T21:05:56.702141+00:00"
+        },
+        {
+          "id": "1.3",
+          "title": "Create useTVEventHandler.ts hook",
+          "description": "Create hook for TV remote event handling with proper lifecycle management (enable on mount, disable on unmount)",
+          "status": "completed",
+          "files": [
+            "src/hooks/useTVEventHandler.ts"
+          ],
+          "acceptance_criteria": [
+            "Hook properly enables/disables TVEventHandler",
+            "Cleans up on unmount to prevent memory leaks",
+            "Handles missing TVEventHandler gracefully (existence check)",
+            "Supports all TV events: up, down, left, right, select, menu, playPause"
+          ],
+          "notes": "Created useTVEventHandler.ts hook with proper lifecycle management. Hook enables TVEventHandler on mount, disables on unmount. Includes existence check for TVEventHandler (may not be available in all builds). Supports all TV events: up, down, left, right, select, menu, playPause, longSelect. Added utility hooks (useIsTV, useTVEventHandlerAvailable) and event type guards. Committed as 85d6355e.",
+          "updated_at": "2026-01-10T21:08:02.309199+00:00"
+        },
+        {
+          "id": "1.4",
+          "title": "Create useLongPress.ts hook",
+          "description": "Create platform-aware long-press detection hook with 300ms threshold for Apple TV (timer-based) and native event for Android TV",
+          "status": "completed",
+          "files": [
+            "src/hooks/useLongPress.ts"
+          ],
+          "acceptance_criteria": [
+            "Distinguishes between short press (<300ms) and long press (>=300ms)",
+            "Uses timer-based detection for Apple TV",
+            "Uses native longSelect event on Android TV",
+            "Properly cleans up timers on unmount"
+          ],
+          "notes": "Created useLongPress.ts with platform-aware long-press detection. Features: (1) useLongPress hook for general-purpose detection with onPressIn/onPressOut handlers, (2) useLongPressWithTVEvents hook for TV remote integration that uses native longSelect on Android TV and timer-based 300ms detection on Apple TV, (3) Proper timer cleanup on unmount to prevent memory leaks, (4) Utility functions to check platform capabilities. Committed as 00c3320b.",
+          "updated_at": "2026-01-10T21:10:24.029001+00:00"
+        },
+        {
+          "id": "1.5",
+          "title": "Create useSpatialNavigation.ts hook",
+          "description": "Create hook for spatial navigation with focus memory storage/retrieval and nextFocus logic with node handle management",
+          "status": "completed",
+          "files": [
+            "src/hooks/useSpatialNavigation.ts"
+          ],
+          "acceptance_criteria": [
+            "Stores focus IDs for persistence",
+            "Retrieves last focused item correctly",
+            "Uses findNodeHandle for native node access",
+            "Handles missing refs gracefully",
+            "Supports nextFocusUp/Down/Left/Right logic"
+          ],
+          "notes": "Created useSpatialNavigation.ts hook with comprehensive spatial navigation support. Features: (1) Focus memory storage/retrieval via TVNavigationContext integration, (2) Node handle management using findNodeHandle() for nextFocus props, (3) Support for nextFocusUp/Down/Left/Right with automatic handle resolution, (4) Auto focus restoration on screen navigation using useFocusEffect with requestAnimationFrame, (5) Graceful handling of missing refs and non-TV platforms, (6) Utility hooks: useFocusableRef, useFocusHandlers, useGridNavigation. Committed as 49d50219.",
+          "updated_at": "2026-01-10T21:13:10.945891+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Core TV Components",
+      "description": "Create TV-specific focusable components with proper animations and focus handling",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Create Focusable.tv.tsx component",
+          "description": "Create TV-specific focusable wrapper with reanimated focus state animations, tvParallaxProperties for Apple TV, and proper isTVSelectable handling",
+          "status": "completed",
+          "files": [
+            "src/components/common/Focusable.tv.tsx",
+            "src/components/common/Focusable.tsx"
+          ],
+          "acceptance_criteria": [
+            "Implements visible focus states with scale animation (1.0-1.1)",
+            "Uses spring animations with damping: 15, stiffness: 150",
+            "Supports hasTVPreferredFocus and isTVSelectable props",
+            "Handles onFocus/onBlur callbacks",
+            "Includes tvParallaxProperties for Apple TV"
+          ],
+          "notes": "Created Focusable.tv.tsx with complete TV-specific functionality: (1) Reanimated focus state animations with scale 1.0-1.05 and spring physics (damping: 15, stiffness: 150), (2) tvParallaxProperties for Apple TV depth effects, (3) hasTVPreferredFocus and isTVSelectable props support, (4) onFocus/onBlur callbacks with animated transitions, (5) Animated border/glow effects for visual focus indication, (6) Shadow animation for Apple TV, (7) Integration with useLongPress hook, (8) nextFocus navigation with node handle resolution. Also created Focusable.tsx as non-TV fallback. Committed as 11c599c5.",
+          "updated_at": "2026-01-10T21:17:03.396923+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Create TVFocusGuard.tv.tsx component",
+          "description": "Create boundary component to prevent focus from escaping containers and handle circular navigation prevention",
+          "status": "completed",
+          "files": [
+            "src/components/tv/TVFocusGuard.tv.tsx",
+            "src/components/tv/TVFocusGuard.tsx"
+          ],
+          "acceptance_criteria": [
+            "Constrains focus within modal/container boundaries",
+            "Prevents circular navigation dependencies",
+            "Supports configurable focus boundaries",
+            "Handles empty content gracefully (moves focus to next available element)"
+          ],
+          "notes": "Created TVFocusGuard boundary component with two files: (1) TVFocusGuard.tv.tsx - TV-specific implementation with three focus modes (trap for modals, loop for wrap-around, normal for standard), FocusGuardContext for child registration, useFocusGuardChild hook for automatic element registration, auto-focus support, menu/back button escape handling, empty container detection, grid and linear navigation support. (2) TVFocusGuard.tsx - Non-TV fallback that renders children without focus boundary logic. Committed as 0cfdd8d4.",
+          "updated_at": "2026-01-10T21:21:52.210389+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Create TVContextMenu.tv.tsx component",
+          "description": "Create context menu component for long-press actions including Add to List, Mark as Watched, Share, etc.",
+          "status": "completed",
+          "files": [
+            "src/components/tv/TVContextMenu.tv.tsx",
+            "src/components/tv/TVContextMenu.tsx"
+          ],
+          "acceptance_criteria": [
+            "Displays on long-press (300ms+)",
+            "Shows quick actions: Add to List, Mark as Watched, Share, etc.",
+            "Navigable via D-pad",
+            "Closes with back button or menu button",
+            "Returns focus to trigger element on close",
+            "Constrains focus within menu"
+          ],
+          "notes": "Created TVContextMenu.tv.tsx with complete TV context menu functionality: (1) Modal-based context menu that displays on long-press (300ms+) via TVNavigationContext integration, (2) Shows configurable quick actions with icons (Add to List, Mark as Watched, Share, etc.), (3) Full D-pad navigation with wrap-around for disabled items, (4) Closes with back/menu button, (5) Animated entrance/exit using react-native-reanimated spring physics, (6) Focus trapped within menu using useTVEventHandler. Also created TVContextMenu.tsx as non-TV fallback, and useContextMenu hook for convenient action building with pre-defined actions. Committed as 138894fe.",
+          "updated_at": "2026-01-10T21:26:40.558913+00:00"
+        },
+        {
+          "id": "2.4",
+          "title": "Create TVVoiceSearch.tv.tsx component",
+          "description": "Create voice search modal/overlay triggered by TV remote voice button with speech-to-text processing",
+          "status": "completed",
+          "files": [
+            "src/components/tv/TVVoiceSearch.tv.tsx",
+            "src/components/tv/TVVoiceSearch.tsx"
+          ],
+          "acceptance_criteria": [
+            "Opens on voice button press",
+            "Displays listening state with visual feedback",
+            "Shows keyboard fallback if voice unavailable",
+            "Displays search results",
+            "Handles network errors gracefully",
+            "Closes and returns focus properly"
+          ],
+          "notes": "Created TVVoiceSearch.tv.tsx with complete TV voice search modal functionality: (1) Opens via TVNavigationContext integration (openVoiceSearch/closeVoiceSearch/setVoiceListening/setVoiceQuery), (2) Animated listening indicator with pulsing microphone effect using react-native-reanimated, (3) Keyboard/text input fallback when voice is unavailable with mode switching, (4) Search results display with D-pad navigation and focusable result items, (5) Animated modal entrance/exit with spring physics, (6) Back/menu button handling to close modal, (7) Supports onSearch callback for query submission and onResultSelect for result selection. Also created TVVoiceSearch.tsx as non-TV fallback. Exports VoiceSearchResult type for search result items.",
+          "updated_at": "2026-01-10T21:29:55.110406+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Navigation Integration",
+      "description": "Integrate focus memory with React Navigation and ensure proper focus restoration",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Enhance AppNavigator.tsx with focus restoration",
+          "description": "Integrate useFocusEffect with focus restoration logic, store focus state in navigation.setParams()",
+          "status": "completed",
+          "files": [
+            "src/navigation/AppNavigator.tsx"
+          ],
+          "acceptance_criteria": [
+            "Uses useFocusEffect for focus restoration",
+            "Stores focus ID in route params via navigation.setParams()",
+            "Uses requestAnimationFrame for timing (screen focus fires before layout)",
+            "Wraps callbacks in useCallback to prevent infinite loops",
+            "Uses setNativeProps({ hasTVPreferredFocus: true }) for runtime focus"
+          ],
+          "notes": "Implemented TV focus restoration integration with React Navigation:\n\n1. Created useTVFocusRestoration hook (src/hooks/useTVFocusRestoration.ts) that provides:\n   - useFocusEffect integration for automatic focus restoration on screen navigation\n   - navigation.setParams({lastFocusId}) for focus state persistence\n   - requestAnimationFrame timing for proper layout completion\n   - setNativeProps({hasTVPreferredFocus: true}) for runtime focus changes\n   - useCallback wrapping to prevent infinite loops\n\n2. Created TVScreenWrapper component (src/components/tv/TVScreenWrapper.tv.tsx) that:\n   - Provides context-based focus management via TVScreenFocusContext\n   - Integrates with TVNavigationContext for global state\n   - Auto-restores focus on screen mount using useFocusEffect\n   - Saves focus on screen blur to navigation params\n\n3. Updated AppNavigator.tsx:\n   - Added TVNavigationProvider wrapper around the app root\n   - Added TVFocusParams type with lastFocusId to all route params\n   - Documented the TV focus restoration patterns\n\n4. Created src/hooks/index.ts for centralized hook exports\n\nCommitted as 55301216.",
+          "updated_at": "2026-01-10T21:34:46.556312+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Implement back button behavior handling",
+          "description": "Ensure TV remote back/menu button consistently navigates to previous screen without unexpected exits",
+          "status": "completed",
+          "files": [
+            "src/navigation/AppNavigator.tsx",
+            "src/hooks/useTVEventHandler.ts"
+          ],
+          "acceptance_criteria": [
+            "Back button returns to previous screen in stack",
+            "No unexpected app exits",
+            "Modals close before navigating back",
+            "Focus returns to trigger element after modal close"
+          ],
+          "notes": "Implemented consistent TV back button behavior:\n\n1. Created useTVBackHandler hook (src/hooks/useTVBackHandler.ts):\n   - Handles TV remote back/menu button with proper priority\n   - Integrates with TVNavigationContext to close modals first\n   - Supports custom back press handlers for screen-level customization\n   - Provides useTVNavigationBackHandler for navigation-aware back handling\n   - Provides useTVBackWithFocusRestore for focus restoration after modal close\n\n2. Created TVBackHandler component (src/components/tv/TVBackHandler.tv.tsx):\n   - Global back button handler at app level\n   - Closes context menus and voice search before navigating back\n   - Handles Android TV hardware back button via BackHandler\n   - Handles Apple TV menu button via TVEventHandler\n   - Provides setTVNavigationBackHandler/clearTVNavigationBackHandler for external integration\n\n3. Created TVNavigationBackHandlerProvider component:\n   - Navigation-aware back handler that integrates with React Navigation\n   - Prevents unexpected app exits at root screens (MainTabs, Home, Onboarding)\n   - Registers with global TVBackHandler for proper priority handling\n\n4. Updated AppNavigator.tsx:\n   - Wrapped InnerNavigator with TVBackHandler at provider level\n   - Added TVNavigationBackHandlerProvider inside navigation structure\n   - Updated documentation with TV back button behavior\n\n5. Updated hooks/index.ts to export new hooks\n\nCommitted as f35ccf67.",
+          "updated_at": "2026-01-10T23:05:23.383732+00:00"
+        },
+        {
+          "id": "3.3",
+          "title": "Add TVNavigationProvider to app root",
+          "description": "Wrap app with TVNavigationContext provider for global TV state access",
+          "status": "completed",
+          "files": [
+            "App.tsx",
+            "app/_layout.tsx"
+          ],
+          "acceptance_criteria": [
+            "TVNavigationProvider wraps entire app",
+            "Context accessible from all screens",
+            "Proper provider hierarchy (inside NavigationContainer)"
+          ],
+          "notes": "TVNavigationProvider already wraps entire app via AppNavigator.tsx (lines 1655-1670). Provider hierarchy: PostHogProvider > TVNavigationProvider > TVBackHandler > LoadingProvider > InnerNavigator. All screens inside InnerNavigator have access to TV navigation context via useTVNavigation() or useTVNavigationOptional() hooks. Work was already completed as part of subtask 3.1 when TVNavigationProvider was added to AppNavigator.tsx. No additional code changes required - app/_layout.tsx does not exist (project uses traditional React Navigation, not Expo Router).",
+          "updated_at": "2026-01-10T23:07:00.133474+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "UI Component TV Enhancement",
+      "description": "Add TV focusability to existing UI components across the app",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Enhance ContentItem with TV focus",
+          "description": "Add TV focus support to home screen content cards with visible focus states",
+          "status": "pending",
+          "files": [
+            "src/components/home/ContentItem.tsx"
+          ],
+          "acceptance_criteria": [
+            "Content cards are focusable via D-pad",
+            "Focus state is clearly visible (scale/border)",
+            "Long-press triggers context menu",
+            "Short press navigates to detail"
+          ]
+        },
+        {
+          "id": "4.2",
+          "title": "Enhance CatalogSection with TV navigation",
+          "description": "Add horizontal scrolling TV navigation to catalog rows",
+          "status": "pending",
+          "files": [
+            "src/components/home/CatalogSection.tsx"
+          ],
+          "acceptance_criteria": [
+            "Rows navigate horizontally with left/right D-pad",
+            "Focus memory persists within row",
+            "Scrolls to keep focused item visible",
+            "Up/down moves between rows"
+          ]
+        },
+        {
+          "id": "4.3",
+          "title": "Enhance HeroCarousel with TV focus",
+          "description": "Add TV focus support to hero carousel with smooth transitions",
+          "status": "pending",
+          "files": [
+            "src/components/home/HeroCarousel.tsx",
+            "src/components/home/AppleTVHero.tsx"
+          ],
+          "acceptance_criteria": [
+            "Hero items are focusable",
+            "Left/right changes hero selection",
+            "Focus state is visible",
+            "Auto-rotation pauses on focus"
+          ]
+        },
+        {
+          "id": "4.4",
+          "title": "Enhance SeriesContent with TV navigation",
+          "description": "Add TV navigation to episode lists and season selection",
+          "status": "pending",
+          "files": [
+            "src/components/metadata/SeriesContent.tsx"
+          ],
+          "acceptance_criteria": [
+            "Season tabs navigable via D-pad",
+            "Episode list scrolls with focus",
+            "Episodes are selectable with focus states",
+            "Long-press on episode opens context menu"
+          ]
+        },
+        {
+          "id": "4.5",
+          "title": "Enhance StreamCard with TV focus",
+          "description": "Add TV focus support to stream selection cards",
+          "status": "pending",
+          "files": [
+            "src/components/StreamCard.tsx"
+          ],
+          "acceptance_criteria": [
+            "Stream cards are focusable",
+            "Focus state is clearly visible",
+            "Select plays the stream",
+            "Proper focus order maintained"
+          ]
+        },
+        {
+          "id": "4.6",
+          "title": "Enhance Settings screens with TV navigation",
+          "description": "Add TV navigation to all settings screens and toggles",
+          "status": "pending",
+          "files": [
+            "src/screens/SettingsScreen.tsx",
+            "src/screens/PlayerSettingsScreen.tsx",
+            "src/screens/ThemeScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "All settings items are focusable",
+            "Toggle switches work with select button",
+            "Dropdown menus are navigable",
+            "Back button returns to previous screen"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Screen-Level TV Support",
+      "description": "Add TV support to all main screens",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Enhance HomeScreen with TV navigation",
+          "description": "Add full TV navigation support to home screen with focus memory",
+          "status": "pending",
+          "files": [
+            "src/screens/HomeScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "All sections navigable via D-pad",
+            "Focus memory persists on return",
+            "Hero and catalog sections work together",
+            "Search accessible via up navigation or voice button"
+          ]
+        },
+        {
+          "id": "5.2",
+          "title": "Enhance MetadataScreen with TV navigation",
+          "description": "Add TV navigation to movie/series detail screens",
+          "status": "pending",
+          "files": [
+            "src/screens/MetadataScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "All buttons are focusable (Play, Trailer, Add to List)",
+            "Cast section is horizontally scrollable",
+            "Episodes list navigable for series",
+            "Back returns to previous screen with focus restored"
+          ]
+        },
+        {
+          "id": "5.3",
+          "title": "Enhance SearchScreen with TV support",
+          "description": "Add TV keyboard input and result navigation",
+          "status": "pending",
+          "files": [
+            "src/screens/SearchScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "TV keyboard for text input",
+            "Voice search integration",
+            "Results grid navigable via D-pad",
+            "Focus states on all result items"
+          ]
+        },
+        {
+          "id": "5.4",
+          "title": "Enhance LibraryScreen with TV navigation",
+          "description": "Add TV navigation to library/favorites screen",
+          "status": "pending",
+          "files": [
+            "src/screens/LibraryScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "Library tabs navigable",
+            "Grid of items navigable via D-pad",
+            "Long-press opens context menu",
+            "Focus memory per tab"
+          ]
+        },
+        {
+          "id": "5.5",
+          "title": "Enhance StreamsScreen with TV navigation",
+          "description": "Add TV navigation to stream selection screen",
+          "status": "pending",
+          "files": [
+            "src/screens/StreamsScreen.tsx"
+          ],
+          "acceptance_criteria": [
+            "Provider tabs navigable",
+            "Stream list fully navigable",
+            "Select starts playback",
+            "Back returns to metadata screen"
+          ]
+        },
+        {
+          "id": "5.6",
+          "title": "Enhance Player with TV controls",
+          "description": "Add TV remote playback controls to video players",
+          "status": "pending",
+          "files": [
+            "src/components/player/KSPlayerCore.tsx",
+            "src/components/player/AndroidVideoPlayer.tsx",
+            "src/components/player/controls/PlayerControls.tsx"
+          ],
+          "acceptance_criteria": [
+            "Play/Pause with select button",
+            "Seek with left/right D-pad",
+            "Volume with up/down (where supported)",
+            "Back button exits player",
+            "Control overlay shows on any D-pad input"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Edge Cases & Polish",
+      "description": "Handle edge cases and performance optimizations",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Handle empty content lists",
+          "description": "Ensure focus moves to next available element when lists are empty",
+          "status": "pending",
+          "files": [
+            "src/components/tv/TVFocusGuard.tv.tsx",
+            "src/hooks/useSpatialNavigation.ts"
+          ],
+          "acceptance_criteria": [
+            "Empty lists don't trap focus",
+            "Focus moves to navigation tabs or search bar",
+            "Loading states are handled"
+          ]
+        },
+        {
+          "id": "6.2",
+          "title": "Handle rapid D-pad input",
+          "description": "Prevent focus skipping or breaking on rapid button presses",
+          "status": "pending",
+          "files": [
+            "src/hooks/useTVEventHandler.ts",
+            "src/hooks/useSpatialNavigation.ts"
+          ],
+          "acceptance_criteria": [
+            "Rapid input doesn't skip elements",
+            "Focus state remains consistent",
+            "No visual glitches during fast navigation"
+          ]
+        },
+        {
+          "id": "6.3",
+          "title": "Handle long-press during animation",
+          "description": "Queue long-press action if started during focus animation",
+          "status": "pending",
+          "files": [
+            "src/hooks/useLongPress.ts"
+          ],
+          "acceptance_criteria": [
+            "Long-press during animation doesn't cancel",
+            "Action is queued and executed after animation",
+            "No duplicate actions triggered"
+          ]
+        },
+        {
+          "id": "6.4",
+          "title": "Add low-end device detection and animation fallback",
+          "description": "Detect device performance and reduce/disable animations on low-end Android TV devices",
+          "status": "pending",
+          "files": [
+            "src/hooks/useSpatialNavigation.ts",
+            "src/components/common/Focusable.tv.tsx"
+          ],
+          "acceptance_criteria": [
+            "Device performance is detected",
+            "Animations are reduced on low-end devices",
+            "Focus states remain visible (fall back to border instead of scale)"
+          ]
+        },
+        {
+          "id": "6.5",
+          "title": "Handle voice search unavailability",
+          "description": "Gracefully handle platforms where voice input is not supported",
+          "status": "pending",
+          "files": [
+            "src/components/tv/TVVoiceSearch.tv.tsx"
+          ],
+          "acceptance_criteria": [
+            "Detects voice availability on platform",
+            "Shows keyboard fallback when unavailable",
+            "No errors when voice button pressed without support"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Testing",
+      "description": "Create comprehensive test suite for TV navigation",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Set up testing infrastructure",
+          "description": "Install and configure Jest and React Native Testing Library",
+          "status": "pending",
+          "files": [
+            "package.json",
+            "jest.config.js",
+            "__tests__/setup.ts"
+          ],
+          "acceptance_criteria": [
+            "Jest configured for React Native",
+            "Testing library installed",
+            "Test command works"
+          ]
+        },
+        {
+          "id": "7.2",
+          "title": "Create useTVEventHandler tests",
+          "description": "Unit tests for TV event handler lifecycle and cleanup",
+          "status": "pending",
+          "files": [
+            "__tests__/hooks/useTVEventHandler.test.ts"
+          ],
+          "acceptance_criteria": [
+            "Hook properly enables/disables handler",
+            "Cleans up on unmount",
+            "Handles missing TVEventHandler gracefully"
+          ]
+        },
+        {
+          "id": "7.3",
+          "title": "Create useLongPress tests",
+          "description": "Unit tests for long-press detection on both platforms",
+          "status": "pending",
+          "files": [
+            "__tests__/hooks/useLongPress.test.ts"
+          ],
+          "acceptance_criteria": [
+            "Distinguishes short press from long press",
+            "Platform-specific behavior verified",
+            "Timer cleanup verified"
+          ]
+        },
+        {
+          "id": "7.4",
+          "title": "Create useSpatialNavigation tests",
+          "description": "Unit tests for focus memory storage and retrieval",
+          "status": "pending",
+          "files": [
+            "__tests__/hooks/useSpatialNavigation.test.ts"
+          ],
+          "acceptance_criteria": [
+            "Focus IDs stored correctly",
+            "Last focused item retrieved correctly",
+            "Missing refs handled gracefully"
+          ]
+        },
+        {
+          "id": "7.5",
+          "title": "Create TVNavigationContext tests",
+          "description": "Unit tests for context state management",
+          "status": "pending",
+          "files": [
+            "__tests__/contexts/TVNavigationContext.test.tsx"
+          ],
+          "acceptance_criteria": [
+            "Context provides correct state",
+            "State updates on actions",
+            "Concurrent context menus handled"
+          ]
+        },
+        {
+          "id": "7.6",
+          "title": "Create navigation integration tests",
+          "description": "Integration tests for focus restoration across screens",
+          "status": "pending",
+          "files": [
+            "__tests__/navigation/AppNavigator.test.tsx"
+          ],
+          "acceptance_criteria": [
+            "Focus state stored in route params",
+            "Focus restored on navigation return",
+            "requestAnimationFrame timing correct"
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "external": [
+      "react-native-tvos (for Apple TV)",
+      "react-native-reanimated (for animations)",
+      "react-native-gesture-handler (for gestures)",
+      "@react-navigation/native (for navigation)"
+    ],
+    "internal": [
+      "ThemeContext.tsx (pattern reference)",
+      "Existing screen components",
+      "Navigation structure"
+    ]
+  },
+  "risks": [
+    {
+      "description": "TVEventHandler may not be available in all Expo/React Native builds",
+      "mitigation": "Always check existence before instantiation; provide fallback behavior"
+    },
+    {
+      "description": "Performance issues on low-end Android TV devices",
+      "mitigation": "Device detection and animation fallbacks implemented"
+    },
+    {
+      "description": "Voice search API may not be available on all platforms",
+      "mitigation": "Graceful fallback to keyboard input"
+    },
+    {
+      "description": "Focus restoration timing issues with React Navigation",
+      "mitigation": "Use requestAnimationFrame to delay focus until after layout"
+    }
+  ],
+  "qa_requirements": {
+    "unit_tests": [
+      "useTVEventHandler lifecycle",
+      "useLongPress detection",
+      "useSpatialNavigation focus memory",
+      "TVNavigationContext state management"
+    ],
+    "integration_tests": [
+      "D-pad navigation flow (Home \u2192 Browse \u2192 Details \u2192 Back)",
+      "Long-press context menu workflow",
+      "Focus memory across screens",
+      "Voice search flow"
+    ],
+    "e2e_tests": [
+      "Complete app navigation with TV remote only",
+      "Context menu workflow",
+      "Focus memory persistence",
+      "Voice search full flow"
+    ],
+    "manual_verification": [
+      "Apple TV simulator testing",
+      "Android TV emulator testing",
+      "Physical device testing (if available)"
+    ]
+  },
+  "last_updated": "2026-01-10T23:07:00.133493+00:00"
+}
