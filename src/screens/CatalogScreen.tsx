@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   StatusBar,
   RefreshControl,
@@ -13,6 +12,7 @@ import {
   InteractionManager,
   ScrollView
 } from 'react-native';
+import { UnifiedSpinner, PosterGridSkeleton } from '../components/loading';
 import { FlashList } from '@shopify/flash-list';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -197,11 +197,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
     marginTop: SPACING.md,
     marginBottom: SPACING.sm,
-  },
-  loadingText: {
-    color: colors.white,
-    fontSize: 16,
-    marginTop: SPACING.lg,
   },
   badgeContainer: {
     position: 'absolute',
@@ -872,9 +867,12 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
   );
 
   const renderLoadingState = () => (
-    <View style={styles.centered}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={styles.loadingText}>Loading content...</Text>
+    <View style={{ flex: 1, paddingTop: SPACING.md }}>
+      <PosterGridSkeleton
+        columns={effectiveNumColumns}
+        rows={4}
+        gap={screenData.itemSpacing}
+      />
     </View>
   );
 
@@ -1031,8 +1029,8 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
             loadItems(false, next);
           }}
           ListFooterComponent={isFetchingMore ? (
-            <View style={{ paddingVertical: 16 }}>
-              <ActivityIndicator size="small" color={colors.primary} />
+            <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+              <UnifiedSpinner size="small" />
             </View>
           ) : null}
         />
