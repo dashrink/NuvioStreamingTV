@@ -55,6 +55,7 @@ import { logger } from '../../utils/logger';
 import { TMDBService } from '../../services/tmdbService';
 import TrailerService from '../../services/trailerService';
 import TrailerPlayer from '../video/TrailerPlayer';
+import TraktRatingComponent from '../trakt/TraktRatingComponent';
 import { HERO_HEIGHT, SCREEN_WIDTH as width, IS_TABLET as isTablet } from '../../constants/dimensions';
 
 const { height } = Dimensions.get('window');
@@ -104,16 +105,18 @@ interface HeroSectionProps {
   dynamicBackgroundColor?: string;
   handleBack: () => void;
   tmdbId?: number | null;
+  /** IMDb ID for Trakt rating integration */
+  imdbId?: string;
 }
 
 // Ultra-optimized ActionButtons Component - minimal re-renders
-const ActionButtons = memo(({ 
-  handleShowStreams, 
-  toggleLibrary, 
-  inLibrary, 
-  type, 
-  id, 
-  navigation, 
+const ActionButtons = memo(({
+  handleShowStreams,
+  toggleLibrary,
+  inLibrary,
+  type,
+  id,
+  navigation,
   playButtonText,
   animatedStyle,
   isWatched,
@@ -126,7 +129,8 @@ const ActionButtons = memo(({
   isInWatchlist,
   isInCollection,
   onToggleWatchlist,
-  onToggleCollection
+  onToggleCollection,
+  imdbId
 }: {
   handleShowStreams: () => void;
   toggleLibrary: () => void;
@@ -147,6 +151,7 @@ const ActionButtons = memo(({
   isInCollection?: boolean;
   onToggleWatchlist?: () => void;
   onToggleCollection?: () => void;
+  imdbId?: string;
 }) => {
   const { currentTheme } = useTheme();
   const { showSaved, showTraktSaved, showRemoved, showTraktRemoved, showSuccess, showInfo } = useToast();
@@ -444,14 +449,28 @@ const ActionButtons = memo(({
               ) : (
                 <View style={styles.androidFallbackBlurRound} />
               )}
-              <MaterialIcons 
-                name="assessment" 
-                size={isTablet ? 28 : 24} 
+              <MaterialIcons
+                name="assessment"
+                size={isTablet ? 28 : 24}
                 color={currentTheme.colors.white}
               />
             </TouchableOpacity>
           )}
       </View>
+
+      {/* Trakt Rating Component - Show below action buttons when authenticated */}
+      {isAuthenticated && imdbId && (
+        <View style={styles.traktRatingContainer}>
+          <TraktRatingComponent
+            imdbId={imdbId}
+            type={type === 'series' ? 'show' : 'movie'}
+            size="small"
+            showLabel={true}
+            showClearButton={true}
+            style={styles.traktRatingComponent}
+          />
+        </View>
+      )}
     </Animated.View>
   );
 });
@@ -859,7 +878,8 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
   isInWatchlist,
   isInCollection,
   onToggleWatchlist,
-  onToggleCollection
+  onToggleCollection,
+  imdbId
 }) => {
   const { currentTheme } = useTheme();
   const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
@@ -1875,7 +1895,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
 
 
           {/* Optimized Action Buttons */}
-          <ActionButtons 
+          <ActionButtons
             handleShowStreams={handleShowStreams}
             toggleLibrary={handleToggleLibrary}
             inLibrary={inLibrary}
@@ -1895,6 +1915,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
             isInCollection={isInCollection}
             onToggleWatchlist={onToggleWatchlist}
             onToggleCollection={onToggleCollection}
+            imdbId={imdbId}
           />
         </View>
       </LinearGradient>
@@ -2077,6 +2098,15 @@ const styles = StyleSheet.create({
   },
   singleRowSaveButtonFullWidth: {
     flex: 1,
+  },
+  traktRatingContainer: {
+    marginTop: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  traktRatingComponent: {
+    alignItems: 'center',
   },
   primaryActionRow: {
     flexDirection: 'row',

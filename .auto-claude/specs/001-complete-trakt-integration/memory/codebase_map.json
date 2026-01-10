@@ -1,0 +1,50 @@
+{
+  "discovered_files": {
+    "src/services/traktService.ts": {
+      "description": "Added getUserRating method at line 2975 that fetches ratings via getRatings API and finds the specific item's rating. Uses TraktRatingItem type to access movie?.ids or show?.ids for IMDb matching. Returns the rating (1-10) or null if not found.",
+      "category": "api",
+      "discovered_at": "2026-01-10T06:16:32.320585+00:00"
+    },
+    "src/components/home/AppleTVHero.tsx": {
+      "description": "handleSaveAction function (line ~572) now properly wired to Trakt watchlist API. Uses addToWatchlist/removeFromWatchlist from TraktContext with optimistic UI updates, error rollback, and type conversion ('series' to 'show'). Toast notifications via showTraktSaved/showTraktRemoved.",
+      "category": "implementation",
+      "discovered_at": "2026-01-10T06:10:51.822391+00:00"
+    },
+    "src/components/home/ContentItem.tsx": {
+      "description": "ContentItem.tsx Trakt badges (lines 358-367) now properly convert item.type from 'series' to 'show' for Trakt API compatibility. The badges display at: watchlist badge (top-right, red playlist-add-check icon), collection badge (top-right offset 32px left, blue video-library icon). Type conversion pattern: `item.type === 'movie' ? 'movie' : 'show'` should be used instead of TypeScript cast `as 'movie' | 'show'` when calling Trakt functions.",
+      "category": "pattern",
+      "discovered_at": "2026-01-10T11:07:16.793777+00:00"
+    },
+    "src/hooks/useTraktIntegration.ts": {
+      "description": "Added getUserRating callback at line ~367 that looks up ratings from cached ratedContent state. Uses IMDb ID normalization pattern (ensures 'tt' prefix), finds matching rating item by type (movie/show), and returns rating (1-10) or null. Exported in return object at line ~786.",
+      "category": "implementation",
+      "discovered_at": "2026-01-10T06:24:40.336834+00:00"
+    },
+    "src/contexts/TraktContext.tsx": {
+      "description": "TraktContextProps interface now includes rating management methods: addRating(imdbId, type, rating) => Promise<boolean>, removeRating(imdbId, type) => Promise<boolean>, and getUserRating(imdbId, type) => number | null. These methods are passed through from useTraktIntegration hook and available via useTraktContext() throughout the app.",
+      "category": "interface",
+      "discovered_at": "2026-01-10T06:26:19.593596+00:00"
+    },
+    "src/components/trakt/TraktRatingComponent.tsx": {
+      "description": "New TraktRatingComponent created with: 1-10 rating display (5 stars with half-star precision), tap-to-rate functionality, loading states during API calls, error states for failed operations, optimistic UI updates with rollback, responsive sizing for phone/tablet/TV. Uses useTraktContext for getUserRating, addRating, removeRating methods. Exports as default component.",
+      "category": "component",
+      "discovered_at": "2026-01-10T06:29:27.452913+00:00"
+    },
+    "src/components/trakt/TraktRatingModal.tsx": {
+      "description": "New TraktRatingModal component created for rating content on Trakt. Features: 1-10 rating selector with two rows of 5 buttons each, confirm/cancel/clear action buttons, current rating badge display, loading/error states, responsive sizing for different devices, Trakt brand colors, rating text descriptions (e.g., \"Totally Ninja!\" for 10). Uses useTraktContext for getUserRating, addRating, removeRating methods. Modal follows same pattern as TrailerModal with dark overlay, rounded container, header with close button.",
+      "category": "component",
+      "discovered_at": "2026-01-10T06:32:43.927224+00:00"
+    },
+    "src/components/trakt/index.ts": {
+      "description": "Barrel export file for Trakt components. Exports TraktRatingComponent and TraktRatingModal using the pattern `export { default as ComponentName } from './ComponentName'`. This allows clean imports like `import { TraktRatingComponent, TraktRatingModal } from '../components/trakt'` throughout the app.",
+      "category": "component-exports",
+      "discovered_at": "2026-01-10T06:34:14.565268+00:00"
+    },
+    "src/screens/MetadataScreen.tsx": {
+      "description": "MetadataScreen passes rating-related props to HeroSection via the imdbId prop. HeroSection receives imdbId and passes it to ActionButtons, which passes it to TraktRatingComponent. The TraktRatingComponent internally uses useTraktContext() to access getUserRating, addRating, and removeRating methods - these are NOT passed as direct props but accessed via context.",
+      "category": "architecture",
+      "discovered_at": "2026-01-10T11:04:17.333952+00:00"
+    }
+  },
+  "last_updated": "2026-01-10T11:07:16.793807+00:00"
+}

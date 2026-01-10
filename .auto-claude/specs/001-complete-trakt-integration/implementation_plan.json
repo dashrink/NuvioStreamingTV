@@ -94,36 +94,40 @@
           "title": "Add addRating callback to useTraktIntegration",
           "description": "Add `addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean>` callback that calls traktService.addRating and updates local state.",
           "file": "src/hooks/useTraktIntegration.ts",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": ""
+          "notes": "Added addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> callback to useTraktIntegration hook. Method calls traktService.addRating and updates local ratedContent state with optimistic UI update pattern. Follows the same pattern as addToWatchlist and addToCollection methods. Includes IMDb ID normalization, error handling, and logging.",
+          "updated_at": "2026-01-10T06:20:41.594010+00:00"
         },
         {
           "id": "3.2",
           "title": "Add removeRating callback to useTraktIntegration",
           "description": "Add `removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean>` callback that calls traktService.removeRating and updates local state.",
           "file": "src/hooks/useTraktIntegration.ts",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": ""
+          "notes": "Added removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean> callback to useTraktIntegration hook. Method calls traktService.removeRating and updates local ratedContent state by filtering out the removed rating. Follows the same pattern as addRating and removeFromWatchlist methods. Includes IMDb ID normalization with 'tt' prefix handling and comprehensive error logging.",
+          "updated_at": "2026-01-10T06:22:43.482892+00:00"
         },
         {
           "id": "3.3",
           "title": "Add getUserRating helper to useTraktIntegration",
           "description": "Add `getUserRating(imdbId: string, type: 'movie' | 'show'): number | null` method that returns the user's rating for a specific item from cached ratedContent state.",
           "file": "src/hooks/useTraktIntegration.ts",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
-          "notes": ""
+          "notes": "Added getUserRating(imdbId: string, type: 'movie' | 'show'): number | null method to useTraktIntegration hook. Uses consistent IMDb ID normalization pattern, searches cached ratedContent array, returns rating (1-10) or null if not found. Exported in hook's return object.",
+          "updated_at": "2026-01-10T06:24:34.385813+00:00"
         },
         {
           "id": "3.4",
           "title": "Update TraktContext interface with rating methods",
           "description": "Update TraktContextProps interface in TraktContext.tsx to include the new rating methods.",
           "file": "src/contexts/TraktContext.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": ""
+          "notes": "Added rating management methods (addRating, removeRating, getUserRating) to TraktContextProps interface in TraktContext.tsx. The interface now matches the methods exported by useTraktIntegration hook. These methods enable rating functionality throughout the app via the TraktContext.",
+          "updated_at": "2026-01-10T06:26:13.865778+00:00"
         }
       ]
     },
@@ -138,27 +142,30 @@
           "title": "Create TraktRatingComponent",
           "description": "Create new component `src/components/trakt/TraktRatingComponent.tsx` with 1-10 star display, tap-to-rate functionality, and loading/error states. Should show current rating if exists and allow setting new rating.",
           "file": "src/components/trakt/TraktRatingComponent.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": "Design to match existing app theme, use MaterialIcons for stars"
+          "notes": "Created TraktRatingComponent.tsx with: 1-10 rating display using 5 stars with half-star precision, tap-to-rate functionality, loading/error states with optimistic UI updates and rollback, responsive sizing for phone/tablet/TV, clear rating button, accessibility labels. Component uses useTraktContext for getUserRating, addRating, and removeRating methods.",
+          "updated_at": "2026-01-10T06:29:45.568562+00:00"
         },
         {
           "id": "4.2",
           "title": "Create TraktRatingModal for rating selection",
           "description": "Create a modal component `src/components/trakt/TraktRatingModal.tsx` that shows a rating selector (1-10 scale) when user wants to rate content. Include confirm/cancel buttons.",
           "file": "src/components/trakt/TraktRatingModal.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": "Could use slider or tappable stars"
+          "notes": "Created TraktRatingModal.tsx component with: 1-10 rating selector using tappable number buttons in two rows, confirm/cancel/clear buttons, current rating display with badge, loading states during API calls, error handling with user feedback, responsive sizing for phone/tablet/TV using BREAKPOINTS pattern from TraktRatingComponent, Trakt brand colors (#ED1C24), rating descriptions (1='Weak Sauce :(', 10='Totally Ninja!'), accessibility labels for all interactive elements. Uses useTraktContext for getUserRating, addRating, removeRating methods.",
+          "updated_at": "2026-01-10T06:32:37.495956+00:00"
         },
         {
           "id": "4.3",
           "title": "Add index export for trakt components",
           "description": "Create index.ts file in src/components/trakt/ to export the new components cleanly.",
           "file": "src/components/trakt/index.ts",
-          "status": "pending",
+          "status": "completed",
           "priority": "low",
-          "notes": ""
+          "notes": "Created index.ts barrel export file in src/components/trakt/ that exports TraktRatingComponent and TraktRatingModal. Follows the same pattern as src/screens/index.ts. Committed as f09f8023.",
+          "updated_at": "2026-01-10T06:34:08.896444+00:00"
         }
       ]
     },
@@ -173,27 +180,30 @@
           "title": "Add TraktRatingComponent to HeroSection",
           "description": "Integrate TraktRatingComponent into HeroSection.tsx action buttons area. Show current rating and allow rating when authenticated. Should appear near the save/collection buttons.",
           "file": "src/components/metadata/HeroSection.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": "Only show when authenticated with Trakt"
+          "notes": "TraktRatingComponent is already integrated in HeroSection.tsx ActionButtons component (lines 462-472). It renders conditionally when isAuthenticated && imdbId, displays with size='small', showLabel=true, showClearButton=true. Component handles getUserRating, addRating, removeRating via useTraktContext internally.",
+          "updated_at": "2026-01-10T11:04:33.441838+00:00"
         },
         {
           "id": "5.2",
           "title": "Add rating modal to MetadataScreen",
           "description": "Add TraktRatingModal to MetadataScreen.tsx with state management for showing/hiding the modal.",
           "file": "src/screens/MetadataScreen.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "high",
-          "notes": ""
+          "notes": "Added TraktRatingModal to MetadataScreen.tsx with state management. Implemented: 1) Import from components/trakt, 2) showRatingModal state, 3) BackHandler support for closing modal, 4) TraktRatingModal component with proper props (visible, onClose, imdbId, type, contentTitle). Modal conditionally renders only when authenticated and imdbId is available.",
+          "updated_at": "2026-01-10T11:01:46.243144+00:00"
         },
         {
           "id": "5.3",
           "title": "Pass rating props through component hierarchy",
           "description": "Ensure rating-related props (getUserRating, addRating, removeRating) are passed from MetadataScreen through to HeroSection and rating components.",
           "file": "src/screens/MetadataScreen.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
-          "notes": ""
+          "notes": "Added imdbId prop to HeroSection in MetadataScreen.tsx. This enables the complete rating prop hierarchy: MetadataScreen passes imdbId to HeroSection \u2192 ActionButtons \u2192 TraktRatingComponent. The TraktRatingComponent uses useTraktContext() to access getUserRating, addRating, and removeRating methods internally. The prop chain is now complete for rating functionality.",
+          "updated_at": "2026-01-10T11:04:11.322887+00:00"
         }
       ]
     },
@@ -208,9 +218,10 @@
           "title": "Verify ContentItem badges work correctly",
           "description": "ContentItem.tsx already has watchlist (playlist-add-check) and collection (video-library) badges at lines 354-363. Verify they display correctly when authenticated and items are in watchlist/collection.",
           "file": "src/components/home/ContentItem.tsx",
-          "status": "pending",
+          "status": "completed",
           "priority": "medium",
-          "notes": "Badges already implemented - just needs testing/verification"
+          "notes": "Fixed type conversion bug for Trakt badges in ContentItem.tsx. The issue was that 'series' type was not being converted to 'show' for Trakt API compatibility. Fixed in: 1) Badge display conditions at lines 358 and 363 - changed from type cast 'as movie | show' to proper ternary conversion 'item.type === movie ? movie : show'. 2) Menu action handlers for trakt-watchlist and trakt-collection cases - added explicit type conversion variables with comments explaining the conversion. Committed as 63847afc.",
+          "updated_at": "2026-01-10T11:07:09.560391+00:00"
         },
         {
           "id": "6.2",
@@ -358,5 +369,5 @@
       "Progress sync accuracy at 80% threshold"
     ]
   },
-  "last_updated": "2026-01-10T06:18:20.411576+00:00"
+  "last_updated": "2026-01-10T11:07:09.560417+00:00"
 }

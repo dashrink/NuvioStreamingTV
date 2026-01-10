@@ -1,0 +1,240 @@
+{
+  "integrations_researched": [
+    {
+      "name": "Trakt API",
+      "type": "external_api",
+      "verified_package": {
+        "name": "No npm package - Direct REST API",
+        "install_command": "N/A - Using native fetch API",
+        "version": "Trakt API v2",
+        "verified": true
+      },
+      "api_patterns": {
+        "base_url": "https://api.trakt.tv",
+        "authentication": "OAuth 2.0 with device code flow",
+        "imports": [
+          "No external imports - native fetch API used"
+        ],
+        "initialization": "Singleton pattern: traktService.getInstance()",
+        "key_functions": [
+          "getWatchlistMovies() - GET /sync/watchlist/movies",
+          "getWatchlistShows() - GET /sync/watchlist/shows",
+          "addToWatchlist() - POST /sync/watchlist",
+          "removeFromWatchlist() - POST /sync/watchlist/remove",
+          "isInWatchlist() - Checks against cached watchlist data",
+          "getCollectionMovies() - GET /sync/collection/movies",
+          "getCollectionShows() - GET /sync/collection/shows",
+          "addToCollection() - POST /sync/collection",
+          "removeFromCollection() - POST /sync/collection/remove",
+          "isInCollection() - Checks against cached collection data",
+          "getRatings() - GET /sync/ratings",
+          "startWatching() - POST /scrobble/start",
+          "pauseWatching() - POST /scrobble/stop (with <80% progress)",
+          "stopWatching() - POST /scrobble/stop (with >=80% progress)",
+          "getUserProfile() - GET /users/settings"
+        ],
+        "verified_against": "Existing codebase implementation in src/services/traktService.ts"
+      },
+      "configuration": {
+        "env_vars": [
+          "EXPO_PUBLIC_TRAKT_CLIENT_ID - Required Trakt app client ID",
+          "EXPO_PUBLIC_TRAKT_CLIENT_SECRET - Required Trakt app client secret",
+          "EXPO_PUBLIC_TRAKT_REDIRECT_URI - OAuth redirect URI (default: nuvio://auth/trakt)"
+        ],
+        "config_files": [],
+        "dependencies": [
+          "react-native (fetch API)",
+          "react-native-mmkv (token storage)"
+        ],
+        "storage_keys": [
+          "trakt_access_token - OAuth access token",
+          "trakt_refresh_token - OAuth refresh token",
+          "trakt_token_expiry - Token expiration timestamp"
+        ]
+      },
+      "infrastructure": {
+        "requires_docker": false,
+        "external_service": "Trakt.tv API (https://api.trakt.tv)",
+        "rate_limiting": "Custom queue implementation with 500ms minimum interval between requests",
+        "authentication_method": "OAuth 2.0 Device Code Flow"
+      },
+      "existing_implementation": {
+        "service_file": "src/services/traktService.ts (3226 lines)",
+        "context": "src/contexts/TraktContext.tsx",
+        "hooks": [
+          "src/hooks/useTraktIntegration.ts",
+          "src/hooks/useTraktAutosync.ts",
+          "src/hooks/useTraktAutosyncSettings.ts",
+          "src/hooks/useTraktComments.ts",
+          "src/hooks/useWatchProgress.ts"
+        ],
+        "screens": [
+          "src/screens/TraktSettingsScreen.tsx"
+        ],
+        "components": [
+          "src/components/icons/TraktIcon.tsx",
+          "src/components/common/TraktLoadingSpinner.tsx"
+        ],
+        "fully_implemented_features": [
+          "OAuth authentication with device code flow",
+          "Token refresh and management",
+          "Watchlist sync (GET only - bidirectional ADD/REMOVE exists)",
+          "Collection sync (GET only - bidirectional ADD/REMOVE exists)",
+          "Ratings fetch (GET only)",
+          "Watch progress scrobbling (bidirectional)",
+          "Continue watching sync",
+          "Rate limiting queue",
+          "Duplicate scrobble prevention",
+          "Custom completion threshold settings"
+        ],
+        "todo_items_found": [
+          {
+            "file": "src/components/home/AppleTVHero.tsx",
+            "line": 571,
+            "comment": "TODO: Check Trakt watchlist status if authenticated",
+            "current_code": "setIsInWatchlist(Math.random() > 0.5); // Replace with actual Trakt call"
+          },
+          {
+            "file": "src/components/home/AppleTVHero.tsx",
+            "line": 610,
+            "comment": "TODO: Replace with your actual Trakt service call",
+            "current_code": "// await traktService.toggleWatchlist(currentItem.id, !wasInWatchlist);"
+          }
+        ]
+      },
+      "gotchas": [
+        "Trakt API uses IMDb IDs (with 'tt' prefix) for content identification",
+        "Scrobbling requires progress percentage (0-100)",
+        "Progress <80% = pause, >=80% = mark as watched (configurable by user)",
+        "Rate limiting: 500ms minimum between API calls (custom implementation)",
+        "Tokens expire and need refresh mechanism",
+        "OAuth requires registered Trakt app with client ID and secret",
+        "Scrobble deduplication: 46-minute expiry window to prevent duplicate submissions",
+        "Device code flow: User must visit trakt.tv/activate and enter code",
+        "Watchlist/Collection checks require fetching full lists (no single-item check endpoint)",
+        "All write operations (add/remove) are async and may need UI optimistic updates"
+      ],
+      "research_sources": [
+        "Existing codebase: src/services/traktService.ts",
+        "Trakt API Documentation: https://trakt.docs.apiary.io/",
+        "Context7 MCP: /websites/trakt_apiary_io"
+      ]
+    },
+    {
+      "name": "React Native MMKV",
+      "type": "library",
+      "verified_package": {
+        "name": "react-native-mmkv",
+        "install_command": "npm install react-native-mmkv",
+        "version": "^4.0.0",
+        "verified": true
+      },
+      "api_patterns": {
+        "imports": [
+          "Already imported via mmkvStorage wrapper"
+        ],
+        "usage": "Token persistence for OAuth",
+        "verified_against": "package.json line 82"
+      },
+      "configuration": {
+        "purpose": "Fast key-value storage for Trakt tokens and settings"
+      }
+    },
+    {
+      "name": "Expo Auth Session",
+      "type": "library",
+      "verified_package": {
+        "name": "expo-auth-session",
+        "install_command": "npx expo install expo-auth-session",
+        "version": "~7.0.8",
+        "verified": true
+      },
+      "api_patterns": {
+        "usage": "OAuth flow management (installed but may use custom implementation)",
+        "verified_against": "package.json line 44"
+      },
+      "configuration": {
+        "purpose": "OAuth authentication with Trakt (device code flow)"
+      }
+    },
+    {
+      "name": "TypeScript",
+      "type": "language",
+      "verified_package": {
+        "name": "typescript",
+        "install_command": "npm install typescript",
+        "version": "^5.3.3",
+        "verified": true
+      },
+      "api_patterns": {
+        "usage": "Strong typing for Trakt API responses",
+        "key_interfaces": [
+          "TraktUser",
+          "TraktWatchedItem",
+          "TraktWatchlistItem",
+          "TraktCollectionItem",
+          "TraktRatingItem",
+          "TraktPlaybackItem",
+          "TraktScrobbleResponse",
+          "TraktContentData"
+        ],
+        "verified_against": "src/services/traktService.ts lines 21-285"
+      }
+    }
+  ],
+  "unverified_claims": [],
+  "implementation_gaps": [
+    {
+      "gap": "Watchlist status check in AppleTVHero.tsx",
+      "location": "src/components/home/AppleTVHero.tsx:571",
+      "current_state": "Using Math.random() placeholder instead of actual Trakt call",
+      "required_fix": "Call traktService.isInWatchlist(imdbId, type) and update UI",
+      "risk_level": "medium",
+      "note": "The API method EXISTS in traktService but is NOT connected in the component"
+    },
+    {
+      "gap": "Watchlist toggle in AppleTVHero.tsx",
+      "location": "src/components/home/AppleTVHero.tsx:610",
+      "current_state": "Commented out traktService.toggleWatchlist() call",
+      "required_fix": "Implement add/remove logic using traktService.addToWatchlist() and traktService.removeFromWatchlist()",
+      "risk_level": "medium",
+      "note": "The API methods EXIST but are NOT wired up in the UI component"
+    },
+    {
+      "gap": "UI indicators for watchlist status across all content cards",
+      "location": "Various components (ContentItem.tsx, HeroSection.tsx, etc.)",
+      "current_state": "Unknown - needs investigation",
+      "required_fix": "Add visual indicators (icons/badges) showing Trakt watchlist status",
+      "risk_level": "low"
+    },
+    {
+      "gap": "Rating interface in media detail screens",
+      "location": "Unknown - needs investigation",
+      "current_state": "May not exist",
+      "required_fix": "Add UI to set ratings (1-10 scale) and call Trakt rating API",
+      "risk_level": "low",
+      "note": "getRatings() exists but no addRating() or updateRating() method found in traktService"
+    }
+  ],
+  "recommendations": [
+    "The core Trakt integration is ALREADY IMPLEMENTED - focus on UI wiring",
+    "Priority 1: Wire up existing traktService methods in AppleTVHero.tsx (resolve TODOs)",
+    "Priority 2: Add watchlist status indicators to all content card components",
+    "Priority 3: Implement rating API methods in traktService (addRating, removeRating)",
+    "Priority 4: Add rating UI component in media detail screens",
+    "Consider using TraktContext.isInWatchlist() instead of direct service calls for cached lookups",
+    "Watch progress sync is ALREADY working - verify 30-second performance constraint",
+    "Use optimistic UI updates for add/remove actions to improve perceived performance",
+    "Collection sync is implemented but may need UI touchpoints added"
+  ],
+  "performance_notes": {
+    "sync_timing": "Custom rate limiting with 500ms intervals supports sub-30-second sync requirement",
+    "scrobble_debounce": "5-second debounce on sync, 1-second on stop for responsiveness",
+    "duplicate_prevention": "46-minute expiry window prevents duplicate scrobbles",
+    "caching": "Watchlist and collection data cached in React context for fast lookups"
+  },
+  "context7_libraries_used": [
+    "/websites/trakt_apiary_io"
+  ],
+  "created_at": "2026-01-10T00:00:00Z"
+}

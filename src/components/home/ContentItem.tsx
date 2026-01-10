@@ -111,7 +111,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const [imageError, setImageError] = useState(false);
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, getUserRating } = useTraktContext();
 
   useEffect(() => {
     // Reset image error state when item changes, allowing for retry on re-render
@@ -365,6 +365,16 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
             )}
+            {/* Rating indicator for items the user has rated on Trakt */}
+            {isAuthenticated && (() => {
+              const userRating = getUserRating(item.id, item.type === 'movie' ? 'movie' : 'show');
+              return userRating !== null ? (
+                <View style={styles.traktRatingBadge}>
+                  <MaterialIcons name="star" size={12} color="#FFD700" />
+                  <Text style={styles.traktRatingText}>{userRating}</Text>
+                </View>
+              ) : null;
+            })()}
           </View>
         </TouchableOpacity>
         {settings.showPosterTitles && (
@@ -462,6 +472,23 @@ const styles = StyleSheet.create({
     top: 8,
     right: 32, // Positioned to the left of watchlist icon
     padding: 2,
+  },
+  traktRatingBadge: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  traktRatingText: {
+    color: '#FFD700',
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 2,
   },
   title: {
     fontSize: 13, // Will be overridden responsively
