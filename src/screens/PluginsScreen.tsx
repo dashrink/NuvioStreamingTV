@@ -10,12 +10,12 @@ import {
   RefreshControl,
   StatusBar,
   Platform,
-  ActivityIndicator,
   Modal,
   Dimensions,
   Animated,
   Image,
 } from 'react-native';
+import { UnifiedSpinner } from '../components/loading';
 import CustomAlert from '../components/CustomAlert';
 import FastImage from '@d11/react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -1470,7 +1470,7 @@ const PluginsScreen: React.FC = () => {
                       )}
                       {switchingRepository === repo.id && (
                         <View style={[styles.statusBadge, { backgroundColor: colors.primary }]}>
-                          <ActivityIndicator size={12} color="white" />
+                          <UnifiedSpinner size="small" color="#FFFFFF" style={{ width: 12, height: 12, transform: [{ scale: 0.5 }] }} />
                           <Text style={styles.statusBadgeText}>Switching...</Text>
                         </View>
                       )}
@@ -1491,7 +1491,7 @@ const PluginsScreen: React.FC = () => {
                         disabled={switchingRepository === repo.id}
                       >
                         {switchingRepository === repo.id ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
+                          <UnifiedSpinner size="small" color={colors.primary} />
                         ) : (
                           <Text style={styles.repositoryActionButtonText}>Switch</Text>
                         )}
@@ -1503,7 +1503,7 @@ const PluginsScreen: React.FC = () => {
                       disabled={isRefreshing || switchingRepository !== null}
                     >
                       {isRefreshing ? (
-                        <ActivityIndicator size="small" color={colors.mediumGray} />
+                        <UnifiedSpinner size="small" color={colors.mediumGray} />
                       ) : (
                         <Text style={styles.repositoryActionButtonText}>Refresh</Text>
                       )}
@@ -2027,7 +2027,7 @@ const PluginsScreen: React.FC = () => {
                   disabled={!newRepositoryUrl.trim() || isLoading}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color={colors.white} />
+                    <UnifiedSpinner size="small" color="#FFFFFF" />
                   ) : (
                     <Text style={styles.addButtonText}>Add</Text>
                   )}
