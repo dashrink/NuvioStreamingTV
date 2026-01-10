@@ -70,6 +70,9 @@ import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
+import { ProfileProvider, useActiveProfile } from '../contexts/ProfileContext';
+import ProfileSwitcherBottomSheet from '../components/profile/ProfileSwitcherBottomSheet';
+import ProfileIcon from '../components/icons/ProfileIcon';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -534,6 +537,8 @@ const MainTabs = () => {
   const { settings: appSettings } = useSettingsHook();
   const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [showProfileSwitcher, setShowProfileSwitcher] = React.useState(false);
+  const { activeProfile } = useActiveProfile();
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -705,6 +710,32 @@ const MainTabs = () => {
                 </TouchableOpacity>
               );
             })}
+            {/* Profile Switcher Button for Tablets */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setShowProfileSwitcher(true)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                marginLeft: 8,
+                borderRadius: 24,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <ProfileIcon size={20} color={currentTheme.colors.white} />
+              {activeProfile && (
+                <Text style={{
+                  color: currentTheme.colors.white,
+                  fontWeight: '600',
+                  fontSize: 13,
+                }}>
+                  {activeProfile.name}
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
         </Animated.View>
       );
@@ -931,6 +962,42 @@ const MainTabs = () => {
             }}
           />
         </IOSTab.Navigator>
+
+        {/* Profile Switcher Button for iOS */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowProfileSwitcher(true)}
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            right: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            zIndex: 100,
+          }}
+        >
+          <ProfileIcon size={18} color={currentTheme.colors.white} />
+          {activeProfile && !isTablet && (
+            <Text style={{
+              color: currentTheme.colors.white,
+              fontWeight: '600',
+              fontSize: 12,
+            }}>
+              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Profile Switcher Bottom Sheet */}
+        <ProfileSwitcherBottomSheet
+          visible={showProfileSwitcher}
+          onClose={() => setShowProfileSwitcher(false)}
+        />
       </View>
     );
   }
@@ -1044,6 +1111,44 @@ const MainTabs = () => {
           }}
         />
       </Tab.Navigator>
+
+      {/* Profile Switcher Button for Android Phones (tablets use the floating nav bar) */}
+      {!isTablet && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowProfileSwitcher(true)}
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            right: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            zIndex: 100,
+          }}
+        >
+          <ProfileIcon size={18} color={currentTheme.colors.white} />
+          {activeProfile && (
+            <Text style={{
+              color: currentTheme.colors.white,
+              fontWeight: '600',
+              fontSize: 12,
+            }}>
+              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            </Text>
+          )}
+        </TouchableOpacity>
+      )}
+
+      {/* Profile Switcher Bottom Sheet */}
+      <ProfileSwitcherBottomSheet
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
+      />
     </View>
   );
 };
@@ -1614,9 +1719,11 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
       host: "https://us.i.posthog.com",
     }}
   >
-    <LoadingProvider>
-      <InnerNavigator initialRouteName={initialRouteName} />
-    </LoadingProvider>
+    <ProfileProvider>
+      <LoadingProvider>
+        <InnerNavigator initialRouteName={initialRouteName} />
+      </LoadingProvider>
+    </ProfileProvider>
   </PostHogProvider>
 );
 
