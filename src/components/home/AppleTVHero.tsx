@@ -152,7 +152,12 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   const { isTrailerPlaying: globalTrailerPlaying, setTrailerPlaying } = useTrailer();
   const { toggleLibrary, isInLibrary: checkIsInLibrary } = useLibrary();
   const { showSaved, showTraktSaved, showRemoved, showTraktRemoved } = useToast();
-  const { isAuthenticated: isTraktAuthenticated, isInWatchlist: checkTraktWatchlist } = useTraktContext();
+  const {
+    isAuthenticated: isTraktAuthenticated,
+    isInWatchlist: checkTraktWatchlist,
+    addToWatchlist: traktAddToWatchlist,
+    removeFromWatchlist: traktRemoveFromWatchlist,
+  } = useTraktContext();
 
   // Library and watch state
   const [inLibrary, setInLibrary] = useState(false);
@@ -589,12 +594,43 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
       }
 
       // If authenticated with Trakt, also toggle Trakt watchlist
-      if (isTraktAuthenticated) {
+      if (isTraktAuthenticated && currentItem.imdb_id) {
+        // Optimistic UI update
         setIsInWatchlist(!wasInWatchlist);
 
-        // TODO: Replace with your actual Trakt service call
-        // await traktService.toggleWatchlist(currentItem.id, !wasInWatchlist);
-        logger.info('[AppleTVHero] Toggled Trakt watchlist');
+        // Convert 'series' to 'show' for Trakt API compatibility
+        const traktType = currentItem.type === 'series' ? 'show' : 'movie';
+
+        try {
+          let traktSuccess: boolean;
+          if (wasInWatchlist) {
+            // Remove from Trakt watchlist
+            traktSuccess = await traktRemoveFromWatchlist(currentItem.imdb_id, traktType);
+            if (traktSuccess) {
+              showTraktRemoved();
+              logger.info('[AppleTVHero] Removed from Trakt watchlist:', currentItem.name);
+            }
+          } else {
+            // Add to Trakt watchlist
+            traktSuccess = await traktAddToWatchlist(currentItem.imdb_id, traktType);
+            if (traktSuccess) {
+              showTraktSaved();
+              logger.info('[AppleTVHero] Added to Trakt watchlist:', currentItem.name);
+            }
+          }
+
+          if (!traktSuccess) {
+            // Revert optimistic update on failure
+            setIsInWatchlist(wasInWatchlist);
+            logger.warn('[AppleTVHero] Trakt watchlist toggle failed');
+          }
+        } catch (traktError) {
+          // Revert optimistic update on error
+          setIsInWatchlist(wasInWatchlist);
+          logger.error('[AppleTVHero] Error toggling Trakt watchlist:', traktError);
+        }
+      } else if (isTraktAuthenticated && !currentItem.imdb_id) {
+        logger.warn('[AppleTVHero] Cannot toggle Trakt watchlist - missing IMDb ID for:', currentItem.name);
       }
 
     } catch (error) {
@@ -605,7 +641,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         setIsInWatchlist(wasInWatchlist);
       }
     }
-  }, [currentItem, inLibrary, isInWatchlist, isTraktAuthenticated, toggleLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved]);
+  }, [currentItem, inLibrary, isInWatchlist, isTraktAuthenticated, toggleLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved, traktAddToWatchlist, traktRemoveFromWatchlist]);
 
   // Play button handler - navigates to Streams screen with progress data if available
   const handlePlayAction = useCallback(async () => {
