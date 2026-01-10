@@ -1,0 +1,628 @@
+{
+  "feature": "Standardize Haptic Feedback for Touch Interactions",
+  "description": "Extend haptic feedback to all primary button interactions throughout the app. Create a centralized haptic utility hook and systematically add haptic feedback to screens and components with touch interactions. Currently only 9 source files use Haptics, leaving 70+ files with touch interactions without tactile confirmation.",
+  "created_at": "2026-01-09T21:16:54.708Z",
+  "updated_at": "2026-01-10T18:21:20.626Z",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "workflow_type": "development",
+  "services_involved": [
+    "expo-haptics"
+  ],
+  "estimated_hours": 8,
+  "spec_file": "spec.md",
+  "phases": [
+    {
+      "id": "phase-1",
+      "title": "Core Infrastructure",
+      "description": "Create centralized haptic feedback utility hook for consistent usage across the app",
+      "subtasks": [
+        {
+          "id": "1.1",
+          "title": "Create useHaptics hook",
+          "description": "Create a centralized custom hook (src/hooks/useHaptics.ts) that provides standardized haptic feedback methods: triggerLight() for simple taps/selections, triggerMedium() for important actions, triggerHeavy() for critical actions, triggerSuccess() for successful operations, triggerWarning() for warnings, and triggerError() for errors. Include error handling and platform checks.",
+          "estimated_minutes": 30,
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "src/hooks/useHaptics.ts"
+          ],
+          "notes": "Created src/hooks/useHaptics.ts with all required methods: triggerLight(), triggerMedium(), triggerHeavy(), triggerSuccess(), triggerWarning(), triggerError(). Includes platform checks, error handling, memoized hook methods, and standalone exported functions for flexibility. Committed as 26fc042b.",
+          "updated_at": "2026-01-10T11:01:39.857466+00:00"
+        },
+        {
+          "id": "1.2",
+          "title": "Create haptics constants",
+          "description": "Define constants for haptic feedback patterns in the useHaptics hook file, documenting when each type should be used for consistency.",
+          "estimated_minutes": 15,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/hooks/useHaptics.ts"
+          ],
+          "notes": "Added HAPTIC_PATTERNS constant object with comprehensive mapping of UI interaction types to haptic feedback. Includes 4 categories: Navigation & Selection (light), Important Actions (medium), Critical/Destructive Actions (heavy), and Feedback Notifications (success/warning/error). Also added HapticPatternType type and getHapticTrigger helper function. Committed as 0de510c7.",
+          "updated_at": "2026-01-10T11:03:51.542926+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "title": "Settings Screens",
+      "description": "Add haptic feedback to all settings-related screens which have high-frequency touch interactions",
+      "subtasks": [
+        {
+          "id": "2.1",
+          "title": "Add haptics to SettingsScreen",
+          "description": "Add light haptic feedback to all TouchableOpacity presses and Switch toggles in SettingsScreen.tsx. Use triggerLight() for navigation items and triggerMedium() for action buttons.",
+          "estimated_minutes": 25,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/SettingsScreen.tsx"
+          ],
+          "notes": "Added haptic feedback to SettingsScreen.tsx. Uses triggerLight() for navigation items (SettingItem presses, Sidebar category selection, external link buttons) and triggerMedium() for toggle switches (CustomSwitch, Show Trailers, Enable Downloads). Committed as 9938474c.",
+          "updated_at": "2026-01-10T11:07:11.774209+00:00"
+        },
+        {
+          "id": "2.2",
+          "title": "Add haptics to ThemeScreen",
+          "description": "Add haptic feedback to theme selection touches in ThemeScreen.tsx. Use triggerLight() for theme previews and triggerMedium() for theme activation.",
+          "estimated_minutes": 15,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/ThemeScreen.tsx"
+          ],
+          "notes": "Added haptic feedback to ThemeScreen.tsx. Uses triggerLight() for filter tabs, edit buttons, back/cancel buttons, and color selector buttons (previews). Uses triggerMedium() for theme selection (activation), save button, create theme button, and toggle switch. Uses triggerHeavy() for delete button (destructive action). Committed as f6a86f14.",
+          "updated_at": "2026-01-10T11:10:22.664071+00:00"
+        },
+        {
+          "id": "2.3",
+          "title": "Add haptics to PlayerSettingsScreen",
+          "description": "Add haptic feedback to all player settings controls including switches and option selections.",
+          "estimated_minutes": 15,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/PlayerSettingsScreen.tsx"
+          ],
+          "notes": "Added haptic feedback to PlayerSettingsScreen.tsx. Uses triggerLight() for player option selections (SettingItem presses) and back button navigation. Uses triggerMedium() for all Switch toggles (Auto-play Best Stream, Always Resume, External Player for Downloads). Committed as c0d7804b.",
+          "updated_at": "2026-01-10T11:12:22.084788+00:00"
+        },
+        {
+          "id": "2.4",
+          "title": "Add haptics to integration settings screens",
+          "description": "Add haptic feedback to TraktSettingsScreen.tsx, TMDBSettingsScreen.tsx, MDBListSettingsScreen.tsx, and DebridIntegrationScreen.tsx for all button presses and toggles.",
+          "estimated_minutes": 30,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/TraktSettingsScreen.tsx",
+            "src/screens/TMDBSettingsScreen.tsx",
+            "src/screens/MDBListSettingsScreen.tsx",
+            "src/screens/DebridIntegrationScreen.tsx"
+          ],
+          "notes": "Added haptic feedback to TraktSettingsScreen.tsx, TMDBSettingsScreen.tsx, MDBListSettingsScreen.tsx, and DebridIntegrationScreen.tsx. Implemented triggerLight() for navigation/selection, triggerMedium() for toggles/save buttons, and triggerHeavy() for destructive actions (disconnect, clear, remove).",
+          "updated_at": "2026-01-10T11:19:01.618936+00:00"
+        },
+        {
+          "id": "2.5",
+          "title": "Add haptics to remaining settings screens",
+          "description": "Add haptic feedback to CatalogSettingsScreen.tsx, ContinueWatchingSettingsScreen.tsx, HomeScreenSettings.tsx, NotificationSettingsScreen.tsx, AISettingsScreen.tsx, and BackupScreen.tsx.",
+          "estimated_minutes": 35,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/CatalogSettingsScreen.tsx",
+            "src/screens/ContinueWatchingSettingsScreen.tsx",
+            "src/screens/HomeScreenSettings.tsx",
+            "src/screens/NotificationSettingsScreen.tsx",
+            "src/screens/AISettingsScreen.tsx",
+            "src/screens/BackupScreen.tsx"
+          ],
+          "notes": "Added haptic feedback to all 6 remaining settings screens: CatalogSettingsScreen.tsx, ContinueWatchingSettingsScreen.tsx, HomeScreenSettings.tsx, NotificationSettingsScreen.tsx, AISettingsScreen.tsx, and BackupScreen.tsx. Uses appropriate haptic patterns: triggerLight() for navigation/selections, triggerMedium() for toggles/important actions, triggerHeavy() for destructive actions.",
+          "updated_at": "2026-01-10T11:27:53.166523+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "title": "Player Components",
+      "description": "Add haptic feedback to player controls and modals for tactile playback experience",
+      "subtasks": [
+        {
+          "id": "3.1",
+          "title": "Add haptics to PlayerControls",
+          "description": "Add haptic feedback to all player control buttons: play/pause (medium), skip buttons (light), close (light), audio/subtitle buttons (light). File: src/components/player/controls/PlayerControls.tsx",
+          "estimated_minutes": 25,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/player/controls/PlayerControls.tsx"
+          ],
+          "notes": "Added haptic feedback to PlayerControls.tsx. Play/pause uses triggerMedium() for important action. Skip buttons, close button, AirPlay button, and all bottom control buttons (aspect ratio, subtitle, sources, speed, audio, episodes) use triggerLight() for navigation/modal open interactions. Committed as c4204b37.",
+          "updated_at": "2026-01-10T11:30:28.838313+00:00"
+        },
+        {
+          "id": "3.2",
+          "title": "Add haptics to player modals",
+          "description": "Add haptic feedback to AudioTrackModal.tsx, SubtitleModals.tsx, SpeedModal.tsx, SourcesModal.tsx, and EpisodesModal.tsx for all selection interactions.",
+          "estimated_minutes": 35,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/player/modals/AudioTrackModal.tsx",
+            "src/components/player/modals/SubtitleModals.tsx",
+            "src/components/player/modals/SpeedModal.tsx",
+            "src/components/player/modals/SourcesModal.tsx",
+            "src/components/player/modals/EpisodesModal.tsx"
+          ],
+          "notes": "Added haptic feedback to all player modal components: AudioTrackModal.tsx (light haptic for track selection and modal close), SubtitleModals.tsx (light haptic for tabs, selections, presets, controls; medium haptic for toggles), SpeedModal.tsx (light haptic for speed selection and modal close; medium haptic for hold-to-speed toggle), SourcesModal.tsx (light haptic for modal close; medium haptic for stream selection), and EpisodesModal.tsx (light haptic for season tabs, episode selection, and modal close). Committed as 5157482d.",
+          "updated_at": "2026-01-10T11:37:24.516405+00:00"
+        },
+        {
+          "id": "3.3",
+          "title": "Add haptics to player overlays and cards",
+          "description": "Add haptic feedback to ResumeOverlay.tsx, LoadingOverlay.tsx, UpNextButton.tsx, and EpisodeCard.tsx.",
+          "estimated_minutes": 20,
+          "status": "completed",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/player/modals/ResumeOverlay.tsx",
+            "src/components/player/modals/LoadingOverlay.tsx",
+            "src/components/player/common/UpNextButton.tsx",
+            "src/components/player/cards/EpisodeCard.tsx"
+          ],
+          "notes": "Added haptic feedback to all player overlays and cards: ResumeOverlay.tsx (triggerMedium() for \"Start Over\" and \"Resume\" buttons - important playback actions), LoadingOverlay.tsx (triggerLight() for close button - modal close), UpNextButton.tsx (triggerMedium() for next episode selection - important playback action), and EpisodeCard.tsx (triggerLight() for episode selection - navigation/selection). Committed as a5462549.",
+          "updated_at": "2026-01-10T18:23:02.257151+00:00"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "title": "Browse and Discovery Screens",
+      "description": "Add haptic feedback to browsing and content discovery interfaces",
+      "subtasks": [
+        {
+          "id": "4.1",
+          "title": "Add haptics to SearchScreen",
+          "description": "Add haptic feedback to search result taps, filter selections, and clear button in SearchScreen.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/SearchScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.2",
+          "title": "Add haptics to LibraryScreen",
+          "description": "Add haptic feedback to library item taps, filter tabs, and action buttons in LibraryScreen.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/LibraryScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.3",
+          "title": "Add haptics to CatalogScreen",
+          "description": "Add haptic feedback to catalog items, category filters, and sorting options in CatalogScreen.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/CatalogScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.4",
+          "title": "Add haptics to CalendarScreen",
+          "description": "Add haptic feedback to calendar date selections, show items, and navigation in CalendarScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/CalendarScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "4.5",
+          "title": "Add haptics to StreamsScreen",
+          "description": "Add haptic feedback to stream card taps and provider filters in StreamsScreen.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/StreamsScreen.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "title": "Home Components",
+      "description": "Add haptic feedback to home screen components and sections",
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Add haptics to ContentItem",
+          "description": "Add haptic feedback to ContentItem.tsx for poster taps - using light haptics for navigation to details.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/home/ContentItem.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "5.2",
+          "title": "Add haptics to CatalogSection",
+          "description": "Add haptic feedback to CatalogSection.tsx for see all button and item interactions.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/home/CatalogSection.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "5.3",
+          "title": "Add haptics to HeroCarousel and AppleTVHero",
+          "description": "Add haptic feedback to hero carousel interactions and play/info button presses.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/home/HeroCarousel.tsx",
+            "src/components/home/AppleTVHero.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "5.4",
+          "title": "Add haptics to other home components",
+          "description": "Add haptic feedback to ThisWeekSection.tsx, FeaturedContent.tsx, and DropUpMenu.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/home/ThisWeekSection.tsx",
+            "src/components/home/FeaturedContent.tsx",
+            "src/components/home/DropUpMenu.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "title": "Metadata Components",
+      "description": "Add haptic feedback to metadata screen components",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Add haptics to HeroSection",
+          "description": "Add haptic feedback to HeroSection.tsx for play button, add to library, and other action buttons.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/metadata/HeroSection.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "6.2",
+          "title": "Add haptics to CastSection and CastDetailsModal",
+          "description": "Add haptic feedback for cast member taps and modal interactions.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/metadata/CastSection.tsx",
+            "src/components/metadata/CastDetailsModal.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "6.3",
+          "title": "Add haptics to other metadata components",
+          "description": "Add haptic feedback to CollectionSection.tsx, CommentsSection.tsx, TrailersSection.tsx, TrailerModal.tsx, MoreLikeThisSection.tsx, and RatingsSection.tsx.",
+          "estimated_minutes": 30,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/metadata/CollectionSection.tsx",
+            "src/components/metadata/CommentsSection.tsx",
+            "src/components/metadata/TrailersSection.tsx",
+            "src/components/metadata/TrailerModal.tsx",
+            "src/components/metadata/MoreLikeThisSection.tsx",
+            "src/components/metadata/RatingsSection.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "title": "Management Screens",
+      "description": "Add haptic feedback to addon and profile management screens",
+      "subtasks": [
+        {
+          "id": "7.1",
+          "title": "Add haptics to AddonsScreen",
+          "description": "Add haptic feedback to addon cards, install/uninstall buttons, and configuration options in AddonsScreen.tsx.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/AddonsScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "7.2",
+          "title": "Add haptics to PluginsScreen",
+          "description": "Add haptic feedback to plugin toggles and configuration in PluginsScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/PluginsScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "7.3",
+          "title": "Add haptics to ProfilesScreen",
+          "description": "Add haptic feedback to profile selection, creation, and editing in ProfilesScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/ProfilesScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "7.4",
+          "title": "Add haptics to HeroCatalogsScreen",
+          "description": "Add haptic feedback to catalog selection and reordering in HeroCatalogsScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/HeroCatalogsScreen.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "title": "UI Components and Alerts",
+      "description": "Add haptic feedback to common UI components and alert dialogs",
+      "subtasks": [
+        {
+          "id": "8.1",
+          "title": "Add haptics to CustomAlert",
+          "description": "Add haptic feedback to CustomAlert.tsx button presses with appropriate feedback types based on action severity.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/CustomAlert.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "8.2",
+          "title": "Add haptics to StreamCard",
+          "description": "Add haptic feedback to StreamCard.tsx for stream selection and long press actions.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/StreamCard.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "8.3",
+          "title": "Add haptics to ProviderFilter",
+          "description": "Add haptic feedback to filter chip selections in ProviderFilter.tsx.",
+          "estimated_minutes": 10,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/ProviderFilter.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "8.4",
+          "title": "Add haptics to header components",
+          "description": "Add haptic feedback to NuvioHeader.tsx, ScreenHeader.tsx, and FloatingHeader.tsx for back/action button presses.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/components/NuvioHeader.tsx",
+            "src/components/common/ScreenHeader.tsx",
+            "src/components/metadata/FloatingHeader.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-9",
+      "title": "Onboarding and Misc Screens",
+      "description": "Add haptic feedback to remaining screens",
+      "subtasks": [
+        {
+          "id": "9.1",
+          "title": "Add haptics to OnboardingScreen",
+          "description": "Add haptic feedback to onboarding navigation buttons and selections in OnboardingScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/OnboardingScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "9.2",
+          "title": "Add haptics to AIChatScreen",
+          "description": "Add haptic feedback to send button and suggestion chips in AIChatScreen.tsx.",
+          "estimated_minutes": 15,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/AIChatScreen.tsx"
+          ],
+          "notes": ""
+        },
+        {
+          "id": "9.3",
+          "title": "Add haptics to misc screens",
+          "description": "Add haptic feedback to ContributorsScreen.tsx, UpdateScreen.tsx, ShowRatingsScreen.tsx, CastMoviesScreen.tsx, and BackdropGalleryScreen.tsx.",
+          "estimated_minutes": 25,
+          "status": "pending",
+          "dependencies": [
+            "1.1"
+          ],
+          "files": [
+            "src/screens/ContributorsScreen.tsx",
+            "src/screens/UpdateScreen.tsx",
+            "src/screens/ShowRatingsScreen.tsx",
+            "src/screens/CastMoviesScreen.tsx",
+            "src/screens/BackdropGalleryScreen.tsx"
+          ],
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "phase-10",
+      "title": "Testing and QA",
+      "description": "Test haptic feedback across all modified components",
+      "subtasks": [
+        {
+          "id": "10.1",
+          "title": "TypeScript compilation check",
+          "description": "Run TypeScript compilation to ensure no type errors were introduced.",
+          "estimated_minutes": 10,
+          "status": "pending",
+          "dependencies": [
+            "9.3"
+          ],
+          "files": [],
+          "notes": ""
+        },
+        {
+          "id": "10.2",
+          "title": "Verify haptic consistency",
+          "description": "Review all implemented haptics to ensure consistent usage patterns: light for navigation/selection, medium for actions, heavy for destructive, success/error for feedback.",
+          "estimated_minutes": 20,
+          "status": "pending",
+          "dependencies": [
+            "10.1"
+          ],
+          "files": [],
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "final_acceptance": [
+    "useHaptics hook created with standardized methods",
+    "All settings screens have haptic feedback",
+    "All player controls have haptic feedback",
+    "All browse/discovery screens have haptic feedback",
+    "All home components have haptic feedback",
+    "All metadata components have haptic feedback",
+    "All management screens have haptic feedback",
+    "All UI components/alerts have haptic feedback",
+    "TypeScript compiles without errors",
+    "Haptic feedback patterns are consistent across the app"
+  ],
+  "qa_signoff": {
+    "status": "pending",
+    "tests_passed": "",
+    "issues": ""
+  },
+  "last_updated": "2026-01-10T18:23:02.257182+00:00"
+}
