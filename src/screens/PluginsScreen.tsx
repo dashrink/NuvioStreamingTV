@@ -25,6 +25,7 @@ import { useSettings } from '../hooks/useSettings';
 import { localScraperService, pluginService, ScraperInfo, RepositoryInfo } from '../services/pluginService';
 import { logger } from '../utils/logger';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -773,7 +774,10 @@ const CollapsibleSection: React.FC<{
   styles: any;
 }> = ({ title, children, isExpanded, onToggle, colors, styles }) => (
   <View style={styles.collapsibleSection}>
-    <TouchableOpacity style={styles.collapsibleHeader} onPress={onToggle}>
+    <TouchableOpacity style={styles.collapsibleHeader} onPress={() => {
+      triggerLight();
+      onToggle();
+    }}>
       <Text style={styles.collapsibleTitle}>{title}</Text>
       <Ionicons
         name={isExpanded ? "chevron-up" : "chevron-down"}
@@ -1363,7 +1367,10 @@ const PluginsScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
           <Text style={styles.backText}>Settings</Text>
@@ -1373,7 +1380,10 @@ const PluginsScreen: React.FC = () => {
           {/* Help Button */}
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={() => setShowHelpModal(true)}
+            onPress={() => {
+              triggerLight();
+              setShowHelpModal(true);
+            }}
           >
             <Ionicons name="help-circle-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
@@ -1425,7 +1435,10 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.enableLocalScrapers}
-              onValueChange={handleToggleLocalScrapers}
+              onValueChange={(value) => {
+                triggerMedium();
+                handleToggleLocalScrapers(value);
+              }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
               thumbColor={settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
             />
@@ -1487,7 +1500,10 @@ const PluginsScreen: React.FC = () => {
                     {repo.id !== currentRepositoryId && (
                       <TouchableOpacity
                         style={[styles.repositoryActionButton, styles.repositoryActionButtonPrimary]}
-                        onPress={() => handleSwitchRepository(repo.id)}
+                        onPress={() => {
+                          triggerMedium();
+                          handleSwitchRepository(repo.id);
+                        }}
                         disabled={switchingRepository === repo.id}
                       >
                         {switchingRepository === repo.id ? (
@@ -1499,7 +1515,10 @@ const PluginsScreen: React.FC = () => {
                     )}
                     <TouchableOpacity
                       style={[styles.repositoryActionButton, styles.repositoryActionButtonSecondary]}
-                      onPress={() => handleRefreshRepository()}
+                      onPress={() => {
+                        triggerMedium();
+                        handleRefreshRepository();
+                      }}
                       disabled={isRefreshing || switchingRepository !== null}
                     >
                       {isRefreshing ? (
@@ -1510,7 +1529,10 @@ const PluginsScreen: React.FC = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.repositoryActionButton, styles.repositoryActionButtonDanger]}
-                      onPress={() => handleRemoveRepository(repo.id)}
+                      onPress={() => {
+                        triggerHeavy();
+                        handleRemoveRepository(repo.id);
+                      }}
                       disabled={switchingRepository !== null}
                     >
                       <Text style={styles.repositoryActionButtonText}>Remove</Text>
@@ -1525,7 +1547,10 @@ const PluginsScreen: React.FC = () => {
           {/* Add Repository Button */}
           <TouchableOpacity
             style={[styles.button, styles.primaryButton, { marginTop: 16 }]}
-            onPress={() => setShowAddRepositoryModal(true)}
+            onPress={() => {
+              triggerMedium();
+              setShowAddRepositoryModal(true);
+            }}
             disabled={!settings.enableLocalScrapers || switchingRepository !== null}
           >
             <Text style={styles.buttonText}>Add New Repository</Text>
@@ -1553,7 +1578,10 @@ const PluginsScreen: React.FC = () => {
                   placeholderTextColor={colors.mediumGray}
                 />
                 {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <TouchableOpacity onPress={() => {
+                    triggerLight();
+                    setSearchQuery('');
+                  }}>
                     <Ionicons name="close-circle" size={20} color={colors.mediumGray} />
                   </TouchableOpacity>
                 )}
@@ -1568,7 +1596,10 @@ const PluginsScreen: React.FC = () => {
                       styles.filterChip,
                       selectedFilter === filter && styles.filterChipSelected
                     ]}
-                    onPress={() => setSelectedFilter(filter as any)}
+                    onPress={() => {
+                      triggerLight();
+                      setSelectedFilter(filter as any);
+                    }}
                   >
                     <Text style={[
                       styles.filterChipText,
@@ -1585,14 +1616,20 @@ const PluginsScreen: React.FC = () => {
                 <View style={styles.bulkActionsContainer}>
                   <TouchableOpacity
                     style={[styles.bulkActionButton, styles.bulkActionButtonEnabled]}
-                    onPress={() => handleBulkToggle(true)}
+                    onPress={() => {
+                      triggerMedium();
+                      handleBulkToggle(true);
+                    }}
                     disabled={isRefreshing}
                   >
                     <Text style={[styles.bulkActionButtonText, { color: '#34C759' }]}>Enable All</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.bulkActionButton, styles.bulkActionButtonDisabled]}
-                    onPress={() => handleBulkToggle(false)}
+                    onPress={() => {
+                      triggerMedium();
+                      handleBulkToggle(false);
+                    }}
                     disabled={isRefreshing}
                   >
                     <Text style={[styles.bulkActionButtonText, { color: colors.mediumGray }]}>Disable All</Text>
@@ -1622,7 +1659,10 @@ const PluginsScreen: React.FC = () => {
               {searchQuery && (
                 <TouchableOpacity
                   style={[styles.button, styles.secondaryButton]}
-                  onPress={() => setSearchQuery('')}
+                  onPress={() => {
+                    triggerLight();
+                    setSearchQuery('');
+                  }}
                 >
                   <Text style={styles.secondaryButtonText}>Clear Search</Text>
                 </TouchableOpacity>
@@ -1659,7 +1699,10 @@ const PluginsScreen: React.FC = () => {
                     </View>
                     <Switch
                       value={scraper.enabled && settings.enableLocalScrapers}
-                      onValueChange={(enabled) => handleToggleScraper(scraper.id, enabled)}
+                      onValueChange={(enabled) => {
+                        triggerMedium();
+                        handleToggleScraper(scraper.id, enabled);
+                      }}
                       trackColor={{ false: colors.elevation3, true: colors.primary }}
                       thumbColor={scraper.enabled && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
                       disabled={!settings.enableLocalScrapers || scraper.manifestEnabled === false || (scraper.disabledPlatforms && scraper.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
@@ -1713,7 +1756,10 @@ const PluginsScreen: React.FC = () => {
                           numberOfLines={1}
                         />
                         {showboxSavedToken.length > 0 && (
-                          <TouchableOpacity onPress={() => setShowboxTokenVisible(v => !v)} accessibilityRole="button" accessibilityLabel={showboxTokenVisible ? 'Hide token' : 'Show token'} style={{ marginLeft: 10 }}>
+                          <TouchableOpacity onPress={() => {
+                            triggerLight();
+                            setShowboxTokenVisible(v => !v);
+                          }} accessibilityRole="button" accessibilityLabel={showboxTokenVisible ? 'Hide token' : 'Show token'} style={{ marginLeft: 10 }}>
                             <Ionicons name={showboxTokenVisible ? 'eye-off' : 'eye'} size={18} color={colors.primary} />
                           </TouchableOpacity>
                         )}
@@ -1723,6 +1769,7 @@ const PluginsScreen: React.FC = () => {
                           <TouchableOpacity
                             style={[styles.button, styles.primaryButton]}
                             onPress={async () => {
+                              triggerMedium();
                               if (showboxScraperId) {
                                 await pluginService.setScraperSettings(showboxScraperId, { uiToken: showboxUiToken });
                               }
@@ -1736,6 +1783,7 @@ const PluginsScreen: React.FC = () => {
                         <TouchableOpacity
                           style={[styles.button, styles.secondaryButton]}
                           onPress={async () => {
+                            triggerLight();
                             setShowboxUiToken('');
                             setShowboxSavedToken('');
                             if (showboxScraperId) {
@@ -1771,7 +1819,10 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.enableScraperUrlValidation && settings.enableLocalScrapers}
-              onValueChange={handleToggleUrlValidation}
+              onValueChange={(value) => {
+                triggerMedium();
+                handleToggleUrlValidation(value);
+              }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
               thumbColor={settings.enableScraperUrlValidation && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
               disabled={!settings.enableLocalScrapers}
@@ -1788,6 +1839,7 @@ const PluginsScreen: React.FC = () => {
             <Switch
               value={settings.streamDisplayMode === 'grouped'}
               onValueChange={(value) => {
+                triggerMedium();
                 updateSetting('streamDisplayMode', value ? 'grouped' : 'separate');
                 // Auto-disable quality sorting when grouping is disabled
                 if (!value && settings.streamSortMode === 'quality-then-scraper') {
@@ -1809,7 +1861,10 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.streamSortMode === 'quality-then-scraper'}
-              onValueChange={(value) => updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality')}
+              onValueChange={(value) => {
+                triggerMedium();
+                updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality');
+              }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
               thumbColor={settings.streamSortMode === 'quality-then-scraper' ? colors.white : '#f4f3f4'}
               disabled={!settings.enableLocalScrapers || settings.streamDisplayMode !== 'grouped'}
@@ -1825,7 +1880,10 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.showScraperLogos && settings.enableLocalScrapers}
-              onValueChange={(value) => updateSetting('showScraperLogos', value)}
+              onValueChange={(value) => {
+                triggerMedium();
+                updateSetting('showScraperLogos', value);
+              }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
               thumbColor={settings.showScraperLogos && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
               disabled={!settings.enableLocalScrapers}
@@ -1856,7 +1914,10 @@ const PluginsScreen: React.FC = () => {
                     isExcluded && styles.qualityChipSelected,
                     !settings.enableLocalScrapers && styles.disabledButton
                   ]}
-                  onPress={() => handleToggleQualityExclusion(quality)}
+                  onPress={() => {
+                    triggerLight();
+                    handleToggleQualityExclusion(quality);
+                  }}
                   disabled={!settings.enableLocalScrapers}
                 >
                   <Text style={[
@@ -1905,7 +1966,10 @@ const PluginsScreen: React.FC = () => {
                     isExcluded && styles.qualityChipSelected,
                     !settings.enableLocalScrapers && styles.disabledButton
                   ]}
-                  onPress={() => handleToggleLanguageExclusion(language)}
+                  onPress={() => {
+                    triggerLight();
+                    handleToggleLanguageExclusion(language);
+                  }}
                   disabled={!settings.enableLocalScrapers}
                 >
                   <Text style={[
@@ -1966,7 +2030,10 @@ const PluginsScreen: React.FC = () => {
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => setShowHelpModal(false)}
+              onPress={() => {
+                triggerLight();
+                setShowHelpModal(false);
+              }}
             >
               <Text style={styles.modalButtonText}>Got it!</Text>
             </TouchableOpacity>
@@ -2014,6 +2081,7 @@ const PluginsScreen: React.FC = () => {
                 <TouchableOpacity
                   style={[styles.compactButton, styles.cancelButton]}
                   onPress={() => {
+                    triggerLight();
                     setShowAddRepositoryModal(false);
                     setNewRepositoryUrl('');
                   }}
@@ -2023,7 +2091,10 @@ const PluginsScreen: React.FC = () => {
 
                 <TouchableOpacity
                   style={[styles.compactButton, styles.addButton, (!newRepositoryUrl.trim() || isLoading) && styles.disabledButton]}
-                  onPress={handleAddRepository}
+                  onPress={() => {
+                    triggerMedium();
+                    handleAddRepository();
+                  }}
                   disabled={!newRepositoryUrl.trim() || isLoading}
                 >
                   {isLoading ? (

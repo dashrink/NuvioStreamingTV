@@ -4,7 +4,22 @@
       "description": "CatalogSection uses ContentItem component which already has its own haptic feedback. Only the \"View All\" button needed haptic feedback added (triggerLight for navigation).",
       "category": "haptic-integration",
       "discovered_at": "2026-01-10T18:49:22.650319+00:00"
+    },
+    "src/components/home/DropUpMenu.tsx": {
+      "description": "DropUpMenu uses react-native-reanimated for gesture handling. When adding haptic feedback to gesture callbacks, use runOnJS() to call the haptic trigger function from the worklet context.",
+      "category": "pattern",
+      "discovered_at": "2026-01-10T18:56:04.669563+00:00"
+    },
+    "src/components/home/FeaturedContent.tsx": {
+      "description": "FeaturedContent has both tablet and phone layouts that require separate haptic feedback implementations. It also has a NoFeaturedContent sub-component with its own buttons that need haptic feedback.",
+      "category": "architecture",
+      "discovered_at": "2026-01-10T18:56:04.698779+00:00"
+    },
+    "src/components/metadata/RatingsSection.tsx": {
+      "description": "RatingsSection is a display-only component that shows ratings from various providers (IMDb, TMDB, Trakt, etc.). It has no TouchableOpacity or interactive elements, only View, Text, and Image components for displaying rating icons and values. No haptic feedback needed.",
+      "category": "architecture",
+      "discovered_at": "2026-01-10T19:04:53.175217+00:00"
     }
   },
-  "last_updated": "2026-01-10T18:49:22.650352+00:00"
+  "last_updated": "2026-01-10T19:04:53.175230+00:00"
 }

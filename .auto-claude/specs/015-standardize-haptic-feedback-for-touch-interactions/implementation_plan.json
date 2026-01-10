@@ -334,7 +334,7 @@
           "title": "Add haptics to other home components",
           "description": "Add haptic feedback to ThisWeekSection.tsx, FeaturedContent.tsx, and DropUpMenu.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
@@ -343,7 +343,8 @@
             "src/components/home/FeaturedContent.tsx",
             "src/components/home/DropUpMenu.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to ThisWeekSection.tsx, FeaturedContent.tsx, and DropUpMenu.tsx. ThisWeekSection uses triggerLight() for episode item taps and View All button. FeaturedContent uses triggerMedium() for Play and Save buttons, triggerLight() for navigation/info buttons. DropUpMenu uses triggerLight() for backdrop close, menu option selections, and gesture swipe close. Committed as 7a588b68.",
+          "updated_at": "2026-01-10T18:55:58.091933+00:00"
         }
       ]
     },
@@ -357,21 +358,22 @@
           "title": "Add haptics to HeroSection",
           "description": "Add haptic feedback to HeroSection.tsx for play button, add to library, and other action buttons.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/components/metadata/HeroSection.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to HeroSection.tsx. Uses triggerMedium() for: Play button (playback action), Save/Library button (add/remove from library), Collection button (add/remove from collection), Trakt sync button (refresh action). Uses triggerLight() for: Ratings button (navigation), Fullscreen toggle (UI toggle), Mute toggle (UI toggle), AI Chat buttons (navigation), Back button (navigation). Committed as 308c104e.",
+          "updated_at": "2026-01-10T18:59:16.999551+00:00"
         },
         {
           "id": "6.2",
           "title": "Add haptics to CastSection and CastDetailsModal",
           "description": "Add haptic feedback for cast member taps and modal interactions.",
           "estimated_minutes": 15,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
@@ -379,14 +381,15 @@
             "src/components/metadata/CastSection.tsx",
             "src/components/metadata/CastDetailsModal.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to CastSection.tsx and CastDetailsModal.tsx. CastSection uses triggerLight() for cast member card taps (selection/navigation). CastDetailsModal uses triggerLight() in handleClose() which is triggered by: backdrop tap, X close button, and View Filmography button (via handleViewMovies). Committed as 5e445ee4.",
+          "updated_at": "2026-01-10T19:01:02.995761+00:00"
         },
         {
           "id": "6.3",
           "title": "Add haptics to other metadata components",
           "description": "Add haptic feedback to CollectionSection.tsx, CommentsSection.tsx, TrailersSection.tsx, TrailerModal.tsx, MoreLikeThisSection.tsx, and RatingsSection.tsx.",
           "estimated_minutes": 30,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
@@ -398,7 +401,8 @@
             "src/components/metadata/MoreLikeThisSection.tsx",
             "src/components/metadata/RatingsSection.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to metadata components: CollectionSection.tsx (triggerLight for item tap navigation), CommentsSection.tsx (triggerLight for comment card tap, close button, load more; triggerMedium for retry button, reveal spoiler), TrailersSection.tsx (triggerLight for dropdown toggle, category selection, dropdown close, trailer card press), TrailerModal.tsx (triggerLight for close button; triggerMedium for retry button), and MoreLikeThisSection.tsx (triggerLight for item tap navigation). Note: RatingsSection.tsx has no interactive elements (display only). Committed as 42f88baa.",
+          "updated_at": "2026-01-10T19:04:47.336672+00:00"
         }
       ]
     },
@@ -412,14 +416,15 @@
           "title": "Add haptics to AddonsScreen",
           "description": "Add haptic feedback to addon cards, install/uninstall buttons, and configuration options in AddonsScreen.tsx.",
           "estimated_minutes": 20,
-          "status": "pending",
+          "status": "completed",
           "dependencies": [
             "1.1"
           ],
           "files": [
             "src/screens/AddonsScreen.tsx"
           ],
-          "notes": ""
+          "notes": "Added haptic feedback to AddonsScreen.tsx. Uses triggerLight() for: back button (navigation), reorder up/down buttons (selection), config buttons (navigation), modal close button (modal close), modal cancel button (modal close). Uses triggerMedium() for: reorder mode toggle (toggle switch), refresh button (refresh action), add addon button (primary action), install buttons for promo addon, community addons, and modal (important action). Uses triggerHeavy() for: delete/uninstall buttons (destructive action). Committed as 09afc79a.",
+          "updated_at": "2026-01-10T19:07:20.861390+00:00"
         },
         {
           "id": "7.2",
@@ -632,5 +637,5 @@
     "tests_passed": "",
     "issues": ""
   },
-  "last_updated": "2026-01-10T18:52:44.615351+00:00"
+  "last_updated": "2026-01-10T19:07:20.861403+00:00"
 }
