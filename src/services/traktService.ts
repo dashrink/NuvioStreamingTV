@@ -2939,6 +2939,34 @@ export class TraktService {
   }
 
   /**
+   * Remove a rating for content on Trakt
+   * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
+   * @param type - Content type: 'movie' or 'show'
+   * @returns Promise<boolean> - true if rating was removed successfully
+   */
+  public async removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
+    try {
+      if (!await this.isAuthenticated()) {
+        return false;
+      }
+
+      // Ensure IMDb ID includes the 'tt' prefix
+      const imdbIdWithPrefix = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+      const payload = type === 'movie'
+        ? { movies: [{ ids: { imdb: imdbIdWithPrefix } }] }
+        : { shows: [{ ids: { imdb: imdbIdWithPrefix } }] };
+
+      await this.apiRequest('/sync/ratings/remove', 'POST', payload);
+      logger.log(`[TraktService] Removed rating for ${type}: ${imdbId}`);
+      return true;
+    } catch (error) {
+      logger.error(`[TraktService] Failed to remove rating for ${type}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Handle app state changes to reduce memory pressure
    */
   private handleAppStateChange = (nextState: AppStateStatus) => {
