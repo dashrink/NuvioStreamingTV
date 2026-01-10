@@ -18,6 +18,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FastImage from '@d11/react-native-fast-image';
 import { traktService, TraktUser } from '../services/traktService';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { useTheme } from '../contexts/ThemeContext';
@@ -221,13 +222,16 @@ const TraktSettingsScreen: React.FC = () => {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           style={styles.backButton}
         >
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark}
           />
           <Text style={[styles.backText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
             Settings
@@ -308,7 +312,10 @@ const TraktSettingsScreen: React.FC = () => {
                   styles.signOutButton,
                   { backgroundColor: currentTheme.colors.error }
                 ]}
-                onPress={handleSignOut}
+                onPress={() => {
+                  triggerHeavy();
+                  handleSignOut();
+                }}
               >
                 <Text style={styles.buttonText}>Sign Out</Text>
               </TouchableOpacity>
@@ -337,7 +344,10 @@ const TraktSettingsScreen: React.FC = () => {
                   styles.button,
                   { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
                 ]}
-                onPress={handleSignIn}
+                onPress={() => {
+                  triggerMedium();
+                  handleSignIn();
+                }}
                 disabled={!request || isExchangingCode} // Disable while waiting for response or exchanging code
               >
                 {isExchangingCode ? (
@@ -394,7 +404,10 @@ const TraktSettingsScreen: React.FC = () => {
                   <View style={styles.settingToggleContainer}>
                     <Switch
                       value={autosyncSettings.enabled}
-                      onValueChange={setAutosyncEnabled}
+                      onValueChange={(value) => {
+                        triggerMedium();
+                        setAutosyncEnabled(value);
+                      }}
                       trackColor={{
                         false: currentTheme.colors.border,
                         true: currentTheme.colors.primary + '80'
@@ -432,6 +445,7 @@ const TraktSettingsScreen: React.FC = () => {
                 ]}
                 disabled={isSyncing}
                 onPress={async () => {
+                  triggerMedium();
                   const success = await performManualSync();
                   openAlert(
                     'Sync Complete',
@@ -481,7 +495,10 @@ const TraktSettingsScreen: React.FC = () => {
                   <View style={styles.settingToggleContainer}>
                     <Switch
                       value={settings.showTraktComments}
-                      onValueChange={(value) => updateSetting('showTraktComments', value)}
+                      onValueChange={(value) => {
+                        triggerMedium();
+                        updateSetting('showTraktComments', value);
+                      }}
                       trackColor={{
                         false: currentTheme.colors.border,
                         true: currentTheme.colors.primary + '80'

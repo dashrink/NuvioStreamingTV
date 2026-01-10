@@ -24,6 +24,7 @@ import { mmkvStorage } from '../services/mmkvStorage';
 import FastImage from '@d11/react-native-fast-image';
 import { tmdbService } from '../services/tmdbService';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -428,6 +429,7 @@ const TMDBSettingsScreen = () => {
   };
 
   const handleShowSelect = (show: typeof EXAMPLE_SHOWS[0]) => {
+    triggerLight();
     setSelectedShow(show);
     try {
       mmkvStorage.setItem('tmdb_settings_selected_show', show.imdbId);
@@ -518,7 +520,10 @@ const TMDBSettingsScreen = () => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.primary} />
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
@@ -554,7 +559,10 @@ const TMDBSettingsScreen = () => {
             </View>
             <Switch
               value={settings.enrichMetadataWithTMDB}
-              onValueChange={(v) => updateSetting('enrichMetadataWithTMDB', v)}
+              onValueChange={(v) => {
+                triggerMedium();
+                updateSetting('enrichMetadataWithTMDB', v);
+              }}
               trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
               thumbColor={Platform.OS === 'android' ? (settings.enrichMetadataWithTMDB ? currentTheme.colors.white : currentTheme.colors.white) : ''}
               ios_backgroundColor={'rgba(255,255,255,0.1)'}
@@ -574,7 +582,10 @@ const TMDBSettingsScreen = () => {
                 </View>
                 <Switch
                   value={settings.useTmdbLocalizedMetadata}
-                  onValueChange={(v) => updateSetting('useTmdbLocalizedMetadata', v)}
+                  onValueChange={(v) => {
+                    triggerMedium();
+                    updateSetting('useTmdbLocalizedMetadata', v);
+                  }}
                   trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
                   thumbColor={Platform.OS === 'android' ? (settings.useTmdbLocalizedMetadata ? currentTheme.colors.white : currentTheme.colors.white) : ''}
                   ios_backgroundColor={'rgba(255,255,255,0.1)'}
@@ -593,7 +604,10 @@ const TMDBSettingsScreen = () => {
                       </Text>
                     </View>
                     <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(true)}
+                      onPress={() => {
+                        triggerLight();
+                        setLanguagePickerVisible(true);
+                      }}
                       style={[styles.languageButton, { backgroundColor: currentTheme.colors.primary }]}
                     >
                       <Text style={[styles.languageButtonText, { color: currentTheme.colors.white }]}>Change</Text>
@@ -674,7 +688,10 @@ const TMDBSettingsScreen = () => {
             </View>
             <Switch
               value={useCustomKey}
-              onValueChange={toggleUseCustomKey}
+              onValueChange={(v) => {
+                triggerMedium();
+                toggleUseCustomKey(v);
+              }}
               trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
               thumbColor={Platform.OS === 'android' ? (useCustomKey ? currentTheme.colors.white : currentTheme.colors.white) : ''}
               ios_backgroundColor={'rgba(255,255,255,0.1)'}
@@ -727,7 +744,10 @@ const TMDBSettingsScreen = () => {
                   />
                   <TouchableOpacity
                     style={styles.pasteButton}
-                    onPress={pasteFromClipboard}
+                    onPress={() => {
+                      triggerLight();
+                      pasteFromClipboard();
+                    }}
                   >
                     <MaterialIcons name="content-paste" size={20} color={currentTheme.colors.primary} />
                   </TouchableOpacity>
@@ -736,7 +756,10 @@ const TMDBSettingsScreen = () => {
                 <View style={styles.buttonRow}>
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={saveApiKey}
+                    onPress={() => {
+                      triggerMedium();
+                      saveApiKey();
+                    }}
                   >
                     <Text style={[styles.buttonText, { color: currentTheme.colors.white }]}>Save</Text>
                   </TouchableOpacity>
@@ -744,7 +767,10 @@ const TMDBSettingsScreen = () => {
                   {isKeySet && (
                     <TouchableOpacity
                       style={[styles.button, styles.clearButton, { borderColor: currentTheme.colors.error }]}
-                      onPress={clearApiKey}
+                      onPress={() => {
+                        triggerHeavy();
+                        clearApiKey();
+                      }}
                     >
                       <Text style={[styles.buttonText, { color: currentTheme.colors.error }]}>Clear</Text>
                     </TouchableOpacity>
@@ -773,7 +799,10 @@ const TMDBSettingsScreen = () => {
 
                 <TouchableOpacity
                   style={styles.helpLink}
-                  onPress={openTMDBWebsite}
+                  onPress={() => {
+                    triggerLight();
+                    openTMDBWebsite();
+                  }}
                 >
                   <MaterialIcons name="help" size={16} color={currentTheme.colors.primary} style={styles.helpIcon} />
                   <Text style={[styles.helpText, { color: currentTheme.colors.primary }]}>
@@ -807,7 +836,10 @@ const TMDBSettingsScreen = () => {
 
           <TouchableOpacity
             style={[styles.button, { backgroundColor: currentTheme.colors.error }]}
-            onPress={handleClearCache}
+            onPress={() => {
+              triggerHeavy();
+              handleClearCache();
+            }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <MaterialIcons name="delete-outline" size={18} color={currentTheme.colors.white} />
@@ -856,7 +888,7 @@ const TMDBSettingsScreen = () => {
                         autoCorrect={false}
                       />
                       {languageSearch.length > 0 && (
-                        <TouchableOpacity onPress={() => setLanguageSearch('')} style={styles.searchClearButton}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setLanguageSearch(''); }} style={styles.searchClearButton}>
                           <MaterialIcons name="close" size={20} color={currentTheme.colors.mediumEmphasis} />
                         </TouchableOpacity>
                       )}
@@ -882,7 +914,7 @@ const TMDBSettingsScreen = () => {
                         ].map(({ code, label }) => (
                           <TouchableOpacity
                             key={code}
-                            onPress={() => { updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
+                            onPress={() => { triggerLight(); updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
                             style={[
                               styles.popularChip,
                               settings.tmdbLanguagePreference === code && styles.selectedChip,
@@ -958,7 +990,7 @@ const TMDBSettingsScreen = () => {
                             {filteredLanguages.map(({ code, label, native }) => (
                               <TouchableOpacity
                                 key={code}
-                                onPress={() => { updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
+                                onPress={() => { triggerLight(); updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
                                 style={[
                                   styles.languageItem,
                                   settings.tmdbLanguagePreference === code && styles.selectedLanguageItem
@@ -1001,7 +1033,7 @@ const TMDBSettingsScreen = () => {
                                   No languages found for "{languageSearch}"
                                 </Text>
                                 <TouchableOpacity
-                                  onPress={() => setLanguageSearch('')}
+                                  onPress={() => { triggerLight(); setLanguageSearch(''); }}
                                   style={[styles.clearSearchButton, { backgroundColor: currentTheme.colors.elevation1 }]}
                                 >
                                   <Text style={[styles.clearSearchButtonText, { color: currentTheme.colors.primary }]}>Clear search</Text>
@@ -1017,13 +1049,19 @@ const TMDBSettingsScreen = () => {
                   {/* Footer Actions */}
                   <View style={styles.modalFooter}>
                     <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(false)}
+                      onPress={() => {
+                        triggerLight();
+                        setLanguagePickerVisible(false);
+                      }}
                       style={styles.cancelButton}
                     >
                       <Text style={[styles.cancelButtonText, { color: currentTheme.colors.text }]}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(false)}
+                      onPress={() => {
+                        triggerLight();
+                        setLanguagePickerVisible(false);
+                      }}
                       style={[styles.doneButton, { backgroundColor: currentTheme.colors.primary }]}
                     >
                       <Text style={[styles.doneButtonText, { color: currentTheme.colors.white }]}>Done</Text>
