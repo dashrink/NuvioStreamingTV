@@ -48,7 +48,7 @@ Refactored HeroSection.tsx from ~2557 lines to 313 lines (88% reduction) by extr
 - [x] 7.2 - Verify Metro bundler (manual import verification - npx not available in env)
 - [x] 7.3 - Test trailer playback functionality (manual code verification)
 - [x] 7.4 - Test watch progress and Trakt integration (manual code verification)
-- [ ] 7.5 - Test action buttons functionality
+- [x] 7.5 - Test action buttons functionality (manual code verification)
 - [ ] 7.6 - Verify tablet responsiveness
 
 ### Phase 8: Documentation and Cleanup
@@ -390,3 +390,146 @@ PROGRESS_THRESHOLDS = {
 
 ### No Issues Found
 All watch progress and Trakt integration code paths verified correct and complete.
+
+## Notes on Subtask 7.5 (Action Buttons Functionality)
+- Runtime testing not available in environment (Metro bundler restricted)
+- Performed comprehensive manual code verification of all action button functionality
+
+### 1. Play Button ✅
+**Files:** ActionButtons.tsx (lines 279-298, 304-380, 424-429, 445-471)
+
+**Verification:**
+- Play button text logic (finalPlayButtonText computed value):
+  - Movie watched → "Watch Again"
+  - Movie not watched → playButtonText (from parent, e.g., "Play")
+  - Series with watched episode → "Play SxxEyy" (next episode number)
+  - Series completed (no next episode) → "Completed"
+  - Series with progress → playButtonText (e.g., "Resume")
+  - Default fallback → "Play"
+- Episode parsing supports multiple formats:
+  - `showId:season:episode` format
+  - `season:episode` format
+  - `s1e2` pattern matching
+- Icon logic (getPlayIconName callback):
+  - `isWatched && type === 'movie'` → 'replay' icon
+  - `playButtonText === 'Resume'` → 'play-circle-outline' icon
+  - Default → 'play-arrow' icon
+- Style logic (playButtonStyle/playButtonTextStyle):
+  - Movie watched → dark background (#1e1e1e), white text, border
+  - Default → white background (#fff), black text
+- Handler: handleShowStreams callback from parent (line 453)
+- Accessibility: role="button", label={finalPlayButtonText}
+
+**Code Flow:**
+1. finalPlayButtonText computed based on type, isWatched, watchProgress, groupedEpisodes
+2. Play button renders with computed text and icon
+3. onPress triggers handleShowStreams to initiate playback
+
+### 2. Save Button ✅
+**Files:** ActionButtons.tsx (lines 216-250, 473-505)
+
+**Verification:**
+- handleSaveAction combines local library and Trakt watchlist:
+  1. Captures current library state (wasInLibrary)
+  2. Calls toggleLibrary() for local library toggle
+  3. If authenticated, calls onToggleWatchlist() for Trakt sync
+  4. Shows appropriate toast based on auth state and action
+- Toast notifications (verified in ToastContext.tsx lines 55-58):
+  - showTraktSaved() - "Saved to watchlist" with Trakt branding
+  - showTraktRemoved() - "Removed from watchlist" with Trakt branding
+  - showSaved() - Local library save notification
+  - showRemoved() - Local library remove notification
+- UI state:
+  - Icon: 'bookmark' when inLibrary, 'bookmark-outline' when not
+  - Text: "Saved" when inLibrary, "Save" when not
+  - Color logic:
+    - Red (#E74C3C) when authenticated AND in Trakt watchlist
+    - White (currentTheme.colors.white) otherwise
+- Accessibility: role="button", label={inLibrary ? 'Saved' : 'Save'}
+
+**Code Flow:**
+1. User taps Save button
+2. handleSaveAction captures current state
+3. toggleLibrary() updates local library
+4. If authenticated: onToggleWatchlist() syncs with Trakt
+5. Toast notification shown based on auth state and previous state
+
+### 3. Trakt Collection Button ✅
+**Files:** ActionButtons.tsx (lines 255-269, 387, 507-529)
+
+**Verification:**
+- Visibility: Only rendered when `isAuthenticated === true` (hasTraktCollection = isAuthenticated)
+- handleCollectionAction handler:
+  1. Captures current collection state (wasInCollection)
+  2. Calls onToggleCollection() if callback exists
+  3. Shows toast notification based on action
+- Toast notifications (verified in ToastContext.tsx lines 48, 50):
+  - showSuccess('Added to Collection', 'Added to your Trakt collection')
+  - showInfo('Removed from Collection', 'Removed from your Trakt collection')
+- UI state:
+  - Icon: 'video-library' (MaterialIcons)
+  - Color: Blue (#3498DB) when isInCollection, white otherwise
+- Accessibility: "Add to Collection" or "Remove from Collection" labels
+- Blur background: Platform-specific (GlassView/ExpoBlurView on iOS, View fallback on Android)
+
+**Code Flow:**
+1. User taps Collection button (only visible when authenticated)
+2. handleCollectionAction captures current state
+3. onToggleCollection() syncs with Trakt
+4. showSuccess or showInfo toast based on action
+
+### 4. Ratings Button ✅
+**Files:** ActionButtons.tsx (lines 175-210, 388, 531-551)
+
+**Verification:**
+- Visibility: Only rendered for series (hasRatings = type === 'series')
+- handleRatingsPress handler with ID conversion:
+  1. Early return if no ID
+  2. ID format handling:
+     - `tmdb:12345` → Parse numeric part directly
+     - `tt1234567` (IMDb) → Convert via TMDBService.findTMDBIdByIMDB()
+     - Numeric string → Parse directly
+  3. Navigation via requestAnimationFrame for smooth transition
+  4. Error handling with logger.error for failed conversions
+- TMDBService integration:
+  - Uses TMDBService.getInstance().findTMDBIdByIMDB(id)
+  - Only converts if settings.enrichMetadataWithTMDB is enabled
+- Navigation: navigation.navigate('ShowRatings', { showId: finalTmdbId })
+- UI state:
+  - Icon: 'assessment' (MaterialIcons)
+  - Color: White (currentTheme.colors.white)
+- Accessibility: label="View Ratings"
+
+**Code Flow:**
+1. User taps Ratings button (only visible for series)
+2. handleRatingsPress parses/converts ID
+3. If IMDb ID: async conversion via TMDBService
+4. requestAnimationFrame wraps navigation for smoothness
+5. Navigate to ShowRatings screen with TMDB ID
+
+### Toast Context Integration Verified
+**File:** ToastContext.tsx
+
+All toast methods used by ActionButtons are correctly exported:
+- `showSuccess: toastService.success.bind(toastService)` ✓
+- `showInfo: toastService.info.bind(toastService)` ✓
+- `showSaved: toastService.showSaved.bind(toastService)` ✓
+- `showRemoved: toastService.showRemoved.bind(toastService)` ✓
+- `showTraktSaved: toastService.showTraktSaved.bind(toastService)` ✓
+- `showTraktRemoved: toastService.showTraktRemoved.bind(toastService)` ✓
+
+### Platform-Specific Blur Effects Verified
+**File:** ActionButtons.tsx (lines 401-419)
+
+- iOS with liquid glass: GlassViewComp with glassEffectStyle="regular"
+- iOS without liquid glass: ExpoBlurView with intensity=80, tint="dark"
+- Android: View fallback with rgba(255,255,255,0.15) background
+
+### Button Layout Logic Verified
+- additionalButtonCount = (hasTraktCollection ? 1 : 0) + (hasRatings ? 1 : 0)
+- Full width for Play/Save when no additional buttons (flex: 1)
+- Constrained width (maxWidth: '48%') when additional buttons present
+- Single row layout with gap: 4 for consistent spacing
+
+### No Issues Found
+All action button functionality code paths verified correct and complete.
