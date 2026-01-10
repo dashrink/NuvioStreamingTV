@@ -13,6 +13,7 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface ContentItemProps {
   item: StreamingContent;
@@ -167,12 +168,14 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const itemRef = useRef<View>(null);
 
   const handleLongPress = useCallback(() => {
+    triggerLight(); // Haptic feedback for opening context menu
     setMenuVisible(true);
   }, []);
 
   const handlePress = useCallback(() => {
     // Validate ID before pressing to prevent errors with NaN/undefined IDs
     if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
+      triggerLight(); // Haptic feedback for navigation to details
       onPress(item.id, item.type);
     }
   }, [item.id, item.type, onPress]);
