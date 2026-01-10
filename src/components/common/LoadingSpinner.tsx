@@ -1,16 +1,47 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
-import LottieView from 'lottie-react-native';
-import { useTheme } from '../../contexts/ThemeContext';
+import React from 'react';
+import { ViewStyle } from 'react-native';
+import UnifiedSpinner from '../loading/UnifiedSpinner';
 
+/**
+ * LoadingSpinnerProps - Props interface for LoadingSpinner component
+ *
+ * Maintained for backward compatibility. New code should use UnifiedSpinner directly.
+ */
 interface LoadingSpinnerProps {
+  /** Optional loading text to display below the spinner */
   text?: string;
+  /** Size of the spinner: 'small' (60px), 'medium' (100px), 'large' (150px) */
   size?: 'small' | 'medium' | 'large';
-  style?: any;
-  source?: any; // optional override for Lottie source
-  offsetY?: number; // optional vertical offset
+  /** Custom container style */
+  style?: ViewStyle;
+  /** Optional override for Lottie animation source */
+  source?: any;
+  /** Optional vertical offset from center */
+  offsetY?: number;
 }
 
+/**
+ * @deprecated Use UnifiedSpinner from 'src/components/loading' instead.
+ *
+ * LoadingSpinner is maintained for backward compatibility but new code should
+ * import and use UnifiedSpinner directly:
+ *
+ * @example
+ * // Old usage (deprecated):
+ * import LoadingSpinner from '../common/LoadingSpinner';
+ * <LoadingSpinner text="Loading..." size="large" />
+ *
+ * // New usage (recommended):
+ * import { UnifiedSpinner } from '../loading';
+ * <UnifiedSpinner text="Loading..." size="large" />
+ *
+ * UnifiedSpinner provides additional features:
+ * - Theme-aware colors (defaults to theme primary)
+ * - Custom color prop for specific contexts (e.g., white for buttons)
+ * - Fallback to native ActivityIndicator when Lottie fails
+ * - Better accessibility support with accessibilityRole and accessibilityLabel
+ * - testID support for testing frameworks
+ */
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text,
   size = 'large',
@@ -18,99 +49,16 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   source,
   offsetY = 0,
 }) => {
-  const { currentTheme } = useTheme();
-
-  // Android-specific Lottie configuration
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      // Enable merge paths for Android KitKat and above
-      try {
-        const Lottie = require('lottie-react-native');
-        if (Lottie.enableMergePathsForKitKatAndAbove) {
-          Lottie.enableMergePathsForKitKatAndAbove(true);
-        }
-      } catch (error) {
-        console.warn('Failed to enable merge paths for Android:', error);
-      }
-    }
-  }, []);
-  
-  const getSizeStyles = () => {
-    // Ensure dimensions are whole numbers for Android compatibility
-    const getWholeNumber = (num: number) => Math.round(num);
-    
-    switch (size) {
-      case 'small':
-        return { width: getWholeNumber(60), height: getWholeNumber(60) };
-      case 'medium':
-        return { width: getWholeNumber(100), height: getWholeNumber(100) };
-      case 'large':
-      default:
-        return { width: getWholeNumber(150), height: getWholeNumber(150) };
-    }
-  };
-
-  const getTextSize = () => {
-    switch (size) {
-      case 'small':
-        return 12;
-      case 'medium':
-        return 14;
-      case 'large':
-      default:
-        return 16;
-    }
-  };
-
+  // Wrap UnifiedSpinner with LoadingSpinner's props for backward compatibility
   return (
-    <View style={[styles.container, { transform: [{ translateY: offsetY }] }, style]}>
-      <LottieView
-        source={source || require('../../../assets/lottie/loading.json')}
-        autoPlay
-        loop
-        style={[styles.animation, getSizeStyles()]}
-        resizeMode="contain"
-        // Android-specific props
-        {...(Platform.OS === 'android' && {
-          hardwareAccelerationAndroid: true,
-          renderMode: 'SOFTWARE' as any, // Fallback to software rendering if hardware fails
-        })}
-        // Error handling
-        onAnimationFinish={() => {
-          if (__DEV__) console.log('Lottie animation finished');
-        }}
-        onAnimationFailure={(error) => {
-          if (__DEV__) console.warn('Lottie animation failed:', error);
-        }}
-      />
-      {text && (
-        <Text style={[
-          styles.text, 
-          { 
-            color: currentTheme.colors.textMuted,
-            fontSize: getTextSize()
-          }
-        ]}>
-          {text}
-        </Text>
-      )}
-    </View>
+    <UnifiedSpinner
+      text={text}
+      size={size}
+      style={style}
+      source={source}
+      offsetY={offsetY}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  animation: {
-    // Size will be set by getSizeStyles()
-  },
-  text: {
-    marginTop: 16,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-});
 
 export default LoadingSpinner;
