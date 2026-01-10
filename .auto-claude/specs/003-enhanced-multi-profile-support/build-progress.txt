@@ -151,3 +151,63 @@ A separate coder agent will:
 DO NOT push to remote until user reviews and approves.
 
 === END SESSION 1 ===
+
+=== SESSION: Subtask 4-3 (TV Testing Documentation) ===
+
+Date: January 10, 2026
+Task: Test TV profile switcher on tvOS and Android TV
+
+IMPLEMENTATION REVIEW COMPLETED:
+
+ProfileSwitcherBottomSheet.tsx TV Support:
+✅ TV mode detection using Platform.isTV and screen width >= 1440px
+✅ Focus state tracking with focusedProfileId state
+✅ hasTVPreferredFocus for initial focus on active profile
+✅ isTVSelectable on all interactive elements
+✅ Visual focus indicators (border, background color, scale transform 1.05x, focus ring)
+✅ TV-optimized styling (larger fonts: 28px header, 18px names, 32px PIN input)
+✅ TV-optimized sizing (64px icons vs 48px mobile, 24px PIN badge vs 20px)
+✅ TV-optimized layout (40px horizontal padding, 32px vertical padding)
+✅ PIN modal TV support with larger buttons and inputs
+✅ Accessibility labels on all interactive elements
+
+ProfileCard.tsx TV Support:
+✅ TV mode detection using Platform.isTV and screen width >= 1440px
+✅ Animated focus effects using Reanimated (scale 1.08x, animated border opacity)
+✅ TV-specific sizing (72px icons, 20px fonts, 24px padding/radius)
+✅ Focus ring outer glow effect
+✅ Focus border inner highlight
+✅ hasTVPreferredFocus and isTVSelectable props
+✅ Full accessibility support with labels and roles
+
+TESTING DOCUMENTATION CREATED:
+- Created TV_TESTING_CHECKLIST.md with comprehensive test scenarios
+- Includes D-pad navigation tests
+- Includes PIN entry on TV tests
+- Includes visual appearance verification
+- Includes accessibility tests
+- Includes edge case tests
+- Platform-specific notes for tvOS and Android TV
+- Test results template for QA
+
+MANUAL TESTING REQUIRED:
+This subtask requires manual testing on actual TV simulators/devices:
+
+Apple TV Testing:
+  npm run ios -- --simulator="Apple TV"
+
+Android TV Testing:
+  npm run android -- --deviceId=<AndroidTV_emulator_id>
+
+Key Test Scenarios:
+1. D-pad navigation between profile cards
+2. Visual focus indicators clearly visible
+3. Profile selection with Select/OK button
+4. PIN entry using TV keyboard
+5. Back/Menu button closes switcher
+6. Initial focus on active profile
+
+STATUS: Implementation code review PASSED, awaiting manual TV testing
+NOTE: Full manual testing requires TV simulator access
+
+=== END SESSION ===
