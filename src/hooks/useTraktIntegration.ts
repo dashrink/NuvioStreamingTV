@@ -297,6 +297,46 @@ export function useTraktIntegration() {
     return collectionItems.has(`${type}:${normalizedImdbId}`);
   }, [collectionItems]);
 
+  // Add rating to Trakt
+  const addRating = useCallback(async (imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> => {
+    if (!isAuthenticated) return false;
+
+    try {
+      const success = await traktService.addRating(imdbId, type, rating);
+      if (success) {
+        // Ensure consistent IMDb ID format (with 'tt' prefix)
+        const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+
+        // Update local ratedContent state with the new/updated rating
+        setRatedContent(prev => {
+          // Remove any existing rating for this item
+          const filtered = prev.filter(item => {
+            const existingImdbId = type === 'movie'
+              ? item.movie?.ids?.imdb
+              : item.show?.ids?.imdb;
+            return existingImdbId !== normalizedImdbId;
+          });
+
+          // Add the new rating
+          const newRatingItem: TraktRatingItem = {
+            rating,
+            rated_at: new Date().toISOString(),
+            ...(type === 'movie'
+              ? { movie: { title: '', year: 0, ids: { trakt: 0, slug: '', imdb: normalizedImdbId, tmdb: 0 } } }
+              : { show: { title: '', year: 0, ids: { trakt: 0, slug: '', imdb: normalizedImdbId, tmdb: 0 } } }
+            )
+          };
+
+          return [...filtered, newRatingItem];
+        });
+      }
+      return success;
+    } catch (error) {
+      logger.error('[useTraktIntegration] Error adding rating:', error);
+      return false;
+    }
+  }, [isAuthenticated]);
+
   // Mark an episode as watched
   const markEpisodeAsWatched = useCallback(async (
     imdbId: string,
@@ -696,6 +736,8 @@ export function useTraktIntegration() {
     addToCollection,
     removeFromCollection,
     isInWatchlist,
-    isInCollection
+    isInCollection,
+    // Trakt rating management
+    addRating
   };
 }
