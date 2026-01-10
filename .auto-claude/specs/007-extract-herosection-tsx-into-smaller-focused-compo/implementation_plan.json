@@ -287,8 +287,9 @@
           "id": "8.1",
           "title": "Remove old inline components",
           "description": "Remove the original ActionButtons and WatchProgressDisplay that were defined inline in the old HeroSection.tsx",
-          "status": "pending",
-          "notes": ""
+          "status": "completed",
+          "notes": "Verified: Original inline ActionButtons and WatchProgressDisplay definitions have already been removed during the HeroSection refactoring in subtask 6.2. The current HeroSection.tsx (313 lines) imports these components from the extracted files: components/ActionButtons.tsx (241 lines) and components/WatchProgressDisplay.tsx (400 lines). No backup files or old inline definitions remain in the codebase. Cleanup was completed as part of the 88% size reduction (2563\u2192313 lines).",
+          "updated_at": "2026-01-10T11:07:03.982681+00:00"
         },
         {
           "id": "8.2",
@@ -351,5 +352,5 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T11:05:21.371080+00:00"
+  "last_updated": "2026-01-10T11:07:03.982700+00:00"
 }
