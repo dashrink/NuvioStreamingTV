@@ -65,6 +65,7 @@ import { useToast } from '../contexts/ToastContext';
 import FirstTimeWelcome from '../components/FirstTimeWelcome';
 import { HeaderVisibility } from '../contexts/HeaderVisibility';
 import { useTrailer } from '../contexts/TrailerContext';
+import { useActiveProfile } from '../contexts/ProfileContext';
 
 // Constants
 const CATALOG_SETTINGS_KEY = 'catalog_settings';
@@ -121,6 +122,14 @@ const HomeScreen = () => {
   const { lastUpdate } = useCatalogContext(); // Add catalog context to listen for addon changes
   const { showInfo } = useToast();
   const { setTrailerPlaying } = useTrailer();
+
+  // Get active profile for profile-specific recommendations
+  const { activeProfile } = useActiveProfile();
+  const profileId = activeProfile?.id;
+
+  // Track previous profile ID to detect profile switches
+  const prevProfileIdRef = useRef<string | undefined>(profileId);
+
   const [showHeroSection, setShowHeroSection] = useState(settings.showHeroSection);
   const [featuredContentSource, setFeaturedContentSource] = useState(settings.featuredContentSource);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -616,6 +625,27 @@ const HomeScreen = () => {
 
     return unsubscribe;
   }, [navigation, refreshContinueWatching, loadCatalogsProgressively]);
+
+  // Handle profile changes - reload catalogs and refresh content when profile switches
+  useEffect(() => {
+    if (prevProfileIdRef.current !== profileId) {
+      logger.info('[HomeScreen] Profile changed, refreshing catalogs and recommendations');
+      prevProfileIdRef.current = profileId;
+
+      // Force reset the fetch guard to ensure refresh happens
+      isFetchingRef.current = false;
+
+      // Invalidate catalog settings cache for fresh load
+      cachedCatalogSettings = null;
+      catalogSettingsCacheTimestamp = 0;
+
+      // Refresh catalogs for the new profile
+      loadCatalogsProgressively();
+
+      // Also refresh continue watching section
+      refreshContinueWatching();
+    }
+  }, [profileId, loadCatalogsProgressively, refreshContinueWatching]);
 
   // Memoize the loading screen to prevent unnecessary re-renders
   const renderLoadingScreen = useMemo(() => {
