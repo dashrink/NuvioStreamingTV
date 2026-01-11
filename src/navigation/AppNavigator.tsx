@@ -1,9 +1,12 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp } from '@react-navigation/native';
+import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useColorScheme, Platform, Animated, StatusBar, View, Text, AppState, Easing, Dimensions } from 'react-native';
-import Focusable from '../components/common/Focusable';
+import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
+import { TVNavigationProvider, useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { PerformanceProvider } from '../contexts/PerformanceContext';
+import { TVBackHandler } from '../components/tv/TVBackHandler';
+import { TVNavigationBackHandlerProvider } from '../components/tv/TVNavigationBackHandlerProvider';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -16,9 +19,7 @@ import { HeaderVisibility } from '../contexts/HeaderVisibility';
 import { Stream } from '../types/streams';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-
 import { PostHogProvider } from 'posthog-react-native';
-import { ScrollToTopProvider, useScrollToTopEmitter } from '../contexts/ScrollToTopContext';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback
 let GlassViewComp: any = null;
@@ -48,7 +49,7 @@ import AddonsScreen from '../screens/AddonsScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ShowRatingsScreen from '../screens/ShowRatingsScreen';
 import CatalogSettingsScreen from '../screens/CatalogSettingsScreen';
-import StreamsScreen from '../screens/streams/StreamsScreen';
+import StreamsScreen from '../screens/StreamsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import MDBListSettingsScreen from '../screens/MDBListSettingsScreen';
@@ -72,20 +73,7 @@ import BackdropGalleryScreen from '../screens/BackdropGalleryScreen';
 import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
-import ProfileSelectorScreen from '../screens/ProfileSelectorScreen';
-import ProfilesScreen from '../screens/ProfilesScreen';
-
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
-import { useTVMode } from '../hooks/useTVMode';
-import { useSettings } from '../hooks/useSettings';
-import {
-  ContentDiscoverySettingsScreen,
-  AppearanceSettingsScreen,
-  IntegrationsSettingsScreen,
-  PlaybackSettingsScreen,
-  AboutSettingsScreen,
-  DeveloperSettingsScreen,
-} from '../screens/settings';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -97,24 +85,33 @@ if (Platform.OS === 'android') {
   }
 }
 
+// TV Focus restoration params (optional for all screens)
+// When using TV focus restoration, screens will receive/set this param
+export interface TVFocusParams {
+  /** Last focused element ID for focus restoration */
+  lastFocusId?: string;
+}
+
 // Stack navigator types
+// Note: Screens can receive TVFocusParams.lastFocusId through navigation.setParams()
+// This is used by the TV focus restoration system to persist focus state
 export type RootStackParamList = {
-  Onboarding: undefined;
-  MainTabs: undefined;
-  Backup: undefined;
-  Home: undefined;
-  Library: undefined;
-  Settings: undefined;
-  Update: undefined;
-  Search: undefined;
-  Calendar: undefined;
-  Metadata: {
+  Onboarding: TVFocusParams | undefined;
+  MainTabs: TVFocusParams | undefined;
+  Backup: TVFocusParams | undefined;
+  Home: TVFocusParams | undefined;
+  Library: TVFocusParams | undefined;
+  Settings: TVFocusParams | undefined;
+  Update: TVFocusParams | undefined;
+  Search: TVFocusParams | undefined;
+  Calendar: TVFocusParams | undefined;
+  Metadata: TVFocusParams & {
     id: string;
     type: string;
     episodeId?: string;
     addonId?: string;
   };
-  Streams: {
+  Streams: TVFocusParams & {
     id: string;
     type: string;
     title?: string;
@@ -129,10 +126,8 @@ export type RootStackParamList = {
     };
     resumeTime?: number;
     duration?: number;
-    addonId?: string;
-    modal?: boolean;
   };
-  PlayerIOS: {
+  PlayerIOS: TVFocusParams & {
     uri: string;
     title?: string;
     season?: number;
@@ -143,6 +138,7 @@ export type RootStackParamList = {
     streamProvider?: string;
     streamName?: string;
     headers?: { [key: string]: string };
+    forceVlc?: boolean;
     id?: string;
     type?: string;
     episodeId?: string;
@@ -152,7 +148,7 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  PlayerAndroid: {
+  PlayerAndroid: TVFocusParams & {
     uri: string;
     title?: string;
     season?: number;
@@ -163,6 +159,7 @@ export type RootStackParamList = {
     streamProvider?: string;
     streamName?: string;
     headers?: { [key: string]: string };
+    forceVlc?: boolean;
     id?: string;
     type?: string;
     episodeId?: string;
@@ -172,26 +169,26 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  Catalog: { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
-  Credits: { mediaId: string; mediaType: string };
-  ShowRatings: { showId: number };
-  Account: undefined;
-  AccountManage: undefined;
-  Payment: undefined;
-  PrivacyPolicy: undefined;
-  About: undefined;
-  Addons: undefined;
-  CatalogSettings: undefined;
-  NotificationSettings: undefined;
-  MDBListSettings: undefined;
-  TMDBSettings: undefined;
-  HomeScreenSettings: undefined;
-  HeroCatalogs: undefined;
-  TraktSettings: undefined;
-  PlayerSettings: undefined;
-  ThemeSettings: undefined;
-  ScraperSettings: undefined;
-  CastMovies: {
+  Catalog: TVFocusParams & { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
+  Credits: TVFocusParams & { mediaId: string; mediaType: string };
+  ShowRatings: TVFocusParams & { showId: number };
+  Account: TVFocusParams | undefined;
+  AccountManage: TVFocusParams | undefined;
+  Payment: TVFocusParams | undefined;
+  PrivacyPolicy: TVFocusParams | undefined;
+  About: TVFocusParams | undefined;
+  Addons: TVFocusParams | undefined;
+  CatalogSettings: TVFocusParams | undefined;
+  NotificationSettings: TVFocusParams | undefined;
+  MDBListSettings: TVFocusParams | undefined;
+  TMDBSettings: TVFocusParams | undefined;
+  HomeScreenSettings: TVFocusParams | undefined;
+  HeroCatalogs: TVFocusParams | undefined;
+  TraktSettings: TVFocusParams | undefined;
+  PlayerSettings: TVFocusParams | undefined;
+  ThemeSettings: TVFocusParams | undefined;
+  ScraperSettings: TVFocusParams | undefined;
+  CastMovies: TVFocusParams & {
     castMember: {
       id: number;
       name: string;
@@ -199,8 +196,8 @@ export type RootStackParamList = {
       character?: string;
     };
   };
-  AISettings: undefined;
-  AIChat: {
+  AISettings: TVFocusParams | undefined;
+  AIChat: TVFocusParams & {
     contentId: string;
     contentType: 'movie' | 'series';
     episodeId?: string;
@@ -208,37 +205,26 @@ export type RootStackParamList = {
     episodeNumber?: number;
     title: string;
   };
-  BackdropGallery: {
+  BackdropGallery: TVFocusParams & {
     tmdbId: number;
     type: 'movie' | 'tv';
     title: string;
   };
-  ContinueWatchingSettings: undefined;
-  Contributors: undefined;
-  DebridIntegration: undefined;
-  // New organized settings screens
-  ContentDiscoverySettings: undefined;
-  AppearanceSettings: undefined;
-  IntegrationsSettings: undefined;
-  PlaybackSettings: undefined;
-  AboutSettings: undefined;
-  DeveloperSettings: undefined;
-  // Profile management screens
-  ProfileSelector: undefined;
-  Profiles: undefined;
-  ProfileSettings: { profileId: string };
+  ContinueWatchingSettings: TVFocusParams | undefined;
+  Contributors: TVFocusParams | undefined;
+  DebridIntegration: TVFocusParams | undefined;
 };
-
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Tab navigator types
+// Note: Tab screens also support TVFocusParams.lastFocusId for focus restoration
 export type MainTabParamList = {
-  Home: undefined;
-  Library: undefined;
-  Search: undefined;
-  Downloads: undefined;
-  Settings: undefined;
+  Home: TVFocusParams | undefined;
+  Library: TVFocusParams | undefined;
+  Search: TVFocusParams | undefined;
+  Downloads: TVFocusParams | undefined;
+  Settings: TVFocusParams | undefined;
 };
 
 // Custom fonts that satisfy both theme types
@@ -494,7 +480,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
   const isTablet = useMemo(() => {
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
-    return (Platform.isTV || (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768));
+    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
   }, [dimensions]);
   const insets = useSafeAreaInsets();
   // Force consistent status bar settings
@@ -503,9 +489,6 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
       StatusBar.setBarStyle('light-content');
       StatusBar.setTranslucent(true);
       StatusBar.setBackgroundColor('transparent');
-      if (Platform.OS === 'android') {
-        StatusBar.setHidden(true);
-      }
     };
 
     applyStatusBarConfig();
@@ -534,7 +517,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
     }}>
       {/* Reserve consistent space for the header area on all screens */}
       <View style={{
-        height: (insets.top + 64),
+        height: isTablet ? (insets.top + 64) : (Platform.OS === 'android' ? 80 : 60),
         width: '100%',
         backgroundColor: colors.darkBackground,
         position: 'absolute',
@@ -560,8 +543,9 @@ const WrappedScreen: React.FC<{ Screen: React.ComponentType<any> }> = ({ Screen 
 // Tab Navigator
 const MainTabs = () => {
   const { currentTheme } = useTheme();
-  const { settings: appSettings } = useSettings();
-  const downloadsEnabled = appSettings.enableDownloads ?? true;
+  const { settings } = require('../hooks/useSettings');
+  const { useSettings: useSettingsHook } = require('../hooks/useSettings');
+  const { settings: appSettings } = useSettingsHook();
   const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
 
@@ -605,14 +589,14 @@ const MainTabs = () => {
   }, []);
   const { isHomeLoading } = useLoading();
   const isTablet = useMemo(() => {
-    // Force true for TV-first unification across all devices
-    return true;
-  }, []);
+    const { width, height } = dimensions;
+    const smallestDimension = Math.min(width, height);
+    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+  }, [dimensions]);
   const insets = useSafeAreaInsets();
   const isIosTablet = Platform.OS === 'ios' && isTablet;
   const [hidden, setHidden] = React.useState(HeaderVisibility.isHidden());
   React.useEffect(() => HeaderVisibility.subscribe(setHidden), []);
-  const emitScrollToTop = useScrollToTopEmitter();
   // Smooth animate header hide/show
   const headerAnim = React.useRef(new Animated.Value(0)).current; // 0: shown, 1: hidden
   React.useEffect(() => {
@@ -698,8 +682,7 @@ const MainTabs = () => {
                     ? options.title
                     : route.name;
 
-              // isSelected = the current active route (tab)
-              const isSelected = props.state.index === index;
+              const isFocused = props.state.index === index;
 
               const onPress = () => {
                 const event = props.navigation.emit({
@@ -707,40 +690,33 @@ const MainTabs = () => {
                   target: route.key,
                   canPreventDefault: true,
                 });
-                if (isSelected) {
-                  // Same tab pressed - emit scroll to top
-                  emitScrollToTop(route.name);
-                } else if (!event.defaultPrevented) {
+                if (!isFocused && !event.defaultPrevented) {
                   props.navigation.navigate(route.name);
                 }
               };
 
               return (
-                <Focusable
+                <TouchableOpacity
                   key={route.key}
                   activeOpacity={0.8}
                   onPress={onPress}
-                  hasTVPreferredFocus={index === 0}
-                  scaleOnFocus={1.05}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 10,
                     marginHorizontal: 2,
                     borderRadius: 24,
-                    // Remove background highlight - let TV focus handle highlighting via border
-                    backgroundColor: 'transparent',
+                    backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
                   }}
                 >
                   <Text style={{
-                    // Selected tab has primary color, others have white text
-                    color: isSelected ? currentTheme.colors.primary : currentTheme.colors.white,
-                    fontWeight: isSelected ? '800' : '600',
+                    color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
+                    fontWeight: '700',
                     fontSize: 14,
                     letterSpacing: 0.2,
                   }}>
                     {typeof label === 'string' ? label : ''}
                   </Text>
-                </Focusable>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -750,141 +726,228 @@ const MainTabs = () => {
 
     // Default bottom tab for phones
     return (
-      <Animated.View
-        style={[{
-          position: 'absolute',
-          top: insets.top + 8,
-          left: 0,
-          right: 0,
-          alignItems: 'center',
-          backgroundColor: 'transparent',
-          zIndex: 100,
-        }, shouldKeepFixed ? {} : {
-          transform: [{ translateY }],
-          opacity: fade,
-        }]}>
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderRadius: 28,
-          overflow: 'hidden',
-          padding: 4,
-          position: 'relative',
-          backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)'
-        }}>
-          {isIosTablet && (
-            GlassViewComp && liquidGlassAvailable ? (
-              <GlassViewComp
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: 28,
-                }}
-                glassEffectStyle="clear"
-              />
-            ) : (
-              <BlurView
-                tint="dark"
-                intensity={75}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: 28,
-                }}
-              />
-            )
-          )}
-          {props.state.routes.map((route, index) => {
-            const { options } = props.descriptors[route.key];
-            const label =
-              options.tabBarLabel !== undefined
-                ? options.tabBarLabel
-                : options.title !== undefined
-                  ? options.title
-                  : route.name;
+      <View style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: Platform.OS === 'android' ? 70 + insets.bottom : 85 + insets.bottom,
+        backgroundColor: 'transparent',
+        overflow: 'hidden',
+      }}>
+        {Platform.OS === 'ios' ? (
+          GlassViewComp && liquidGlassAvailable ? (
+            <GlassViewComp
+              style={{
+                position: 'absolute',
+                height: '100%',
+                width: '100%',
+              }}
+              glassEffectStyle="clear"
+            />
+          ) : (
+            <BlurView
+              tint="dark"
+              intensity={75}
+              style={{
+                position: 'absolute',
+                height: '100%',
+                width: '100%',
+                borderTopColor: currentTheme.colors.border,
+                borderTopWidth: 0.5,
+                shadowColor: currentTheme.colors.black,
+                shadowOffset: { width: 0, height: -2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+              }}
+            />
+          )
+        ) : (
+          <LinearGradient
+            colors={[
+              'rgba(0, 0, 0, 0)',
+              'rgba(0, 0, 0, 0.65)',
+              'rgba(0, 0, 0, 0.85)',
+              'rgba(0, 0, 0, 0.98)',
+            ]}
+            locations={[0, 0.2, 0.4, 0.8]}
+            style={{
+              position: 'absolute',
+              height: '100%',
+              width: '100%',
+            }}
+          />
+        )}
+        <View
+          style={{
+            height: '100%',
+            paddingBottom: Platform.OS === 'android' ? 15 + insets.bottom : 20 + insets.bottom,
+            paddingTop: Platform.OS === 'android' ? 8 : 12,
+            backgroundColor: 'transparent',
+          }}
+        >
+          <View style={{ flexDirection: 'row', paddingTop: 4 }}>
+            {props.state.routes.map((route, index) => {
+              const { options } = props.descriptors[route.key];
+              const label =
+                options.tabBarLabel !== undefined
+                  ? options.tabBarLabel
+                  : options.title !== undefined
+                    ? options.title
+                    : route.name;
 
-            // isSelected = the current active route (tab)
-            const isSelected = props.state.index === index;
+              const isFocused = props.state.index === index;
 
-            const onPress = () => {
-              const event = props.navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
+              const onPress = () => {
+                const event = props.navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
 
-              if (isSelected) {
-                // Same tab pressed - emit scroll to top
-                emitScrollToTop(route.name);
-              } else if (!event.defaultPrevented) {
-                props.navigation.navigate(route.name);
+                if (!isFocused && !event.defaultPrevented) {
+                  props.navigation.navigate(route.name);
+                }
+              };
+
+              let iconName: IconNameType = 'home';
+              let iconLibrary: 'material' | 'feather' | 'ionicons' = 'material';
+              switch (route.name) {
+                case 'Home':
+                  iconName = 'home';
+                  iconLibrary = 'feather';
+                  break;
+                case 'Library':
+                  iconName = 'library';
+                  iconLibrary = 'ionicons';
+                  break;
+                case 'Search':
+                  iconName = 'search';
+                  iconLibrary = 'feather';
+                  break;
+                case 'Downloads':
+                  iconName = 'download';
+                  iconLibrary = 'feather';
+                  break;
+                case 'Settings':
+                  iconName = 'settings';
+                  iconLibrary = 'feather';
+                  break;
               }
-            };
 
-            let iconName: IconNameType = 'home';
-            let iconLibrary: 'material' | 'feather' | 'ionicons' = 'material';
-            switch (route.name) {
-              case 'Home':
-                iconName = 'home';
-                iconLibrary = 'feather';
-                break;
-              case 'Library':
-                iconName = 'library';
-                iconLibrary = 'ionicons';
-                break;
-              case 'Search':
-                iconName = 'search';
-                iconLibrary = 'feather';
-                break;
-              case 'Downloads':
-                iconName = 'download';
-                iconLibrary = 'feather';
-                break;
-              case 'Settings':
-                iconName = 'settings';
-                iconLibrary = 'feather';
-                break;
-            }
-
-
-            return (
-              <Focusable
-                key={route.key}
-                onPress={onPress}
-                hasTVPreferredFocus={index === 0}
-                scaleOnFocus={1.05}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
-                  marginHorizontal: 4,
-                  borderRadius: 16,
-                  // Remove background highlight - let TV focus handle highlighting via border
-                  backgroundColor: 'transparent',
-                }}
-              >
-                <Text style={{
-                  // Selected tab has primary color, others have white text
-                  color: isSelected ? currentTheme.colors.primary : currentTheme.colors.white,
-                  fontWeight: isSelected ? '800' : '600',
-                  fontSize: 12,
-                  letterSpacing: 0.2,
-                }}>
-                  {typeof label === 'string' ? label : ''}
-                </Text>
-              </Focusable>
-            );
-          })}
+              return (
+                <TouchableOpacity
+                  key={route.key}
+                  activeOpacity={0.7}
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <TabIcon
+                    focused={isFocused}
+                    color={isFocused ? currentTheme.colors.primary : currentTheme.colors.white}
+                    iconName={iconName}
+                    iconLibrary={iconLibrary}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '600',
+                      marginTop: 4,
+                      color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
+                      opacity: isFocused ? 1 : 0.7,
+                    }}
+                  >
+                    {typeof label === 'string' ? label : ''}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-      </Animated.View>
+      </View>
     );
   };
 
+  // iOS: Use native bottom tabs (@bottom-tabs/react-navigation)
+  if (Platform.OS === 'ios') {
+    // Dynamically require to avoid impacting Android bundle
+    const { createNativeBottomTabNavigator } = require('@bottom-tabs/react-navigation');
+    const IOSTab = createNativeBottomTabNavigator();
+    const downloadsEnabled = appSettings?.enableDownloads !== false;
+
+    return (
+      <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
+        <StatusBar
+          translucent
+          barStyle="light-content"
+          backgroundColor="transparent"
+        />
+        <IOSTab.Navigator
+          key={`ios-tabs-${downloadsEnabled ? 'with-dl' : 'no-dl'}`}
+          initialRouteName="Home"
+          // Native tab bar handles its own visuals; keep options minimal
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: currentTheme.colors.primary,
+            tabBarInactiveTintColor: currentTheme.colors.white,
+            translucent: true,
+            // Prefer native lazy/freeze when available; still pass for parity
+            lazy: true,
+            freezeOnBlur: true,
+          }}
+        >
+          <IOSTab.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              title: 'Home',
+              tabBarIcon: () => ({ sfSymbol: 'house' }),
+              freezeOnBlur: true,
+            }}
+          />
+          <IOSTab.Screen
+            name="Library"
+            component={LibraryScreen}
+            options={{
+              title: 'Library',
+              tabBarIcon: () => ({ sfSymbol: 'heart' }),
+            }}
+          />
+          <IOSTab.Screen
+            name="Search"
+            component={SearchScreen}
+            options={{
+              title: 'Search',
+              tabBarIcon: () => ({ sfSymbol: 'magnifyingglass' }),
+            }}
+          />
+          {downloadsEnabled && (
+            <IOSTab.Screen
+              name="Downloads"
+              component={DownloadsScreen}
+              options={{
+                title: 'Downloads',
+                tabBarIcon: () => ({ sfSymbol: 'arrow.down.circle' }),
+              }}
+            />
+          )}
+          <IOSTab.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{
+              title: 'Settings',
+              tabBarIcon: () => ({ sfSymbol: 'gear' }),
+            }}
+          />
+        </IOSTab.Navigator>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
@@ -995,7 +1058,7 @@ const MainTabs = () => {
           }}
         />
       </Tab.Navigator>
-    </View >
+    </View>
   );
 };
 
@@ -1026,10 +1089,9 @@ const customFadeInterpolator = ({ current, layouts }: any) => {
 };
 
 // Stack Navigator
-const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
+const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
   const { currentTheme } = useTheme();
   const { user, loading } = useAccount();
-  useTVMode();
   const insets = useSafeAreaInsets();
 
   // Handle Android-specific optimizations
@@ -1052,15 +1114,27 @@ const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof 
   }, []);
 
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: currentTheme.colors.darkBackground,
-      ...(Platform.OS === 'android' && {
-        // Prevent white flashes on Android
-        opacity: 1,
-      })
-    }}>
-      <Stack.Navigator
+    <SafeAreaProvider>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
+      <PaperProvider theme={CustomDarkTheme}>
+        <View style={{
+          flex: 1,
+          backgroundColor: currentTheme.colors.darkBackground,
+          ...(Platform.OS === 'android' && {
+            // Prevent white flashes on Android
+            opacity: 1,
+          })
+        }}>
+          {/* TV Navigation: Register navigation-aware back handler */}
+          <TVNavigationBackHandlerProvider
+            rootScreens={['MainTabs', 'Home', 'Onboarding']}
+            preventAppExit={true}
+          />
+          <Stack.Navigator
             initialRouteName={initialRouteName || 'MainTabs'}
             screenOptions={{
               headerShown: false,
@@ -1158,8 +1232,14 @@ const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof 
               component={StreamsScreen as any}
               options={{
                 headerShown: false,
-                presentation: 'transparentModal',
-                animation: 'fade',
+                animation: Platform.OS === 'ios' ? 'slide_from_bottom' : 'fade',
+                animationDuration: Platform.OS === 'android' ? 200 : 300,
+                gestureEnabled: true,
+                gestureDirection: Platform.OS === 'ios' ? 'vertical' : 'horizontal',
+                ...(Platform.OS === 'ios' && { presentation: 'modal' }),
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
                 // Freeze when blurred to stop timers/network without full unmount
                 freezeOnBlur: true,
               }}
@@ -1539,160 +1619,40 @@ const InnerNavigatorContent = ({ initialRouteName }: { initialRouteName?: keyof 
                 },
               }}
             />
-            <Stack.Screen
-              name="ContentDiscoverySettings"
-              component={ContentDiscoverySettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AppearanceSettings"
-              component={AppearanceSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="IntegrationsSettings"
-              component={IntegrationsSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="PlaybackSettings"
-              component={PlaybackSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AboutSettings"
-              component={AboutSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="DeveloperSettings"
-              component={DeveloperSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ProfileSelector"
-              component={ProfileSelectorScreen}
-              options={{
-                animation: 'fade',
-                animationDuration: 200,
-                presentation: 'card',
-                gestureEnabled: false,
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Profiles"
-              component={ProfilesScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ProfileSettings"
-              component={ProfilesScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
           </Stack.Navigator>
         </View>
-    );
+      </PaperProvider>
+    </SafeAreaProvider>
+  );
 };
 
-const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
-    return (
-        <SafeAreaProvider>
-            <StatusBar
-                translucent
-                backgroundColor="transparent"
-                barStyle="light-content"
-            />
-            <PaperProvider theme={CustomDarkTheme}>
-                <InnerNavigatorContent initialRouteName={initialRouteName} />
-            </PaperProvider>
-        </SafeAreaProvider>
-    );
-};
-
+/**
+ * AppNavigator with TV Navigation Support
+ *
+ * Wraps the navigation structure with:
+ * - PostHogProvider for analytics
+ * - TVNavigationProvider for global TV navigation state (focus history, focus memory, voice search, context menu)
+ * - TVBackHandler for consistent back button behavior on TV platforms
+ * - LoadingProvider for loading state management
+ *
+ * TV Focus Restoration Integration:
+ * - Focus state is stored in navigation.setParams() for persistence across navigation
+ * - TVNavigationContext provides global access to focus state
+ * - Individual screens can use useTVFocusRestoration hook or TVScreenWrapper component
+ *   to integrate with the focus restoration system
+ *
+ * TV Back Button Behavior:
+ * - Closes context menus and voice search modals first
+ * - Then navigates back through the navigation stack
+ * - Prevents unexpected app exits at root screens (MainTabs, Home, Onboarding)
+ * - Works with both Apple TV menu button and Android TV back button
+ *
+ * The TV navigation system follows these patterns:
+ * 1. useFocusEffect for automatic focus restoration on screen navigation
+ * 2. requestAnimationFrame for proper timing (screen focus fires before layout)
+ * 3. useCallback wrapping to prevent infinite loops
+ * 4. setNativeProps({ hasTVPreferredFocus: true }) for runtime focus changes
+ */
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
   <PostHogProvider
     apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
@@ -1700,11 +1660,15 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
       host: "https://us.i.posthog.com",
     }}
   >
-    <ScrollToTopProvider>
-      <LoadingProvider>
-        <InnerNavigator initialRouteName={initialRouteName} />
-      </LoadingProvider>
-    </ScrollToTopProvider>
+    <PerformanceProvider>
+      <TVNavigationProvider>
+        <TVBackHandler>
+          <LoadingProvider>
+            <InnerNavigator initialRouteName={initialRouteName} />
+          </LoadingProvider>
+        </TVBackHandler>
+      </TVNavigationProvider>
+    </PerformanceProvider>
   </PostHogProvider>
 );
 

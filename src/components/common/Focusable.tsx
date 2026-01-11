@@ -1,77 +1,228 @@
 /**
- * Mobile/Tablet Focusable Component
+ * Focusable.tsx
  *
- * Simple Pressable wrapper for mobile and tablet platforms.
- * Provides standard touch feedback without TV-specific features.
+ * Non-TV fallback for the Focusable component.
+ * Provides basic press handling without TV-specific features.
  *
- * For TV platforms, Metro bundler automatically loads Focusable.tv.tsx instead,
- * which includes animations, spatial navigation, and focus management.
+ * On TV platforms, Metro will automatically load Focusable.tv.tsx instead
+ * when APP_VARIANT=tv is set.
  *
- * This clean separation eliminates all Platform.isTV conditionals.
+ * @example
+ * ```tsx
+ * import Focusable from '@/components/common/Focusable';
+ *
+ * function MyComponent() {
+ *   return (
+ *     <Focusable
+ *       onPress={() => console.log('Pressed!')}
+ *       onLongPress={() => console.log('Long press!')}
+ *     >
+ *       <Text>Press Me</Text>
+ *     </Focusable>
+ *   );
+ * }
+ * ```
  */
 
-import React, { useRef } from 'react';
-import { Pressable } from 'react-native';
-import { FocusableProps } from './Focusable.shared';
+import React, { forwardRef, useRef, useImperativeHandle, useState, useCallback } from 'react';
+import {
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  Animated,
+} from 'react-native';
+
+// =============================================================================
+// Types & Interfaces
+// =============================================================================
 
 /**
- * Mobile-optimized Focusable component - simple Pressable with touch feedback
+ * Configuration for focus animation behavior (stub for non-TV)
  */
-const Focusable = React.forwardRef<any, FocusableProps>(
+export interface FocusAnimationConfig {
+  focusScale?: number;
+  unfocusedOpacity?: number;
+  showFocusBorder?: boolean;
+  focusBorderColor?: string;
+  focusBorderWidth?: number;
+  animateShadow?: boolean;
+}
+
+/**
+ * Apple TV specific parallax properties (stub for non-TV)
+ */
+export interface TVParallaxPropertiesConfig {
+  enabled?: boolean;
+  shiftDistanceX?: number;
+  shiftDistanceY?: number;
+  tiltAngle?: number;
+  magnification?: number;
+  pressMagnification?: number;
+  pressDuration?: number;
+}
+
+/**
+ * Next focus navigation configuration (stub for non-TV)
+ */
+export interface NextFocusConfig {
+  nextFocusUp?: number | React.RefObject<any>;
+  nextFocusDown?: number | React.RefObject<any>;
+  nextFocusLeft?: number | React.RefObject<any>;
+  nextFocusRight?: number | React.RefObject<any>;
+}
+
+/**
+ * Props for the Focusable component
+ */
+export interface FocusableProps {
+  children: React.ReactNode;
+  onPress?: () => void;
+  onLongPress?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  hasTVPreferredFocus?: boolean;
+  isTVSelectable?: boolean;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  focusStyle?: StyleProp<ViewStyle>;
+  animationConfig?: FocusAnimationConfig;
+  tvParallaxProperties?: TVParallaxPropertiesConfig;
+  nextFocus?: NextFocusConfig;
+  testID?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  focusId?: string;
+}
+
+/**
+ * Ref methods exposed by Focusable component
+ */
+export interface FocusableRef {
+  focus: () => void;
+  blur: () => void;
+  getRef: () => React.RefObject<View>;
+  isFocused: () => boolean;
+  setNativeProps: (props: object) => void;
+}
+
+// =============================================================================
+// Component Implementation
+// =============================================================================
+
+/**
+ * Non-TV Focusable component
+ *
+ * Simple wrapper around TouchableOpacity for non-TV platforms.
+ * TV-specific features are only available in Focusable.tv.tsx.
+ */
+const Focusable = forwardRef<FocusableRef, FocusableProps>(
   (
     {
       children,
       onPress,
-      onPressIn,
-      onPressOut,
       onLongPress,
-      activeOpacity = 0.7,
-      style,
-      // TV-specific props are accepted but ignored on mobile for interface compatibility
-      focusedStyle,
-      scaleOnFocus,
       onFocus,
       onBlur,
-      hasTVPreferredFocus,
-      focusKey,
-      nextFocusUp,
-      nextFocusDown,
-      nextFocusLeft,
-      nextFocusRight,
-      disabled,
+      hasTVPreferredFocus: _hasTVPreferredFocus,
+      isTVSelectable: _isTVSelectable,
+      disabled = false,
+      style,
+      focusStyle: _focusStyle,
+      animationConfig: _animationConfig,
+      tvParallaxProperties: _tvParallaxProperties,
+      nextFocus: _nextFocus,
       testID,
-      hitSlop,
+      accessibilityLabel,
+      accessibilityHint,
     },
     ref
   ) => {
-    const pressableRef = useRef<any>(null);
+    const viewRef = useRef<any>(null);
+    const [isFocused, setIsFocused] = useState(false);
 
-    // Expose ref for external use
-    React.useImperativeHandle(ref, () => pressableRef.current);
+    // Simple press animation
+    const scaleValue = useRef(new Animated.Value(1)).current;
 
-    // Mobile implementation: Standard Pressable with touch feedback
+    const handlePressIn = useCallback(() => {
+      Animated.spring(scaleValue, {
+        toValue: 0.98,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 100,
+      }).start();
+    }, [scaleValue]);
+
+    const handlePressOut = useCallback(() => {
+      Animated.spring(scaleValue, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 100,
+      }).start();
+    }, [scaleValue]);
+
+    // Imperative handle for ref methods
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        setIsFocused(true);
+        onFocus?.();
+      },
+      blur: () => {
+        setIsFocused(false);
+        onBlur?.();
+      },
+      getRef: () => viewRef,
+      isFocused: () => isFocused,
+      setNativeProps: (props: object) => {
+        if (viewRef.current?.setNativeProps) {
+          viewRef.current.setNativeProps(props);
+        }
+      },
+    }));
+
     return (
-      <Pressable
-        ref={pressableRef}
-        onPress={onPress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        onLongPress={onLongPress}
-        disabled={disabled}
-        testID={testID}
-        hitSlop={hitSlop}
-        style={({ pressed }) => [
-          style,
-          pressed && { opacity: activeOpacity }, // Standard mobile feedback
-          disabled && { opacity: 0.5 },
-        ]}
-      >
-        {children}
-      </Pressable>
+      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+        <TouchableOpacity
+          ref={viewRef}
+          style={[styles.container, style]}
+          onPress={disabled ? undefined : onPress}
+          onLongPress={disabled ? undefined : onLongPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          disabled={disabled}
+          activeOpacity={0.8}
+          testID={testID}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityHint={accessibilityHint}
+          accessibilityRole="button"
+          accessibilityState={{ disabled }}
+        >
+          {children}
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 );
 
 Focusable.displayName = 'Focusable';
 
-export default React.memo(Focusable);
+// =============================================================================
+// Styles
+// =============================================================================
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+});
+
+// =============================================================================
+// Exports
+// =============================================================================
+
+export default Focusable;
+
+export type { FocusableProps, FocusableRef };

@@ -5,6 +5,7 @@ module.exports = function (api) {
     plugins: [
       'react-native-worklets/plugin',
       'react-native-boost/plugin',
+      'react-native-reanimated/plugin',
     ],
     env: {
       production: {

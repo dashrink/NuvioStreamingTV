@@ -1,14 +1,18 @@
 /**
- * TV-Optimized MetadataScreen Component
+ * MetadataScreen.tv.tsx
+ *
+ * TV-specific metadata screen with complete D-pad navigation support,
+ * focus memory persistence, and inter-section navigation.
+ *
+ * This component is automatically loaded when APP_VARIANT=tv (Metro file resolution).
  *
  * Features:
- * - Larger fonts optimized for 10-foot viewing distance
- * - Improved visual hierarchy with clear section headers
- * - Focus-based navigation through sections (Cast, Episodes, Trailers)
- * - Enhanced spacing and touch targets for D-pad navigation
- * - TV-specific focus zones for organized navigation
- *
- * This file is automatically loaded by Metro bundler on TV platforms.
+ * - All buttons are focusable (Play, Trailer, Add to List)
+ * - Cast section is horizontally scrollable with D-pad
+ * - Episodes list is navigable for series
+ * - Back returns to previous screen with focus restored
+ * - Integration with TVNavigationContext for global focus state
+ * - Uses TV-specific HeroSection and CastSection components
  */
 
 import React, { useCallback, useState, useEffect, useMemo, useRef, memo } from 'react';
@@ -23,10 +27,8 @@ import {
   BackHandler,
   Platform,
   Alert,
-  TouchableOpacity,
   findNodeHandle,
 } from 'react-native';
-import Focusable from '../components/common/Focusable';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -59,7 +61,6 @@ import Animated, {
   createAnimatedComponent,
 } from 'react-native-reanimated';
 
-// Create animated version of SafeAreaView for use with Reanimated styles
 const AnimatedSafeAreaView = createAnimatedComponent(SafeAreaView);
 import { RouteProp } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -69,7 +70,7 @@ import { MetadataLoadingScreen, MetadataLoadingScreenRef } from '../components/l
 import { useTrailer } from '../contexts/TrailerContext';
 import FastImage from '@d11/react-native-fast-image';
 
-// Import our optimized components and hooks
+// Import optimized components and hooks
 import HeroSection from '../components/metadata/HeroSection';
 import FloatingHeader from '../components/metadata/FloatingHeader';
 import MetadataDetails from '../components/metadata/MetadataDetails';
@@ -80,73 +81,41 @@ import { TraktService, TraktPlaybackItem } from '../services/traktService';
 import { tmdbService } from '../services/tmdbService';
 import { catalogService } from '../services/catalogService';
 
-// TV-specific imports from the modular tvStyles directory
-import { TV_SPACING } from '../utils/tvStyles/spacing';
-import { TV_TYPOGRAPHY } from '../utils/tvStyles/typography';
-import { TV_FOCUS_CONFIG } from '../utils/tvStyles/focus';
-import { isTV, getDeviceType } from '../utils/tvStyles/deviceDetection';
-import { scaleForTV } from '../utils/tvStyles/helpers';
+// TV-specific imports
+import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
+import { useTVBackHandler } from '../hooks/useTVBackHandler';
+import Focusable, { FocusableRef } from '../components/common/Focusable';
 
-const { height, width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
-// TV-specific layout constants
-const TV_LAYOUT = {
-  // Screen padding optimized for 10-foot viewing
-  screenPadding: 48,
-  sectionPadding: 32,
-
-  // Typography sizes for TV
-  titleFontSize: 36,
-  sectionHeaderFontSize: 28,
-  bodyFontSize: 20,
-  metaFontSize: 18,
-
-  // Spacing
-  sectionMargin: 40,
-  itemSpacing: 24,
-
-  // Focus ring
-  focusBorderWidth: 4,
-  focusBorderRadius: 16,
-};
-
-// TV Focus Zone IDs for organized navigation
-const TV_FOCUS_ZONES = {
-  HERO: 'metadata-hero',
-  CAST: 'metadata-cast',
-  EPISODES: 'metadata-episodes',
-  TRAILERS: 'metadata-trailers',
-  RECOMMENDATIONS: 'metadata-recommendations',
-};
-
-// Memoized components for better performance
+// Memoized components
 const MemoizedCastSection = memo(CastSection);
 const MemoizedSeriesContent = memo(SeriesContent);
 const MemoizedMovieContent = memo(MovieContent);
 const MemoizedMoreLikeThisSection = memo(MoreLikeThisSection);
+
+const BREAKPOINTS = {
+  phone: 0,
+  tablet: 768,
+  largeTablet: 1024,
+  tv: 1440,
+};
+
 const MemoizedRatingsSection = memo(RatingsSection);
 const MemoizedCommentsSection = memo(CommentsSection);
 const MemoizedCastDetailsModal = memo(CastDetailsModal);
 
-/**
- * TV-Optimized MetadataScreen Component
- *
- * Provides enhanced viewing experience for TV platforms with:
- * - Larger fonts for 10-foot viewing distance
- * - Focus-based section navigation
- * - D-pad optimized layouts
- */
-const MetadataScreen: React.FC = () => {
+// =============================================================================
+// Main Component
+// =============================================================================
+
+const MetadataScreenTV: React.FC = () => {
   const route = useRoute<RouteProp<Record<string, RouteParams & { episodeId?: string; addonId?: string }>, string>>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { id, type, episodeId, addonId } = route.params;
 
-  // Log route parameters for debugging
-  React.useEffect(() => {
-    console.log('[MetadataScreen.TV] Route params:', { id, type, episodeId, addonId });
-  }, [id, type, episodeId, addonId]);
-
-  // Consolidated hooks for better performance
+  // Consolidated hooks
   const { settings } = useSettings();
   const { currentTheme } = useTheme();
   const { top: safeAreaTop } = useSafeAreaInsets();
@@ -155,17 +124,46 @@ const MetadataScreen: React.FC = () => {
   // Trakt integration
   const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
 
-  // TV-specific refs for focus management
-  const playButtonRef = useRef<any>(null);
+  // TV Navigation context
+  const tvNav = useTVNavigationOptional();
+  const spatialNav = useSpatialNavigation('MetadataScreen', {
+    autoRestoreFocus: true,
+    defaultFocusId: 'play-button',
+  });
+
+  // Section refs for inter-section focus navigation
+  const heroSectionRef = useRef<any>(null);
   const castSectionRef = useRef<any>(null);
-  const episodesSectionRef = useRef<any>(null);
-  const trailersSectionRef = useRef<any>(null);
-  const recommendationsSectionRef = useRef<any>(null);
+  const seriesContentRef = useRef<any>(null);
+  const moreLikeThisRef = useRef<any>(null);
 
-  // Enhanced TV spacing - always use TV values
-  const horizontalPadding = TV_LAYOUT.screenPadding;
+  // Responsive sizing
+  const deviceWidth = Dimensions.get('window').width;
+  const deviceHeight = Dimensions.get('window').height;
 
-  // Optimized state management - reduced state variables
+  const getDeviceType = useCallback(() => {
+    if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
+    if (deviceWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
+    if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';
+    return 'phone';
+  }, [deviceWidth]);
+
+  const deviceType = getDeviceType();
+  const isTablet = deviceType === 'tablet';
+  const isLargeTablet = deviceType === 'largeTablet';
+  const isTV = deviceType === 'tv' || Platform.isTV;
+  const isLargeScreen = isTablet || isLargeTablet || isTV;
+
+  const horizontalPadding = useMemo(() => {
+    switch (deviceType) {
+      case 'tv': return 32;
+      case 'largeTablet': return 28;
+      case 'tablet': return 24;
+      default: return 16;
+    }
+  }, [deviceType]);
+
+  // State management
   const [isContentReady, setIsContentReady] = useState(false);
   const [showCastModal, setShowCastModal] = useState(false);
   const [selectedCastMember, setSelectedCastMember] = useState<any>(null);
@@ -174,21 +172,20 @@ const MetadataScreen: React.FC = () => {
   const transitionOpacity = useSharedValue(1);
   const interactionComplete = useRef(false);
 
-  // Animation values for network/production sections
+  // Animation values
   const networkSectionOpacity = useSharedValue(0);
   const productionSectionOpacity = useSharedValue(0);
 
-  // Comment bottom sheet state
+  // Comment state
   const [commentBottomSheetVisible, setCommentBottomSheetVisible] = useState(false);
   const [selectedComment, setSelectedComment] = useState<any>(null);
   const [revealedSpoilers, setRevealedSpoilers] = useState<Set<string>>(new Set());
   const loadingScreenRef = useRef<MetadataLoadingScreenRef>(null);
   const [loadingScreenExited, setLoadingScreenExited] = useState(false);
-  // Delay flag to show sections 800ms after cast is rendered (if present)
   const [postCastDelayDone, setPostCastDelayDone] = useState(false);
 
-  // Current focus zone for TV navigation
-  const [currentFocusZone, setCurrentFocusZone] = useState<string>(TV_FOCUS_ZONES.HERO);
+  // Track current focused section for better focus restoration
+  const [currentFocusedSection, setCurrentFocusedSection] = useState<string>('hero');
 
   const {
     metadata,
@@ -213,68 +210,21 @@ const MetadataScreen: React.FC = () => {
     loadingCollection,
   } = useMetadata({ id, type, addonId });
 
-  // Animate network section when data becomes available (for series)
-  useEffect(() => {
-    const hasNetworks = metadata?.networks && metadata.networks.length > 0;
-    const hasDescription = !!metadata?.description;
-    const isSeries = Object.keys(groupedEpisodes).length > 0;
-    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isSeries;
-
-    if (shouldShow && networkSectionOpacity.value === 0) {
-      networkSectionOpacity.value = withTiming(1, { duration: 400 });
-    }
-  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone, networkSectionOpacity]);
-
-  // Animate production section when data becomes available (for movies)
-  useEffect(() => {
-    const hasNetworks = metadata?.networks && metadata.networks.length > 0;
-    const hasDescription = !!metadata?.description;
-    const isMovie = Object.keys(groupedEpisodes).length === 0;
-    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isMovie;
-
-    if (shouldShow && productionSectionOpacity.value === 0) {
-      productionSectionOpacity.value = withTiming(1, { duration: 400 });
-    }
-  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone, productionSectionOpacity]);
-
-  // Manage 800ms delay after cast finishes loading (only if cast is present)
-  useEffect(() => {
-    if (!shouldLoadSecondaryData) {
-      setPostCastDelayDone(false);
-      return;
-    }
-
-    if (!loadingCast) {
-      if (cast && cast.length > 0) {
-        setPostCastDelayDone(false);
-        const t = setTimeout(() => setPostCastDelayDone(true), 200);
-        return () => clearTimeout(t);
-      } else {
-        // If no cast present, no need to delay
-        setPostCastDelayDone(true);
-      }
-    } else {
-      // Reset while cast is loading
-      setPostCastDelayDone(false);
-    }
-  }, [loadingCast, cast.length, shouldLoadSecondaryData]);
-
-  // Optimized hooks with memoization and conditional loading
+  // Hooks with memoization
   const watchProgressData = useWatchProgress(id, Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series', episodeId, episodes);
   const assetData = useMetadataAssets(metadata, id, type, imdbId, settings, setMetadata);
   const animations = useMetadataAnimations(safeAreaTop, watchProgressData.watchProgress);
 
-  // Stable logo URI from HeroSection
+  // Stable logo URI
   const [stableLogoUri, setStableLogoUri] = React.useState<string | null>(null);
 
-  // Extract dominant color from hero image for dynamic background
+  // Dominant color extraction
   const heroImageUri = useMemo(() => {
     if (!settings.useDominantBackgroundColor) return null;
     if (!metadata) return null;
     return assetData.bannerImage || metadata.banner || metadata.poster || null;
   }, [settings.useDominantBackgroundColor, metadata, assetData.bannerImage]);
 
-  // Preload color extraction as soon as we have the URI
   useEffect(() => {
     if (heroImageUri) {
       InteractionManager.runAfterInteractions(() => {
@@ -285,12 +235,11 @@ const MetadataScreen: React.FC = () => {
 
   const { dominantColor, loading: colorLoading } = useDominantColor(heroImageUri);
 
-  // Create shared values for smooth color interpolation
+  // Color animation shared values
   const bgFromColor = useSharedValue(currentTheme.colors.darkBackground);
   const bgToColor = useSharedValue(currentTheme.colors.darkBackground);
   const bgProgress = useSharedValue(1);
 
-  // Update the shared value when dominant color changes
   const hasAnimatedInitialColorRef = useRef(false);
   useEffect(() => {
     const base = currentTheme.colors.darkBackground;
@@ -327,7 +276,6 @@ const MetadataScreen: React.FC = () => {
     })();
   }, [dominantColor, currentTheme.colors.darkBackground, settings.useDominantBackgroundColor]);
 
-  // Create an animated style for the background color
   const animatedBackgroundStyle = useAnimatedStyle(() => {
     const color = interpolateColor(
       bgProgress.value,
@@ -337,7 +285,6 @@ const MetadataScreen: React.FC = () => {
     return { backgroundColor: color as any };
   });
 
-  // Animated styles for network and production sections
   const networkSectionAnimatedStyle = useAnimatedStyle(() => ({
     opacity: networkSectionOpacity.value,
   }));
@@ -346,7 +293,6 @@ const MetadataScreen: React.FC = () => {
     opacity: productionSectionOpacity.value,
   }));
 
-  // For compatibility with existing code, maintain the static value as well
   const dynamicBackgroundColor = useMemo(() => {
     if (settings.useDominantBackgroundColor && dominantColor && dominantColor !== '#1a1a1a' && dominantColor !== null && dominantColor !== currentTheme.colors.darkBackground) {
       return dominantColor;
@@ -354,12 +300,46 @@ const MetadataScreen: React.FC = () => {
     return currentTheme.colors.darkBackground;
   }, [dominantColor, currentTheme.colors.darkBackground, settings.useDominantBackgroundColor]);
 
-  // Focus effect for performance optimization
+  // =============================================================================
+  // TV Back Handler
+  // =============================================================================
+
+  const handleBack = useCallback(() => {
+    if (showCastModal) {
+      setShowCastModal(false);
+      return true;
+    }
+
+    // Save current focus state before going back
+    if (tvNav) {
+      const lastFocusId = tvNav.getCurrentFocusId() || currentFocusedSection;
+      navigation.setParams({ lastFocusId } as any);
+    }
+
+    navigation.goBack();
+    return true;
+  }, [showCastModal, navigation, tvNav, currentFocusedSection]);
+
+  // Use TV back handler
+  useTVBackHandler(handleBack, { enabled: Platform.isTV });
+
+  // =============================================================================
+  // Focus Effects
+  // =============================================================================
+
   useFocusEffect(
     useCallback(() => {
       setIsScreenFocused(true);
 
-      // Delay secondary data loading until interactions are complete
+      // Restore focus from navigation params
+      const params = route.params as any;
+      if (params?.lastFocusId && tvNav) {
+        requestAnimationFrame(() => {
+          tvNav.setCurrentFocusId(params.lastFocusId);
+          spatialNav.restoreFocus();
+        });
+      }
+
       const timer = setTimeout(() => {
         if (!interactionComplete.current) {
           InteractionManager.runAfterInteractions(() => {
@@ -372,50 +352,101 @@ const MetadataScreen: React.FC = () => {
       return () => {
         setIsScreenFocused(false);
         clearTimeout(timer);
+
+        // Save focus state when leaving
+        if (tvNav) {
+          spatialNav.saveFocus(currentFocusedSection);
+        }
       };
-    }, [])
+    }, [route.params, tvNav, spatialNav, currentFocusedSection])
   );
 
-  // Handle back button press - close modal if open, otherwise navigate back
+  // Hardware back button (Android TV)
   useFocusEffect(
     useCallback(() => {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (showCastModal) {
-          setShowCastModal(false);
-          return true;
-        }
-        return false;
+        return handleBack();
       });
 
       return () => backHandler.remove();
-    }, [showCastModal])
+    }, [handleBack])
   );
 
-  // Optimize secondary data loading
+  // =============================================================================
+  // Section Animation Effects
+  // =============================================================================
+
   useEffect(() => {
-    if (metadata && isScreenFocused && !shouldLoadSecondaryData) {
-      const timer = setTimeout(() => {
-        setShouldLoadSecondaryData(true);
-      }, 100);
-      return () => clearTimeout(timer);
+    const hasNetworks = metadata?.networks && metadata.networks.length > 0;
+    const hasDescription = !!metadata?.description;
+    const isSeries = Object.keys(groupedEpisodes).length > 0;
+    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isSeries;
+
+    if (shouldShow && networkSectionOpacity.value === 0) {
+      networkSectionOpacity.value = withTiming(1, { duration: 400 });
     }
-  }, [metadata, isScreenFocused, shouldLoadSecondaryData]);
+  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone]);
 
-  // Memory management and cleanup
   useEffect(() => {
-    return () => {
-      if (transitionOpacity.value !== 0) {
-        transitionOpacity.value = 0;
-      }
-      setShouldLoadSecondaryData(false);
-      interactionComplete.current = false;
-    };
-  }, []);
+    const hasNetworks = metadata?.networks && metadata.networks.length > 0;
+    const hasDescription = !!metadata?.description;
+    const isMovie = Object.keys(groupedEpisodes).length === 0;
+    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isMovie;
 
-  // Memoized derived values for performance
+    if (shouldShow && productionSectionOpacity.value === 0) {
+      productionSectionOpacity.value = withTiming(1, { duration: 400 });
+    }
+  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone]);
+
+  useEffect(() => {
+    if (!shouldLoadSecondaryData) {
+      setPostCastDelayDone(false);
+      return;
+    }
+
+    if (!loadingCast) {
+      if (cast && cast.length > 0) {
+        setPostCastDelayDone(false);
+        const t = setTimeout(() => setPostCastDelayDone(true), 200);
+        return () => clearTimeout(t);
+      } else {
+        setPostCastDelayDone(true);
+      }
+    } else {
+      setPostCastDelayDone(false);
+    }
+  }, [loadingCast, cast?.length, shouldLoadSecondaryData]);
+
+  // =============================================================================
+  // Section Focus Handlers
+  // =============================================================================
+
+  const handleHeroSectionFocus = useCallback(() => {
+    setCurrentFocusedSection('hero');
+    spatialNav.saveFocus('play-button');
+  }, [spatialNav]);
+
+  const handleCastSectionFocus = useCallback(() => {
+    setCurrentFocusedSection('cast');
+    spatialNav.saveFocus('cast-section');
+  }, [spatialNav]);
+
+  const handleSeriesContentFocus = useCallback(() => {
+    setCurrentFocusedSection('series');
+    spatialNav.saveFocus('series-content');
+  }, [spatialNav]);
+
+  const handleRecommendationsFocus = useCallback(() => {
+    setCurrentFocusedSection('recommendations');
+    spatialNav.saveFocus('recommendations');
+  }, [spatialNav]);
+
+  // =============================================================================
+  // Optimized Callbacks
+  // =============================================================================
+
   const isReady = useMemo(() => !loading && metadata && !metadataError, [loading, metadata, metadataError]);
 
-  // Optimized content ready state management
   useEffect(() => {
     if (isReady && isScreenFocused) {
       setIsContentReady(true);
@@ -427,14 +458,12 @@ const MetadataScreen: React.FC = () => {
     }
   }, [isReady, isContentReady, isScreenFocused]);
 
-  // Trigger loading screen exit animation when content is ready
   useEffect(() => {
     if (isReady && isContentReady && !loadingScreenExited && loadingScreenRef.current) {
       loadingScreenRef.current.exit();
     }
   }, [isReady, isContentReady, loadingScreenExited]);
 
-  // Optimized callback functions with reduced dependencies and haptics throttling
   const handleToggleLibrary = useCallback(() => {
     if (isScreenFocused) {
       Haptics.impactAsync(inLibrary ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium);
@@ -452,10 +481,8 @@ const MetadataScreen: React.FC = () => {
   const handleShowStreams = useCallback(() => {
     const { watchProgress } = watchProgressData;
 
-    // Ensure trailer stops immediately before navigating to Streams
     try { pauseTrailer(); } catch { }
 
-    // Helper to build episodeId from episode object
     const buildEpisodeId = (ep: any): string => {
       return ep.stremioId || `${id}:${ep.season_number}:${ep.episode_number}`;
     };
@@ -504,7 +531,7 @@ const MetadataScreen: React.FC = () => {
         if (epParts.length === 2) {
           normalizedEpisodeId = `${id}:${epParts[0]}:${epParts[1]}`;
         }
-        navigation.navigate('Streams', { id, type, episodeId: normalizedEpisodeId, modal: true });
+        navigation.navigate('Streams', { id, type, episodeId: normalizedEpisodeId });
         return;
       }
     }
@@ -514,8 +541,8 @@ const MetadataScreen: React.FC = () => {
       const p = episodeId.split(':');
       fallbackEpisodeId = `${id}:${p[0]}:${p[1]}`;
     }
-    navigation.navigate('Streams', { id, type, episodeId: fallbackEpisodeId, modal: true });
-  }, [navigation, id, type, episodes, episodeId, watchProgressData.watchProgress]);
+    navigation.navigate('Streams', { id, type, episodeId: fallbackEpisodeId });
+  }, [navigation, id, type, episodes, episodeId, watchProgressData.watchProgress, pauseTrailer, groupedEpisodes]);
 
   const handleEpisodeSelect = useCallback((episode: Episode) => {
     if (!isScreenFocused) return;
@@ -532,12 +559,6 @@ const MetadataScreen: React.FC = () => {
       });
     });
   }, [navigation, id, type, isScreenFocused, pauseTrailer]);
-
-  const handleBack = useCallback(() => {
-    if (isScreenFocused) {
-      navigation.goBack();
-    }
-  }, [navigation, isScreenFocused]);
 
   const handleSelectCastMember = useCallback((castMember: any) => {
     if (!isScreenFocused) return;
@@ -561,10 +582,7 @@ const MetadataScreen: React.FC = () => {
       'Spoiler Warning',
       'This comment contains spoilers. Are you sure you want to reveal it?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Reveal Spoilers',
           style: 'destructive',
@@ -576,7 +594,10 @@ const MetadataScreen: React.FC = () => {
     );
   }, []);
 
-  // Ultra-optimized animated styles
+  // =============================================================================
+  // Animated Styles
+  // =============================================================================
+
   const containerStyle = useAnimatedStyle(() => ({
     opacity: isScreenFocused ? animations.screenOpacity.value : 0.8,
   }), [isScreenFocused]);
@@ -590,124 +611,37 @@ const MetadataScreen: React.FC = () => {
     opacity: transitionOpacity.value,
   }), []);
 
-  // TV-specific styles
-  const tvStyles = useMemo(() => StyleSheet.create({
-    sectionContainer: {
-      marginBottom: TV_LAYOUT.sectionMargin,
-      paddingHorizontal: horizontalPadding,
-    },
-    sectionHeader: {
-      fontSize: TV_LAYOUT.sectionHeaderFontSize,
-      fontWeight: '700',
-      color: currentTheme.colors.highEmphasis,
-      marginBottom: TV_LAYOUT.itemSpacing,
-      letterSpacing: 0.5,
-    },
-    focusableSection: {
-      borderRadius: TV_LAYOUT.focusBorderRadius,
-      padding: 8,
-    },
-    productionContainer: {
-      marginTop: 0,
-      marginBottom: TV_LAYOUT.sectionMargin,
-      paddingHorizontal: horizontalPadding,
-    },
-    productionHeader: {
-      fontSize: TV_LAYOUT.sectionHeaderFontSize,
-      fontWeight: '700',
-      color: '#fff',
-      marginBottom: TV_LAYOUT.itemSpacing,
-      textTransform: 'uppercase',
-      letterSpacing: 1.5,
-      opacity: 0.9,
-    },
-    productionRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      gap: 16,
-    },
-    productionChip: {
-      paddingVertical: 16,
-      paddingHorizontal: 24,
-      backgroundColor: 'rgba(245,245,245,0.9)',
-      borderRadius: 20,
-      borderWidth: 2,
-      borderColor: 'rgba(255,255,255,0.15)',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 64,
-    },
-    productionLogo: {
-      width: 100,
-      height: 36,
-    },
-    productionText: {
-      color: '#333',
-      fontSize: TV_LAYOUT.metaFontSize,
-      fontWeight: '600',
-      opacity: 0.9,
-    },
-    tvDetailsContainer: {
-      paddingHorizontal: horizontalPadding,
-      marginTop: 16,
-      marginBottom: TV_LAYOUT.sectionMargin,
-    },
-    tvDetailsHeader: {
-      fontSize: TV_LAYOUT.sectionHeaderFontSize,
-      fontWeight: '700',
-      color: '#fff',
-      marginBottom: TV_LAYOUT.itemSpacing,
-      textTransform: 'uppercase',
-      letterSpacing: 1.5,
-      opacity: 0.9,
-    },
-    tvDetailRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: 'rgba(255,255,255,0.1)',
-    },
-    tvDetailLabel: {
-      fontSize: TV_LAYOUT.bodyFontSize,
-      fontWeight: '600',
-      color: '#fff',
-      opacity: 0.8,
-    },
-    tvDetailValue: {
-      fontSize: TV_LAYOUT.bodyFontSize,
-      fontWeight: '500',
-      color: '#fff',
-      opacity: 0.9,
-      textAlign: 'right',
-      flex: 1,
-    },
-    backdropGalleryContainer: {
-      paddingHorizontal: horizontalPadding,
-      marginTop: TV_LAYOUT.itemSpacing,
-      marginBottom: TV_LAYOUT.sectionMargin,
-    },
-    backdropGalleryButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 24,
-      paddingHorizontal: 32,
-      backgroundColor: 'rgba(255,255,255,0.08)',
-      borderRadius: 16,
-      borderWidth: 2,
-      borderColor: 'rgba(255,255,255,0.15)',
-    },
-    backdropGalleryText: {
-      flex: 1,
-      fontSize: TV_LAYOUT.bodyFontSize,
-      fontWeight: '600',
-      opacity: 0.9,
-    },
-  }), [currentTheme.colors.highEmphasis, horizontalPadding]);
+  // =============================================================================
+  // Get Next Focus Props
+  // =============================================================================
 
-  // Improved error component with TV-optimized UI
+  const getHeroNextFocusDown = useCallback(() => {
+    if (cast && cast.length > 0 && castSectionRef.current) {
+      return findNodeHandle(castSectionRef.current) ?? undefined;
+    }
+    if (Object.keys(groupedEpisodes).length > 0 && seriesContentRef.current) {
+      return findNodeHandle(seriesContentRef.current) ?? undefined;
+    }
+    if (recommendations && recommendations.length > 0 && moreLikeThisRef.current) {
+      return findNodeHandle(moreLikeThisRef.current) ?? undefined;
+    }
+    return undefined;
+  }, [cast, groupedEpisodes, recommendations]);
+
+  const getCastNextFocusDown = useCallback(() => {
+    if (Object.keys(groupedEpisodes).length > 0 && seriesContentRef.current) {
+      return findNodeHandle(seriesContentRef.current) ?? undefined;
+    }
+    if (recommendations && recommendations.length > 0 && moreLikeThisRef.current) {
+      return findNodeHandle(moreLikeThisRef.current) ?? undefined;
+    }
+    return undefined;
+  }, [groupedEpisodes, recommendations]);
+
+  // =============================================================================
+  // Error Component
+  // =============================================================================
+
   const ErrorComponent = useMemo(() => {
     if (!metadataError) return null;
 
@@ -723,16 +657,12 @@ const MetadataScreen: React.FC = () => {
             return { code: '404', message: 'Content not found', userMessage: 'This content doesn\'t exist or may have been removed.' };
           case 500:
             return { code: '500', message: 'Server error', userMessage: 'The server is temporarily unavailable. Please try again later.' };
-          case 502:
-            return { code: '502', message: 'Bad gateway', userMessage: 'The server is experiencing issues. Please try again later.' };
-          case 503:
-            return { code: '503', message: 'Service unavailable', userMessage: 'The service is currently down for maintenance. Please try again later.' };
           default:
             return { code: code.toString(), message: `Error ${code}`, userMessage: 'Something went wrong. Please try again.' };
         }
       }
 
-      if (error.includes('Network Error') || error.includes('ERR_BAD_RESPONSE')) {
+      if (error.includes('Network Error')) {
         return { code: 'NETWORK', message: 'Network error', userMessage: 'Please check your internet connection and try again.' };
       }
 
@@ -748,43 +678,59 @@ const MetadataScreen: React.FC = () => {
       >
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         <View style={styles.errorContainer}>
-          <MaterialIcons name="error-outline" size={96} color={currentTheme.colors.error || '#FF6B6B'} />
-          <Text style={[styles.errorTitle, { color: currentTheme.colors.highEmphasis, fontSize: TV_LAYOUT.titleFontSize }]}>
+          <MaterialIcons name="error-outline" size={72} color={currentTheme.colors.error || '#FF6B6B'} />
+          <Text style={[styles.errorTitle, { color: currentTheme.colors.highEmphasis, fontSize: 24 }]}>
             Unable to Load Content
           </Text>
-          <Text style={[styles.errorCode, { color: currentTheme.colors.textMuted, fontSize: TV_LAYOUT.bodyFontSize }]}>
+          <Text style={[styles.errorCode, { color: currentTheme.colors.textMuted, fontSize: 16 }]}>
             Error Code: {errorInfo.code}
           </Text>
-          <Text style={[styles.errorMessage, { color: currentTheme.colors.highEmphasis, fontSize: TV_LAYOUT.bodyFontSize }]}>
+          <Text style={[styles.errorMessage, { color: currentTheme.colors.highEmphasis, fontSize: 18 }]}>
             {errorInfo.userMessage}
           </Text>
           <Focusable
-            style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary, paddingVertical: 20, paddingHorizontal: 48 }]}
-            onPress={() => loadMetadata()}
-            hasTVPreferredFocus
-            scaleOnFocus={1.05}
+            onPress={loadMetadata}
+            hasTVPreferredFocus={true}
+            focusId="retry-button"
+            style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
+            animationConfig={{
+              focusScale: 1.08,
+              showFocusBorder: true,
+              focusBorderColor: '#fff',
+              focusBorderWidth: 3,
+            }}
+            accessibilityLabel="Try Again"
           >
-            <MaterialIcons name="refresh" size={28} color={currentTheme.colors.white} style={{ marginRight: 12 }} />
-            <Text style={[styles.retryButtonText, { fontSize: TV_LAYOUT.bodyFontSize }]}>Try Again</Text>
+            <MaterialIcons name="refresh" size={24} color={currentTheme.colors.white} style={{ marginRight: 12 }} />
+            <Text style={[styles.retryButtonText, { fontSize: 18 }]}>Try Again</Text>
           </Focusable>
           <Focusable
-            style={[styles.backButton, { borderColor: currentTheme.colors.primary, borderWidth: 3, paddingVertical: 20, paddingHorizontal: 48 }]}
-            onPress={() => handleBack()}
-            scaleOnFocus={1.05}
+            onPress={handleBack}
+            focusId="back-button-error"
+            style={[styles.backButtonError, { borderColor: currentTheme.colors.primary }]}
+            animationConfig={{
+              focusScale: 1.08,
+              showFocusBorder: true,
+              focusBorderColor: currentTheme.colors.primary,
+              focusBorderWidth: 3,
+            }}
+            accessibilityLabel="Go Back"
           >
-            <Text style={[styles.backButtonText, { color: currentTheme.colors.primary, fontSize: TV_LAYOUT.bodyFontSize }]}>Go Back</Text>
+            <Text style={[styles.backButtonText, { color: currentTheme.colors.primary, fontSize: 18 }]}>Go Back</Text>
           </Focusable>
         </View>
       </SafeAreaView>
     );
-  }, [metadataError, currentTheme, loadMetadata, handleBack]);
+  }, [metadataError, currentTheme, loadMetadata, handleBack, dynamicBackgroundColor]);
 
-  // Show error if exists
+  // =============================================================================
+  // Loading Screen
+  // =============================================================================
+
   if (metadataError || (!loading && !metadata)) {
     return ErrorComponent;
   }
 
-  // Show loading screen if metadata is not yet available or exit animation hasn't completed
   if (loading || !isContentReady || !loadingScreenExited) {
     return (
       <MetadataLoadingScreen
@@ -794,6 +740,10 @@ const MetadataScreen: React.FC = () => {
       />
     );
   }
+
+  // =============================================================================
+  // Main Render
+  // =============================================================================
 
   return (
     <Animated.View style={[animatedBackgroundStyle, { flex: 1 }]}>
@@ -805,7 +755,7 @@ const MetadataScreen: React.FC = () => {
 
         {metadata && (
           <>
-            {/* Floating Header - Optimized */}
+            {/* Floating Header */}
             <FloatingHeader
               metadata={metadata}
               logoLoadError={assetData.logoLoadError}
@@ -825,13 +775,13 @@ const MetadataScreen: React.FC = () => {
               showsVerticalScrollIndicator={false}
               onScroll={animations.scrollHandler}
               scrollEventThrottle={16}
-              bounces={Platform.OS === 'ios'}
-              overScrollMode={Platform.OS === 'android' ? 'always' : 'always'}
+              bounces={false}
+              overScrollMode="never"
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.scrollContent}
             >
-              {/* Hero Section - Optimized for TV */}
+              {/* Hero Section with TV Navigation */}
               <HeroSection
                 metadata={metadata}
                 bannerImage={assetData.bannerImage}
@@ -876,9 +826,13 @@ const MetadataScreen: React.FC = () => {
                 dynamicBackgroundColor={dynamicBackgroundColor}
                 handleBack={handleBack}
                 tmdbId={tmdbId}
+                // TV-specific props
+                hasTVPreferredFocus={true}
+                onFocusSection={handleHeroSectionFocus}
+                nextFocusDown={getHeroNextFocusDown()}
               />
 
-              {/* Main Content - TV Optimized */}
+              {/* Main Content */}
               <Animated.View style={contentStyle}>
                 <MetadataDetails
                   metadata={metadata}
@@ -891,37 +845,33 @@ const MetadataScreen: React.FC = () => {
                   ) : null}
                 />
 
-                {/* Production info row for series - TV optimized */}
+                {/* Network Section for Series */}
                 {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.networks && metadata.networks.length > 0 && metadata?.description && (
                   <Animated.View style={[
-                    tvStyles.productionContainer,
+                    styles.productionContainer,
                     networkSectionAnimatedStyle,
+                    { paddingHorizontal: horizontalPadding }
                   ]}>
-                    <Text style={tvStyles.productionHeader}>Network</Text>
-                    <View style={tvStyles.productionRow}>
-                      {metadata.networks.slice(0, 6).map((net) => (
-                        <Focusable
-                          key={String(net.id || net.name)}
-                          style={tvStyles.productionChip}
-                          scaleOnFocus={1.08}
-                          onPress={() => {}}
-                        >
+                    <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>Network</Text>
+                    <View style={[styles.productionRow, { gap: 12 }]}>
+                      {metadata.networks.slice(0, 6).map((net: any) => (
+                        <View key={String(net.id || net.name)} style={[styles.productionChip, { paddingVertical: 12, paddingHorizontal: 16, minHeight: 48, borderRadius: 16 }]}>
                           {net.logo ? (
                             <FastImage
                               source={{ uri: net.logo }}
-                              style={tvStyles.productionLogo}
+                              style={[styles.productionLogo, { width: 80, height: 28 }]}
                               resizeMode={FastImage.resizeMode.contain}
                             />
                           ) : (
-                            <Text style={tvStyles.productionText}>{net.name}</Text>
+                            <Text style={[styles.productionText, { fontSize: 14 }]}>{net.name}</Text>
                           )}
-                        </Focusable>
+                        </View>
                       ))}
                     </View>
                   </Animated.View>
                 )}
 
-                {/* Cast Section - TV Focus Zone */}
+                {/* Cast Section with TV Navigation */}
                 {shouldLoadSecondaryData && (
                   <View ref={castSectionRef}>
                     <MemoizedCastSection
@@ -929,30 +879,36 @@ const MetadataScreen: React.FC = () => {
                       loadingCast={loadingCast}
                       onSelectCastMember={handleSelectCastMember}
                       isTmdbEnrichmentEnabled={settings.enrichMetadataWithTMDB}
+                      // TV-specific props (these will be used by CastSection.tv.tsx)
+                      sectionId="cast-section"
+                      nextFocusUp={heroSectionRef}
+                      nextFocusDown={getCastNextFocusDown()}
+                      onFocusEnter={handleCastSectionFocus}
                     />
                   </View>
                 )}
 
-                {/* Production info for movies - TV optimized */}
+                {/* Production Section for Movies */}
                 {shouldLoadSecondaryData &&
                   Object.keys(groupedEpisodes).length === 0 &&
                   metadata?.networks && Array.isArray(metadata.networks) &&
                   metadata.networks.some((n: any) => !!n?.logo) &&
                   metadata?.description && (
                     <Animated.View style={[
-                      tvStyles.productionContainer,
+                      styles.productionContainer,
                       productionSectionAnimatedStyle,
+                      { paddingHorizontal: horizontalPadding }
                     ]}>
-                      <Text style={tvStyles.productionHeader}>Production</Text>
-                      <View style={tvStyles.productionRow}>
+                      <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>Production</Text>
+                      <View style={[styles.productionRow, { gap: 12 }]}>
                         {metadata.networks
                           .filter((net: any) => !!net?.logo)
                           .slice(0, 6)
                           .map((net: any) => (
-                            <View key={String(net.id || net.name)} style={tvStyles.productionChip}>
+                            <View key={String(net.id || net.name)} style={[styles.productionChip, { paddingVertical: 12, paddingHorizontal: 16, minHeight: 48, borderRadius: 16 }]}>
                               <FastImage
                                 source={{ uri: net.logo }}
-                                style={tvStyles.productionLogo}
+                                style={[styles.productionLogo, { width: 80, height: 28 }]}
                                 resizeMode={FastImage.resizeMode.contain}
                               />
                             </View>
@@ -961,16 +917,14 @@ const MetadataScreen: React.FC = () => {
                     </Animated.View>
                   )}
 
-                {/* Trailers Section - TV Focus Zone */}
+                {/* Trailers Section */}
                 {shouldLoadSecondaryData && tmdbId && settings.enrichMetadataWithTMDB && (
-                  <View ref={trailersSectionRef}>
-                    <TrailersSection
-                      tmdbId={tmdbId}
-                      type={Object.keys(groupedEpisodes).length > 0 ? 'tv' : 'movie'}
-                      contentId={id}
-                      contentTitle={metadata?.name || (metadata as any)?.title || 'Unknown'}
-                    />
-                  </View>
+                  <TrailersSection
+                    tmdbId={tmdbId}
+                    type={Object.keys(groupedEpisodes).length > 0 ? 'tv' : 'movie'}
+                    contentId={id}
+                    contentTitle={metadata?.name || (metadata as any)?.title || 'Unknown'}
+                  />
                 )}
 
                 {/* Comments Section */}
@@ -982,245 +936,79 @@ const MetadataScreen: React.FC = () => {
                   />
                 )}
 
-                {/* Movie Details section - TV optimized */}
-                {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length === 0 && metadata?.movieDetails && (
-                  <View style={tvStyles.tvDetailsContainer}>
-                    <Text style={tvStyles.tvDetailsHeader}>Movie Details</Text>
-
-                    {metadata.movieDetails.tagline && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Tagline</Text>
-                        <Text style={[tvStyles.tvDetailValue, { fontStyle: 'italic' }]}>
-                          "{metadata.movieDetails.tagline}"
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.movieDetails.status && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Status</Text>
-                        <Text style={tvStyles.tvDetailValue}>{metadata.movieDetails.status}</Text>
-                      </View>
-                    )}
-
-                    {metadata.movieDetails.releaseDate && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Release Date</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {new Date(metadata.movieDetails.releaseDate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.movieDetails.runtime && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Runtime</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {Math.floor(metadata.movieDetails.runtime / 60)}h {metadata.movieDetails.runtime % 60}m
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.movieDetails.budget && metadata.movieDetails.budget > 0 && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Budget</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          ${metadata.movieDetails.budget.toLocaleString()}
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.movieDetails.revenue && metadata.movieDetails.revenue > 0 && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Revenue</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          ${metadata.movieDetails.revenue.toLocaleString()}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-
-                {/* Backdrop Gallery - TV optimized button */}
-                {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length === 0 && metadata?.tmdbId && settings.enrichMetadataWithTMDB && (
-                  <View style={tvStyles.backdropGalleryContainer}>
-                    <Focusable
-                      style={tvStyles.backdropGalleryButton}
-                      scaleOnFocus={1.03}
-                      onPress={() => navigation.navigate('BackdropGallery' as any, {
-                        tmdbId: metadata.tmdbId,
-                        type: 'movie',
-                        title: metadata.name || 'Gallery'
-                      })}
-                    >
-                      <Text style={[tvStyles.backdropGalleryText, { color: currentTheme.colors.highEmphasis }]}>Backdrop Gallery</Text>
-                      <MaterialIcons name="chevron-right" size={32} color={currentTheme.colors.highEmphasis} />
-                    </Focusable>
+                {/* Series Content with TV Navigation */}
+                {Object.keys(groupedEpisodes).length > 0 && (
+                  <View ref={seriesContentRef}>
+                    <MemoizedSeriesContent
+                      selectedSeason={selectedSeason}
+                      groupedEpisodes={groupedEpisodes}
+                      loadingSeasons={loadingSeasons}
+                      onSeasonChange={handleSeasonChangeWithHaptics}
+                      onEpisodeSelect={handleEpisodeSelect}
+                      // TV-specific props (these will be used by SeriesContent.tv.tsx)
+                      sectionId="series-content"
+                      nextFocusUp={castSectionRef.current ? castSectionRef : heroSectionRef}
+                      nextFocusDown={moreLikeThisRef}
+                      onFocusEnter={handleSeriesContentFocus}
+                    />
                   </View>
                 )}
 
                 {/* Collection Section */}
-                {shouldLoadSecondaryData &&
-                  Object.keys(groupedEpisodes).length === 0 &&
-                  metadata?.collection &&
-                  settings.enrichMetadataWithTMDB && (
-                    <CollectionSection
-                      collectionName={metadata.collection.name}
-                      collectionMovies={collectionMovies}
-                      loadingCollection={loadingCollection}
-                    />
-                  )}
-
-                {/* Series/Movie Content - TV Focus Zone for Episodes */}
-                {Object.keys(groupedEpisodes).length > 0 ? (
-                  <View ref={episodesSectionRef}>
-                    <MemoizedSeriesContent
-                      episodes={Object.values(groupedEpisodes).flat()}
-                      selectedSeason={selectedSeason}
-                      loadingSeasons={loadingSeasons}
-                      onSeasonChange={handleSeasonChangeWithHaptics}
-                      onSelectEpisode={handleEpisodeSelect}
-                      groupedEpisodes={groupedEpisodes}
-                      metadata={metadata || undefined}
-                      imdbId={imdbId || undefined}
-                    />
-                  </View>
-                ) : (
-                  metadata && <MemoizedMovieContent metadata={metadata} />
+                {shouldLoadSecondaryData && collectionMovies && collectionMovies.length > 1 && (
+                  <CollectionSection
+                    movies={collectionMovies}
+                    loading={loadingCollection}
+                    currentMovieId={id}
+                  />
                 )}
 
-                {/* TV Details section for series - TV optimized */}
-                {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.tvDetails && (
-                  <View style={tvStyles.tvDetailsContainer}>
-                    <Text style={tvStyles.tvDetailsHeader}>Show Details</Text>
-
-                    {metadata.tvDetails.status && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Status</Text>
-                        <Text style={tvStyles.tvDetailValue}>{metadata.tvDetails.status}</Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.firstAirDate && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>First Air Date</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {new Date(metadata.tvDetails.firstAirDate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.lastAirDate && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Last Air Date</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {new Date(metadata.tvDetails.lastAirDate).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.numberOfSeasons && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Seasons</Text>
-                        <Text style={tvStyles.tvDetailValue}>{metadata.tvDetails.numberOfSeasons}</Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.numberOfEpisodes && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Total Episodes</Text>
-                        <Text style={tvStyles.tvDetailValue}>{metadata.tvDetails.numberOfEpisodes}</Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.episodeRunTime && metadata.tvDetails.episodeRunTime.length > 0 && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Episode Runtime</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {metadata.tvDetails.episodeRunTime.join(' - ')} min
-                        </Text>
-                      </View>
-                    )}
-
-                    {metadata.tvDetails.createdBy && metadata.tvDetails.createdBy.length > 0 && (
-                      <View style={tvStyles.tvDetailRow}>
-                        <Text style={tvStyles.tvDetailLabel}>Created By</Text>
-                        <Text style={tvStyles.tvDetailValue}>
-                          {metadata.tvDetails.createdBy.map(creator => creator.name).join(', ')}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-
-                {/* Backdrop Gallery for TV shows - TV optimized */}
-                {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.tmdbId && settings.enrichMetadataWithTMDB && (
-                  <View style={tvStyles.backdropGalleryContainer}>
-                    <Focusable
-                      style={tvStyles.backdropGalleryButton}
-                      scaleOnFocus={1.03}
-                      onPress={() => navigation.navigate('BackdropGallery' as any, {
-                        tmdbId: metadata.tmdbId,
-                        type: 'tv',
-                        title: metadata.name || 'Gallery'
-                      })}
-                    >
-                      <Text style={[tvStyles.backdropGalleryText, { color: currentTheme.colors.highEmphasis }]}>Backdrop Gallery</Text>
-                      <MaterialIcons name="chevron-right" size={32} color={currentTheme.colors.highEmphasis} />
-                    </Focusable>
-                  </View>
-                )}
-
-                {/* Recommendations Section - TV Focus Zone */}
+                {/* More Like This Section */}
                 {shouldLoadSecondaryData && (
-                  <View ref={recommendationsSectionRef}>
+                  <View ref={moreLikeThisRef}>
                     <MemoizedMoreLikeThisSection
                       recommendations={recommendations}
-                      loadingRecommendations={loadingRecommendations}
+                      loading={loadingRecommendations}
+                      contentId={id}
+                      type={Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series'}
+                      // TV-specific props
+                      onFocusEnter={handleRecommendationsFocus}
                     />
                   </View>
                 )}
               </Animated.View>
             </Animated.ScrollView>
+
+            {/* Cast Modal */}
+            {showCastModal && selectedCastMember && (
+              <MemoizedCastDetailsModal
+                visible={showCastModal}
+                castMember={selectedCastMember}
+                onClose={() => setShowCastModal(false)}
+              />
+            )}
+
+            {/* Comment Bottom Sheet */}
+            {commentBottomSheetVisible && selectedComment && (
+              <CommentBottomSheet
+                visible={commentBottomSheetVisible}
+                comment={selectedComment}
+                onClose={handleCommentBottomSheetClose}
+                revealedSpoilers={revealedSpoilers}
+                onSpoilerPress={handleSpoilerPress}
+              />
+            )}
           </>
         )}
-
-        {/* Cast Details Modal */}
-        {showCastModal && (
-          <MemoizedCastDetailsModal
-            visible={showCastModal}
-            onClose={() => setShowCastModal(false)}
-            castMember={selectedCastMember}
-          />
-        )}
-
-        {/* Comment Bottom Sheet */}
-        <CommentBottomSheet
-          comment={selectedComment}
-          visible={commentBottomSheetVisible}
-          onClose={handleCommentBottomSheetClose}
-          theme={currentTheme}
-          isSpoilerRevealed={selectedComment ? revealedSpoilers.has(selectedComment.id.toString()) : false}
-          onSpoilerPress={() => selectedComment && handleSpoilerPress(selectedComment)}
-        />
       </AnimatedSafeAreaView>
     </Animated.View>
   );
 };
 
-// Optimized styles with TV-specific values
+// =============================================================================
+// Styles
+// =============================================================================
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1229,57 +1017,98 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
+    paddingBottom: 120,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: TV_LAYOUT.screenPadding,
+    padding: 32,
   },
   errorTitle: {
-    fontSize: TV_LAYOUT.titleFontSize,
     fontWeight: '700',
-    textAlign: 'center',
     marginTop: 24,
-    marginBottom: 12,
+    marginBottom: 8,
+    textAlign: 'center',
   },
   errorCode: {
-    fontSize: TV_LAYOUT.bodyFontSize,
+    marginBottom: 16,
     textAlign: 'center',
-    marginBottom: 12,
-    fontFamily: 'monospace',
   },
   errorMessage: {
-    fontSize: TV_LAYOUT.bodyFontSize,
     textAlign: 'center',
     marginBottom: 32,
-    lineHeight: 30,
+    lineHeight: 26,
   },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 48,
-    paddingVertical: 20,
-    borderRadius: 32,
-    marginBottom: 24,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginBottom: 16,
   },
   retryButtonText: {
-    fontSize: TV_LAYOUT.bodyFontSize,
-    fontWeight: '600',
     color: '#fff',
+    fontWeight: '600',
   },
-  backButton: {
-    paddingHorizontal: 48,
-    paddingVertical: 20,
-    borderRadius: 32,
-    borderWidth: 3,
+  backButtonError: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    borderWidth: 2,
   },
   backButtonText: {
-    fontSize: TV_LAYOUT.bodyFontSize,
     fontWeight: '600',
+  },
+  productionContainer: {
+    marginBottom: 24,
+  },
+  productionHeader: {
+    fontWeight: '700',
+    color: '#fff',
+  },
+  productionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  productionChip: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productionLogo: {
+    // Dimensions set inline
+  },
+  productionText: {
+    color: '#fff',
+    fontWeight: '500',
+  },
+  tvDetailsContainer: {
+    marginBottom: 24,
+  },
+  tvDetailsHeader: {
+    fontWeight: '700',
+    color: '#fff',
+  },
+  tvDetailRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 8,
+  },
+  tvDetailLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 4,
+  },
+  tvDetailValue: {
+    color: '#fff',
+    fontWeight: '500',
   },
 });
 
-export default MetadataScreen;
+// =============================================================================
+// Export
+// =============================================================================
+
+export default MetadataScreenTV;

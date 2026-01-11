@@ -1,414 +1,428 @@
-import React, {
-    createContext,
-    useContext,
-    useState,
-    useCallback,
-    useRef,
-    useEffect,
-    ReactNode,
-} from 'react';
-import {
-    Platform,
-    findNodeHandle,
-    UIManager,
-    AccessibilityInfo,
-} from 'react-native';
+import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
+import { Platform } from 'react-native';
+
+// =============================================================================
+// Types & Interfaces
+// =============================================================================
 
 /**
- * Direction type for D-pad navigation
+ * Represents a single entry in the focus history stack
  */
-export type NavigationDirection = 'up' | 'down' | 'left' | 'right';
-
-/**
- * Focus zone configuration
- */
-export interface FocusZone {
-    id: string;
-    priority: number;
-    refs: React.RefObject<any>[];
-    trapFocus?: boolean;
-    onEnter?: () => void;
-    onLeave?: () => void;
+export interface FocusHistoryEntry {
+  /** Unique identifier for the focused element */
+  focusId: string;
+  /** Screen/route name where the focus occurred */
+  screenName: string;
+  /** Timestamp when focus was recorded */
+  timestamp: number;
 }
 
 /**
- * Focusable element registration
+ * Reason why voice input is unavailable
  */
-export interface FocusableElement {
-    id: string;
-    ref: React.RefObject<any>;
-    zoneId?: string;
-    priority?: number;
+export type VoiceUnavailableReason =
+  | 'not_tv_platform'
+  | 'no_native_module'
+  | 'permission_denied'
+  | 'feature_disabled'
+  | 'hardware_unavailable'
+  | 'language_unsupported'
+  | 'network_unavailable'
+  | 'api_unavailable'
+  | 'unknown'
+  | null;
+
+/**
+ * Voice search state
+ */
+export interface VoiceSearchState {
+  /** Whether the voice search overlay is visible */
+  isOpen: boolean;
+  /** Whether the system is actively listening for voice input */
+  isListening: boolean;
+  /** Current voice search query text */
+  query: string;
+  /** Whether voice input is available on this platform/device */
+  isAvailable: boolean;
+  /** Reason why voice input is unavailable (if applicable) */
+  unavailableReason: VoiceUnavailableReason;
+  /** Error message if voice search failed */
+  error: string | null;
 }
 
 /**
- * TV Navigation Context interface
+ * Context menu item definition
+ */
+export interface ContextMenuItem {
+  /** Unique identifier for the menu item */
+  id: string;
+  /** Display label for the menu item */
+  label: string;
+  /** Optional icon name */
+  icon?: string;
+  /** Callback when item is selected */
+  onSelect: () => void;
+  /** Whether the item is disabled */
+  disabled?: boolean;
+  /** Whether this is a destructive action (shows in red) */
+  destructive?: boolean;
+}
+
+/**
+ * Context menu state
+ */
+export interface ContextMenuState {
+  /** Whether the context menu is visible */
+  isOpen: boolean;
+  /** Position of the menu (for positioning near trigger element) */
+  position: { x: number; y: number } | null;
+  /** ID of the element that triggered the menu */
+  targetId: string | null;
+  /** Menu items to display */
+  items: ContextMenuItem[];
+  /** Title for the context menu (optional) */
+  title?: string;
+}
+
+/**
+ * Map of screen names to their last focused element IDs
+ */
+export type FocusMemoryMap = Record<string, string>;
+
+/**
+ * Context value interface
  */
 interface TVNavigationContextValue {
-    // Focus state
-    isTV: boolean;
-    currentFocusId: string | null;
-    currentZoneId: string | null;
-    focusHistory: string[];
+  // Focus History
+  /** Stack of focus history entries */
+  focusHistory: FocusHistoryEntry[];
+  /** Push a new focus entry to the history */
+  pushFocusHistory: (entry: Omit<FocusHistoryEntry, 'timestamp'>) => void;
+  /** Pop the most recent focus entry from history */
+  popFocusHistory: () => FocusHistoryEntry | undefined;
+  /** Clear the entire focus history */
+  clearFocusHistory: () => void;
 
-    // Focus management
-    setFocus: (ref: React.RefObject<any> | number) => void;
-    setFocusById: (id: string) => void;
-    registerFocusable: (element: FocusableElement) => void;
-    unregisterFocusable: (id: string) => void;
+  // Focus Memory (per screen)
+  /** Map of screen names to last focused element IDs */
+  focusMemory: FocusMemoryMap;
+  /** Save the last focused element for a screen */
+  setScreenFocus: (screenName: string, focusId: string) => void;
+  /** Get the last focused element for a screen */
+  getScreenFocus: (screenName: string) => string | null;
+  /** Clear focus memory for a specific screen */
+  clearScreenFocus: (screenName: string) => void;
+  /** Clear all focus memory */
+  clearAllFocusMemory: () => void;
 
-    // Zone management
-    registerZone: (zone: FocusZone) => void;
-    unregisterZone: (id: string) => void;
-    setActiveZone: (zoneId: string) => void;
-    getZone: (zoneId: string) => FocusZone | undefined;
+  // Voice Search
+  /** Current voice search state */
+  voiceSearch: VoiceSearchState;
+  /** Open the voice search overlay */
+  openVoiceSearch: () => void;
+  /** Close the voice search overlay */
+  closeVoiceSearch: () => void;
+  /** Set the voice search listening state */
+  setVoiceListening: (isListening: boolean) => void;
+  /** Set the voice search query */
+  setVoiceQuery: (query: string) => void;
+  /** Set voice search error */
+  setVoiceError: (error: string | null) => void;
+  /** Set voice availability */
+  setVoiceAvailable: (isAvailable: boolean) => void;
+  /** Set the reason why voice is unavailable */
+  setVoiceUnavailableReason: (reason: VoiceUnavailableReason) => void;
 
-    // Navigation helpers
-    focusFirst: (zoneId?: string) => void;
-    focusLast: (zoneId?: string) => void;
-    focusPrevious: () => void;
-    focusNext: () => void;
+  // Context Menu
+  /** Current context menu state */
+  contextMenu: ContextMenuState;
+  /** Open a context menu with items at a position */
+  openContextMenu: (config: {
+    targetId: string;
+    items: ContextMenuItem[];
+    position?: { x: number; y: number };
+    title?: string;
+  }) => void;
+  /** Close the context menu */
+  closeContextMenu: () => void;
+  /** Select a context menu item by ID */
+  selectContextMenuItem: (itemId: string) => void;
 
-    // History management
-    pushFocusHistory: (id: string) => void;
-    popFocusHistory: () => string | undefined;
-    clearFocusHistory: () => void;
-
-    // Accessibility
-    announceForAccessibility: (message: string) => void;
+  // Utility
+  /** Whether we're running on a TV platform */
+  isTV: boolean;
+  /** Current focused element ID (if tracking) */
+  currentFocusId: string | null;
+  /** Set the current focused element ID */
+  setCurrentFocusId: (focusId: string | null) => void;
 }
+
+// =============================================================================
+// Default Values
+// =============================================================================
+
+const defaultVoiceSearchState: VoiceSearchState = {
+  isOpen: false,
+  isListening: false,
+  query: '',
+  isAvailable: Platform.isTV, // Assume available on TV platforms by default
+  unavailableReason: Platform.isTV ? null : 'not_tv_platform',
+  error: null,
+};
+
+const defaultContextMenuState: ContextMenuState = {
+  isOpen: false,
+  position: null,
+  targetId: null,
+  items: [],
+  title: undefined,
+};
+
+// =============================================================================
+// Context Creation
+// =============================================================================
 
 const TVNavigationContext = createContext<TVNavigationContextValue | undefined>(undefined);
 
+// =============================================================================
+// Provider Component
+// =============================================================================
+
 interface TVNavigationProviderProps {
-    children: ReactNode;
-    /** Initial zone to activate */
-    initialZoneId?: string;
-    /** Maximum history size */
-    maxHistorySize?: number;
+  children: ReactNode;
 }
 
-/**
- * TVNavigationProvider - Centralized focus management for TV platforms
- *
- * Provides:
- * - Focus state tracking
- * - Zone-based focus management
- * - Focus history for back navigation
- * - Accessibility announcements
- * - Programmatic focus control
- *
- * Usage:
- * ```tsx
- * <TVNavigationProvider>
- *   <App />
- * </TVNavigationProvider>
- * ```
- */
-export function TVNavigationProvider({
-    children,
-    initialZoneId,
-    maxHistorySize = 20,
-}: TVNavigationProviderProps) {
-    const isTV = Platform.isTV;
+export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
+  // Focus History State
+  const [focusHistory, setFocusHistory] = useState<FocusHistoryEntry[]>([]);
 
-    // Focus state
-    const [currentFocusId, setCurrentFocusId] = useState<string | null>(null);
-    const [currentZoneId, setCurrentZoneId] = useState<string | null>(initialZoneId || null);
-    const [focusHistory, setFocusHistory] = useState<string[]>([]);
+  // Focus Memory State (per screen)
+  const [focusMemory, setFocusMemory] = useState<FocusMemoryMap>({});
 
-    // Registries
-    const focusableRegistry = useRef<Map<string, FocusableElement>>(new Map());
-    const zoneRegistry = useRef<Map<string, FocusZone>>(new Map());
+  // Voice Search State
+  const [voiceSearch, setVoiceSearch] = useState<VoiceSearchState>(defaultVoiceSearchState);
 
-    /**
-     * Set focus to a React ref or native node handle
-     */
-    const setFocus = useCallback((target: React.RefObject<any> | number) => {
-        if (!isTV) return;
+  // Context Menu State
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>(defaultContextMenuState);
 
-        try {
-            const nodeHandle = typeof target === 'number'
-                ? target
-                : findNodeHandle(target.current);
+  // Current Focus ID
+  const [currentFocusId, setCurrentFocusId] = useState<string | null>(null);
 
-            if (nodeHandle) {
-                UIManager.dispatchViewManagerCommand(
-                    nodeHandle,
-                    UIManager.getViewManagerConfig('RCTView')?.Commands?.focus as any,
-                    []
-                );
+  // =============================================================================
+  // Focus History Actions
+  // =============================================================================
 
-                // Fallback: Use setNativeProps if command dispatch fails
-                if (typeof target !== 'number' && target.current?.setNativeProps) {
-                    target.current.setNativeProps({ hasTVPreferredFocus: true });
-                }
-            }
-        } catch (error) {
-            if (__DEV__) {
-                console.log('[TVNavigation] setFocus error:', error);
-            }
-        }
-    }, [isTV]);
+  const pushFocusHistory = useCallback((entry: Omit<FocusHistoryEntry, 'timestamp'>) => {
+    setFocusHistory((prev) => [
+      ...prev,
+      { ...entry, timestamp: Date.now() },
+    ]);
+  }, []);
 
-    /**
-     * Set focus by registered element ID
-     */
-    const setFocusById = useCallback((id: string) => {
-        const element = focusableRegistry.current.get(id);
-        if (element?.ref) {
-            setFocus(element.ref);
-            setCurrentFocusId(id);
-        }
-    }, [setFocus]);
+  const popFocusHistory = useCallback((): FocusHistoryEntry | undefined => {
+    let poppedEntry: FocusHistoryEntry | undefined;
+    setFocusHistory((prev) => {
+      if (prev.length === 0) return prev;
+      poppedEntry = prev[prev.length - 1];
+      return prev.slice(0, -1);
+    });
+    return poppedEntry;
+  }, []);
 
-    /**
-     * Register a focusable element
-     */
-    const registerFocusable = useCallback((element: FocusableElement) => {
-        focusableRegistry.current.set(element.id, element);
+  const clearFocusHistory = useCallback(() => {
+    setFocusHistory([]);
+  }, []);
 
-        if (__DEV__) {
-            console.log('[TVNavigation] Registered focusable:', element.id);
-        }
-    }, []);
+  // =============================================================================
+  // Focus Memory Actions (per screen)
+  // =============================================================================
 
-    /**
-     * Unregister a focusable element
-     */
-    const unregisterFocusable = useCallback((id: string) => {
-        focusableRegistry.current.delete(id);
+  const setScreenFocus = useCallback((screenName: string, focusId: string) => {
+    setFocusMemory((prev) => ({
+      ...prev,
+      [screenName]: focusId,
+    }));
+  }, []);
 
-        if (__DEV__) {
-            console.log('[TVNavigation] Unregistered focusable:', id);
-        }
-    }, []);
+  const getScreenFocus = useCallback((screenName: string): string | null => {
+    return focusMemory[screenName] || null;
+  }, [focusMemory]);
 
-    /**
-     * Register a focus zone
-     */
-    const registerZone = useCallback((zone: FocusZone) => {
-        zoneRegistry.current.set(zone.id, zone);
+  const clearScreenFocus = useCallback((screenName: string) => {
+    setFocusMemory((prev) => {
+      const newMemory = { ...prev };
+      delete newMemory[screenName];
+      return newMemory;
+    });
+  }, []);
 
-        if (__DEV__) {
-            console.log('[TVNavigation] Registered zone:', zone.id);
-        }
-    }, []);
+  const clearAllFocusMemory = useCallback(() => {
+    setFocusMemory({});
+  }, []);
 
-    /**
-     * Unregister a focus zone
-     */
-    const unregisterZone = useCallback((id: string) => {
-        zoneRegistry.current.delete(id);
+  // =============================================================================
+  // Voice Search Actions
+  // =============================================================================
 
-        if (currentZoneId === id) {
-            setCurrentZoneId(null);
-        }
+  const openVoiceSearch = useCallback(() => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      isOpen: true,
+      query: '',
+      error: null,
+    }));
+  }, []);
 
-        if (__DEV__) {
-            console.log('[TVNavigation] Unregistered zone:', id);
-        }
-    }, [currentZoneId]);
+  const closeVoiceSearch = useCallback(() => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      isOpen: false,
+      isListening: false,
+      query: '',
+      error: null,
+    }));
+  }, []);
 
-    /**
-     * Set the active focus zone
-     */
-    const setActiveZone = useCallback((zoneId: string) => {
-        const previousZone = currentZoneId ? zoneRegistry.current.get(currentZoneId) : null;
-        const newZone = zoneRegistry.current.get(zoneId);
+  const setVoiceListening = useCallback((isListening: boolean) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      isListening,
+    }));
+  }, []);
 
-        // Trigger zone callbacks
-        previousZone?.onLeave?.();
-        newZone?.onEnter?.();
+  const setVoiceQuery = useCallback((query: string) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      query,
+    }));
+  }, []);
 
-        setCurrentZoneId(zoneId);
+  const setVoiceError = useCallback((error: string | null) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      error,
+      isListening: false,
+    }));
+  }, []);
 
-        if (__DEV__) {
-            console.log('[TVNavigation] Active zone changed:', previousZone?.id, '->', zoneId);
-        }
-    }, [currentZoneId]);
+  const setVoiceAvailable = useCallback((isAvailable: boolean) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      isAvailable,
+      // Clear the reason if voice becomes available
+      unavailableReason: isAvailable ? null : prev.unavailableReason,
+    }));
+  }, []);
 
-    /**
-     * Get a zone by ID
-     */
-    const getZone = useCallback((zoneId: string): FocusZone | undefined => {
-        return zoneRegistry.current.get(zoneId);
-    }, []);
+  const setVoiceUnavailableReason = useCallback((reason: VoiceUnavailableReason) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      unavailableReason: reason,
+      // If setting a reason, voice is not available
+      isAvailable: reason === null,
+    }));
+  }, []);
 
-    /**
-     * Focus the first element in a zone (or globally)
-     */
-    const focusFirst = useCallback((zoneId?: string) => {
-        const targetZoneId = zoneId || currentZoneId;
+  // =============================================================================
+  // Context Menu Actions
+  // =============================================================================
 
-        if (targetZoneId) {
-            const zone = zoneRegistry.current.get(targetZoneId);
-            if (zone?.refs[0]) {
-                setFocus(zone.refs[0]);
-            }
-        } else {
-            // Focus first registered element
-            const firstElement = focusableRegistry.current.values().next().value;
-            if (firstElement?.ref) {
-                setFocus(firstElement.ref);
-            }
-        }
-    }, [currentZoneId, setFocus]);
+  const openContextMenu = useCallback((config: {
+    targetId: string;
+    items: ContextMenuItem[];
+    position?: { x: number; y: number };
+    title?: string;
+  }) => {
+    // Close any existing context menu before opening a new one
+    setContextMenu({
+      isOpen: true,
+      targetId: config.targetId,
+      items: config.items,
+      position: config.position || null,
+      title: config.title,
+    });
+  }, []);
 
-    /**
-     * Focus the last element in a zone (or globally)
-     */
-    const focusLast = useCallback((zoneId?: string) => {
-        const targetZoneId = zoneId || currentZoneId;
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(defaultContextMenuState);
+  }, []);
 
-        if (targetZoneId) {
-            const zone = zoneRegistry.current.get(targetZoneId);
-            if (zone?.refs.length) {
-                setFocus(zone.refs[zone.refs.length - 1]);
-            }
-        } else {
-            // Focus last registered element
-            const elements = Array.from(focusableRegistry.current.values());
-            const lastElement = elements[elements.length - 1];
-            if (lastElement?.ref) {
-                setFocus(lastElement.ref);
-            }
-        }
-    }, [currentZoneId, setFocus]);
+  const selectContextMenuItem = useCallback((itemId: string) => {
+    const item = contextMenu.items.find((i) => i.id === itemId);
+    if (item && !item.disabled) {
+      item.onSelect();
+      // Auto-close the menu after selection
+      setContextMenu(defaultContextMenuState);
+    }
+  }, [contextMenu.items]);
 
-    /**
-     * Focus the previous element in history
-     */
-    const focusPrevious = useCallback(() => {
-        if (focusHistory.length > 1) {
-            const newHistory = [...focusHistory];
-            newHistory.pop(); // Remove current
-            const previousId = newHistory[newHistory.length - 1];
-            if (previousId) {
-                setFocusById(previousId);
-                setFocusHistory(newHistory);
-            }
-        }
-    }, [focusHistory, setFocusById]);
+  // =============================================================================
+  // Context Value
+  // =============================================================================
 
-    /**
-     * Focus the next element (cycle through registered elements)
-     */
-    const focusNext = useCallback(() => {
-        const elements = Array.from(focusableRegistry.current.values());
-        if (elements.length === 0) return;
+  const value: TVNavigationContextValue = {
+    // Focus History
+    focusHistory,
+    pushFocusHistory,
+    popFocusHistory,
+    clearFocusHistory,
 
-        const currentIndex = elements.findIndex(el => el.id === currentFocusId);
-        const nextIndex = (currentIndex + 1) % elements.length;
-        const nextElement = elements[nextIndex];
+    // Focus Memory
+    focusMemory,
+    setScreenFocus,
+    getScreenFocus,
+    clearScreenFocus,
+    clearAllFocusMemory,
 
-        if (nextElement?.ref) {
-            setFocus(nextElement.ref);
-            setCurrentFocusId(nextElement.id);
-        }
-    }, [currentFocusId, setFocus]);
+    // Voice Search
+    voiceSearch,
+    openVoiceSearch,
+    closeVoiceSearch,
+    setVoiceListening,
+    setVoiceQuery,
+    setVoiceError,
+    setVoiceAvailable,
+    setVoiceUnavailableReason,
 
-    /**
-     * Push an ID to focus history
-     */
-    const pushFocusHistory = useCallback((id: string) => {
-        setFocusHistory(prev => {
-            // Avoid duplicates at the end
-            if (prev[prev.length - 1] === id) return prev;
+    // Context Menu
+    contextMenu,
+    openContextMenu,
+    closeContextMenu,
+    selectContextMenuItem,
 
-            const newHistory = [...prev, id];
-            // Trim if exceeds max size
-            if (newHistory.length > maxHistorySize) {
-                return newHistory.slice(-maxHistorySize);
-            }
-            return newHistory;
-        });
-    }, [maxHistorySize]);
+    // Utility
+    isTV: Platform.isTV,
+    currentFocusId,
+    setCurrentFocusId,
+  };
 
-    /**
-     * Pop and return the last ID from focus history
-     */
-    const popFocusHistory = useCallback((): string | undefined => {
-        let popped: string | undefined;
-        setFocusHistory(prev => {
-            if (prev.length === 0) return prev;
-            const newHistory = [...prev];
-            popped = newHistory.pop();
-            return newHistory;
-        });
-        return popped;
-    }, []);
-
-    /**
-     * Clear focus history
-     */
-    const clearFocusHistory = useCallback(() => {
-        setFocusHistory([]);
-    }, []);
-
-    /**
-     * Announce a message for accessibility
-     */
-    const announceForAccessibility = useCallback((message: string) => {
-        AccessibilityInfo.announceForAccessibility(message);
-    }, []);
-
-    // Set initial zone on mount
-    useEffect(() => {
-        if (initialZoneId && isTV) {
-            setActiveZone(initialZoneId);
-        }
-    }, [initialZoneId, isTV, setActiveZone]);
-
-    const contextValue: TVNavigationContextValue = {
-        isTV,
-        currentFocusId,
-        currentZoneId,
-        focusHistory,
-        setFocus,
-        setFocusById,
-        registerFocusable,
-        unregisterFocusable,
-        registerZone,
-        unregisterZone,
-        setActiveZone,
-        getZone,
-        focusFirst,
-        focusLast,
-        focusPrevious,
-        focusNext,
-        pushFocusHistory,
-        popFocusHistory,
-        clearFocusHistory,
-        announceForAccessibility,
-    };
-
-    return (
-        <TVNavigationContext.Provider value={contextValue}>
-            {children}
-        </TVNavigationContext.Provider>
-    );
+  return (
+    <TVNavigationContext.Provider value={value}>
+      {children}
+    </TVNavigationContext.Provider>
+  );
 }
+
+// =============================================================================
+// Custom Hook
+// =============================================================================
 
 /**
  * Hook to access TV navigation context
- *
- * @throws Error if used outside TVNavigationProvider
+ * @throws Error if used outside of TVNavigationProvider
  */
 export function useTVNavigation(): TVNavigationContextValue {
-    const context = useContext(TVNavigationContext);
-    if (context === undefined) {
-        throw new Error('useTVNavigation must be used within a TVNavigationProvider');
-    }
-    return context;
+  const context = useContext(TVNavigationContext);
+  if (context === undefined) {
+    throw new Error('useTVNavigation must be used within a TVNavigationProvider');
+  }
+  return context;
 }
 
 /**
- * Hook to safely access TV navigation context (returns null if not in provider)
- * Useful for components that may or may not be in a TV context
+ * Optional hook that returns null instead of throwing if used outside provider
+ * Useful for components that may run on both TV and non-TV platforms
  */
-export function useTVNavigationSafe(): TVNavigationContextValue | null {
-    return useContext(TVNavigationContext) || null;
+export function useTVNavigationOptional(): TVNavigationContextValue | null {
+  return useContext(TVNavigationContext) || null;
 }
-
-export default TVNavigationContext;
