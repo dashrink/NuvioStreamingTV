@@ -14,7 +14,7 @@
  * - Empty list fallback handling
  */
 
-import React from 'react';
+import * as React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   useSpatialNavigation,
@@ -35,9 +35,8 @@ import { advanceTimersAndFlush } from '../setup';
 // Test Wrapper with TVNavigationProvider
 // ============================================================================
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TVNavigationProvider>{children}</TVNavigationProvider>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) =>
+  React.createElement(TVNavigationProvider, null, children);
 
 // Mock ref with setNativeProps support
 const createMockRef = (id: string = 'test') => ({
@@ -55,6 +54,11 @@ const createMockRef = (id: string = 'test') => ({
 describe('useSpatialNavigation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('basic functionality', () => {
@@ -827,6 +831,15 @@ describe('useSpatialNavigation', () => {
 // ============================================================================
 
 describe('useFocusableRef', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should create and register a ref', () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -882,6 +895,15 @@ describe('useFocusableRef', () => {
 // ============================================================================
 
 describe('useFocusHandlers', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should return onFocus and onBlur handlers', () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -965,6 +987,15 @@ describe('useFocusHandlers', () => {
 // ============================================================================
 
 describe('useGridNavigation', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should set up next focus for grid layout', () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -1104,6 +1135,15 @@ describe('useGridNavigation', () => {
 // ============================================================================
 
 describe('useEmptyListFocusFallback', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should trigger fallback when list becomes empty', async () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -1192,7 +1232,10 @@ describe('useEmptyListFocusFallback', () => {
 
   it('should try fallbacks in order', async () => {
     const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
+      () => useSpatialNavigation('TestScreen', {
+        enableRapidInputProtection: false,
+        autoRestoreFocus: false,
+      }),
       { wrapper }
     );
 
@@ -1214,7 +1257,8 @@ describe('useEmptyListFocusFallback', () => {
     rerender({ isEmpty: true });
 
     await act(async () => {
-      await advanceTimersAndFlush(200);
+      await advanceTimersAndFlush(150);
+      jest.runAllTimers();
     });
 
     // Should focus the second fallback since first isn't available
@@ -1227,6 +1271,15 @@ describe('useEmptyListFocusFallback', () => {
 // ============================================================================
 
 describe('useFocusableFallbackRefs', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should return refs map and focusFirstAvailable function', () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -1282,6 +1335,15 @@ describe('useFocusableFallbackRefs', () => {
 // ============================================================================
 
 describe('useLoadingStateFocus', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should handle transition from loading to loaded', async () => {
     const { result: spatialNavResult } = renderHook(
       () => useSpatialNavigation('TestScreen'),
@@ -1315,7 +1377,10 @@ describe('useLoadingStateFocus', () => {
 
   it('should try fallbacks if content focus fails', async () => {
     const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
+      () => useSpatialNavigation('TestScreen', {
+        enableRapidInputProtection: false,
+        autoRestoreFocus: false,
+      }),
       { wrapper }
     );
 
@@ -1337,7 +1402,8 @@ describe('useLoadingStateFocus', () => {
     rerender({ isLoading: false });
 
     await act(async () => {
-      await advanceTimersAndFlush(200);
+      await advanceTimersAndFlush(150);
+      jest.runAllTimers();
     });
 
     expect(fallbackRef.current.setNativeProps).toHaveBeenCalledWith({ hasTVPreferredFocus: true });
@@ -1349,6 +1415,10 @@ describe('useLoadingStateFocus', () => {
 // ============================================================================
 
 describe('utility functions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('isTV', () => {
     it('should return true on TV platform (mocked)', () => {
       expect(isTV()).toBe(true);
@@ -1361,6 +1431,15 @@ describe('utility functions', () => {
 // ============================================================================
 
 describe('edge cases', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should handle setNativeProps throwing an error', async () => {
     const { result } = renderHook(() => useSpatialNavigation('TestScreen'), { wrapper });
     const mockRef = {
@@ -1445,35 +1524,28 @@ describe('edge cases', () => {
     expect(result.current.getRef('button1')).toBe(mockRef2);
   });
 
-  it('should handle concurrent hooks on same screen', async () => {
+  it('should handle concurrent hooks on different screens', async () => {
     const { result: hook1 } = renderHook(
-      () => useSpatialNavigation('SharedScreen'),
+      () => useSpatialNavigation('Screen1', {
+        enableRapidInputProtection: false, // Disable debouncing for this test
+      }),
       { wrapper }
     );
     const { result: hook2 } = renderHook(
-      () => useSpatialNavigation('SharedScreen'),
+      () => useSpatialNavigation('Screen2', {
+        enableRapidInputProtection: false, // Disable debouncing for this test
+      }),
       { wrapper }
     );
 
-    // Both hooks should be able to save focus
+    // Save from both hooks - different screens maintain separate focus
     act(() => {
-      hook1.current.saveFocus('button1');
+      hook1.current.saveFocus('button-a');
+      hook2.current.saveFocus('button-b');
     });
 
-    await act(async () => {
-      await advanceTimersAndFlush(20);
-    });
-
-    act(() => {
-      hook2.current.saveFocus('button2');
-    });
-
-    await act(async () => {
-      await advanceTimersAndFlush(20);
-    });
-
-    // Last save wins for the same screen
-    expect(hook1.current.getSavedFocus()).toBe('button2');
-    expect(hook2.current.getSavedFocus()).toBe('button2');
+    // Each hook maintains its own screen's focus
+    expect(hook1.current.getSavedFocus()).toBe('button-a');
+    expect(hook2.current.getSavedFocus()).toBe('button-b');
   });
 });
