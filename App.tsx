@@ -41,7 +41,7 @@ import UpdateService from './src/services/updateService';
 import { memoryMonitorService } from './src/services/memoryMonitorService';
 import { aiService } from './src/services/aiService';
 import { AccountProvider, useAccount } from './src/contexts/AccountContext';
-import { ProfileProvider } from './src/contexts/ProfileContext';
+import { ProfileProvider, useProfile } from './src/contexts/ProfileContext';
 import { ToastProvider } from './src/contexts/ToastContext';
 import { mmkvStorage } from './src/services/mmkvStorage';
 import AnnouncementOverlay from './src/components/AnnouncementOverlay';
@@ -94,15 +94,40 @@ const ThemedApp = () => {
     } catch { }
   }, []);
   const { currentTheme } = useTheme();
+  const { activeProfile, loadProfiles } = useProfile();
   const [isAppReady, setIsAppReady] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
+  const [hasActiveProfile, setHasActiveProfile] = useState<boolean | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
 
 
 
   useEffect(() => {
-    console.log('[App] isAppReady:', isAppReady, 'hasCompletedOnboarding:', hasCompletedOnboarding);
-  }, [isAppReady, hasCompletedOnboarding]);
+    console.log('[App] isAppReady:', isAppReady, 'hasCompletedOnboarding:', hasCompletedOnboarding, 'hasActiveProfile:', hasActiveProfile);
+  }, [isAppReady, hasCompletedOnboarding, hasActiveProfile]);
+
+  // Update hasActiveProfile when activeProfile changes
+  useEffect(() => {
+    setHasActiveProfile(activeProfile !== null);
+  }, [activeProfile]);
+
+  // Navigate to MainTabs after profile selection
+  useEffect(() => {
+    // Only navigate if app is ready, onboarding is complete, and a profile was just selected
+    if (isAppReady && hasCompletedOnboarding && activeProfile && navigationRef.current) {
+      // Check if we can navigate (navigator is ready)
+      const navState = navigationRef.current.getRootState();
+      if (navState) {
+        // Get current route name
+        const currentRoute = navState.routes[navState.index];
+        // Only navigate if we're on ProfileSelector and profile was just selected
+        if (currentRoute?.name === 'ProfileSelector') {
+          console.log('[App] Profile selected, navigating to MainTabs');
+          navigationRef.current.navigate('MainTabs');
+        }
+      }
+    }
+  }, [activeProfile, isAppReady, hasCompletedOnboarding]);
 
   // Update popup functionality
   const {
@@ -135,6 +160,9 @@ const ThemedApp = () => {
         const onboardingCompleted = await mmkvStorage.getItem('hasCompletedOnboarding');
         setHasCompletedOnboarding(onboardingCompleted === 'true');
 
+        // Load profiles (active profile state will be updated via useEffect)
+        await loadProfiles();
+
         // Initialize update service
         await UpdateService.initialize();
 
@@ -159,6 +187,8 @@ const ThemedApp = () => {
         console.error('Error initializing app:', error);
         // Default to showing onboarding if we can't check
         setHasCompletedOnboarding(false);
+        // Default to showing profile selector if we can't check
+        setHasActiveProfile(false);
       }
     };
 
@@ -207,8 +237,8 @@ const ThemedApp = () => {
   };
 
   // Don't render anything until we know the onboarding status
-  const shouldShowApp = isAppReady && hasCompletedOnboarding !== null;
-  const initialRouteName = hasCompletedOnboarding ? 'MainTabs' : 'Onboarding';
+  const shouldShowApp = isAppReady && hasCompletedOnboarding !== null && hasActiveProfile !== null;
+  const initialRouteName = !hasCompletedOnboarding ? 'Onboarding' : (!hasActiveProfile ? 'ProfileSelector' : 'MainTabs');
 
   return (
     <AccountProvider>
