@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "002-enhanced-tv-navigation-system",
+  "state": "building",
+  "subtasks": {
+    "completed": 21,
+    "total": 35,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Screen-Level TV Support",
+    "id": null,
+    "total": 6
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 648,
+    "started_at": "2026-01-11T00:57:26.870166"
+  },
+  "last_update": "2026-01-11T04:03:42.172149"
+}

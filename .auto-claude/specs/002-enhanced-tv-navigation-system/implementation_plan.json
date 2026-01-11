@@ -323,7 +323,7 @@
           "id": "4.5",
           "title": "Enhance StreamCard with TV focus",
           "description": "Add TV focus support to stream selection cards",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/StreamCard.tsx"
           ],
@@ -332,13 +332,15 @@
             "Focus state is clearly visible",
             "Select plays the stream",
             "Proper focus order maintained"
-          ]
+          ],
+          "notes": "Created StreamCard.tv.tsx with complete TV focus support:\n\n1. **D-pad Focusable**: Stream cards wrapped in Focusable component for TV navigation\n2. **Visible Focus States**:\n   - Scale animation: 1.0 \u2192 1.03 on focus\n   - Animated border: 2px primary color border on focus\n   - Shadow animation for Apple TV\n   - Opacity: 0.95 \u2192 1.0 on focus\n3. **Long-press Context Menu**:\n   - Triggers TV context menu on 300ms+ press via useContextMenu hook\n   - Actions: Play, Copy URL, Download (if enabled)\n   - Falls back to copy URL on non-TV platforms\n4. **Short Press**: Plays the stream immediately\n5. **Download Button**:\n   - Separately focusable for D-pad navigation\n   - Scale animation: 1.0 \u2192 1.1 on focus\n   - nextFocus navigation between card and button (left/right)\n6. **Focus Tracking**:\n   - Integrates with TVNavigationContext via useTVNavigationOptional\n   - Sets currentFocusId on focus for global tracking\n7. **Apple TV Support**: tvParallaxProperties for depth effects\n8. **New Props**: focusId, hasTVPreferredFocus, onFocus, onBlur, nextFocusUp/Down/Left/Right\n9. **Accessibility**: Proper accessibilityLabel and accessibilityHint\n10. **Loading State**: Disables focus when stream is loading\n\nCommitted as ed255b40.",
+          "updated_at": "2026-01-10T23:32:36.466127+00:00"
         },
         {
           "id": "4.6",
           "title": "Enhance Settings screens with TV navigation",
           "description": "Add TV navigation to all settings screens and toggles",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/SettingsScreen.tsx",
             "src/screens/PlayerSettingsScreen.tsx",
@@ -349,7 +351,9 @@
             "Toggle switches work with select button",
             "Dropdown menus are navigable",
             "Back button returns to previous screen"
-          ]
+          ],
+          "notes": "Created TV-specific settings screens with complete D-pad navigation:\n\n1. **SettingsScreen.tv.tsx**: \n   - All settings items wrapped in Focusable component for D-pad navigation\n   - Toggle switches toggle on select button press via isToggle/toggleValue/onToggleChange props\n   - Tablet sidebar categories fully navigable with focus states\n   - Focus memory persistence via useSpatialNavigation hook\n   - Integration with TVNavigationContext for global focus tracking\n   - Visible focus states: scale 1.02, 2px primary color border\n\n2. **PlayerSettingsScreen.tv.tsx**:\n   - Player options (internal, VLC, Infuse, etc.) focusable via D-pad\n   - ToggleSettingItem component handles switch toggle on select press\n   - Autoplay and Always Resume toggles work with select button\n   - Back button focusable and navigates to previous screen\n\n3. **ThemeScreen.tv.tsx**:\n   - Theme cards focusable with visible focus states (scale 1.05, 3px border)\n   - Category filter tabs (All, Dark, Colorful, Custom) navigable via D-pad\n   - Theme editor with D-pad support for color selection buttons\n   - Create theme button focusable\n   - Dominant color toggle works with select button\n   - Theme edit/delete actions on custom themes are separately focusable\n\nCommitted as 87b59219.",
+          "updated_at": "2026-01-10T23:41:59.986475+00:00"
         }
       ]
     },
@@ -362,7 +366,7 @@
           "id": "5.1",
           "title": "Enhance HomeScreen with TV navigation",
           "description": "Add full TV navigation support to home screen with focus memory",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/HomeScreen.tsx"
           ],
@@ -371,13 +375,15 @@
             "Focus memory persists on return",
             "Hero and catalog sections work together",
             "Search accessible via up navigation or voice button"
-          ]
+          ],
+          "notes": "Created HomeScreen.tv.tsx with complete TV navigation support:\n\n1. **All sections navigable via D-pad**: Hero section, continue watching, this week section, and all catalog sections are fully navigable using D-pad.\n\n2. **Focus memory persists on return**: Uses useSpatialNavigation hook with autoRestoreFocus enabled. Focus state is saved via TVNavigationContext and restored when navigating back to home screen.\n\n3. **Hero and catalog sections work together**: Inter-section navigation implemented with getSectionNextFocusUp/Down helpers that wire nextFocusUp/Down between hero, catalog sections, and load more button.\n\n4. **Search accessible via voice button**: useTVEventHandler listens for playPause event to trigger voice search via tvNav.openVoiceSearch().\n\nAdditional features:\n- AppleTVHero automatically used on TV platform regardless of settings.heroStyle\n- Focusable wrapper on Load More and Add Catalogs buttons for complete D-pad coverage\n- TV-optimized layout with larger spacing, fonts, and touch targets\n- Section ref management via getCatalogSectionRef for dynamic catalog sections\n- handleSectionFocus callback for focus tracking and memory persistence\n\nCommitted as af76b783.",
+          "updated_at": "2026-01-10T23:46:55.339560+00:00"
         },
         {
           "id": "5.2",
           "title": "Enhance MetadataScreen with TV navigation",
           "description": "Add TV navigation to movie/series detail screens",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/MetadataScreen.tsx"
           ],
@@ -386,13 +392,15 @@
             "Cast section is horizontally scrollable",
             "Episodes list navigable for series",
             "Back returns to previous screen with focus restored"
-          ]
+          ],
+          "notes": "Created TV-specific versions of MetadataScreen, HeroSection, and CastSection with complete D-pad navigation support. Features: (1) All buttons (Play, Save, Collection, Ratings) are D-pad focusable with visible focus states, (2) Cast section horizontally scrollable with D-pad and focus memory, (3) Integration with TVNavigationContext for global focus state, (4) Focus restoration on back navigation, (5) tvParallaxProperties for Apple TV depth effects. Episodes list navigation handled by existing SeriesContent.tv.tsx.",
+          "updated_at": "2026-01-10T23:56:34.139489+00:00"
         },
         {
           "id": "5.3",
           "title": "Enhance SearchScreen with TV support",
           "description": "Add TV keyboard input and result navigation",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/SearchScreen.tsx"
           ],
@@ -401,7 +409,9 @@
             "Voice search integration",
             "Results grid navigable via D-pad",
             "Focus states on all result items"
-          ]
+          ],
+          "notes": "Added SearchScreen.tv.tsx with complete TV navigation support including: TV keyboard for text input, voice search integration, D-pad navigable results grid with horizontal FlatLists, focus states with scale animations, recent searches with D-pad navigation, long-press context menu integration, and focus memory persistence.",
+          "updated_at": "2026-01-11T00:03:07.303260+00:00"
         },
         {
           "id": "5.4",
@@ -683,5 +693,5 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-10T23:28:46.120037+00:00"
+  "last_updated": "2026-01-11T00:03:07.303270+00:00"
 }

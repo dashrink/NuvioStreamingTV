@@ -1,0 +1,140 @@
+{
+  "discovered_files": {
+    "babel.config.js": {
+      "description": "Babel config needs react-native-reanimated/plugin added as the last plugin for TV animations to work properly. Currently has react-native-worklets/plugin and react-native-boost/plugin.",
+      "category": "configuration",
+      "discovered_at": "2026-01-10T21:02:40.261944+00:00"
+    },
+    "src/contexts/ThemeContext.tsx": {
+      "description": "Good reference pattern for creating new contexts. Uses createContext, Provider pattern, custom hook (useTheme), and mmkvStorage for persistence.",
+      "category": "pattern",
+      "discovered_at": "2026-01-10T21:02:40.273471+00:00"
+    },
+    "src/navigation/AppNavigator.tsx": {
+      "description": "TV focus restoration integrated at navigation level. TVFocusParams type added to all route params (lastFocusId?: string). TVNavigationProvider wraps app root inside PostHogProvider. Screens can use useTVFocusRestoration hook or TVScreenWrapper.tv.tsx component for automatic focus persistence using: (1) useFocusEffect for screen focus/blur lifecycle, (2) navigation.setParams({lastFocusId}) for persistence, (3) requestAnimationFrame for timing after layout, (4) setNativeProps({hasTVPreferredFocus: true}) for runtime focus changes.",
+      "category": "navigation",
+      "discovered_at": "2026-01-10T21:34:06.533328+00:00"
+    },
+    "src/contexts/TVNavigationContext.tsx": {
+      "description": "TVNavigationContext provides global TV navigation state: focus history (push/pop/clear), per-screen focus memory (setScreenFocus, getScreenFocus), voice search state (open/close/listening/query), context menu state (open/close/select items), current focus ID, and isTV platform detection. Use useTVNavigation() hook or useTVNavigationOptional() for graceful handling outside provider.",
+      "category": "context",
+      "discovered_at": "2026-01-10T21:06:02.465009+00:00"
+    },
+    "src/hooks/useTVEventHandler.ts": {
+      "description": "TV event handler hook with lifecycle management. Exports: useTVEventHandler(callback, options), useIsTV(), useTVEventHandlerAvailable(), and event type guards (isNavigationEvent, isSelectEvent, isLongSelectEvent, isMenuEvent, isPlayPauseEvent, isSwipeEvent). Handles missing TVEventHandler gracefully with try/catch import and existence check.",
+      "category": "hooks",
+      "discovered_at": "2026-01-10T21:07:47.080624+00:00"
+    },
+    "src/hooks/useLongPress.ts": {
+      "description": "Long-press detection hook with platform-specific implementations. useLongPress for Pressable components (onPressIn/onPressOut handlers), useLongPressWithTVEvents for TV remote integration (uses native longSelect on Android TV, timer-based 300ms threshold on Apple TV). Exports: LONG_PRESS_THRESHOLD_MS (300), supportsNativeLongPress(), requiresTimerBasedLongPress(), isTV().",
+      "category": "hooks",
+      "discovered_at": "2026-01-10T21:10:24.049554+00:00"
+    },
+    "src/hooks/useSpatialNavigation.ts": {
+      "description": "Spatial navigation hook with focus memory and nextFocus management. Exports: useSpatialNavigation(screenName, options), useFocusableRef(spatialNav, focusId, nextFocus), useFocusHandlers(spatialNav, focusId, callbacks), useGridNavigation(spatialNav, config). Key features: registerRef/unregisterRef, getNodeHandle, saveFocus/restoreFocus, setNextFocus/getNextFocusProps, focusElement. Auto-restores focus using useFocusEffect with requestAnimationFrame delay.",
+      "category": "hooks",
+      "discovered_at": "2026-01-10T21:13:10.961202+00:00"
+    },
+    "src/components/common/Focusable.tv.tsx": {
+      "description": "TV-specific focusable wrapper component with reanimated focus animations (scale 1.0-1.05, spring damping:15 stiffness:150), tvParallaxProperties for Apple TV, hasTVPreferredFocus/isTVSelectable support, animated border/shadow effects, useLongPress integration, nextFocus navigation with findNodeHandle, and forwardRef for imperative focus control. Use Focusable.tsx as non-TV fallback.",
+      "category": "component",
+      "discovered_at": "2026-01-10T21:17:40.872022+00:00"
+    },
+    "src/components/tv/TVFocusGuard.tv.tsx": {
+      "description": "TVFocusGuard is a focus boundary component for TV navigation. Supports three modes: 'trap' (focus cannot escape, for modals), 'loop' (wraps around), and 'normal' (allows escape). Features: FocusGuardContext for child registration, useFocusGuardChild hook for children to register with parent guard, auto-focus on mount, menu button escape handling, empty container detection. Use with Focusable components to create focus-constrained regions.",
+      "category": "component",
+      "discovered_at": "2026-01-10T21:21:23.802958+00:00"
+    },
+    "src/components/tv/TVContextMenu.tv.tsx": {
+      "description": "TVContextMenu is a TV-specific context menu component for long-press actions. Features: (1) Integrates with TVNavigationContext for state management via openContextMenu/closeContextMenu, (2) Full D-pad navigation with wrap-around, (3) Animated entrance/exit using react-native-reanimated spring physics, (4) Back/menu button to close, (5) Focus trapping within menu, (6) Supports icons, disabled items, and destructive actions. Use with useContextMenu hook for convenient action building. Add to app root alongside TVNavigationProvider.",
+      "category": "component",
+      "discovered_at": "2026-01-10T21:26:18.126055+00:00"
+    },
+    "src/hooks/useContextMenu.ts": {
+      "description": "useContextMenu hook provides convenient way to open TV context menus with pre-defined actions. Exports: useContextMenu() for full control, useQuickContextMenu() for simplified usage. Supports actions: addToList, removeFromList, markWatched, markUnwatched, share, info, play, playTrailer, download, delete, favorite, unfavorite, refresh, copyLink. Automatically builds menu items based on media item state (e.g., shows \"Add to List\" if not already in list).",
+      "category": "hook",
+      "discovered_at": "2026-01-10T21:26:18.146806+00:00"
+    },
+    "src/components/tv/TVVoiceSearch.tv.tsx": {
+      "description": "TVVoiceSearch is a TV-specific voice search modal component. Features: (1) Opens via TVNavigationContext (openVoiceSearch/closeVoiceSearch), (2) Animated listening indicator with pulsing microphone, (3) Text input fallback when voice unavailable, (4) Search results display with D-pad navigation, (5) Animated entrance/exit using react-native-reanimated, (6) Back/menu button to close. Export VoiceSearchResult type for search results. Use onSearch callback for query submission and onResultSelect for result selection.",
+      "category": "component",
+      "discovered_at": "2026-01-10T21:29:47.020525+00:00"
+    },
+    "src/hooks/useTVBackHandler.ts": {
+      "description": "TV back button handling hook with priority-based handling: (1) Close context menus first (restore focus to trigger), (2) Close voice search, (3) Custom handler, (4) Navigation back, (5) Block exit at root screens. Uses global handler registration pattern via setTVNavigationBackHandler/clearTVNavigationBackHandler to bridge between provider-level TVBackHandler and navigation-aware components. Handles both Android TV hardware back (BackHandler) and Apple TV menu button (TVEventHandler).",
+      "category": "hooks",
+      "discovered_at": "2026-01-10T23:05:29.909164+00:00"
+    },
+    "src/components/home/ContentItem.tv.tsx": {
+      "description": "TV-specific ContentItem component with D-pad focusability via Focusable wrapper, visible focus states (scale 1.05, animated border), long-press (300ms+) context menu integration via useContextMenu hook, and focus tracking via TVNavigationContext. Metro auto-loads this file when APP_VARIANT=tv. Adds new props: focusId, hasTVPreferredFocus, onFocus, onBlur. Uses tvParallaxProperties for Apple TV depth effects.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:11:05.911181+00:00"
+    },
+    "src/components/home/CatalogSection.tv.tsx": {
+      "description": "TV-specific CatalogSection component with horizontal D-pad navigation. Features: (1) Auto-scrolls to focused item using FlatList.scrollToIndex with viewPosition 0.3, (2) Focus memory persistence via TVNavigationContext per-section (saves item index), (3) View All button is TV focusable with Focusable wrapper, (4) Supports nextFocusUp/Down props for inter-row navigation, (5) Uses ContentItem.tv.tsx with focusId, onFocus, onBlur props for item-level focus tracking.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:13:57.507286+00:00"
+    },
+    "src/components/home/HeroCarousel.tv.tsx": {
+      "description": "TV-specific HeroCarousel component with D-pad left/right navigation, visible focus states (scale 1.03, border), auto-rotation pause on focus, integration with TVNavigationContext for focus memory, and support for nextFocusUp/Down inter-section navigation. Uses Focusable wrapper and useTVEventHandler for D-pad input.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:21:21.221293+00:00"
+    },
+    "src/components/home/AppleTVHero.tv.tsx": {
+      "description": "TV-specific AppleTVHero component with D-pad left/right navigation for hero items, focusable Play/Save buttons with nextFocus navigation between them, visible focus states, auto-rotation pause when any element is focused, trailer support with focus-aware playback, and integration with TVNavigationContext. Features: hero navigation hints, pagination dots, and smooth transitions.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:21:21.259605+00:00"
+    },
+    "src/components/metadata/SeriesContent.tv.tsx": {
+      "description": "TV-specific SeriesContent component with D-pad navigable season tabs, episode list with focus states, auto-scrolling to focused items, long-press (300ms+) context menu support for episodes, focus memory persistence per section via TVNavigationContext, tvParallaxProperties for Apple TV depth effects. Uses Focusable wrapper for all interactive elements (season buttons, episode cards, view mode toggle). Modal actions are also TV-focusable for modal navigation.",
+      "category": "tv-component",
+      "discovered_at": "2026-01-10T23:28:46.082190+00:00"
+    },
+    "src/components/StreamCard.tv.tsx": {
+      "description": "TV-specific StreamCard component with D-pad focusability, visible focus states (scale 1.03, animated border), long-press (300ms+) context menu integration via useContextMenu hook for Copy URL/Download/Play actions. Download button is separately focusable with nextFocus navigation between card and button. Integrates with TVNavigationContext for focus tracking. Uses Focusable wrapper and tvParallaxProperties for Apple TV depth effects.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:31:50.664614+00:00"
+    },
+    "src/screens/SettingsScreen.tv.tsx": {
+      "description": "TV-specific SettingsScreen with complete D-pad navigation. All settings items wrapped in Focusable component for D-pad navigation. Toggle switches work with select button via isToggle/toggleValue/onToggleChange props pattern. Tablet sidebar categories fully navigable. Focus memory persistence via useSpatialNavigation('SettingsScreen'). Uses handleSettingFocus callback to save focus state. Support for social buttons (Ko-fi, Discord, Reddit) also focusable.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:42:12.053750+00:00"
+    },
+    "src/screens/PlayerSettingsScreen.tv.tsx": {
+      "description": "TV-specific PlayerSettingsScreen with D-pad navigation. Uses SettingItem component for selectable options (player selection) and ToggleSettingItem component for switches (autoplay, resume). Both components use Focusable wrapper and toggle on select button press. Back button is focusable with hasTVPreferredFocus for initial focus.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:42:12.087473+00:00"
+    },
+    "src/screens/ThemeScreen.tv.tsx": {
+      "description": "TV-specific ThemeScreen with D-pad navigation. Theme cards use Focusable with scale 1.05 animation. Filter tabs (All, Dark, Colorful, Custom) are horizontally scrollable and focusable. Theme editor (ThemeColorEditor) has focusable back, name input container, save buttons, and color selector buttons. Create theme button and dominant color toggle are focusable. Edit/delete actions on custom themes are separately focusable inside the theme card.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:42:12.095410+00:00"
+    },
+    "src/screens/HomeScreen.tv.tsx": {
+      "description": "TV-specific HomeScreen with complete D-pad navigation: (1) All sections navigable via D-pad with inter-section navigation (nextFocusUp/Down between hero, catalogs, load more button), (2) Focus memory via useSpatialNavigation hook persists across screen navigation, (3) Voice search triggered via playPause remote button via useTVEventHandler, (4) AppleTVHero automatically used on TV regardless of settings.heroStyle, (5) Section refs managed via getCatalogSectionRef for dynamic catalog sections, (6) Focusable wrapper on Load More and Add Catalogs buttons for full D-pad coverage. Metro auto-loads this file when APP_VARIANT=tv.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:46:24.392504+00:00"
+    },
+    "src/screens/MetadataScreen.tv.tsx": {
+      "description": "TV-specific MetadataScreen with complete D-pad navigation. Features: (1) TVNavigationContext integration for global focus state, (2) useSpatialNavigation('MetadataScreen') for focus memory with autoRestoreFocus, (3) Section-aware focus tracking via currentFocusedSection state and handleXxxSectionFocus callbacks, (4) useTVBackHandler for back navigation with focus restoration, (5) Inter-section navigation via nextFocusUp/Down refs connecting hero, cast, series, and recommendations sections, (6) Focus state saved to navigation params on back for restoration.",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:56:49.703654+00:00"
+    },
+    "src/components/metadata/HeroSection.tv.tsx": {
+      "description": "TV-specific HeroSection with focusable action buttons. Features: (1) TVActionButtons component with Focusable-wrapped Play, Save, Collection, and Ratings buttons, (2) Inter-button nextFocus navigation (left/right/down), (3) Focusable back button with visible focus state, (4) tvParallaxProperties for Apple TV depth effects, (5) Props: hasTVPreferredFocus, onFocusSection callback, nextFocusDown for inter-section navigation, (6) TV-scaled sizing (larger buttons, fonts, spacing).",
+      "category": "component",
+      "discovered_at": "2026-01-10T23:56:49.743982+00:00"
+    },
+    "src/screens/SearchScreen.tv.tsx": {
+      "description": "TV-specific SearchScreen with complete D-pad navigation support. Features: (1) TV keyboard for text input with focusable search bar, (2) Voice search integration via TVNavigationContext triggered by playPause button, (3) Results grid navigable via D-pad with horizontal scrolling FlatLists per category, (4) Focus states on all result items using Focusable wrapper with scale 1.05 animation, (5) Recent searches list with D-pad navigation and long-press to delete, (6) Long-press on results opens TVContextMenu with Add to List/Mark Watched/Share/Get Info actions, (7) Focus memory persistence via useSpatialNavigation hook, (8) TV-optimized sizes and layouts.",
+      "category": "TV Navigation",
+      "discovered_at": "2026-01-11T00:01:57.204963+00:00"
+    },
+    "src/screens/LibraryScreen.tv.tsx": {
+      "description": "TV-specific LibraryScreen component with complete D-pad navigation. Features: (1) Library tabs (Trakt, Movies, TV Shows) navigable via D-pad with Focusable wrapper and visible focus states, (2) Grid of items navigable via D-pad using TVLibraryItem and TVTraktItem components with scale animations (1.05) and focus borders, (3) Long-press (300ms+) triggers TV context menu via useContextMenu hook with actions: removeFromList, markWatched/Unwatched, share, info, (4) Focus memory per tab via useSpatialNavigation and TVNavigationContext (saves/restores focus per tab using getFocusKeyForTab), (5) Trakt folder navigation with D-pad support using TVTraktFolder component, (6) Integration with TVNavigationContext for global focus state tracking.",
+      "category": "TV Navigation",
+      "discovered_at": "2026-01-11T00:09:11.517807+00:00"
+    }
+  },
+  "last_updated": "2026-01-11T00:09:11.517822+00:00"
+}

@@ -30,7 +30,7 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 - [x] 4.2 Enhance CatalogSection with TV navigation
 - [x] 4.3 Enhance HeroCarousel with TV focus
 - [x] 4.4 Enhance SeriesContent with TV navigation
-- [ ] 4.5 Enhance StreamCard with TV focus
+- [x] 4.5 Enhance StreamCard with TV focus
 - [ ] 4.6 Enhance Settings screens with TV navigation
 
 ### Phase 5: Screen-Level TV Support (6 subtasks)
@@ -62,6 +62,20 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 ---
 
 ## Progress Log
+
+### 2026-01-11 - Subtask 4.5 Completed
+- Created StreamCard.tv.tsx with complete TV focus support:
+  - **Stream cards focusable via D-pad**: Wrapped in Focusable component for TV navigation
+  - **Visible focus states**: Scale animation (1.03), animated border (2px primary color), shadow animation for Apple TV
+  - **Long-press context menu (300ms+)**: Uses useContextMenu hook with actions: Play, Copy URL, Download (if enabled)
+  - **Short press plays stream**: Immediately triggers stream playback
+  - **Download button separately focusable**: D-pad navigation between card and download button with nextFocus configuration
+  - **Focus tracking**: Integrates with TVNavigationContext via useTVNavigationOptional
+  - **Apple TV support**: tvParallaxProperties for depth effects
+  - **New props**: focusId, hasTVPreferredFocus, onFocus, onBlur, nextFocusUp/Down/Left/Right
+  - **Loading state handling**: Disables focus during stream loading
+  - Proper accessibility labels and hints
+- Committed as ed255b40
 
 ### 2026-01-11 - Subtask 4.4 Completed
 - Created SeriesContent.tv.tsx with complete TV navigation support:
