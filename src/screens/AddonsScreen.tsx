@@ -49,6 +49,7 @@ if (Platform.OS === 'ios') {
 // Removed community blur and expo-constants for Android overlay
 import axios from 'axios';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 // Extend Manifest type to include logo only (remove disabled status)
 interface ExtendedManifest extends Manifest {
@@ -965,7 +966,10 @@ const AddonsScreen = () => {
           <View style={styles.reorderButtons}>
             <TouchableOpacity
               style={[styles.reorderButton, isFirstItem && styles.disabledButton]}
-              onPress={() => moveAddonUp(item)}
+              onPress={() => {
+                triggerLight();
+                moveAddonUp(item);
+              }}
               disabled={isFirstItem}
             >
               <MaterialIcons
@@ -976,7 +980,10 @@ const AddonsScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.reorderButton, isLastItem && styles.disabledButton]}
-              onPress={() => moveAddonDown(item)}
+              onPress={() => {
+                triggerLight();
+                moveAddonDown(item);
+              }}
               disabled={isLastItem}
             >
               <MaterialIcons
@@ -1021,7 +1028,10 @@ const AddonsScreen = () => {
                 {isConfigurable && (
                   <TouchableOpacity
                     style={styles.configButton}
-                    onPress={() => handleConfigureAddon(item, item.transport)}
+                    onPress={() => {
+                      triggerLight();
+                      handleConfigureAddon(item, item.transport);
+                    }}
                   >
                     <MaterialIcons name="settings" size={20} color={colors.primary} />
                   </TouchableOpacity>
@@ -1029,7 +1039,10 @@ const AddonsScreen = () => {
                 {!stremioService.isPreInstalledAddon(item.id) && (
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleRemoveAddon(item)}
+                    onPress={() => {
+                      triggerHeavy();
+                      handleRemoveAddon(item);
+                    }}
                   >
                     <MaterialIcons name="delete" size={20} color={colors.error} />
                   </TouchableOpacity>
@@ -1125,7 +1138,10 @@ const AddonsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="chevron-left" size={28} color={colors.white} />
           <Text style={styles.backText}>Settings</Text>
@@ -1135,7 +1151,10 @@ const AddonsScreen = () => {
           {/* Reorder Mode Toggle Button */}
           <TouchableOpacity
             style={[styles.headerButton, reorderMode && styles.activeHeaderButton]}
-            onPress={toggleReorderMode}
+            onPress={() => {
+              triggerMedium();
+              toggleReorderMode();
+            }}
           >
             <MaterialIcons
               name="swap-vert"
@@ -1147,7 +1166,10 @@ const AddonsScreen = () => {
           {/* Refresh Button */}
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={refreshAddons}
+            onPress={() => {
+              triggerMedium();
+              refreshAddons();
+            }}
             disabled={loading}
           >
             <MaterialIcons
@@ -1212,7 +1234,10 @@ const AddonsScreen = () => {
                 />
                 <TouchableOpacity
                   style={[styles.addButton, { opacity: installing || !addonUrl ? 0.6 : 1 }]}
-                  onPress={() => handleAddAddon()}
+                  onPress={() => {
+                    triggerMedium();
+                    handleAddAddon();
+                  }}
                   disabled={installing || !addonUrl}
                 >
                   <Text style={styles.addButtonText}>
@@ -1282,14 +1307,20 @@ const AddonsScreen = () => {
                       {promoAddon.behaviorHints?.configurable && (
                         <TouchableOpacity
                           style={styles.configButton}
-                          onPress={() => handleConfigureAddon(promoAddon, PROMO_ADDON_URL)}
+                          onPress={() => {
+                            triggerLight();
+                            handleConfigureAddon(promoAddon, PROMO_ADDON_URL);
+                          }}
                         >
                           <MaterialIcons name="settings" size={20} color={colors.primary} />
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity
                         style={styles.installButton}
-                        onPress={() => handleAddAddon(PROMO_ADDON_URL)}
+                        onPress={() => {
+                          triggerMedium();
+                          handleAddAddon(PROMO_ADDON_URL);
+                        }}
                         disabled={installing}
                       >
                         {installing ? (
@@ -1372,14 +1403,20 @@ const AddonsScreen = () => {
                           {item.manifest.behaviorHints?.configurable && (
                             <TouchableOpacity
                               style={styles.configButton}
-                              onPress={() => handleConfigureAddon(item.manifest, item.transportUrl)}
+                              onPress={() => {
+                                triggerLight();
+                                handleConfigureAddon(item.manifest, item.transportUrl);
+                              }}
                             >
                               <MaterialIcons name="settings" size={20} color={colors.primary} />
                             </TouchableOpacity>
                           )}
                           <TouchableOpacity
                             style={[styles.installButton, installing && { opacity: 0.6 }]}
-                            onPress={() => handleAddAddon(item.transportUrl)}
+                            onPress={() => {
+                              triggerMedium();
+                              handleAddAddon(item.transportUrl);
+                            }}
                             disabled={installing}
                           >
                             {installing ? (
@@ -1436,6 +1473,7 @@ const AddonsScreen = () => {
                   <Text style={styles.modalTitle}>Install Addon</Text>
                   <TouchableOpacity
                     onPress={() => {
+                      triggerLight();
                       setShowConfirmModal(false);
                       setAddonDetails(null);
                     }}
@@ -1506,6 +1544,7 @@ const AddonsScreen = () => {
                   <TouchableOpacity
                     style={[styles.modalButton, styles.cancelButton]}
                     onPress={() => {
+                      triggerLight();
                       setShowConfirmModal(false);
                       setAddonDetails(null);
                     }}
@@ -1514,7 +1553,10 @@ const AddonsScreen = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.installButton]}
-                    onPress={confirmInstallAddon}
+                    onPress={() => {
+                      triggerMedium();
+                      confirmInstallAddon();
+                    }}
                     disabled={installing}
                   >
                     {installing ? (

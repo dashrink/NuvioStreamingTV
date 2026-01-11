@@ -11,7 +11,7 @@ import { StyleSheet } from 'react-native';
 import { WyzieSubtitle, SubtitleCue } from '../utils/playerTypes';
 import { getTrackDisplayName, formatLanguage } from '../utils/playerUtils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Focusable from '../../common/Focusable';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface SubtitleModalsProps {
   showSubtitleModal: boolean;
@@ -156,6 +156,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
   }, [useCustomSubtitles]);
 
   const handleClose = () => {
+    triggerLight();
     setShowSubtitleModal(false);
   };
 
@@ -224,17 +225,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
               { key: 'built-in', label: 'Built‑in' },
               { key: 'addon', label: 'Addons' },
               { key: 'appearance', label: 'Appearance' },
-            ] as const).map((tab, index) => (
-              <Focusable
+            ] as const).map(tab => (
+              <TouchableOpacity
                 key={tab.key}
-                variant="button"
-                borderRadius={16}
-                enableScale={false}
-                enableGlow={false}
-                onPress={() => setActiveTab(tab.key)}
-                hasTVPreferredFocus={index === 0}
-                accessibilityLabel={`${tab.label} tab`}
-                accessibilityHint={activeTab === tab.key ? 'Currently selected' : `Double tap to switch to ${tab.label}`}
+                onPress={() => {
+                  triggerLight();
+                  setActiveTab(tab.key);
+                }}
                 style={{
                   paddingHorizontal: chipPadH,
                   paddingVertical: chipPadV,
@@ -245,7 +242,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                 }}
               >
                 <Text style={{ color: '#fff', fontWeight: '600', fontSize: isCompact ? 12 : 13 }}>{tab.label}</Text>
-              </Focusable>
+              </TouchableOpacity>
             ))}
           </View>
 
@@ -301,17 +298,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                 )}
 
                 {/* Disable Subtitles Button */}
-                <Focusable
-                  variant="modal"
-                  borderRadius={16}
-                  enableScale={false}
-                  enableGlow={false}
-                  onPress={() => {
-                    selectTextTrack(-1);
-                    setSelectedOnlineSubtitleId(null);
-                  }}
-                  accessibilityLabel="Disable all subtitles"
-                  accessibilityHint={selectedTextTrack === -1 ? 'Subtitles are currently disabled' : 'Double tap to disable subtitles'}
+                <TouchableOpacity
                   style={{
                     backgroundColor: selectedTextTrack === -1 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                     borderRadius: 16,
@@ -320,6 +307,12 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     borderColor: selectedTextTrack === -1 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                     marginBottom: 8,
                   }}
+                  onPress={() => {
+                    triggerLight();
+                    selectTextTrack(-1);
+                    setSelectedOnlineSubtitleId(null);
+                  }}
+                  activeOpacity={0.7}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{
@@ -334,27 +327,16 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       <MaterialIcons name="check" size={20} color="#EF4444" />
                     )}
                   </View>
-                </Focusable>
+                </TouchableOpacity>
 
                 {/* Always show built-in subtitles */}
                 {ksTextTracks.length > 0 && (
                   <View style={{ gap: 8 }}>
                     {ksTextTracks.map((track) => {
                       const isSelected = selectedTextTrack === track.id && !useCustomSubtitles;
-                      const trackDisplayName = getTrackDisplayName(track);
                       return (
-                        <Focusable
+                        <TouchableOpacity
                           key={track.id}
-                          variant="modal"
-                          borderRadius={16}
-                          enableScale={false}
-                          enableGlow={false}
-                          onPress={() => {
-                            selectTextTrack(track.id);
-                            setSelectedOnlineSubtitleId(null);
-                          }}
-                          accessibilityLabel={trackDisplayName}
-                          accessibilityHint={isSelected ? 'Currently selected subtitle track' : 'Double tap to select this subtitle track'}
                           style={{
                             backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 16,
@@ -362,6 +344,12 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                             borderWidth: 1,
                             borderColor: isSelected ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                           }}
+                          onPress={() => {
+                            triggerLight();
+                            selectTextTrack(track.id);
+                            setSelectedOnlineSubtitleId(null);
+                          }}
+                          activeOpacity={0.7}
                         >
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={{
@@ -370,13 +358,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                               fontWeight: '500',
                               flex: 1,
                             }}>
-                              {trackDisplayName}
+                              {getTrackDisplayName(track)}
                             </Text>
                             {isSelected && (
                               <MaterialIcons name="check" size={20} color="#3B82F6" />
                             )}
                           </View>
-                        </Focusable>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
@@ -403,17 +391,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     {useCustomSubtitles && (
-                      <Focusable
-                        variant="button"
-                        borderRadius={12}
-                        enableScale={false}
-                        enableGlow={false}
-                        onPress={() => {
-                          disableCustomSubtitles();
-                          setSelectedOnlineSubtitleId(null);
-                        }}
-                        accessibilityLabel="Disable addon subtitles"
-                        accessibilityHint="Double tap to disable addon subtitles"
+                      <TouchableOpacity
                         style={{
                           backgroundColor: 'rgba(239, 68, 68, 0.15)',
                           borderRadius: 12,
@@ -422,6 +400,12 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                           flexDirection: 'row',
                           alignItems: 'center',
                         }}
+                        onPress={() => {
+                          triggerLight();
+                          disableCustomSubtitles();
+                          setSelectedOnlineSubtitleId(null);
+                        }}
+                        activeOpacity={0.7}
                       >
                         <MaterialIcons name="close" size={16} color="#EF4444" />
                         <Text style={{
@@ -432,17 +416,9 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                         }}>
                           Disable
                         </Text>
-                      </Focusable>
+                      </TouchableOpacity>
                     )}
-                    <Focusable
-                      variant="button"
-                      borderRadius={12}
-                      enableScale={false}
-                      enableGlow={false}
-                      onPress={() => fetchAvailableSubtitles()}
-                      disabled={isLoadingSubtitleList}
-                      accessibilityLabel={isLoadingSubtitleList ? 'Searching for subtitles' : 'Refresh subtitle list'}
-                      accessibilityHint="Double tap to search for available subtitles"
+                    <TouchableOpacity
                       style={{
                         backgroundColor: 'rgba(34, 197, 94, 0.15)',
                         borderRadius: 12,
@@ -451,6 +427,11 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}
+                      onPress={() => {
+                        triggerLight();
+                        fetchAvailableSubtitles();
+                      }}
+                      disabled={isLoadingSubtitleList}
                     >
                       {isLoadingSubtitleList ? (
                         <ActivityIndicator size="small" color="#22C55E" />
@@ -465,19 +446,12 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       }}>
                         {isLoadingSubtitleList ? 'Searching' : 'Refresh'}
                       </Text>
-                    </Focusable>
+                    </TouchableOpacity>
                   </View>
                 </View>
 
                 {(availableSubtitles.length === 0) && !isLoadingSubtitleList ? (
-                  <Focusable
-                    variant="modal"
-                    borderRadius={16}
-                    enableScale={false}
-                    enableGlow={false}
-                    onPress={() => fetchAvailableSubtitles()}
-                    accessibilityLabel="Fetch subtitles from addons"
-                    accessibilityHint="Double tap to search for available subtitles"
+                  <TouchableOpacity
                     style={{
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       borderRadius: 16,
@@ -487,6 +461,11 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       borderColor: 'rgba(255, 255, 255, 0.1)',
                       borderStyle: 'dashed',
                     }}
+                    onPress={() => {
+                      triggerLight();
+                      fetchAvailableSubtitles();
+                    }}
+                    activeOpacity={0.7}
                   >
                     <MaterialIcons name="cloud-download" size={24} color="rgba(255,255,255,0.4)" />
                     <Text style={{
@@ -497,7 +476,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     }}>
                       Tap to fetch from addons
                     </Text>
-                  </Focusable>
+                  </TouchableOpacity>
                 ) : isLoadingSubtitleList ? (
                   <View style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -516,22 +495,11 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   </View>
                 ) : (
                   <View style={{ gap: 8 }}>
-                    {availableSubtitles.map((sub, index) => {
+                    {availableSubtitles.map((sub) => {
                       const isSelected = useCustomSubtitles && selectedOnlineSubtitleId === sub.id;
                       return (
-                        <Focusable
+                        <TouchableOpacity
                           key={sub.id}
-                          variant="modal"
-                          borderRadius={16}
-                          enableScale={false}
-                          enableGlow={false}
-                          onPress={() => {
-                            handleLoadWyzieSubtitle(sub);
-                          }}
-                          disabled={isLoadingSubtitles}
-                          hasTVPreferredFocus={index === 0}
-                          accessibilityLabel={`${sub.display}, ${formatLanguage(sub.language)}${sub.source ? `, from ${sub.source}` : ''}`}
-                          accessibilityHint={isSelected ? 'Currently selected subtitle' : 'Double tap to load this subtitle'}
                           style={{
                             backgroundColor: isSelected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                             borderRadius: 16,
@@ -539,6 +507,12 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                             borderWidth: 1,
                             borderColor: isSelected ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                           }}
+                          onPress={() => {
+                            triggerLight();
+                            handleLoadWyzieSubtitle(sub);
+                          }}
+                          activeOpacity={0.7}
+                          disabled={isLoadingSubtitles}
                         >
                           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <View style={{ flex: 1 }}>
@@ -566,7 +540,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                               <MaterialIcons name="download" size={20} color="rgba(255,255,255,0.4)" />
                             )}
                           </View>
-                        </Focusable>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
@@ -618,6 +592,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                     <TouchableOpacity
                       onPress={() => {
+                        triggerLight();
                         setSubtitleTextColor('#FFFFFF');
                         setSubtitleBgOpacity(0.7);
                         setSubtitleTextShadow(true);
@@ -635,6 +610,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
+                        triggerLight();
                         setSubtitleTextColor('#FFD700');
                         setSubtitleOutline(true);
                         setSubtitleOutlineColor('#000000');
@@ -648,6 +624,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
+                        triggerLight();
                         setSubtitleTextColor('#FFFFFF');
                         setSubtitleOutline(true);
                         setSubtitleOutlineColor('#000000');
@@ -662,6 +639,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
+                        triggerLight();
                         setSubtitleTextColor('#FFFFFF');
                         setSubtitleBgOpacity(0.6);
                         setSubtitleTextShadow(true);
@@ -689,13 +667,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>Font Size</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <TouchableOpacity onPress={decreaseSubtitleSize} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); decreaseSubtitleSize(); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center' }}>
                         <MaterialIcons name="remove" size={18} color="#FFFFFF" />
                       </TouchableOpacity>
                       <View style={{ minWidth: 42, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                         <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700' }}>{subtitleSize}</Text>
                       </View>
-                      <TouchableOpacity onPress={increaseSubtitleSize} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); increaseSubtitleSize(); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center', alignItems: 'center' }}>
                         <MaterialIcons name="add" size={18} color="#FFFFFF" />
                       </TouchableOpacity>
                     </View>
@@ -708,7 +686,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     </View>
                     <TouchableOpacity
                       style={{ width: isCompact ? 48 : 54, height: isCompact ? 28 : 30, backgroundColor: subtitleBackground ? '#22C55E' : 'rgba(255,255,255,0.25)', borderRadius: 15, justifyContent: 'center', alignItems: subtitleBackground ? 'flex-end' : 'flex-start', paddingHorizontal: 3 }}
-                      onPress={toggleSubtitleBackground}
+                      onPress={() => { triggerMedium(); toggleSubtitleBackground(); }}
                     >
                       <View style={{ width: 24, height: 24, backgroundColor: 'white', borderRadius: 12 }} />
                     </TouchableOpacity>
@@ -730,7 +708,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     </View>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}>
                       {['#FFFFFF', '#FFD700', '#00E5FF', '#FF5C5C', '#00FF88', '#9b59b6', '#f97316'].map(c => (
-                        <TouchableOpacity key={c} onPress={() => setSubtitleTextColor(c)} style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c, borderWidth: 2, borderColor: subtitleTextColor === c ? '#fff' : 'rgba(255,255,255,0.3)' }} />
+                        <TouchableOpacity key={c} onPress={() => { triggerLight(); setSubtitleTextColor(c); }} style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c, borderWidth: 2, borderColor: subtitleTextColor === c ? '#fff' : 'rgba(255,255,255,0.3)' }} />
                       ))}
                     </View>
                   </View>
@@ -746,7 +724,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                       ] as const).map(a => (
                         <TouchableOpacity
                           key={a.key}
-                          onPress={() => setSubtitleAlign(a.key)}
+                          onPress={() => { triggerLight(); setSubtitleAlign(a.key); }}
                           style={{ paddingHorizontal: isCompact ? 8 : 10, paddingVertical: isCompact ? 4 : 6, borderRadius: 8, backgroundColor: subtitleAlign === a.key ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}
                         >
                           <MaterialIcons name={a.icon as any} size={18} color="#FFFFFF" />
@@ -759,13 +737,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: 'white', fontWeight: '600' }}>Bottom Offset</Text>
                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={() => setSubtitleBottomOffset(Math.max(0, subtitleBottomOffset - 5))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleBottomOffset(Math.max(0, subtitleBottomOffset - 5)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="keyboard-arrow-down" color="#fff" size={20} />
                       </TouchableOpacity>
                       <View style={{ minWidth: 46, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleBottomOffset}</Text>
                       </View>
-                      <TouchableOpacity onPress={() => setSubtitleBottomOffset(subtitleBottomOffset + 5)} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleBottomOffset(subtitleBottomOffset + 5); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="keyboard-arrow-up" color="#fff" size={20} />
                       </TouchableOpacity>
                     </View>
@@ -775,13 +753,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: 'white', fontWeight: '600' }}>Background Opacity</Text>
                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={() => setSubtitleBgOpacity(Math.max(0, +(subtitleBgOpacity - 0.1).toFixed(1)))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleBgOpacity(Math.max(0, +(subtitleBgOpacity - 0.1).toFixed(1))); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="remove" color="#fff" size={18} />
                       </TouchableOpacity>
                       <View style={{ minWidth: 48, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleBgOpacity.toFixed(1)}</Text>
                       </View>
-                      <TouchableOpacity onPress={() => setSubtitleBgOpacity(Math.min(1, +(subtitleBgOpacity + 0.1).toFixed(1)))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleBgOpacity(Math.min(1, +(subtitleBgOpacity + 0.1).toFixed(1))); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="add" color="#fff" size={18} />
                       </TouchableOpacity>
                     </View>
@@ -790,7 +768,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   {/* Shadow */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: 'white', fontWeight: '600' }}>Text Shadow</Text>
-                    <TouchableOpacity onPress={() => setSubtitleTextShadow(!subtitleTextShadow)} style={{ paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10, backgroundColor: subtitleTextShadow ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => { triggerMedium(); setSubtitleTextShadow(!subtitleTextShadow); }} style={{ paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10, backgroundColor: subtitleTextShadow ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', alignItems: 'center' }}>
                       <Text style={{ color: '#fff', fontWeight: '700' }}>{subtitleTextShadow ? 'On' : 'Off'}</Text>
                     </TouchableOpacity>
                   </View>
@@ -799,20 +777,20 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     <Text style={{ color: 'white' }}>Outline Color</Text>
                     <View style={{ flexDirection: 'row', gap: 8 }}>
                       {['#000000', '#FFFFFF', '#00E5FF', '#FF5C5C'].map(c => (
-                        <TouchableOpacity key={c} onPress={() => setSubtitleOutlineColor(c)} style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c, borderWidth: 2, borderColor: subtitleOutlineColor === c ? '#fff' : 'rgba(255,255,255,0.3)' }} />
+                        <TouchableOpacity key={c} onPress={() => { triggerLight(); setSubtitleOutlineColor(c); }} style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: c, borderWidth: 2, borderColor: subtitleOutlineColor === c ? '#fff' : 'rgba(255,255,255,0.3)' }} />
                       ))}
                     </View>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: 'white' }}>Outline Width</Text>
                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={() => setSubtitleOutlineWidth(Math.max(0, subtitleOutlineWidth - 1))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleOutlineWidth(Math.max(0, subtitleOutlineWidth - 1)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="remove" color="#fff" size={18} />
                       </TouchableOpacity>
                       <View style={{ minWidth: 42, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                         <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleOutlineWidth}</Text>
                       </View>
-                      <TouchableOpacity onPress={() => setSubtitleOutlineWidth(subtitleOutlineWidth + 1)} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                      <TouchableOpacity onPress={() => { triggerLight(); setSubtitleOutlineWidth(subtitleOutlineWidth + 1); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                         <MaterialIcons name="add" color="#fff" size={18} />
                       </TouchableOpacity>
                     </View>
@@ -823,13 +801,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: 'white', fontWeight: '600' }}>Letter Spacing</Text>
                       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <TouchableOpacity onPress={() => setSubtitleLetterSpacing(Math.max(0, +(subtitleLetterSpacing - 0.5).toFixed(1)))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleLetterSpacing(Math.max(0, +(subtitleLetterSpacing - 0.5).toFixed(1))); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="remove" color="#fff" size={18} />
                         </TouchableOpacity>
                         <View style={{ minWidth: 48, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleLetterSpacing.toFixed(1)}</Text>
                         </View>
-                        <TouchableOpacity onPress={() => setSubtitleLetterSpacing(+(subtitleLetterSpacing + 0.5).toFixed(1))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleLetterSpacing(+(subtitleLetterSpacing + 0.5).toFixed(1)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="add" color="#fff" size={18} />
                         </TouchableOpacity>
                       </View>
@@ -837,13 +815,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: 'white', fontWeight: '600' }}>Line Height</Text>
                       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
-                        <TouchableOpacity onPress={() => setSubtitleLineHeightMultiplier(Math.max(1, +(subtitleLineHeightMultiplier - 0.1).toFixed(1)))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleLineHeightMultiplier(Math.max(1, +(subtitleLineHeightMultiplier - 0.1).toFixed(1))); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="remove" color="#fff" size={18} />
                         </TouchableOpacity>
                         <View style={{ minWidth: 48, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleLineHeightMultiplier.toFixed(1)}</Text>
                         </View>
-                        <TouchableOpacity onPress={() => setSubtitleLineHeightMultiplier(+(subtitleLineHeightMultiplier + 0.1).toFixed(1))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleLineHeightMultiplier(+(subtitleLineHeightMultiplier + 0.1).toFixed(1)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="add" color="#fff" size={18} />
                         </TouchableOpacity>
                       </View>
@@ -855,13 +833,13 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Text style={{ color: 'white', fontWeight: '600' }}>Timing Offset (s)</Text>
                       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                        <TouchableOpacity onPress={() => setSubtitleOffsetSec(+(subtitleOffsetSec - 0.1).toFixed(1))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleOffsetSec(+(subtitleOffsetSec - 0.1).toFixed(1)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="remove" color="#fff" size={18} />
                         </TouchableOpacity>
                         <View style={{ minWidth: 60, paddingHorizontal: 6, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' }}>
                           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700' }}>{subtitleOffsetSec.toFixed(1)}</Text>
                         </View>
-                        <TouchableOpacity onPress={() => setSubtitleOffsetSec(+(subtitleOffsetSec + 0.1).toFixed(1))} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                        <TouchableOpacity onPress={() => { triggerLight(); setSubtitleOffsetSec(+(subtitleOffsetSec + 0.1).toFixed(1)); }} style={{ width: controlBtn.size, height: controlBtn.size, borderRadius: controlBtn.radius, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
                           <MaterialIcons name="add" color="#fff" size={18} />
                         </TouchableOpacity>
                       </View>
@@ -873,6 +851,7 @@ export const SubtitleModals: React.FC<SubtitleModalsProps> = ({
                   <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
                     <TouchableOpacity
                       onPress={() => {
+                        triggerLight();
                         setSubtitleTextColor('#FFFFFF');
                         setSubtitleBgOpacity(0.7);
                         setSubtitleTextShadow(true);

@@ -12,7 +12,7 @@ import { EpisodeCard } from '../cards/EpisodeCard';
 import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
 import { logger } from '../../../utils/logger';
-import Focusable from '../../common/Focusable';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -96,7 +96,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowEpisodesModal(false)}>
+      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => { triggerLight(); setShowEpisodesModal(false); }}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
       </TouchableOpacity>
 
@@ -120,37 +120,27 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 15, gap: 8 }}>
-            {seasons.map((season, index) => {
-              const isActive = selectedSeason === season;
-              return (
-                <Focusable
-                  key={season}
-                  variant="button"
-                  borderRadius={20}
-                  enableScale={false}
-                  enableGlow={false}
-                  onPress={() => setSelectedSeason(season)}
-                  hasTVPreferredFocus={index === 0}
-                  accessibilityLabel={`Season ${season}`}
-                  accessibilityHint={isActive ? 'Currently selected season' : 'Double tap to select this season'}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    backgroundColor: isActive ? 'white' : 'rgba(255,255,255,0.06)',
-                    borderWidth: 1,
-                    borderColor: isActive ? 'white' : 'rgba(255,255,255,0.1)',
-                  }}
-                >
-                  <Text style={{
-                    color: isActive ? 'black' : 'white',
-                    fontWeight: isActive ? '700' : '500'
-                  }}>
-                    Season {season}
-                  </Text>
-                </Focusable>
-              );
-            })}
+            {seasons.map((season) => (
+              <TouchableOpacity
+                key={season}
+                onPress={() => { triggerLight(); setSelectedSeason(season); }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.06)',
+                  borderWidth: 1,
+                  borderColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.1)',
+                }}
+              >
+                <Text style={{
+                  color: selectedSeason === season ? 'black' : 'white',
+                  fontWeight: selectedSeason === season ? '700' : '500'
+                }}>
+                  Season {season}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
@@ -167,6 +157,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   episodeProgress={episodeProgress}
                   tmdbEpisodeOverrides={tmdbEpisodeOverrides}
                   onPress={() => {
+                    triggerLight();
                     onSelectEpisode(episode);
                     setShowEpisodesModal(false);
                   }}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions,
-  Platform
+  Dimensions
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -24,7 +23,6 @@ import { useCalendarData } from '../../hooks/useCalendarData';
 import { memoryManager } from '../../utils/memoryManager';
 import { tmdbService } from '../../services/tmdbService';
 import { triggerLight } from '../../hooks/useHaptics';
-import Focusable from '../common/Focusable';
 
 // Compute base sizes; actual tablet sizes will be adjusted inside component for responsiveness
 const { width } = Dimensions.get('window');
@@ -53,7 +51,6 @@ interface ThisWeekEpisode {
   vote_average: number;
   still_path: string | null;
   season_poster_path: string | null;
-  addonId?: string;
   // Grouping fields
   isGroup?: boolean;
   episodeCount?: number;
@@ -64,7 +61,6 @@ export const ThisWeekSection = React.memo(() => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const { calendarData, loading } = useCalendarData();
-  const flatListRef = useRef<FlatList<ThisWeekEpisode>>(null);
 
   // Enhanced responsive sizing for tablets and TV screens
   const deviceWidth = Dimensions.get('window').width;
@@ -72,8 +68,6 @@ export const ThisWeekSection = React.memo(() => {
 
   // Determine device type based on width
   const getDeviceType = useCallback(() => {
-    // Always treat TV devices as 'tv' regardless of reported dp width
-    if (Platform.isTV) return 'tv';
     if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
     if (deviceWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
     if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';
@@ -207,8 +201,7 @@ export const ThisWeekSection = React.memo(() => {
     if (episode.isGroup) {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
-        type: 'series',
-        addonId: episode.addonId,
+        type: 'series'
       });
       return;
     }
@@ -219,8 +212,7 @@ export const ThisWeekSection = React.memo(() => {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
         type: 'series',
-        episodeId,
-        addonId: episode.addonId,
+        episodeId
       });
       return;
     }
@@ -230,8 +222,7 @@ export const ThisWeekSection = React.memo(() => {
     navigation.navigate('Streams', {
       id: episode.seriesId,
       type: 'series',
-      episodeId,
-      addonId: episode.addonId,
+      episodeId
     });
   };
 
@@ -239,25 +230,6 @@ export const ThisWeekSection = React.memo(() => {
     triggerLight();
     navigation.navigate('Calendar' as any);
   };
-
-  // Handle focus change on TV - scroll to bring focused item into view
-  const handleItemFocus = useCallback((index: number) => {
-    if (Platform.isTV && flatListRef.current) {
-      flatListRef.current.scrollToIndex({
-        index,
-        animated: true,
-        viewPosition: 0.15, // Slight offset so item is not at edge
-      });
-    }
-  }, []);
-
-  // Handle scroll to index failures gracefully
-  const onScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
-    flatListRef.current?.scrollToOffset({
-      offset: info.averageItemLength * info.index,
-      animated: true,
-    });
-  }, []);
 
   if (thisWeekEpisodes.length === 0) {
     return null;
@@ -287,17 +259,16 @@ export const ThisWeekSection = React.memo(() => {
             }
           ]} />
         )}
-        <Focusable
+        <TouchableOpacity
           style={[
             styles.episodeItem,
             {
               backgroundColor: currentTheme.colors.background,
-              borderWidth: 2, // Base border width for smooth focus transition
-              borderColor: 'transparent', // Transparent when not focused
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
             }
           ]}
           onPress={() => handleEpisodePress(item)}
-          onFocus={() => handleItemFocus(index)}
           activeOpacity={0.7}
         >
           <View style={styles.imageContainer}>
@@ -367,7 +338,7 @@ export const ThisWeekSection = React.memo(() => {
               </View>
             </LinearGradient>
           </View>
-        </Focusable>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -418,13 +389,11 @@ export const ThisWeekSection = React.memo(() => {
       </View>
 
       <FlatList
-        ref={flatListRef}
         data={thisWeekEpisodes}
         keyExtractor={(item) => item.id}
         renderItem={renderEpisodeItem}
         horizontal
         showsHorizontalScrollIndicator={false}
-        scrollEnabled={!Platform.isTV}
         contentContainerStyle={[
           styles.listContent,
           {
@@ -444,7 +413,6 @@ export const ThisWeekSection = React.memo(() => {
           const offset = length * index;
           return { length, offset, index };
         }}
-        onScrollToIndexFailed={onScrollToIndexFailed}
         ItemSeparatorComponent={() => <View style={{ width: itemSpacing }} />}
       />
     </Animated.View>
@@ -529,52 +497,56 @@ const styles = StyleSheet.create({
   poster: {
     width: '100%',
     height: '100%',
+    borderRadius: 16,
   },
   gradient: {
-    width: '100%',
-    height: '100%',
     position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
     bottom: 0,
     justifyContent: 'space-between',
-    paddingBottom: 12,
-    paddingHorizontal: 12,
+    padding: 12,
+    borderRadius: 16,
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingTop: 8,
+    justifyContent: 'flex-end',
+    width: '100%',
   },
   statusBadge: {
-    paddingVertical: 4,
     paddingHorizontal: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingVertical: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '600',
     color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   contentArea: {
-    gap: 4,
+    width: '100%',
   },
   seriesName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: '800',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   metaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
   },
   seasonBadge: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dotSeparator: {
+    marginHorizontal: 6,
     fontSize: 12,
     color: 'rgba(255,255,255,0.5)',
   },
@@ -585,12 +557,12 @@ const styles = StyleSheet.create({
   },
   cardStackEffect: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    right: 8,
-    bottom: 8,
+    top: -6,
+    width: '92%',
+    height: '100%',
+    left: '4%',
     borderRadius: 16,
-    zIndex: -1,
     borderWidth: 1,
+    zIndex: -1,
   },
-});
+}); 

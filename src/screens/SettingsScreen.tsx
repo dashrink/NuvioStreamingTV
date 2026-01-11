@@ -17,6 +17,7 @@ import {
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import FastImage from '@d11/react-native-fast-image';
 import LottieView from 'lottie-react-native';
 import { Feather } from '@expo/vector-icons';
@@ -39,7 +40,6 @@ import PluginIcon from '../components/icons/PluginIcon';
 import TraktIcon from '../components/icons/TraktIcon';
 import TMDBIcon from '../components/icons/TMDBIcon';
 import MDBListIcon from '../components/icons/MDBListIcon';
-import Focusable from '../components/common/Focusable';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -127,15 +127,17 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
+  const handlePress = () => {
+    if (onPress) {
+      triggerLight();
+      onPress();
+    }
+  };
+
   return (
-    <Focusable
-      variant="listItem"
-      onPress={onPress}
-      enableScale={false}
-      enableGlow={false}
-      borderRadius={0}
-      accessibilityLabel={title}
-      accessibilityHint={description || `Setting for ${title}`}
+    <TouchableOpacity
+      activeOpacity={0.6}
+      onPress={handlePress}
       style={[
         styles.settingItem,
         !isLast && styles.settingItemBorder,
@@ -190,7 +192,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
           {renderControl()}
         </View>
       )}
-    </Focusable>
+    </TouchableOpacity>
   );
 };
 
@@ -204,6 +206,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, currentTheme, categories, extraTopPadding = 0 }) => {
+  const handleCategorySelect = (categoryId: string) => {
+    triggerLight();
+    onCategorySelect(categoryId);
+  };
+
   return (
     <View style={[
       styles.sidebar,
@@ -225,17 +232,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
       </View>
 
       <ScrollView style={styles.sidebarContent} showsVerticalScrollIndicator={false}>
-        {categories.map((category, index) => (
-          <Focusable
+        {categories.map((category) => (
+          <TouchableOpacity
             key={category.id}
-            variant="nav"
-            onPress={() => onCategorySelect(category.id)}
-            enableScale={false}
-            enableGlow={false}
-            borderRadius={10}
-            hasTVPreferredFocus={index === 0}
-            accessibilityLabel={category.title}
-            accessibilityHint={`Navigate to ${category.title} settings`}
             style={[
               styles.sidebarItem,
               selectedCategory === category.id && [
@@ -243,6 +242,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
                 { backgroundColor: currentTheme.colors.primary + '10' }
               ]
             ]}
+            onPress={() => handleCategorySelect(category.id)}
+            activeOpacity={0.6}
           >
             <View style={[
               styles.sidebarItemIconContainer,
@@ -273,7 +274,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
             ]}>
               {category.title}
             </Text>
-          </Focusable>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
@@ -506,15 +507,22 @@ const SettingsScreen: React.FC = () => {
     );
   };
 
-  const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
-      thumbColor={value ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
-      ios_backgroundColor={currentTheme.colors.elevation2}
-    />
-  );
+  const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => {
+    const handleValueChange = (newValue: boolean) => {
+      triggerMedium();
+      onValueChange(newValue);
+    };
+
+    return (
+      <Switch
+        value={value}
+        onValueChange={handleValueChange}
+        trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
+        thumbColor={value ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+        ios_backgroundColor={currentTheme.colors.elevation2}
+      />
+    );
+  };
 
   const ChevronRight = () => (
     <Feather
@@ -706,7 +714,10 @@ const SettingsScreen: React.FC = () => {
               renderControl={() => (
                 <Switch
                   value={settings?.showTrailers ?? true}
-                  onValueChange={(value) => updateSetting('showTrailers', value)}
+                  onValueChange={(value) => {
+                    triggerMedium();
+                    updateSetting('showTrailers', value);
+                  }}
                   trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
                   thumbColor={settings?.showTrailers ? '#fff' : '#f4f3f4'}
                 />
@@ -720,7 +731,10 @@ const SettingsScreen: React.FC = () => {
               renderControl={() => (
                 <Switch
                   value={settings?.enableDownloads ?? false}
-                  onValueChange={(value) => updateSetting('enableDownloads', value)}
+                  onValueChange={(value) => {
+                    triggerMedium();
+                    updateSetting('enableDownloads', value);
+                  }}
                   trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
                   thumbColor={settings?.enableDownloads ? '#fff' : '#f4f3f4'}
                 />
@@ -943,35 +957,31 @@ const SettingsScreen: React.FC = () => {
                   )}
 
                   <View style={styles.discordContainer}>
-                    <Focusable
-                      variant="button"
-                      onPress={() => WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                        presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                      })}
-                      enableScale={false}
-                      enableGlow={false}
-                      borderRadius={8}
-                      accessibilityLabel="Support on Ko-fi"
-                      accessibilityHint="Open Ko-fi page to support the developer"
+                    <TouchableOpacity
                       style={[styles.discordButton, { backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, marginBottom: 8 }]}
+                      onPress={() => {
+                        triggerLight();
+                        WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
+                          presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
+                        });
+                      }}
+                      activeOpacity={0.7}
                     >
                       <FastImage
                         source={require('../../assets/support_me_on_kofi_red.png')}
                         style={styles.kofiImage}
                         resizeMode={FastImage.resizeMode.contain}
                       />
-                    </Focusable>
+                    </TouchableOpacity>
 
                     <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <Focusable
-                        variant="button"
-                        onPress={() => Linking.openURL('https://discord.gg/6w8dr3TSDN')}
-                        enableScale={false}
-                        enableGlow={false}
-                        borderRadius={10}
-                        accessibilityLabel="Join Discord"
-                        accessibilityHint="Open Discord server invite"
+                      <TouchableOpacity
                         style={[styles.discordButton, { backgroundColor: currentTheme.colors.elevation1 }]}
+                        onPress={() => {
+                          triggerLight();
+                          Linking.openURL('https://discord.gg/6w8dr3TSDN');
+                        }}
+                        activeOpacity={0.7}
                       >
                         <View style={styles.discordButtonContent}>
                           <FastImage
@@ -983,17 +993,15 @@ const SettingsScreen: React.FC = () => {
                             Discord
                           </Text>
                         </View>
-                      </Focusable>
+                      </TouchableOpacity>
 
-                      <Focusable
-                        variant="button"
-                        onPress={() => Linking.openURL('https://www.reddit.com/r/Nuvio/')}
-                        enableScale={false}
-                        enableGlow={false}
-                        borderRadius={10}
-                        accessibilityLabel="Visit Reddit"
-                        accessibilityHint="Open Nuvio subreddit"
+                      <TouchableOpacity
                         style={[styles.discordButton, { backgroundColor: '#FF4500' + '15' }]}
+                        onPress={() => {
+                          triggerLight();
+                          Linking.openURL('https://www.reddit.com/r/Nuvio/');
+                        }}
+                        activeOpacity={0.7}
                       >
                         <View style={styles.discordButtonContent}>
                           <FastImage
@@ -1005,7 +1013,7 @@ const SettingsScreen: React.FC = () => {
                             Reddit
                           </Text>
                         </View>
-                      </Focusable>
+                      </TouchableOpacity>
                     </View>
                   </View>
 
@@ -1084,35 +1092,31 @@ const SettingsScreen: React.FC = () => {
 
             {/* Support & Community Buttons */}
             <View style={styles.discordContainer}>
-              <Focusable
-                variant="button"
-                onPress={() => WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                  presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                })}
-                enableScale={false}
-                enableGlow={false}
-                borderRadius={8}
-                accessibilityLabel="Support on Ko-fi"
-                accessibilityHint="Open Ko-fi page to support the developer"
+              <TouchableOpacity
                 style={[styles.discordButton, { backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, marginBottom: 8 }]}
+                onPress={() => {
+                  triggerLight();
+                  WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
+                    presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
+                  });
+                }}
+                activeOpacity={0.7}
               >
                 <FastImage
                   source={require('../../assets/support_me_on_kofi_red.png')}
                   style={styles.kofiImage}
                   resizeMode={FastImage.resizeMode.contain}
                 />
-              </Focusable>
+              </TouchableOpacity>
 
               <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <Focusable
-                  variant="button"
-                  onPress={() => Linking.openURL('https://discord.gg/6w8dr3TSDN')}
-                  enableScale={false}
-                  enableGlow={false}
-                  borderRadius={10}
-                  accessibilityLabel="Join Discord"
-                  accessibilityHint="Open Discord server invite"
+                <TouchableOpacity
                   style={[styles.discordButton, { backgroundColor: currentTheme.colors.elevation1 }]}
+                  onPress={() => {
+                    triggerLight();
+                    Linking.openURL('https://discord.gg/6w8dr3TSDN');
+                  }}
+                  activeOpacity={0.7}
                 >
                   <View style={styles.discordButtonContent}>
                     <FastImage
@@ -1124,17 +1128,15 @@ const SettingsScreen: React.FC = () => {
                       Discord
                     </Text>
                   </View>
-                </Focusable>
+                </TouchableOpacity>
 
-                <Focusable
-                  variant="button"
-                  onPress={() => Linking.openURL('https://www.reddit.com/r/Nuvio/')}
-                  enableScale={false}
-                  enableGlow={false}
-                  borderRadius={10}
-                  accessibilityLabel="Visit Reddit"
-                  accessibilityHint="Open Nuvio subreddit"
+                <TouchableOpacity
                   style={[styles.discordButton, { backgroundColor: '#FF4500' + '15' }]}
+                  onPress={() => {
+                    triggerLight();
+                    Linking.openURL('https://www.reddit.com/r/Nuvio/');
+                  }}
+                  activeOpacity={0.7}
                 >
                   <View style={styles.discordButtonContent}>
                     <FastImage
@@ -1146,7 +1148,7 @@ const SettingsScreen: React.FC = () => {
                       Reddit
                     </Text>
                   </View>
-                </Focusable>
+                </TouchableOpacity>
               </View>
             </View>
 

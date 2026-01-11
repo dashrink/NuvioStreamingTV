@@ -51,11 +51,11 @@ import { useToast } from '../../contexts/ToastContext';
 import { useTraktContext } from '../../contexts/TraktContext';
 import { useSettings } from '../../hooks/useSettings';
 import { useTrailer } from '../../contexts/TrailerContext';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 import { logger } from '../../utils/logger';
 import { TMDBService } from '../../services/tmdbService';
 import TrailerService from '../../services/trailerService';
 import TrailerPlayer from '../video/TrailerPlayer';
-import Focusable from '../common/Focusable';
 import { HERO_HEIGHT, SCREEN_WIDTH as width, IS_TABLET as isTablet } from '../../constants/dimensions';
 
 const { height } = Dimensions.get('window');
@@ -161,6 +161,7 @@ const ActionButtons = memo(({
   
   // Optimized navigation handler with useCallback
   const handleRatingsPress = useCallback(async () => {
+    triggerLight(); // Haptic feedback for navigation
     // Early return if no ID
     if (!id) return;
     
@@ -199,6 +200,7 @@ const ActionButtons = memo(({
 
   // Enhanced save handler that combines local library + Trakt watchlist
   const handleSaveAction = useCallback(async () => {
+    triggerMedium(); // Haptic feedback for add/remove from library
     const wasInLibrary = inLibrary;
     
     // Always toggle local library first
@@ -227,6 +229,7 @@ const ActionButtons = memo(({
 
   // Enhanced collection handler with toast notifications
   const handleCollectionAction = useCallback(async () => {
+    triggerMedium(); // Haptic feedback for add/remove from collection
     const wasInCollection = isInCollection;
     
     // Toggle collection
@@ -345,50 +348,40 @@ const ActionButtons = memo(({
     <Animated.View style={[isTablet ? styles.tabletActionButtons : styles.actionButtons, animatedStyle]}>
       {/* Single Row Layout - Play, Save, and optionally Collection/Ratings */}
       <View style={styles.singleRowLayout}>
-          <Focusable
-            variant="hero"
-            borderRadius={isTablet ? 32 : 24}
-            enableScale={false}
-            enableGlow={true}
-            hasTVPreferredFocus={true}
+          <TouchableOpacity
             style={[
               playButtonStyle,
               isTablet && styles.tabletPlayButton,
               additionalButtonCount === 0 ? styles.singleRowPlayButtonFullWidth : styles.primaryActionButton
             ]}
-            onPress={handleShowStreams}
+            onPress={() => {
+              triggerMedium(); // Haptic feedback for play action
+              handleShowStreams();
+            }}
             activeOpacity={0.85}
-            accessibilityLabel={finalPlayButtonText}
-            accessibilityHint="Double tap to play"
           >
-            <MaterialIcons
+            <MaterialIcons 
               name={(() => {
                 if (isWatched) {
                   return type === 'movie' ? 'replay' : 'play-arrow';
                 }
                 return playButtonText === 'Resume' ? 'play-circle-outline' : 'play-arrow';
-              })()}
-              size={isTablet ? 28 : 24}
-              color={isWatched && type === 'movie' ? "#fff" : "#000"}
+              })()} 
+              size={isTablet ? 28 : 24} 
+              color={isWatched && type === 'movie' ? "#fff" : "#000"} 
             />
             <Text style={[playButtonTextStyle, isTablet && styles.tabletPlayButtonText]}>{finalPlayButtonText}</Text>
-          </Focusable>
+          </TouchableOpacity>
 
-          <Focusable
-            variant="button"
-            borderRadius={isTablet ? 28 : 22}
-            enableScale={false}
-            enableGlow={true}
+          <TouchableOpacity
             style={[
-              styles.actionButton,
-              styles.infoButton,
+              styles.actionButton, 
+              styles.infoButton, 
               isTablet && styles.tabletInfoButton,
               additionalButtonCount === 0 ? styles.singleRowSaveButtonFullWidth : styles.primaryActionButton
             ]}
             onPress={handleSaveAction}
             activeOpacity={0.85}
-            accessibilityLabel={inLibrary ? 'Saved to library' : 'Save to library'}
-            accessibilityHint="Double tap to toggle save status"
           >
             {Platform.OS === 'ios' ? (
               GlassViewComp && liquidGlassAvailable ? (
@@ -410,20 +403,14 @@ const ActionButtons = memo(({
             <Text style={[styles.infoButtonText, isTablet && styles.tabletInfoButtonText]}>
               {inLibrary ? 'Saved' : 'Save'}
             </Text>
-          </Focusable>
+          </TouchableOpacity>
 
           {/* Trakt Collection Button */}
           {hasTraktCollection && (
-            <Focusable
-              variant="button"
-              borderRadius={isTablet ? 28 : 24}
-              enableScale={false}
-              enableGlow={true}
+            <TouchableOpacity
               style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
               onPress={handleCollectionAction}
               activeOpacity={0.85}
-              accessibilityLabel={isInCollection ? 'In Trakt collection' : 'Add to Trakt collection'}
-              accessibilityHint="Double tap to toggle collection status"
             >
               {Platform.OS === 'ios' ? (
                 GlassViewComp && liquidGlassAvailable ? (
@@ -437,26 +424,20 @@ const ActionButtons = memo(({
               ) : (
                 <View style={styles.androidFallbackBlurRound} />
               )}
-              <MaterialIcons
-                name={isInCollection ? "video-library" : "video-library"}
-                size={isTablet ? 28 : 24}
+              <MaterialIcons 
+                name={isInCollection ? "video-library" : "video-library"} 
+                size={isTablet ? 28 : 24} 
                 color={isInCollection ? "#3498DB" : currentTheme.colors.white}
               />
-            </Focusable>
+            </TouchableOpacity>
           )}
 
           {/* Ratings Button (for series) */}
           {hasRatings && (
-            <Focusable
-              variant="button"
-              borderRadius={isTablet ? 28 : 24}
-              enableScale={false}
-              enableGlow={true}
+            <TouchableOpacity
               style={[styles.iconButton, isTablet && styles.tabletIconButton, styles.singleRowIconButton]}
               onPress={handleRatingsPress}
               activeOpacity={0.85}
-              accessibilityLabel="View episode ratings"
-              accessibilityHint="Double tap to see episode ratings chart"
             >
               {Platform.OS === 'ios' ? (
                 GlassViewComp && liquidGlassAvailable ? (
@@ -470,12 +451,12 @@ const ActionButtons = memo(({
               ) : (
                 <View style={styles.androidFallbackBlurRound} />
               )}
-              <MaterialIcons
-                name="assessment"
-                size={isTablet ? 28 : 24}
+              <MaterialIcons 
+                name="assessment" 
+                size={isTablet ? 28 : 24} 
                 color={currentTheme.colors.white}
               />
-            </Focusable>
+            </TouchableOpacity>
           )}
       </View>
     </Animated.View>
@@ -540,6 +521,7 @@ const WatchProgressDisplay = memo(({
   
   // Handle manual Trakt sync
   const handleTraktSync = useMemo(() => async () => {
+    triggerMedium(); // Haptic feedback for sync/refresh action
     if (isTraktAuthenticated && forceSyncTraktProgress) {
       logger.log('[HeroSection] Manual Trakt sync requested');
       setIsSyncing(true);
@@ -811,31 +793,25 @@ const WatchProgressDisplay = memo(({
         
               {/* Enhanced manual Trakt sync button - moved inline */}
         {isTraktAuthenticated && forceSyncTraktProgress && (
-          <Focusable
-            variant="button"
-            borderRadius={10}
-            enableScale={false}
-            enableGlow={false}
-            style={styles.traktSyncButtonInline}
+          <TouchableOpacity 
+                  style={styles.traktSyncButtonInline}
             onPress={handleTraktSync}
             activeOpacity={0.7}
             disabled={isSyncing}
-            accessibilityLabel="Sync with Trakt"
-            accessibilityHint="Double tap to sync progress with Trakt"
+                >
+                  <LinearGradient
+                    colors={['#E50914', '#B8070F']}
+                    style={styles.syncButtonGradientInline}
           >
-            <LinearGradient
-              colors={['#E50914', '#B8070F']}
-              style={styles.syncButtonGradientInline}
-            >
-              <Animated.View style={syncIconStyle}>
-                <MaterialIcons
-                  name={isSyncing ? "sync" : "refresh"}
-                  size={12}
-                  color="#fff"
-                />
-              </Animated.View>
-            </LinearGradient>
-          </Focusable>
+            <Animated.View style={syncIconStyle}>
+              <MaterialIcons 
+                name={isSyncing ? "sync" : "refresh"} 
+                      size={12} 
+                      color="#fff" 
+              />
+            </Animated.View>
+                  </LinearGradient>
+          </TouchableOpacity>
               )}
             </View>
         )}
@@ -1001,6 +977,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
 
   // Handle fullscreen toggle
   const handleFullscreenToggle = useCallback(async () => {
+    triggerLight(); // Haptic feedback for fullscreen toggle
     try {
       logger.info('HeroSection', 'Fullscreen button pressed');
       if (trailerVideoRef.current) {
@@ -1679,35 +1656,28 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
           gap: 8,
         }}>
           {/* Fullscreen button */}
-          <Focusable
-            variant="button"
-            borderRadius={20}
-            enableScale={false}
-            enableGlow={true}
+          <TouchableOpacity
             onPress={handleFullscreenToggle}
             activeOpacity={0.7}
+            onPressIn={(e) => e.stopPropagation()}
+            onPressOut={(e) => e.stopPropagation()}
             style={{
               padding: 8,
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
               borderRadius: 20,
             }}
-            accessibilityLabel="Fullscreen trailer"
-            accessibilityHint="Double tap to view trailer in fullscreen"
           >
             <MaterialIcons
               name="fullscreen"
               size={24}
               color="white"
             />
-          </Focusable>
+          </TouchableOpacity>
 
           {/* Unmute button */}
-          <Focusable
-            variant="button"
-            borderRadius={20}
-            enableScale={false}
-            enableGlow={true}
+          <TouchableOpacity
             onPress={() => {
+              triggerLight(); // Haptic feedback for mute toggle
               logger.info('HeroSection', 'Mute toggle button pressed, current muted state:', trailerMuted);
               updateSetting('trailerMuted', !trailerMuted);
               if (trailerMuted) {
@@ -1725,29 +1695,26 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
               }
             }}
             activeOpacity={0.7}
+            onPressIn={(e) => e.stopPropagation()}
+            onPressOut={(e) => e.stopPropagation()}
             style={{
               padding: 8,
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
               borderRadius: 20,
             }}
-            accessibilityLabel={trailerMuted ? 'Unmute trailer' : 'Mute trailer'}
-            accessibilityHint="Double tap to toggle trailer audio"
           >
             <Entypo
               name={trailerMuted ? 'sound-mute' : 'sound'}
               size={24}
               color="white"
             />
-          </Focusable>
+          </TouchableOpacity>
 
           {/* AI Chat button */}
           {settings?.aiChatEnabled && (
-            <Focusable
-              variant="button"
-              borderRadius={20}
-              enableScale={false}
-              enableGlow={true}
+            <TouchableOpacity
               onPress={() => {
+                triggerLight(); // Haptic feedback for navigation to AI Chat
                 // Extract episode info if it's a series
                 let episodeData = null;
                 if (type === 'series' && watchProgress && watchProgress.episodeId) {
@@ -1770,20 +1737,20 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
                 });
               }}
               activeOpacity={0.7}
+              onPressIn={(e) => e.stopPropagation()}
+              onPressOut={(e) => e.stopPropagation()}
               style={{
                 padding: 8,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 borderRadius: 20,
               }}
-              accessibilityLabel="AI Chat"
-              accessibilityHint="Double tap to chat with AI about this content"
             >
               <MaterialIcons
                 name="smart-toy"
                 size={24}
                 color="white"
               />
-            </Focusable>
+            </TouchableOpacity>
           )}
         </Animated.View>
       )}
@@ -1796,12 +1763,9 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
           right: width >= 768 ? 32 : 16,
           zIndex: 1000,
         }}>
-          <Focusable
-            variant="button"
-            borderRadius={20}
-            enableScale={false}
-            enableGlow={true}
+          <TouchableOpacity
             onPress={() => {
+              triggerLight(); // Haptic feedback for navigation to AI Chat
               // Extract episode info if it's a series
               let episodeData = null;
               if (type === 'series' && watchProgress && watchProgress.episodeId) {
@@ -1829,36 +1793,28 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
               borderRadius: 20,
             }}
-            accessibilityLabel="AI Chat"
-            accessibilityHint="Double tap to chat with AI about this content"
           >
             <MaterialIcons
               name="smart-toy"
               size={24}
               color="white"
             />
-          </Focusable>
+          </TouchableOpacity>
         </Animated.View>
       )}
 
       <Animated.View style={styles.backButtonContainer}>
-        <Focusable
-          variant="nav"
-          borderRadius={22}
-          enableScale={false}
-          enableGlow={true}
-          style={styles.backButton}
-          onPress={handleBack}
-          accessibilityLabel="Go back"
-          accessibilityHint="Double tap to return to previous screen"
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={28}
-            color="#fff"
+        <TouchableOpacity style={styles.backButton} onPress={() => {
+          triggerLight(); // Haptic feedback for back navigation
+          handleBack();
+        }}>
+          <MaterialIcons 
+            name="arrow-back" 
+            size={28} 
+            color="#fff" 
             style={styles.backButtonIcon}
           />
-        </Focusable>
+        </TouchableOpacity>
       </Animated.View>
 
       {/* Ultra-light Gradient with subtle dynamic background blend */}

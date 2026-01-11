@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
   RefreshControl,
   SafeAreaView,
   StatusBar,
@@ -19,7 +20,6 @@ import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
-import { EmptyState } from '../components/common';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useLibrary } from '../hooks/useLibrary';
 import { useTraktContext } from '../contexts/TraktContext';
@@ -30,7 +30,7 @@ import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 import { useCalendarData } from '../hooks/useCalendarData';
-import { UnifiedSpinner } from '../components/loading';
+import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -92,6 +92,7 @@ const CalendarScreen = () => {
   }, []);
   
   const handleSeriesPress = useCallback((seriesId: string, episode?: CalendarEpisode) => {
+    triggerLight();
     navigation.navigate('Metadata', {
       id: seriesId,
       type: 'series',
@@ -105,8 +106,9 @@ const CalendarScreen = () => {
       handleSeriesPress(episode.seriesId, episode);
       return;
     }
-    
+
     // For episodes with dates, go to the stream screen
+    triggerLight();
     const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
     navigation.navigate('Streams', {
       id: episode.seriesId,
@@ -250,6 +252,7 @@ const CalendarScreen = () => {
   
   // Handle date selection from calendar
   const handleDateSelect = useCallback((date: Date) => {
+    triggerLight();
     logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
     setSelectedDate(date);
     
@@ -266,6 +269,7 @@ const CalendarScreen = () => {
 
   // Reset date filter
   const clearDateFilter = useCallback(() => {
+    triggerLight();
     logger.log(`[Calendar] Clearing date filter`);
     setSelectedDate(null);
     setFilteredEpisodes([]);
@@ -276,7 +280,8 @@ const CalendarScreen = () => {
       <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
-          <UnifiedSpinner size="large" text="Loading calendar..." />
+          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+          <Text style={styles.loadingText}>Loading calendar...</Text>
         </View>
       </SafeAreaView>
     );
@@ -287,9 +292,12 @@ const CalendarScreen = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
         </TouchableOpacity>
@@ -334,14 +342,20 @@ const CalendarScreen = () => {
           }
         />
       ) : selectedDate && filteredEpisodes.length === 0 ? (
-        <EmptyState
-          icon={{ name: 'event-busy', size: 48, library: 'MaterialIcons' }}
-          title={`No episodes for ${format(selectedDate, 'MMMM d, yyyy')}`}
-          primaryAction={{
-            label: 'Show All Episodes',
-            onPress: clearDateFilter,
-          }}
-        />
+        <View style={styles.emptyFilterContainer}>
+          <MaterialIcons name="event-busy" size={48} color={currentTheme.colors.lightGray} />
+          <Text style={[styles.emptyFilterText, { color: currentTheme.colors.text }]}>
+            No episodes for {format(selectedDate, 'MMMM d, yyyy')}
+          </Text>
+          <TouchableOpacity 
+            style={[styles.clearFilterButtonLarge, { backgroundColor: currentTheme.colors.primary }]}
+            onPress={clearDateFilter}
+          >
+            <Text style={[styles.clearFilterButtonText, { color: currentTheme.colors.text }]}>
+              Show All Episodes
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : calendarData.length > 0 ? (
         <SectionList
           sections={calendarData}
@@ -364,11 +378,15 @@ const CalendarScreen = () => {
           }
         />
       ) : (
-        <EmptyState
-          icon={{ name: 'calendar-today', library: 'MaterialIcons' }}
-          title="No upcoming episodes found"
-          subtitle="Add series to your library to see their upcoming episodes here"
-        />
+        <View style={styles.emptyContainer}>
+          <MaterialIcons name="calendar-today" size={64} color={currentTheme.colors.lightGray} />
+          <Text style={[styles.emptyText, { color: currentTheme.colors.text }]}>
+            No upcoming episodes found
+          </Text>
+          <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
+            Add series to your library to see their upcoming episodes here
+          </Text>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -385,6 +403,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
   },
   sectionHeader: {
     paddingVertical: 8,
@@ -446,6 +468,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 4,
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
   filterInfoContainer: {
     flexDirection: 'row',

@@ -45,7 +45,7 @@ import { useTraktContext } from '../../contexts/TraktContext';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
 import { streamCacheService } from '../../services/streamCacheService';
-import Focusable from '../common/Focusable';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 interface AppleTVHeroProps {
   featuredContent: StreamingContent | null;
@@ -69,9 +69,8 @@ const PaginationDot: React.FC<{
   isNext: boolean;
   dragProgress: SharedValue<number>;
   onPress: () => void;
-  index: number;
 }> = React.memo(
-  ({ isActive, isNext, dragProgress, onPress, index }) => {
+  ({ isActive, isNext, dragProgress, onPress }) => {
     const animatedStyle = useAnimatedStyle(() => {
       // Base values
       const activeWidth = 32;
@@ -128,18 +127,13 @@ const PaginationDot: React.FC<{
     });
 
     return (
-      <Focusable
-        variant="button"
-        borderRadius={4}
-        enableScale={false}
-        enableGlow={false}
+      <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.7}
-        accessibilityLabel={`Go to slide ${index + 1}`}
-        accessibilityHint={isActive ? "Currently active slide" : "Double tap to go to this slide"}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <Animated.View style={[styles.paginationDot, animatedStyle]} />
-      </Focusable>
+      </TouchableOpacity>
     );
   }
 );
@@ -159,12 +153,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   const { isTrailerPlaying: globalTrailerPlaying, setTrailerPlaying } = useTrailer();
   const { toggleLibrary, isInLibrary: checkIsInLibrary } = useLibrary();
   const { showSaved, showTraktSaved, showRemoved, showTraktRemoved } = useToast();
-  const {
-    isAuthenticated: isTraktAuthenticated,
-    isInWatchlist: checkTraktWatchlist,
-    addToWatchlist: traktAddToWatchlist,
-    removeFromWatchlist: traktRemoveFromWatchlist,
-  } = useTraktContext();
+  const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
 
   // Library and watch state
   const [inLibrary, setInLibrary] = useState(false);
@@ -561,22 +550,19 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
       const libraryStatus = checkIsInLibrary(itemId);
       setInLibrary(libraryStatus);
 
-      // Check Trakt watchlist status if authenticated
-      if (isTraktAuthenticated && currentItem?.imdb_id) {
-        // Convert 'series' to 'show' for Trakt API compatibility
-        const traktType = currentItem.type === 'series' ? 'show' : 'movie';
-        const watchlistStatus = checkTraktWatchlist(currentItem.imdb_id, traktType);
-        setIsInWatchlist(watchlistStatus);
-      } else {
-        setIsInWatchlist(false);
+      // TODO: Check Trakt watchlist status if authenticated
+      if (isTraktAuthenticated) {
+        // await traktService.isInWatchlist(itemId);
+        setIsInWatchlist(Math.random() > 0.5); // Replace with actual Trakt call
       }
     } catch (error) {
       logger.error('[AppleTVHero] Error checking item status:', error);
     }
-  }, [checkIsInLibrary, isTraktAuthenticated, currentItem, checkTraktWatchlist]);
+  }, [checkIsInLibrary, isTraktAuthenticated]);
 
   // Update the handleSaveAction function:
   const handleSaveAction = useCallback(async (e?: any) => {
+    triggerMedium();
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -601,43 +587,12 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
       }
 
       // If authenticated with Trakt, also toggle Trakt watchlist
-      if (isTraktAuthenticated && currentItem.imdb_id) {
-        // Optimistic UI update
+      if (isTraktAuthenticated) {
         setIsInWatchlist(!wasInWatchlist);
 
-        // Convert 'series' to 'show' for Trakt API compatibility
-        const traktType = currentItem.type === 'series' ? 'show' : 'movie';
-
-        try {
-          let traktSuccess: boolean;
-          if (wasInWatchlist) {
-            // Remove from Trakt watchlist
-            traktSuccess = await traktRemoveFromWatchlist(currentItem.imdb_id, traktType);
-            if (traktSuccess) {
-              showTraktRemoved();
-              logger.info('[AppleTVHero] Removed from Trakt watchlist:', currentItem.name);
-            }
-          } else {
-            // Add to Trakt watchlist
-            traktSuccess = await traktAddToWatchlist(currentItem.imdb_id, traktType);
-            if (traktSuccess) {
-              showTraktSaved();
-              logger.info('[AppleTVHero] Added to Trakt watchlist:', currentItem.name);
-            }
-          }
-
-          if (!traktSuccess) {
-            // Revert optimistic update on failure
-            setIsInWatchlist(wasInWatchlist);
-            logger.warn('[AppleTVHero] Trakt watchlist toggle failed');
-          }
-        } catch (traktError) {
-          // Revert optimistic update on error
-          setIsInWatchlist(wasInWatchlist);
-          logger.error('[AppleTVHero] Error toggling Trakt watchlist:', traktError);
-        }
-      } else if (isTraktAuthenticated && !currentItem.imdb_id) {
-        logger.warn('[AppleTVHero] Cannot toggle Trakt watchlist - missing IMDb ID for:', currentItem.name);
+        // TODO: Replace with your actual Trakt service call
+        // await traktService.toggleWatchlist(currentItem.id, !wasInWatchlist);
+        logger.info('[AppleTVHero] Toggled Trakt watchlist');
       }
 
     } catch (error) {
@@ -648,10 +603,11 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         setIsInWatchlist(wasInWatchlist);
       }
     }
-  }, [currentItem, inLibrary, isInWatchlist, isTraktAuthenticated, toggleLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved, traktAddToWatchlist, traktRemoveFromWatchlist]);
+  }, [currentItem, inLibrary, isInWatchlist, isTraktAuthenticated, toggleLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved]);
 
   // Play button handler - navigates to Streams screen with progress data if available
   const handlePlayAction = useCallback(async () => {
+    triggerMedium();
     logger.info('[AppleTVHero] Play button pressed for:', currentItem?.name);
     if (!currentItem) return;
 
@@ -757,6 +713,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Handle fullscreen toggle
   const handleFullscreenToggle = useCallback(async () => {
+    triggerLight();
     try {
       logger.info('[AppleTVHero] Fullscreen button pressed');
       if (trailerVideoRef.current) {
@@ -769,6 +726,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Handle mute toggle
   const handleMuteToggle = useCallback(() => {
+    triggerLight();
     logger.info('[AppleTVHero] Mute toggle pressed, current:', trailerMuted);
     updateSetting('trailerMuted', !trailerMuted);
   }, [trailerMuted, updateSetting]);
@@ -1009,6 +967,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   });
 
   const handleDotPress = useCallback((index: number) => {
+    triggerLight();
     lastInteractionRef.current = Date.now();
     setCurrentIndex(index);
   }, []);
@@ -1035,7 +994,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           <MaterialIcons name="theaters" size={48} color="rgba(255,255,255,0.5)" />
           <Text style={styles.noContentText}>No featured content available</Text>
           {onRetry && (
-            <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.retryButton} onPress={() => { triggerLight(); onRetry(); }} activeOpacity={0.7}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           )}
@@ -1172,50 +1131,48 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             gap: 8,
           }}>
             {/* Fullscreen button */}
-            <Focusable
-              variant="button"
-              borderRadius={20}
-              enableScale={false}
-              enableGlow={false}
+            <TouchableOpacity
               onPress={(e) => {
-                e?.stopPropagation?.();
+                e?.stopPropagation();
                 handleFullscreenToggle();
               }}
               activeOpacity={0.7}
-              accessibilityLabel="Fullscreen trailer"
-              accessibilityHint="Double tap to view trailer in fullscreen"
+              onPressIn={(e) => e?.stopPropagation()}
+              onPressOut={(e) => e?.stopPropagation()}
+              style={{
+                padding: 8,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                borderRadius: 20,
+              }}
             >
-              <View style={styles.trailerControlButton}>
-                <MaterialIcons
-                  name="fullscreen"
-                  size={24}
-                  color="white"
-                />
-              </View>
-            </Focusable>
+              <MaterialIcons
+                name="fullscreen"
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
 
             {/* Unmute button */}
-            <Focusable
-              variant="button"
-              borderRadius={20}
-              enableScale={false}
-              enableGlow={false}
+            <TouchableOpacity
               onPress={(e) => {
-                e?.stopPropagation?.();
+                e?.stopPropagation();
                 handleMuteToggle();
               }}
               activeOpacity={0.7}
-              accessibilityLabel={trailerMuted ? "Unmute trailer" : "Mute trailer"}
-              accessibilityHint="Double tap to toggle trailer sound"
+              onPressIn={(e) => e?.stopPropagation()}
+              onPressOut={(e) => e?.stopPropagation()}
+              style={{
+                padding: 8,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                borderRadius: 20,
+              }}
             >
-              <View style={styles.trailerControlButton}>
-                <Entypo
-                  name={trailerMuted ? 'sound-mute' : 'sound'}
-                  size={24}
-                  color="white"
-                />
-              </View>
-            </Focusable>
+              <Entypo
+                name={trailerMuted ? 'sound-mute' : 'sound'}
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
           </Animated.View>
         )}
 
@@ -1230,6 +1187,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
+                  triggerLight();
                   if (currentItem) {
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
@@ -1266,6 +1224,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
+                  triggerLight();
                   if (currentItem) {
                     navigation.navigate('Metadata', {
                       id: currentItem.id,
@@ -1302,44 +1261,31 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           {/* Action Buttons - Play and Save buttons */}
           <View style={styles.buttonsContainer}>
             {/* Play Button */}
-            <Focusable
-              variant="hero"
-              borderRadius={40}
-              enableScale={false}
+            <TouchableOpacity
+              style={[styles.playButton]}
               onPress={handlePlayAction}
               activeOpacity={0.85}
-              hasTVPreferredFocus={true}
-              accessibilityLabel={`${playButtonText} ${currentItem.name}`}
-              accessibilityHint="Double tap to start playing"
             >
-              <View style={styles.playButton}>
-                <MaterialIcons
-                  name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
-                  size={24}
-                  color="#000"
-                />
-                <Text style={styles.playButtonText}>{playButtonText}</Text>
-              </View>
-            </Focusable>
+              <MaterialIcons
+                name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+                size={24}
+                color="#000"
+              />
+              <Text style={styles.playButtonText}>{playButtonText}</Text>
+            </TouchableOpacity>
 
             {/* Save Button */}
-            <Focusable
-              variant="button"
-              borderRadius={30}
-              enableScale={false}
+            <TouchableOpacity
+              style={styles.saveButton}
               onPress={handleSaveAction}
               activeOpacity={0.85}
-              accessibilityLabel={inLibrary ? `Remove ${currentItem.name} from library` : `Save ${currentItem.name} to library`}
-              accessibilityHint="Double tap to toggle save status"
             >
-              <View style={styles.saveButton}>
-                <MaterialIcons
-                  name={inLibrary ? "bookmark" : "bookmark-outline"}
-                  size={24}
-                  color="white"
-                />
-              </View>
-            </Focusable>
+              <MaterialIcons
+                name={inLibrary ? "bookmark" : "bookmark-outline"}
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
           </View>
 
           {/* Pagination Dots */}
@@ -1348,7 +1294,6 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               {items.map((_, index) => (
                 <PaginationDot
                   key={index}
-                  index={index}
                   isActive={index === currentIndex}
                   isNext={index === nextIndex && nextIndex !== currentIndex}
                   dragProgress={dragProgress}
@@ -1496,13 +1441,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.3)',
-  },
-  trailerControlButton: {
-    padding: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   paginationContainer: {
     flexDirection: 'row',

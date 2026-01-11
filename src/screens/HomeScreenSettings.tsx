@@ -19,7 +19,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import Focusable from '../components/common/Focusable';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -64,15 +64,17 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
 
+  const handlePress = onPress
+    ? () => {
+        triggerLight();
+        onPress();
+      }
+    : undefined;
+
   return (
-    <Focusable
-      variant="listItem"
-      onPress={onPress}
-      enableScale={false}
-      enableGlow={false}
-      borderRadius={0}
-      accessibilityLabel={title}
-      accessibilityHint={description || `Setting for ${title}`}
+    <TouchableOpacity
+      activeOpacity={onPress ? 0.7 : 1}
+      onPress={handlePress}
       style={[
         styles.settingItem,
         !isLast && styles.settingItemBorder,
@@ -97,7 +99,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
       <View style={styles.settingControl}>
         {renderControl()}
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 };
 
@@ -139,6 +141,7 @@ const HomeScreenSettings: React.FC = () => {
   );
 
   const handleBack = useCallback(() => {
+    triggerLight();
     navigation.goBack();
   }, [navigation]);
 
@@ -181,7 +184,10 @@ const HomeScreenSettings: React.FC = () => {
   const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
     <Switch
       value={value}
-      onValueChange={onValueChange}
+      onValueChange={(val) => {
+        triggerMedium();
+        onValueChange(val);
+      }}
       trackColor={{ false: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', true: colors.primary }}
       thumbColor={Platform.OS === 'android' ? (value ? colors.white : colors.white) : ''}
       ios_backgroundColor={isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
@@ -190,31 +196,29 @@ const HomeScreenSettings: React.FC = () => {
 
   // Radio button component for content source selection
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
-    <Focusable
-      variant="listItem"
-      onPress={onPress}
-      enableScale={false}
-      enableGlow={false}
-      borderRadius={8}
-      accessibilityLabel={label}
-      accessibilityHint={selected ? 'Currently selected' : 'Tap to select'}
+    <TouchableOpacity
       style={styles.radioOption}
+      onPress={() => {
+        triggerLight();
+        onPress();
+      }}
+      activeOpacity={0.7}
     >
       <View style={styles.radioContainer}>
         <View style={[
-          styles.radio,
+          styles.radio, 
           { borderColor: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }
         ]}>
           {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
         </View>
         <Text style={[
-          styles.radioLabel,
+          styles.radioLabel, 
           { color: isDarkMode ? colors.highEmphasis : colors.textDark }
         ]}>
           {label}
         </Text>
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 
   // Compact segmented control for nicer toggles
@@ -231,15 +235,13 @@ const HomeScreenSettings: React.FC = () => {
       {options.map((opt, idx) => {
         const selected = value === opt.value;
         return (
-          <Focusable
+          <TouchableOpacity
             key={opt.value}
-            variant="button"
-            onPress={() => onChange(opt.value)}
-            enableScale={false}
-            enableGlow={false}
-            borderRadius={8}
-            accessibilityLabel={opt.label}
-            accessibilityHint={selected ? 'Currently selected' : 'Tap to select'}
+            onPress={() => {
+              triggerLight();
+              onChange(opt.value);
+            }}
+            activeOpacity={0.85}
             style={[
               styles.segment,
               idx === 0 && styles.segmentFirst,
@@ -254,7 +256,7 @@ const HomeScreenSettings: React.FC = () => {
             }}>
               {opt.label}
             </Text>
-          </Focusable>
+          </TouchableOpacity>
         );
       })}
     </View>
@@ -284,26 +286,16 @@ const HomeScreenSettings: React.FC = () => {
     ]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
-        <Focusable
-          variant="button"
-          onPress={handleBack}
-          enableScale={false}
-          enableGlow={false}
-          borderRadius={8}
-          hasTVPreferredFocus={true}
-          accessibilityLabel="Back to Settings"
-          accessibilityHint="Navigate back to the main settings screen"
-          style={styles.backButton}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={isDarkMode ? colors.highEmphasis : colors.textDark}
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <MaterialIcons 
+            name="arrow-back" 
+            size={24} 
+            color={isDarkMode ? colors.highEmphasis : colors.textDark} 
           />
           <Text style={[styles.backText, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
             Settings
           </Text>
-        </Focusable>
+        </TouchableOpacity>
         
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
@@ -382,19 +374,17 @@ const HomeScreenSettings: React.FC = () => {
             <View style={styles.segmentCard}>
               <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
               <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Using Catalogs</Text>
-              <Focusable
-                variant="listItem"
-                onPress={() => navigation.navigate('HeroCatalogs')}
-                enableScale={false}
-                enableGlow={false}
-                borderRadius={10}
-                accessibilityLabel="Manage selected catalogs"
-                accessibilityHint="Navigate to catalog selection screen"
+              <TouchableOpacity
+                onPress={() => {
+                  triggerLight();
+                  navigation.navigate('HeroCatalogs');
+                }}
                 style={[styles.manageLink, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' }]}
+                activeOpacity={0.8}
               >
                 <Text style={{ color: isDarkMode ? colors.highEmphasis : colors.textDark, fontWeight: '600' }}>Manage selected catalogs</Text>
                 <MaterialIcons name="chevron-right" size={20} color={isDarkMode ? colors.mediumEmphasis : colors.textMutedDark} />
-              </Focusable>
+              </TouchableOpacity>
             </View>
 
             {settings.heroStyle === 'carousel' && (

@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, Dimensions, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, FlatList } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CatalogContent, StreamingContent } from '../../services/catalogService';
 import { useTheme } from '../../contexts/ThemeContext';
 import ContentItem from './ContentItem';
-import Focusable from '../common/Focusable';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface CatalogSectionProps {
   catalog: CatalogContent;
@@ -131,26 +131,23 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
             ]}
           />
         </View>
-        <Focusable
-          variant="button"
-          borderRadius={isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20}
-          enableGlow={false}
-          onPress={() =>
+        <TouchableOpacity
+          onPress={() => {
+            triggerLight(); // Haptic feedback for navigation
             navigation.navigate('Catalog', {
               id: catalog.id,
               type: catalog.type,
               addonId: catalog.addon
-            })
-          }
+            });
+          }}
           style={[
             styles.viewAllButton,
             {
               paddingVertical: isTV ? 10 : isLargeTablet ? 9 : isTablet ? 8 : 8,
               paddingHorizontal: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
+              borderRadius: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
             }
           ]}
-          accessibilityLabel={`View all ${catalog.name}`}
-          accessibilityHint={`Navigate to full ${catalog.name} catalog`}
         >
           <Text style={[
             styles.viewAllText,
@@ -165,7 +162,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
             size={isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20}
             color={currentTheme.colors.textMuted}
           />
-        </Focusable>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -231,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8, // overridden responsively
     paddingHorizontal: 10, // overridden responsively
-    // borderRadius is set via Focusable component's borderRadius prop
+    borderRadius: 20, // overridden responsively
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   viewAllText: {

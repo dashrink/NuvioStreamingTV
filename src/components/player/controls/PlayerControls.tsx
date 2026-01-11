@@ -7,7 +7,7 @@ import Slider from '@react-native-community/slider';
 import { styles } from '../utils/playerStyles'; // Updated styles
 import { getTrackDisplayName } from '../utils/playerUtils';
 import { useTheme } from '../../../contexts/ThemeContext';
-import Focusable from '../../common/Focusable';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface PlayerControlsProps {
   showControls: boolean;
@@ -131,8 +131,9 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Seek with Animation */
   const handleSeekWithAnimation = (seconds: number) => {
+    triggerLight(); // Haptic feedback for skip buttons
     const isForward = seconds > 0;
-    
+
     if (isForward) {
       setShowForwardSign(true);
     } else {
@@ -213,6 +214,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Play/Pause with Animation */
   const handlePlayPauseWithAnimation = () => {
+    triggerMedium(); // Haptic feedback for play/pause (important action)
     Animated.sequence([
       Animated.timing(playPressAnim, {
         toValue: 1,
@@ -326,31 +328,26 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {/* AirPlay Button - iOS only, KSAVPlayer only */}
               {Platform.OS === 'ios' && onAirPlayPress && playerBackend === 'KSAVPlayer' && (
-                <Focusable
-                  variant="button"
-                  borderRadius={8}
-                  style={localStyles.topControlButton}
-                  onPress={onAirPlayPress}
-                  accessibilityLabel="AirPlay"
-                  accessibilityHint="Toggle AirPlay output"
+                <TouchableOpacity
+                  style={{ padding: 8 }}
+                  onPress={() => {
+                    triggerLight();
+                    onAirPlayPress();
+                  }}
                 >
                   <Feather
                     name="airplay"
                     size={closeIconSize}
                     color={isAirPlayActive ? currentTheme.colors.primary : "white"}
                   />
-                </Focusable>
+                </TouchableOpacity>
               )}
-              <Focusable
-                variant="button"
-                borderRadius={8}
-                style={localStyles.topControlButton}
-                onPress={handleClose}
-                accessibilityLabel="Close player"
-                accessibilityHint="Close the video player"
-              >
+              <TouchableOpacity style={styles.closeButton} onPress={() => {
+                triggerLight();
+                handleClose();
+              }}>
                 <Ionicons name="close" size={closeIconSize} color="white" />
-              </Focusable>
+              </TouchableOpacity>
             </View>
           </View>
         </LinearGradient>
@@ -362,32 +359,27 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
         }]}>
           
           {/* Backward Seek Button (-10s) */}
-          <Focusable
-            variant="button"
-            borderRadius={seekButtonSize / 2}
-            style={localStyles.seekFocusable}
-            enableScale={false}
-            onPress={() => handleSeekWithAnimation(-10)}
-            accessibilityLabel="Seek backward 10 seconds"
-            accessibilityHint="Skip back 10 seconds in the video"
+          <TouchableOpacity 
+            onPress={() => handleSeekWithAnimation(-10)} 
+            activeOpacity={0.7}
           >
             <Animated.View style={[
               styles.seekButtonContainer,
-              {
+              { 
                 width: seekButtonSize,
                 height: seekButtonSize,
-                transform: [{ scale: backwardScaleAnim }]
+                transform: [{ scale: backwardScaleAnim }] 
               }
             ]}>
-              <Ionicons
-                name="reload-outline"
-                size={seekIconSize}
-                color="white"
-                style={{ transform: [{ scaleX: -1 }] }}
+              <Ionicons 
+                name="reload-outline" 
+                size={seekIconSize} 
+                color="white" 
+                style={{ transform: [{ scaleX: -1 }] }} 
               />
               <Animated.View style={[
                 styles.buttonCircle,
-                {
+                { 
                   opacity: backwardPressAnim,
                   width: seekButtonSize * 0.6,
                   height: seekButtonSize * 0.6,
@@ -400,102 +392,92 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               }]}>
                 <Animated.Text style={[
                   styles.seekNumber,
-                  {
+                  { 
                     fontSize: seekNumberSize,
                     marginLeft: 7,
-                    transform: [{ translateX: backwardSlideAnim }]
+                    transform: [{ translateX: backwardSlideAnim }] 
                   }
                 ]}>
                   {showBackwardSign ? '-10' : '10'}
                 </Animated.Text>
               </View>
-            </Animated.View>
-            <Animated.View style={[
-              styles.arcContainer,
-              {
-                width: seekButtonSize,
-                height: seekButtonSize,
-                opacity: backwardArcOpacity,
-                transform: [{
-                  rotate: backwardArcRotation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['90deg', '-90deg']
-                  })
-                }]
-              }
-            ]}>
-              <View style={[
-                styles.arcLeft,
+              </Animated.View>
+              <Animated.View style={[
+                styles.arcContainer,
                 {
                   width: seekButtonSize,
                   height: seekButtonSize,
-                  borderRadius: seekButtonSize / 2,
-                  borderWidth: arcBorderWidth,
+                  opacity: backwardArcOpacity,
+                  transform: [{
+                    rotate: backwardArcRotation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['90deg', '-90deg']
+                    })
+                  }]
                 }
-              ]} />
-            </Animated.View>
-          </Focusable>
+              ]}>
+                <View style={[
+                  styles.arcLeft,
+                  {
+                    width: seekButtonSize,
+                    height: seekButtonSize,
+                    borderRadius: seekButtonSize / 2,
+                    borderWidth: arcBorderWidth,
+                  }
+                ]} />
+              </Animated.View>
+          </TouchableOpacity>
 
           {/* Play/Pause Button */}
-          <Focusable
-            variant="button"
-            borderRadius={playButtonSize / 2}
-            style={[localStyles.playFocusable, { marginHorizontal: buttonSpacing }]}
-            enableScale={false}
-            hasTVPreferredFocus={true}
-            onPress={handlePlayPauseWithAnimation}
-            accessibilityLabel={paused ? "Play" : "Pause"}
-            accessibilityHint={paused ? "Resume playback" : "Pause playback"}
+          <TouchableOpacity 
+            onPress={handlePlayPauseWithAnimation} 
+            activeOpacity={0.7}
+            style={{ marginHorizontal: buttonSpacing }}
           >
             <View style={[styles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}>
               <Animated.View style={[
                 styles.playPressCircle,
-                {
+                { 
                   opacity: playPressAnim,
                   width: playButtonSize * 0.85,
                   height: playButtonSize * 0.85,
                   borderRadius: (playButtonSize * 0.85) / 2,
                 }
               ]} />
-              <Animated.View style={{
+              <Animated.View style={{ 
                 transform: [{ scale: playIconScale }],
-                opacity: playIconOpacity
+                opacity: playIconOpacity 
               }}>
-                <Ionicons
-                  name={paused ? "play" : "pause"}
-                  size={playIconSizeCalculated}
+                <Ionicons 
+                  name={paused ? "play" : "pause"} 
+                  size={playIconSizeCalculated} 
                   color="#FFFFFF"
                 />
               </Animated.View>
             </View>
-          </Focusable>
+          </TouchableOpacity>
 
           {/* Forward Seek Button (+10s) */}
-          <Focusable
-            variant="button"
-            borderRadius={seekButtonSize / 2}
-            style={localStyles.seekFocusable}
-            enableScale={false}
-            onPress={() => handleSeekWithAnimation(10)}
-            accessibilityLabel="Seek forward 10 seconds"
-            accessibilityHint="Skip forward 10 seconds in the video"
-          >
-            <Animated.View style={[
-              styles.seekButtonContainer,
-              {
-                width: seekButtonSize,
-                height: seekButtonSize,
-                transform: [{ scale: forwardScaleAnim }]
-              }
-            ]}>
-              <Ionicons
-                name="reload-outline"
-                size={seekIconSize}
-                color="white"
-              />
+            <TouchableOpacity 
+              onPress={() => handleSeekWithAnimation(10)} 
+              activeOpacity={0.7}
+            >
+              <Animated.View style={[
+                styles.seekButtonContainer,
+                { 
+                  width: seekButtonSize,
+                  height: seekButtonSize,
+                  transform: [{ scale: forwardScaleAnim }] 
+                }
+              ]}>
+                <Ionicons 
+                  name="reload-outline" 
+                  size={seekIconSize} 
+                  color="white" 
+                />
               <Animated.View style={[
                 styles.buttonCircle,
-                {
+                { 
                   opacity: forwardPressAnim,
                   width: seekButtonSize * 0.6,
                   height: seekButtonSize * 0.6,
@@ -508,9 +490,9 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               }]}>
                 <Animated.Text style={[
                   styles.seekNumber,
-                  {
+                  { 
                     fontSize: seekNumberSize,
-                    transform: [{ translateX: forwardSlideAnim }]
+                    transform: [{ translateX: forwardSlideAnim }] 
                   }
                 ]}>
                   {showForwardSign ? '+10' : '10'}
@@ -521,6 +503,8 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                 {
                   width: seekButtonSize,
                   height: seekButtonSize,
+                },
+                {
                   opacity: forwardArcOpacity,
                   transform: [{
                     rotate: forwardArcRotation.interpolate({
@@ -541,7 +525,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                 ]} />
               </Animated.View>
             </Animated.View>
-          </Focusable>
+          </TouchableOpacity>
         </View>
 
 
@@ -558,90 +542,72 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             {/* Center Buttons Container with rounded background - wraps all buttons */}
             <View style={styles.centerControlsContainer} pointerEvents="box-none">
               {/* Left Side: Aspect Ratio Button */}
-              <Focusable
-                variant="button"
-                borderRadius={22}
-                style={localStyles.bottomIconFocusable}
-                enableGlow={false}
-                onPress={cycleAspectRatio}
-                accessibilityLabel="Change aspect ratio"
-                accessibilityHint="Cycle through aspect ratio options"
-              >
+              <TouchableOpacity style={styles.iconButton} onPress={() => {
+                triggerLight();
+                cycleAspectRatio();
+              }}>
                 <Ionicons name="expand-outline" size={24} color="white" />
-              </Focusable>
+              </TouchableOpacity>
 
               {/* Subtitle Button */}
-              <Focusable
-                variant="button"
-                borderRadius={22}
-                style={localStyles.bottomIconFocusable}
-                enableGlow={false}
-                onPress={() => setShowSubtitleModal(!isSubtitleModalOpen)}
-                accessibilityLabel="Subtitles"
-                accessibilityHint="Open subtitle settings"
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  triggerLight();
+                  setShowSubtitleModal(!isSubtitleModalOpen);
+                }}
               >
                 <Ionicons name="text" size={24} color="white" />
-              </Focusable>
+              </TouchableOpacity>
 
               {/* Change Source Button */}
               {setShowSourcesModal && (
-                <Focusable
-                  variant="button"
-                  borderRadius={22}
-                  style={localStyles.bottomIconFocusable}
-                  enableGlow={false}
-                  onPress={() => setShowSourcesModal(true)}
-                  accessibilityLabel="Change source"
-                  accessibilityHint="Open source selection menu"
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => {
+                    triggerLight();
+                    setShowSourcesModal(true);
+                  }}
                 >
                   <Ionicons name="cloud-outline" size={24} color="white" />
-                </Focusable>
+                </TouchableOpacity>
               )}
 
               {/* Playback Speed Button */}
-              <Focusable
-                variant="button"
-                borderRadius={22}
-                style={localStyles.bottomIconFocusable}
-                enableGlow={false}
-                onPress={() => setShowSpeedModal(true)}
-                accessibilityLabel="Playback speed"
-                accessibilityHint="Change playback speed"
-              >
+              <TouchableOpacity style={styles.iconButton} onPress={() => {
+                triggerLight();
+                setShowSpeedModal(true);
+              }}>
                 <Ionicons name="speedometer-outline" size={24} color="white" />
-              </Focusable>
+              </TouchableOpacity>
 
               {/* Audio Button */}
-              <Focusable
-                variant="button"
-                borderRadius={22}
-                style={localStyles.bottomIconFocusable}
-                enableGlow={false}
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  triggerLight();
+                  setShowAudioModal(true);
+                }}
                 disabled={ksAudioTracks.length <= 1}
-                onPress={() => setShowAudioModal(true)}
-                accessibilityLabel="Audio tracks"
-                accessibilityHint="Select audio track"
               >
                 <Ionicons
                   name="musical-notes-outline"
                   size={24}
                   color={ksAudioTracks.length <= 1 ? 'grey' : 'white'}
                 />
-              </Focusable>
+              </TouchableOpacity>
 
               {/* Right Side: Episodes Button */}
               {setShowEpisodesModal && (
-                <Focusable
-                  variant="button"
-                  borderRadius={22}
-                  style={localStyles.bottomIconFocusable}
-                  enableGlow={false}
-                  onPress={() => setShowEpisodesModal(true)}
-                  accessibilityLabel="Episodes"
-                  accessibilityHint="Open episode list"
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => {
+                    triggerLight();
+                    setShowEpisodesModal(true);
+                  }}
                 >
                   <Ionicons name="list" size={24} color="white" />
-                </Focusable>
+                </TouchableOpacity>
               )}
             </View>
           </View>
@@ -650,40 +616,5 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
     </Animated.View>
   );
 };
-
-/**
- * Local styles for PlayerControls focus indicators
- * These styles ensure focus indicators are clearly visible over video content
- */
-const localStyles = StyleSheet.create({
-  // Top control buttons (close, AirPlay)
-  topControlButton: {
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 44,
-    minHeight: 44,
-  },
-  // Seek buttons wrapper for focus indicator
-  seekFocusable: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-  },
-  // Play/pause button wrapper for focus indicator
-  playFocusable: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-  },
-  // Bottom control bar icon buttons
-  bottomIconFocusable: {
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 44,
-    minHeight: 44,
-  },
-});
 
 export default PlayerControls;

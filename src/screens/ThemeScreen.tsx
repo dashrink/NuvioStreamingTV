@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Switch,
   ScrollView,
   Platform,
   TextInput,
@@ -13,7 +14,6 @@ import {
   SafeAreaView,
   BackHandler,
 } from 'react-native';
-import CustomSwitch from '../components/common/CustomSwitch';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -536,7 +536,11 @@ const ThemeScreen: React.FC = () => {
     };
 
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <SafeAreaView style={[
+        styles.container, 
+        { backgroundColor: currentTheme.colors.darkBackground }
+      ]}>
+        <StatusBar barStyle="light-content" />
         <ThemeColorEditor
           initialColors={initialColors}
           onSave={handleSaveTheme}
@@ -558,54 +562,110 @@ const ThemeScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-      <View style={[styles.headerContainer, { paddingTop: headerTopPadding }]}>
-        <View style={styles.headerTop}>
-          <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-            Themes
+    <SafeAreaView style={[
+      styles.container, 
+      { backgroundColor: currentTheme.colors.darkBackground }
+    ]}>
+      <StatusBar barStyle="light-content" />
+      
+      <View style={[styles.header, { paddingTop: headerTopPadding }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
+        >
+          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
+          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
+            Settings
           </Text>
-          <TouchableOpacity 
-            style={[styles.createThemeButton, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={handleCreateTheme}
-          >
-            <MaterialIcons name="add" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+        </TouchableOpacity>
+        
+        <View style={styles.headerActions}>
+          {/* Empty for now, but ready for future actions */}
         </View>
-
-        {/* Filter tabs */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterTabsContainer}>
-          {THEME_CATEGORIES.map(category => (
+      </View>
+      
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
+        App Themes
+      </Text>
+      
+      {/* Category filter */}
+      <View style={styles.filterContainer}>
+        <FlatList
+          data={THEME_CATEGORIES}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
             <FilterTab
-              key={category.id}
-              category={category}
-              isActive={activeFilter === category.id}
-              onPress={() => setActiveFilter(category.id)}
+              category={item}
+              isActive={activeFilter === item.id}
+              onPress={() => setActiveFilter(item.id)}
               primaryColor={currentTheme.colors.primary}
             />
-          ))}
-        </ScrollView>
+          )}
+          contentContainerStyle={styles.filterList}
+        />
       </View>
+      
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
+          SELECT THEME
+        </Text>
+        
+        <View style={styles.themeGrid}>
+          {filteredThemes.map(theme => (
+            <ThemeCard
+              key={theme.id}
+              theme={theme}
+              isSelected={currentTheme.id === theme.id}
+              onSelect={() => handleThemeSelect(theme.id)}
+              onEdit={theme.isEditable ? () => handleEditTheme(theme) : undefined}
+              onDelete={theme.isEditable ? () => handleDeleteTheme(theme) : undefined}
+            />
+          ))}
+        </View>
+        
+        <TouchableOpacity
+          style={[
+            styles.createButton,
+            { backgroundColor: currentTheme.colors.primary },
+            styles.buttonShadow
+          ]}
+          onPress={() => {
+            triggerMedium();
+            handleCreateTheme();
+          }}
+        >
+          <MaterialIcons name="add" size={20} color="#FFFFFF" />
+          <Text style={styles.createButtonText}>Create Custom Theme</Text>
+        </TouchableOpacity>
 
-      {/* Themes grid */}
-      <FlatList
-        data={filteredThemes}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={[
-          styles.themeGridContainer,
-          { paddingBottom: insets.bottom + 20 }
-        ]}
-        renderItem={({ item: theme }) => (
-          <ThemeCard
-            theme={theme}
-            isSelected={currentTheme.id === theme.id}
-            onSelect={() => handleThemeSelect(theme.id)}
-            onEdit={() => handleEditTheme(theme)}
-            onDelete={() => handleDeleteTheme(theme)}
+        <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted, marginTop: 24 }]}>
+          OPTIONS
+        </Text>
+
+        <View style={styles.optionRow}>
+          <Text style={[styles.optionLabel, { color: currentTheme.colors.text }]}>
+            Use Dominant Color from Artwork
+          </Text>
+          <Switch
+            value={settings.useDominantBackgroundColor}
+            onValueChange={(value) => {
+              triggerMedium();
+              updateSetting('useDominantBackgroundColor', value);
+            }}
+            trackColor={{ false: '#767577', true: currentTheme.colors.primary }}
+            thumbColor={Platform.OS === 'android' ? currentTheme.colors.primary : '#f4f3f4'}
           />
-        )}
-      />
+        </View>
+      </ScrollView>
 
       <CustomAlert
         visible={alertVisible}
@@ -622,59 +682,90 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-  },
-  headerTop: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  backText: {
+    fontSize: 17,
+    marginLeft: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 34,
     fontWeight: 'bold',
+    paddingHorizontal: 16,
+    marginBottom: 24,
   },
-  createThemeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+  content: {
+    flex: 1,
   },
-  filterTabsContainer: {
-    marginBottom: 16,
+  contentContainer: {
+    padding: 12,
+    paddingBottom: 24,
+  },
+  filterContainer: {
+    marginBottom: 8,
+  },
+  filterList: {
+    paddingHorizontal: 12,
   },
   filterTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
     marginRight: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   filterTabText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
-  themeGridContainer: {
-    paddingHorizontal: 12,
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
-  gridRow: {
+  themeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
   themeCard: {
-    flex: 1,
-    aspectRatio: 1,
+    width: (width - 36) / 2,
+    marginBottom: 12,
     borderRadius: 12,
+    padding: 10,
     borderWidth: 2,
-    padding: 12,
-    marginHorizontal: 6,
+    borderColor: 'transparent',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   selectedThemeCard: {
-    borderWidth: 3,
+    borderWidth: 2,
   },
   themeCardHeader: {
     flexDirection: 'row',
@@ -684,199 +775,298 @@ const styles = StyleSheet.create({
   },
   themeCardTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   colorPreviewContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
   colorPreview: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    marginRight: 8,
   },
   colorPreviewShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
   },
   themeCardActions: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'flex-end',
   },
   themeCardAction: {
-    flex: 1,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: 'center',
+    padding: 6,
+    marginLeft: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
   },
   buttonShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowRadius: 1.41,
     elevation: 2,
   },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 12,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  optionLabel: {
+    fontSize: 14,
+  },
+  
+  // Editor styles
   editorContainer: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   editorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   editorBackButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 5,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   editorTitleInput: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.3)',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginHorizontal: 10,
+    padding: 0,
+    height: 28,
   },
   editorSaveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
   },
   editorBody: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    padding: 10,
   },
   colorSectionRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  colorButtonsColumn: {
+    width: width * 0.4 - 20, // 40% minus padding
+    marginLeft: 10,
+    justifyContent: 'space-between',
   },
   previewContainer: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 8,
+    width: width * 0.6,
+    height: 120,
+    borderRadius: 8,
     overflow: 'hidden',
+    padding: 4,
   },
   previewContent: {
     flex: 1,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   previewHeader: {
+    height: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   previewHeaderTitle: {
-    width: 60,
-    height: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
+    width: 40,
+    height: 8,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.4)',
   },
   previewIconGroup: {
     flexDirection: 'row',
-    gap: 6,
   },
   previewIcon: {
-    width: 14,
-    height: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    marginLeft: 4,
   },
   previewBody: {
     flex: 1,
+    padding: 2,
   },
   previewFeatured: {
-    marginBottom: 8,
+    height: 50,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    marginBottom: 4,
+    justifyContent: 'flex-end',
+    padding: 4,
   },
   previewPosterGradient: {
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
-    marginBottom: 4,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 30,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   previewTitle: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
+    width: 60,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.7)',
     marginBottom: 4,
-    width: '60%',
   },
   previewButtonRow: {
     flexDirection: 'row',
-    gap: 4,
+    alignItems: 'center',
   },
   previewPlayButton: {
-    flex: 1,
-    height: 20,
-    borderRadius: 4,
+    width: 35,
+    height: 12,
+    borderRadius: 3,
+    marginRight: 4,
   },
   previewActionButton: {
-    width: 20,
-    height: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   previewSectionHeader: {
-    marginBottom: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   previewSectionTitle: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 2,
     width: 40,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.4)',
   },
   previewPosterRow: {
     flexDirection: 'row',
-    gap: 4,
+    justifyContent: 'space-between',
   },
   previewPoster: {
-    flex: 1,
-    aspectRatio: 0.7,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
-  },
-  colorButtonsColumn: {
-    gap: 8,
-    justifyContent: 'flex-start',
+    width: '30%',
+    height: 30,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   colorSelectorButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    height: 36,
+    paddingVertical: 5,
+    borderRadius: 6,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
   selectedColorButton: {
+    borderWidth: 2,
     borderColor: '#FFFFFF',
   },
   colorButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   colorPickerContainer: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10,
+  },
+  
+  // Legacy styles - keep for backward compatibility
+  editorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: 6,
+  },
+  textInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  cancelButton: {
+    width: (width - 36) / 2,
+    padding: 12,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cancelButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  saveButton: {
+    width: (width - 36) / 2,
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

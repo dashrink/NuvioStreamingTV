@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
 import { RATING_PROVIDERS } from '../components/metadata/RatingsSection';
 
@@ -565,9 +566,12 @@ const MDBListSettingsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
-          <MaterialIcons name="chevron-left" size={28} color={colors.primary} /> 
+          <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
           <Text style={styles.backText}>Settings</Text>
         </TouchableOpacity>
       </View>
@@ -613,7 +617,10 @@ const MDBListSettingsScreen = () => {
             </View>
             <Switch
               value={isMdbListEnabled}
-              onValueChange={toggleMdbListEnabled}
+              onValueChange={() => {
+                triggerMedium();
+                toggleMdbListEnabled();
+              }}
               trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
               thumbColor={isMdbListEnabled ? colors.primary : colors.mediumGray}
             />
@@ -644,15 +651,18 @@ const MDBListSettingsScreen = () => {
               onBlur={() => setIsInputFocused(false)}
               editable={isMdbListEnabled}
             />
-            <TouchableOpacity 
-              style={styles.pasteButton} 
-              onPress={pasteFromClipboard}
+            <TouchableOpacity
+              style={styles.pasteButton}
+              onPress={() => {
+                triggerLight();
+                pasteFromClipboard();
+              }}
               disabled={!isMdbListEnabled}
             >
-               <MaterialIcons 
-                 name="content-paste" 
-                 size={20} 
-                 color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
+               <MaterialIcons
+                 name="content-paste"
+                 size={20}
+                 color={!isMdbListEnabled ? colors.darkGray : colors.primary}
                />
             </TouchableOpacity>
           </View>
@@ -676,10 +686,13 @@ const MDBListSettingsScreen = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[
-                styles.saveButton, 
+                styles.saveButton,
                 (!apiKey.trim() || !isMdbListEnabled) && styles.saveButtonDisabled
               ]}
-              onPress={saveApiKey}
+              onPress={() => {
+                triggerMedium();
+                saveApiKey();
+              }}
               disabled={!apiKey.trim() || !isMdbListEnabled}
             >
               <MaterialIcons name="save" size={18} color={colors.white} style={styles.buttonIcon} />
@@ -689,17 +702,20 @@ const MDBListSettingsScreen = () => {
             {isKeySet && (
               <TouchableOpacity
                 style={[styles.clearButton, !isMdbListEnabled && styles.clearButtonDisabled]}
-                onPress={clearApiKey}
+                onPress={() => {
+                  triggerHeavy();
+                  clearApiKey();
+                }}
                 disabled={!isMdbListEnabled}
               >
-                <MaterialIcons 
-                  name="delete-outline" 
-                  size={18} 
-                  color={!isMdbListEnabled ? colors.darkGray : colors.error} 
-                  style={styles.buttonIcon} 
+                <MaterialIcons
+                  name="delete-outline"
+                  size={18}
+                  color={!isMdbListEnabled ? colors.darkGray : colors.error}
+                  style={styles.buttonIcon}
                 />
                 <Text style={[
-                  styles.clearButtonText, 
+                  styles.clearButtonText,
                   !isMdbListEnabled && styles.clearButtonTextDisabled
                 ]}>
                   Clear Key
@@ -726,7 +742,10 @@ const MDBListSettingsScreen = () => {
               </View>
               <Switch
                 value={enabledProviders[id] ?? true}
-                onValueChange={() => toggleProvider(id)}
+                onValueChange={() => {
+                  triggerMedium();
+                  toggleProvider(id);
+                }}
                 trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
                 thumbColor={enabledProviders[id] ? colors.primary : colors.mediumGray}
                 disabled={!isMdbListEnabled}
@@ -807,14 +826,17 @@ const MDBListSettingsScreen = () => {
               styles.websiteButton,
               !isMdbListEnabled && styles.websiteButtonDisabled
             ]}
-            onPress={openMDBListWebsite}
+            onPress={() => {
+              triggerLight();
+              openMDBListWebsite();
+            }}
             disabled={!isMdbListEnabled}
           >
-            <MaterialIcons 
-              name="open-in-new" 
-              size={18} 
-              color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
-              style={styles.buttonIcon} 
+            <MaterialIcons
+              name="open-in-new"
+              size={18}
+              color={!isMdbListEnabled ? colors.darkGray : colors.primary}
+              style={styles.buttonIcon}
             />
             <Text style={[
               styles.websiteButtonText,

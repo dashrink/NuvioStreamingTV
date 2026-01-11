@@ -33,6 +33,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { UnifiedSpinner } from '../components/loading';
 import ScreenHeader from '../components/common/ScreenHeader';
+import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 
@@ -399,6 +400,7 @@ const SearchScreen = () => {
   }, [query]); // Removed debouncedSearch since it's now stable with useMemo
 
   const handleClearSearch = () => {
+    triggerLight();
     setQuery('');
     liveSearchHandle.current?.cancel();
     liveSearchHandle.current = null;
@@ -424,6 +426,7 @@ const SearchScreen = () => {
             key={index}
             style={styles.recentSearchItem}
             onPress={() => {
+              triggerLight();
               setQuery(search);
               Keyboard.dismiss();
             }}
@@ -439,6 +442,7 @@ const SearchScreen = () => {
             </Text>
             <TouchableOpacity
               onPress={() => {
+                triggerLight();
                 const newRecentSearches = [...recentSearches];
                 newRecentSearches.splice(index, 1);
                 setRecentSearches(newRecentSearches);
@@ -504,9 +508,11 @@ const SearchScreen = () => {
       <TouchableOpacity
         style={[styles.horizontalItem, { width: itemWidth }]}
         onPress={() => {
+          triggerLight();
           navigation.navigate('Metadata', { id: item.id, type: item.type });
         }}
         onLongPress={() => {
+          triggerLight();
           setSelectedItem(item);
           setMenuVisible(true);
           // Do NOT toggle refreshFlag here

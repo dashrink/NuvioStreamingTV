@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { DeviceEventEmitter } from 'react-native';
-import { View, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,7 +13,7 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import Focusable from '../common/Focusable';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface ContentItemProps {
   item: StreamingContent;
@@ -112,7 +112,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const [imageError, setImageError] = useState(false);
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, getUserRating } = useTraktContext();
+  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
 
   useEffect(() => {
     // Reset image error state when item changes, allowing for retry on re-render
@@ -168,12 +168,14 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const itemRef = useRef<View>(null);
 
   const handleLongPress = useCallback(() => {
+    triggerLight(); // Haptic feedback for opening context menu
     setMenuVisible(true);
   }, []);
 
   const handlePress = useCallback(() => {
     // Validate ID before pressing to prevent errors with NaN/undefined IDs
     if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
+      triggerLight(); // Haptic feedback for navigation to details
       onPress(item.id, item.type);
     }
   }, [item.id, item.type, onPress]);
@@ -239,26 +241,22 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
         break;
       }
       case 'trakt-watchlist': {
-        // Convert 'series' to 'show' for Trakt API compatibility
-        const watchlistType = item.type === 'movie' ? 'movie' : 'show';
-        if (isInWatchlist(item.id, watchlistType)) {
-          await removeFromWatchlist(item.id, watchlistType);
+        if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
+          await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
           showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
         } else {
-          await addToWatchlist(item.id, watchlistType);
+          await addToWatchlist(item.id, item.type as 'movie' | 'show');
           showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
         }
         setMenuVisible(false);
         break;
       }
       case 'trakt-collection': {
-        // Convert 'series' to 'show' for Trakt API compatibility
-        const collectionType = item.type === 'movie' ? 'movie' : 'show';
-        if (isInCollection(item.id, collectionType)) {
-          await removeFromCollection(item.id, collectionType);
+        if (isInCollection(item.id, item.type as 'movie' | 'show')) {
+          await removeFromCollection(item.id, item.type as 'movie' | 'show');
           showInfo('Removed from Collection', 'Removed from your Trakt collection');
         } else {
-          await addToCollection(item.id, collectionType);
+          await addToCollection(item.id, item.type as 'movie' | 'show');
           showSuccess('Added to Collection', 'Added to your Trakt collection');
         }
         setMenuVisible(false);
@@ -307,15 +305,12 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   return (
     <>
       <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
-        <Focusable
-          variant="card"
-          borderRadius={borderRadius}
+        <TouchableOpacity
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
           activeOpacity={0.7}
           onPress={handlePress}
           onLongPress={handleLongPress}
-          accessibilityLabel={item.name}
-          accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'show'} details`}
+          delayLongPress={300}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}
@@ -359,28 +354,18 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 <Feather name="bookmark" size={16} color={currentTheme.colors.white} />
               </View>
             )}
-            {isAuthenticated && isInWatchlist(item.id, item.type === 'movie' ? 'movie' : 'show') && (
+            {isAuthenticated && isInWatchlist(item.id, item.type as 'movie' | 'show') && (
               <View style={styles.traktWatchlistIcon}>
                 <MaterialIcons name="playlist-add-check" size={16} color="#E74C3C" />
               </View>
             )}
-            {isAuthenticated && isInCollection(item.id, item.type === 'movie' ? 'movie' : 'show') && (
+            {isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show') && (
               <View style={styles.traktCollectionIcon}>
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
             )}
-            {/* Rating indicator for items the user has rated on Trakt */}
-            {isAuthenticated && (() => {
-              const userRating = getUserRating(item.id, item.type === 'movie' ? 'movie' : 'show');
-              return userRating !== null ? (
-                <View style={styles.traktRatingBadge}>
-                  <MaterialIcons name="star" size={12} color="#FFD700" />
-                  <Text style={styles.traktRatingText}>{userRating}</Text>
-                </View>
-              ) : null;
-            })()}
           </View>
-        </Focusable>
+        </TouchableOpacity>
         {settings.showPosterTitles && (
           <Text
             style={[
@@ -420,8 +405,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
-    // Note: Border, shadow, and elevation are now handled by Focusable component
-    // which animates border/glow on focus for TV remote navigation
+    elevation: Platform.OS === 'android' ? 1 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
     marginBottom: 8,
   },
   contentItemContainer: {
@@ -471,23 +461,6 @@ const styles = StyleSheet.create({
     top: 8,
     right: 32, // Positioned to the left of watchlist icon
     padding: 2,
-  },
-  traktRatingBadge: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    borderRadius: 8,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-  },
-  traktRatingText: {
-    color: '#FFD700',
-    fontSize: 11,
-    fontWeight: '600',
-    marginLeft: 2,
   },
   title: {
     fontSize: 13, // Will be overridden responsively

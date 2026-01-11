@@ -1,6 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import Focusable from './common/Focusable';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { triggerLight } from '@/hooks/useHaptics';
 
 interface ProviderFilterProps {
@@ -10,16 +9,16 @@ interface ProviderFilterProps {
   theme: any;
 }
 
-const ProviderFilter = memo(({
-  selectedProvider,
-  providers,
+const ProviderFilter = memo(({ 
+  selectedProvider, 
+  providers, 
   onSelect,
   theme
 }: ProviderFilterProps) => {
   const styles = React.useMemo(() => createStyles(theme.colors), [theme.colors]);
-
+  
   const renderItem = useCallback(({ item, index }: { item: { id: string; name: string }; index: number }) => (
-    <Focusable
+    <TouchableOpacity
       style={[
         styles.filterChip,
         selectedProvider === item.id && styles.filterChipSelected
@@ -35,7 +34,7 @@ const ProviderFilter = memo(({
       ]}>
         {item.name}
       </Text>
-    </Focusable>
+    </TouchableOpacity>
   ), [selectedProvider, onSelect, styles]);
 
   return (

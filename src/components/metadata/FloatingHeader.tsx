@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
   Platform,
   Dimensions,
   Image,
 } from 'react-native';
-import Focusable from '../common/Focusable';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 
@@ -68,7 +68,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const [isHeaderInteractive, setIsHeaderInteractive] = React.useState(false);
-
+  
   // Animated styles for the header
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -76,7 +76,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
       { translateY: interpolate(headerOpacity.value, [0, 1], [-20, 0], Extrapolate.CLAMP) }
     ]
   }));
-
+  
   // Disable touches when header is transparent (Android can still register touches at opacity 0)
   useAnimatedReaction(
     () => headerOpacity.value,
@@ -91,7 +91,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
     opacity: headerElementsOpacity.value,
     transform: [{ translateY: headerElementsY.value }]
   }));
-
+  
   return (
     <Animated.View style={[styles.floatingHeader, headerAnimatedStyle]} pointerEvents={isHeaderInteractive ? 'auto' : 'none'}>
       {Platform.OS === 'ios' ? (
@@ -101,7 +101,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           style={[styles.blurContainer, { paddingTop: Math.max(safeAreaTop * 0.8, safeAreaTop - 6) }]}
         >
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
-            <Focusable
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => {
                 triggerLight();
@@ -114,7 +114,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
                 size={24}
                 color={currentTheme.colors.highEmphasis}
               />
-            </Focusable>
+            </TouchableOpacity>
 
             <View style={styles.headerTitleContainer}>
               {(stableLogoUri || metadata.logo) && !logoLoadError ? (
@@ -132,7 +132,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               )}
             </View>
 
-            <Focusable
+            <TouchableOpacity
               style={styles.headerActionButton}
               onPress={() => {
                 triggerMedium();
@@ -141,7 +141,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
-            </Focusable>
+            </TouchableOpacity>
           </Animated.View>
         </ExpoBlurView>
       ) : (
@@ -152,7 +152,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           ]}
         >
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
-            <Focusable
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => {
                 triggerLight();
@@ -165,7 +165,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
                 size={24}
                 color={currentTheme.colors.highEmphasis}
               />
-            </Focusable>
+            </TouchableOpacity>
 
             <View style={styles.headerTitleContainer}>
               {metadata.logo && !logoLoadError ? (
@@ -183,7 +183,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               )}
             </View>
 
-            <Focusable
+            <TouchableOpacity
               style={styles.headerActionButton}
               onPress={() => {
                 triggerMedium();
@@ -192,7 +192,7 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
-            </Focusable>
+            </TouchableOpacity>
           </Animated.View>
         </View>
       )}
@@ -271,4 +271,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(FloatingHeader);
+export default React.memo(FloatingHeader); 

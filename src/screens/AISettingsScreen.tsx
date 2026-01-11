@@ -7,12 +7,12 @@ import {
   SafeAreaView,
   StatusBar,
   TextInput,
+  TouchableOpacity,
   Linking,
   Platform,
   Dimensions,
+  Switch,
 } from 'react-native';
-import CustomSwitch from '../components/common/CustomSwitch';
-import Focusable from '../components/common/Focusable';
 import CustomAlert from '../components/CustomAlert';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
@@ -148,24 +148,23 @@ const AISettingsScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <Focusable 
+        <TouchableOpacity
           onPress={() => {
             triggerLight();
             navigation.goBack();
           }}
           style={styles.backButton}
-          hasTVPreferredFocus={true}
         >
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={currentTheme.colors.text} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={currentTheme.colors.text}
           />
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
             Settings
           </Text>
-        </Focusable>
-        
+        </TouchableOpacity>
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
@@ -258,7 +257,7 @@ const AISettingsScreen: React.FC = () => {
 
             <View style={styles.buttonContainer}>
               {!isKeySet ? (
-                <Focusable
+                <TouchableOpacity
                   style={[styles.saveButton, { backgroundColor: currentTheme.colors.primary }]}
                   onPress={() => {
                     triggerMedium();
@@ -266,19 +265,19 @@ const AISettingsScreen: React.FC = () => {
                   }}
                   disabled={loading}
                 >
-                  <MaterialIcons 
-                    name="save" 
-                    size={20} 
+                  <MaterialIcons
+                    name="save"
+                    size={20}
                     color={currentTheme.colors.white}
                     style={{ marginRight: 8 }}
                   />
                   <Text style={styles.saveButtonText}>
                     {loading ? 'Saving...' : 'Save API Key'}
                   </Text>
-                </Focusable>
+                </TouchableOpacity>
               ) : (
                 <View style={styles.buttonRow}>
-                  <Focusable
+                  <TouchableOpacity
                     style={[styles.updateButton, { backgroundColor: currentTheme.colors.primary }]}
                     onPress={() => {
                       triggerMedium();
@@ -286,60 +285,117 @@ const AISettingsScreen: React.FC = () => {
                     }}
                     disabled={loading}
                   >
-                    <MaterialIcons 
-                      name="update" 
-                      size={20} 
+                    <MaterialIcons
+                      name="update"
+                      size={20}
                       color={currentTheme.colors.white}
                       style={{ marginRight: 8 }}
                     />
                     <Text style={styles.updateButtonText}>Update</Text>
-                  </Focusable>
-                  
-                  <Focusable
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
                     style={[styles.removeButton, { borderColor: currentTheme.colors.error }]}
                     onPress={() => {
                       triggerHeavy();
                       handleRemoveApiKey();
                     }}
                   >
-                    <MaterialIcons 
-                      name="delete" 
-                      size={20} 
+                    <MaterialIcons
+                      name="delete"
+                      size={20}
                       color={currentTheme.colors.error}
                       style={{ marginRight: 8 }}
                     />
                     <Text style={[styles.removeButtonText, { color: currentTheme.colors.error }]}>
                       Remove
                     </Text>
-                  </Focusable>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
 
-            <Focusable
+            <TouchableOpacity
               style={[styles.getKeyButton, { backgroundColor: currentTheme.colors.elevation2 }]}
-              onPress={handleGetApiKey}
+              onPress={() => {
+                triggerLight();
+                handleGetApiKey();
+              }}
             >
-              <MaterialIcons 
-                name="open-in-new" 
-                size={20} 
+              <MaterialIcons
+                name="open-in-new"
+                size={20}
                 color={currentTheme.colors.primary}
                 style={{ marginRight: 8 }}
               />
               <Text style={[styles.getKeyButtonText, { color: currentTheme.colors.primary }]}>
-                Get Free API Key
+                Get Free API Key from OpenRouter
               </Text>
-            </Focusable>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
 
+        {/* Enable Toggle (top) */}
+        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>Enable AI Chat</Text>
+            <Switch
+              value={!!settings.aiChatEnabled}
+              onValueChange={(v) => {
+                triggerMedium();
+                updateSetting('aiChatEnabled', v);
+              }}
+              trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
+              thumbColor={settings.aiChatEnabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+              ios_backgroundColor={currentTheme.colors.elevation2}
+            />
+          </View>
+          <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis, marginTop: 8 }]}>When enabled, the Ask AI button will appear on content pages.</Text>
+        </View>
+
+        {/* Status Card */}
+        {isKeySet && (
+          <View style={[styles.statusCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
+            <View style={styles.statusHeader}>
+              <MaterialIcons 
+                name="check-circle" 
+                size={24} 
+                color={currentTheme.colors.success || '#4CAF50'}
+              />
+              <Text style={[styles.statusTitle, { color: currentTheme.colors.success || '#4CAF50' }]}>
+                AI Chat Enabled
+              </Text>
+            </View>
+            <Text style={[styles.statusDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+              You can now ask questions about movies and TV shows. Look for the "Ask AI" button on content pages!
+            </Text>
+          </View>
+        )}
+
+        {/* Usage Info */}
+        <View style={[styles.usageCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
+          <Text style={[styles.usageTitle, { color: currentTheme.colors.highEmphasis }]}>
+            How it works
+          </Text>
+          <Text style={[styles.usageText, { color: currentTheme.colors.mediumEmphasis }]}>
+            • OpenRouter provides access to multiple AI models{'\n'}
+            • Your API key stays private and secure{'\n'}
+            • Free tier includes generous usage limits{'\n'}
+            • Chat with context about specific episodes/movies{'\n'}
+            • Get detailed analysis and explanations
+          </Text>
+        </View>
+        {/* OpenRouter branding */}
+        <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 32 }}>
+          <SvgXml xml={OPENROUTER_SVG.replace(/CURRENTCOLOR/g, currentTheme.colors.mediumEmphasis)} width={180} height={60} />
+        </View>
+      </ScrollView>
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
-        actions={alertActions}
         onClose={() => setAlertVisible(false)}
+        actions={alertActions}
       />
     </SafeAreaView>
   );
@@ -350,175 +406,196 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    padding: 8,
   },
   backText: {
-    fontSize: 16,
+    fontSize: 17,
     marginLeft: 8,
-    fontWeight: '500',
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 34,
     fontWeight: 'bold',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
-    gap: 16,
+    paddingBottom: 40,
   },
   infoCard: {
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 20,
   },
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    marginBottom: 12,
   },
   infoTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 12,
   },
   infoDescription: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 16,
   },
   featureList: {
-    gap: 12,
-    marginTop: 8,
+    gap: 8,
   },
   featureItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
+    alignItems: 'center',
   },
   featureText: {
-    fontSize: 14,
+    fontSize: 15,
+    marginLeft: 8,
     flex: 1,
-    lineHeight: 20,
   },
   card: {
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 20,
   },
   cardTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    marginBottom: 16,
   },
   apiKeySection: {
     gap: 12,
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   description: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
   },
   input: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     borderWidth: 1,
-    minHeight: 40,
   },
   buttonContainer: {
-    gap: 12,
     marginTop: 8,
-  },
-  saveButton: {
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  updateButton: {
-    flex: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  updateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    flex: 1,
   },
   updateButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
   },
   removeButton: {
-    flex: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    minHeight: 44,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 2,
+    flex: 1,
   },
   removeButtonText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
   },
   getKeyButton: {
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     marginTop: 8,
   },
   getKeyButtonText: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  statusCard: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    textAlign: 'center',
+    marginLeft: 12,
+  },
+  statusDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  usageCard: {
+    borderRadius: 16,
+    padding: 20,
+  },
+  usageTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  usageText: {
+    fontSize: 15,
+    lineHeight: 24,
   },
 });
 

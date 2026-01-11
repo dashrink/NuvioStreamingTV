@@ -28,7 +28,7 @@ import { StreamingContent } from '../../services/catalogService';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../../hooks/useSettings';
-import Focusable from '../common/Focusable';
+import { triggerLight } from '../../hooks/useHaptics';
 
 interface HeroCarouselProps {
   items: StreamingContent[];
@@ -434,6 +434,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
           containerStyle={{ gap: 8 }}
           horizontal
           onPress={(index: number) => {
+            triggerLight();
             scrollToLogicalIndex(index, true);
           }}
         />
@@ -852,23 +853,13 @@ const CarouselCard: React.FC<CarouselCardProps> = memo(({ item, colors, logoFail
                   </Text>
                 </ScrollView>
               </View>
-              <Focusable
-                variant="card"
-                borderRadius={0}
-                enableScale={false}
-                enableGlow={false}
-                onPress={onPressInfo}
-                activeOpacity={0.9}
-                accessibilityLabel={`View details for ${item.name}`}
-                accessibilityHint="Double tap to view content details"
-                style={StyleSheet.absoluteFillObject as any}
-              />
+              <TouchableOpacity activeOpacity={0.9} onPress={() => { triggerLight(); onPressInfo(); }} style={StyleSheet.absoluteFillObject as any} />
             </>
           ) : (
             <>
               {/* FRONT FACE */}
               <Animated.View style={[styles.flipFace as any, styles.frontFace as any, frontFlipStyle]} pointerEvents={flipped ? 'none' : 'auto'}>
-                <TouchableOpacity activeOpacity={0.9} onPress={onPressInfo} style={StyleSheet.absoluteFillObject as any}>
+                <TouchableOpacity activeOpacity={0.9} onPress={() => { triggerLight(); onPressInfo(); }} style={StyleSheet.absoluteFillObject as any}>
                   <View style={styles.bannerContainer as ViewStyle}>
                     {!bannerLoaded && (
                       <View style={styles.skeletonBannerFull as ViewStyle} />
@@ -975,20 +966,13 @@ const CarouselCard: React.FC<CarouselCardProps> = memo(({ item, colors, logoFail
 
               {/* FLIP BUTTON */}
               <View style={styles.flipButtonContainer as ViewStyle} pointerEvents="box-none">
-                <Focusable
-                  variant="button"
-                  borderRadius={16}
-                  enableScale={false}
-                  enableGlow={false}
-                  onPress={onToggleFlip}
+                <TouchableOpacity
                   activeOpacity={0.8}
-                  accessibilityLabel={flipped ? "Close details" : "Show details"}
-                  accessibilityHint={flipped ? "Double tap to close card details" : "Double tap to flip card and see details"}
+                  onPress={() => { triggerLight(); onToggleFlip(); }}
+                  style={styles.flipButton as ViewStyle}
                 >
-                  <View style={styles.flipButton as ViewStyle}>
-                    <Ionicons name={flipped ? 'close' : 'information-outline'} size={18} color={colors.white} />
-                  </View>
-                </Focusable>
+                  <Ionicons name={flipped ? 'close' : 'information-outline'} size={18} color={colors.white} />
+                </TouchableOpacity>
               </View>
             </>
           )}

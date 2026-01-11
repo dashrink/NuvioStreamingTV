@@ -40,6 +40,7 @@ if (Platform.OS === 'ios') {
 import { logger } from '../utils/logger';
 import { useCustomCatalogNames } from '../hooks/useCustomCatalogNames';
 import { mmkvStorage } from '../services/mmkvStorage';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { catalogService, DataSource, StreamingContent } from '../services/catalogService';
 import { tmdbService } from '../services/tmdbService';
 
@@ -765,7 +766,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
             width: effectiveItemWidth
           }
         ]}
-        onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type, addonId })}
+        onPress={() => {
+          triggerLight();
+          navigation.navigate('Metadata', { id: item.id, type: item.type, addonId });
+        }}
         activeOpacity={0.7}
       >
         <FastImage
@@ -844,7 +848,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={handleRefresh}
+        onPress={() => {
+          triggerMedium();
+          handleRefresh();
+        }}
       >
         <Text style={styles.buttonText}>Try Again</Text>
       </TouchableOpacity>
@@ -859,7 +866,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => loadItems(true)}
+        onPress={() => {
+          triggerMedium();
+          loadItems(true);
+        }}
       >
         <Text style={styles.buttonText}>Retry</Text>
       </TouchableOpacity>
@@ -885,7 +895,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="chevron-left" size={28} color={colors.white} />
             <Text style={styles.backText}>Back</Text>
@@ -904,7 +917,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="chevron-left" size={28} color={colors.white} />
             <Text style={styles.backText}>Back</Text>
@@ -922,7 +938,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="chevron-left" size={28} color={colors.white} />
           <Text style={styles.backText}>Back</Text>
@@ -946,7 +965,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
                     styles.filterChip,
                     (extra.name === 'genre' ? !activeGenreFilter : !selectedFilters[extra.name]) && styles.filterChipActive
                   ]}
-                  onPress={() => handleFilterChange(extra.name, undefined)}
+                  onPress={() => {
+                    triggerLight();
+                    handleFilterChange(extra.name, undefined);
+                  }}
                 >
                   <Text style={[
                     styles.filterChipText,
@@ -963,7 +985,10 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
                     <TouchableOpacity
                       key={option}
                       style={[styles.filterChip, isActive && styles.filterChipActive]}
-                      onPress={() => handleFilterChange(extra.name, option)}
+                      onPress={() => {
+                        triggerLight();
+                        handleFilterChange(extra.name, option);
+                      }}
                     >
                       <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
                         {option}

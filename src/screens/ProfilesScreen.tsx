@@ -1,9 +1,4 @@
-/**
- * ProfilesScreen - Admin management screen for profiles
- * Allows creating, editing, and deleting profiles
- */
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,66 +8,43 @@ import {
   StatusBar,
   Platform,
   SafeAreaView,
+  TextInput,
+  Modal
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { useProfile } from '../contexts/ProfileContext';
 import { useTraktContext } from '../contexts/TraktContext';
-import {
-  ProfileCard,
-  ProfileEditModal,
-  PinSetupModal,
-  PinEntryModal,
-} from '../components/profile';
-import {
-  Profile,
-  CreateProfileInput,
-  UpdateProfileInput,
-  MAX_PROFILES,
-  AVATAR_OPTIONS,
-  KIDS_AVATAR_OPTIONS,
-} from '../types/profile';
+import { mmkvStorage } from '../services/mmkvStorage';
 import CustomAlert from '../components/CustomAlert';
 import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
+const PROFILE_STORAGE_KEY = 'user_profiles';
+
+interface Profile {
+  id: string;
+  name: string;
+  avatar?: string;
+  isActive: boolean;
+  createdAt: number;
+}
 
 const ProfilesScreen: React.FC = () => {
   const navigation = useNavigation();
   const { currentTheme } = useTheme();
-  const { isAuthenticated } = useTraktContext();
-  const {
-    profiles,
-    activeProfile,
-    profileCount,
-    canCreateProfile,
-    createProfile,
-    updateProfile,
-    deleteProfile,
-    setProfilePin,
-    removeProfilePin,
-    verifyProfilePin,
-    checkProfileHasPin,
-  } = useProfile();
+  const { isAuthenticated, userProfile, refreshAuthStatus } = useTraktContext();
 
-  // Modal states
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showPinSetupModal, setShowPinSetupModal] = useState(false);
-  const [showPinVerifyModal, setShowPinVerifyModal] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [pendingAction, setPendingAction] = useState<'delete' | 'removePin' | null>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newProfileName, setNewProfileName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Alert state
+  // CustomAlert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{
-    label: string;
-    onPress: () => void;
-    style?: object;
-  }>>([]);
+  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
 
   const openAlert = (
     title: string,
@@ -81,381 +53,296 @@ const ProfilesScreen: React.FC = () => {
   ) => {
     setAlertTitle(title);
     setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]);
+    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
     setAlertVisible(true);
   };
 
-  // Get avatar for a profile
-  const getAvatar = (avatarId: string) => {
-    const allAvatars = [...AVATAR_OPTIONS, ...KIDS_AVATAR_OPTIONS];
-    return allAvatars.find(a => a.id === avatarId) || AVATAR_OPTIONS[0];
-  };
+  // Load profiles from AsyncStorage
+  const loadProfiles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const storedProfiles = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
+      if (storedProfiles) {
+        setProfiles(JSON.parse(storedProfiles));
+      } else {
+        // If no profiles exist, create a default one with the Trakt username
+        const defaultProfile: Profile = {
+          id: new Date().getTime().toString(),
+          name: userProfile?.username || 'Default',
+          isActive: true,
+          createdAt: new Date().getTime()
+        };
+        setProfiles([defaultProfile]);
+        await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify([defaultProfile]));
+      }
+    } catch (error) {
+      if (__DEV__) console.error('Error loading profiles:', error);
+      openAlert('Error', 'Failed to load profiles');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userProfile]);
+
+  // Add a focus listener to refresh authentication status
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Refresh the auth status when the screen comes into focus
+      refreshAuthStatus().then(() => {
+        if (isAuthenticated) {
+          loadProfiles();
+        }
+      });
+    });
+
+    return unsubscribe;
+  }, [navigation, refreshAuthStatus, isAuthenticated, loadProfiles]);
+
+  // Save profiles to AsyncStorage
+  const saveProfiles = useCallback(async (updatedProfiles: Profile[]) => {
+    try {
+      await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
+    } catch (error) {
+      if (__DEV__) console.error('Error saving profiles:', error);
+      openAlert('Error', 'Failed to save profiles');
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only authenticated users can access profiles
+    if (!isAuthenticated) {
+      navigation.goBack();
+      return;
+    }
+
+    loadProfiles();
+  }, [isAuthenticated, loadProfiles, navigation]);
+
+  const handleAddProfile = useCallback(() => {
+    if (!newProfileName.trim()) {
+      openAlert('Error', 'Please enter a profile name');
+      return;
+    }
+
+    triggerMedium(); // Primary button action
+
+    const newProfile: Profile = {
+      id: new Date().getTime().toString(),
+      name: newProfileName.trim(),
+      isActive: false,
+      createdAt: new Date().getTime()
+    };
+
+    const updatedProfiles = [...profiles, newProfile];
+    setProfiles(updatedProfiles);
+    saveProfiles(updatedProfiles);
+    setNewProfileName('');
+    setShowAddModal(false);
+  }, [newProfileName, profiles, saveProfiles]);
+
+  const handleSelectProfile = useCallback((id: string) => {
+    triggerMedium(); // Profile selection (theme/profile selection pattern)
+
+    const updatedProfiles = profiles.map(profile => ({
+      ...profile,
+      isActive: profile.id === id
+    }));
+
+    setProfiles(updatedProfiles);
+    saveProfiles(updatedProfiles);
+  }, [profiles, saveProfiles]);
+
+  const handleDeleteProfile = useCallback((id: string) => {
+    triggerHeavy(); // Destructive action
+
+    // Prevent deleting the active profile
+    const isActiveProfile = profiles.find(p => p.id === id)?.isActive;
+    if (isActiveProfile) {
+      openAlert('Error', 'Cannot delete the active profile. Switch to another profile first.');
+      return;
+    }
+
+    // Prevent deleting the last profile
+    if (profiles.length <= 1) {
+      openAlert('Error', 'Cannot delete the only profile');
+      return;
+    }
+
+    openAlert(
+      'Delete Profile',
+      'Are you sure you want to delete this profile? This action cannot be undone.',
+      [
+        { label: 'Cancel', onPress: () => { } },
+        {
+          label: 'Delete',
+          onPress: () => {
+            const updatedProfiles = profiles.filter(profile => profile.id !== id);
+            setProfiles(updatedProfiles);
+            saveProfiles(updatedProfiles);
+          }
+        }
+      ]
+    );
+  }, [profiles, saveProfiles]);
 
   const handleBack = () => {
     triggerLight(); // Navigation
     navigation.goBack();
   };
 
-  const handleCreateProfile = async (input: CreateProfileInput) => {
-    triggerMedium(); // Primary button action
-    const newProfile = await createProfile(input);
-    if (newProfile) {
-      setShowCreateModal(false);
-      return true;
-    }
-    return false;
-  };
-
-  const handleEditProfile = (profile: Profile) => {
-    setSelectedProfile(profile);
-    setShowEditModal(true);
-  };
-
-  const handleUpdateProfile = async (input: UpdateProfileInput) => {
-    if (!selectedProfile) return false;
-
-    const updated = await updateProfile(selectedProfile.id, input);
-    if (updated) {
-      setShowEditModal(false);
-      setSelectedProfile(null);
-      return true;
-    }
-    return false;
-  };
-
-  const handleDeleteProfile = async (profile: Profile) => {
-    triggerHeavy(); // Destructive action
-
-    // Check if it's the last profile
-    if (profileCount <= 1) {
-      openAlert('Cannot Delete', 'You must have at least one profile.');
-      return;
-    }
-
-    // Check if it's the active profile
-    if (profile.id === activeProfile?.id) {
-      openAlert(
-        'Cannot Delete',
-        'Cannot delete the active profile. Please switch to another profile first.'
-      );
-      return;
-    }
-
-    // Check if PIN protected
-    const hasPin = await checkProfileHasPin(profile.id);
-    if (hasPin) {
-      setSelectedProfile(profile);
-      setPendingAction('delete');
-      setShowPinVerifyModal(true);
-      return;
-    }
-
-    // Confirm deletion
-    openAlert(
-      'Delete Profile',
-      `Are you sure you want to delete "${profile.name}"? This action cannot be undone.`,
-      [
-        { label: 'Cancel', onPress: () => {} },
-        {
-          label: 'Delete',
-          onPress: async () => {
-            const success = await deleteProfile(profile.id);
-            if (!success) {
-              openAlert('Error', 'Failed to delete profile.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleSetupPin = () => {
-    if (!selectedProfile) return;
-    setShowEditModal(false);
-    setShowPinSetupModal(true);
-  };
-
-  const handlePinSetupComplete = async (pin: string) => {
-    if (!selectedProfile) return false;
-
-    const success = await setProfilePin(selectedProfile.id, pin);
-    if (success) {
-      setShowPinSetupModal(false);
-      setSelectedProfile(null);
-      openAlert('Success', 'PIN has been set successfully.');
-      return true;
-    }
-    return false;
-  };
-
-  const handleRemovePin = async () => {
-    if (!selectedProfile) return;
-
-    setShowEditModal(false);
-    setPendingAction('removePin');
-    setShowPinVerifyModal(true);
-  };
-
-  const handlePinVerified = async () => {
-    if (!selectedProfile || !pendingAction) return;
-
-    setShowPinVerifyModal(false);
-
-    if (pendingAction === 'delete') {
-      const success = await deleteProfile(selectedProfile.id);
-      if (!success) {
-        openAlert('Error', 'Failed to delete profile.');
-      }
-    } else if (pendingAction === 'removePin') {
-      const success = await removeProfilePin(selectedProfile.id);
-      if (success) {
-        openAlert('Success', 'PIN has been removed.');
-      } else {
-        openAlert('Error', 'Failed to remove PIN.');
-      }
-    }
-
-    setSelectedProfile(null);
-    setPendingAction(null);
-  };
-
-  const handleVerifyPin = async (pin: string) => {
-    if (!selectedProfile) return { success: false };
-
-    const result = await verifyProfilePin(selectedProfile.id, pin);
-    if (result.success) {
-      handlePinVerified();
-    }
-    return result;
-  };
-
-  const renderProfileItem = ({ item }: { item: Profile }) => {
-    const avatar = getAvatar(item.avatarId);
-    const isActive = item.id === activeProfile?.id;
-    const isKids = item.type === 'kids';
-
-    return (
-      <View style={styles.profileItem}>
-        <TouchableOpacity
-          style={[
-            styles.profileContent,
-            {
-              backgroundColor: currentTheme.colors.elevation2,
-              borderColor: isActive ? currentTheme.colors.primary : 'transparent',
-            },
-          ]}
-          onPress={() => {
-            triggerMedium(); // Profile selection (theme/profile selection pattern)
-            handleEditProfile(item);
-          }}
-          activeOpacity={0.7}
-        >
-          {/* Avatar */}
-          <View
-            style={[
-              styles.avatarContainer,
-              { backgroundColor: avatar.color },
-            ]}
-          >
-            <MaterialIcons
-              name={avatar.icon as any}
-              size={24}
-              color="#FFFFFF"
-            />
-            {item.isPinProtected && (
-              <View
-                style={[
-                  styles.pinBadge,
-                  { backgroundColor: currentTheme.colors.darkBackground },
-                ]}
-              >
-                <MaterialIcons name="lock" size={10} color={currentTheme.colors.text} />
-              </View>
-            )}
-          </View>
-
-          {/* Info */}
-          <View style={styles.profileInfo}>
-            <View style={styles.nameRow}>
-              <Text style={[styles.profileName, { color: currentTheme.colors.text }]}>
-                {item.name}
-              </Text>
-              {item.isAdmin && (
-                <View
-                  style={[
-                    styles.adminBadge,
-                    { backgroundColor: currentTheme.colors.primary },
-                  ]}
-                >
-                  <MaterialIcons name="admin-panel-settings" size={10} color="#FFF" />
-                </View>
-              )}
-              {isKids && (
-                <View style={[styles.kidsBadge, { backgroundColor: '#FF6B6B' }]}>
-                  <Text style={styles.kidsBadgeText}>KIDS</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[styles.profileType, { color: currentTheme.colors.textMuted }]}>
-              {item.type.charAt(0).toUpperCase() + item.type.slice(1)} Profile
-              {isActive && ' • Active'}
-            </Text>
-          </View>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleEditProfile(item)}
-            >
-              <MaterialIcons name="edit" size={20} color={currentTheme.colors.primary} />
-            </TouchableOpacity>
-            {!isActive && profileCount > 1 && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleDeleteProfile(item)}
-              >
-                <MaterialIcons name="delete" size={20} color={currentTheme.colors.error} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderHeader = () => (
-    <>
-      <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
-        MANAGE PROFILES ({profileCount}/{MAX_PROFILES})
-      </Text>
-      <Text style={[styles.sectionDescription, { color: currentTheme.colors.textMuted }]}>
-        Create and manage profiles for different users. Each profile can have its own content restrictions and PIN protection.
-      </Text>
-    </>
-  );
-
-  const renderFooter = () => (
-    <TouchableOpacity
-      style={[
-        styles.addButton,
-        {
-          backgroundColor: canCreateProfile
-            ? currentTheme.colors.elevation2
-            : currentTheme.colors.elevation1,
-          opacity: canCreateProfile ? 1 : 0.5,
-        },
-      ]}
-      onPress={() => {
-        if (canCreateProfile) {
-          triggerLight(); // Modal open
-          setShowCreateModal(true);
-        }
-      }}
-      disabled={!canCreateProfile}
-    >
-      <MaterialIcons
-        name="add"
-        size={24}
-        color={canCreateProfile ? currentTheme.colors.primary : currentTheme.colors.textMuted}
-      />
-      <Text
+  const renderItem = ({ item }: { item: Profile }) => (
+    <View style={styles.profileItem}>
+      <TouchableOpacity
         style={[
-          styles.addButtonText,
-          {
-            color: canCreateProfile ? currentTheme.colors.text : currentTheme.colors.textMuted,
-          },
+          styles.profileContent,
+          item.isActive && {
+            backgroundColor: `${currentTheme.colors.primary}30`,
+            borderColor: currentTheme.colors.primary
+          }
         ]}
+        onPress={() => handleSelectProfile(item.id)}
       >
-        Add New Profile
-      </Text>
-    </TouchableOpacity>
+        <View style={styles.avatarContainer}>
+          <MaterialIcons
+            name="account-circle"
+            size={40}
+            color={item.isActive ? currentTheme.colors.primary : currentTheme.colors.text}
+          />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={[styles.profileName, { color: currentTheme.colors.text }]}>
+            {item.name}
+          </Text>
+          {item.isActive && (
+            <Text style={[styles.activeLabel, { color: currentTheme.colors.primary }]}>
+              Active
+            </Text>
+          )}
+        </View>
+        {!item.isActive && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteProfile(item.id)}
+          >
+            <MaterialIcons name="delete" size={24} color={currentTheme.colors.error} />
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground },
-      ]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={handleBack}
           style={styles.backButton}
           activeOpacity={0.7}
         >
-          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={currentTheme.colors.text}
+          />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: currentTheme.colors.text },
+          ]}
+        >
           Profiles
         </Text>
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
         <FlatList
           data={profiles}
-          renderItem={renderProfileItem}
+          renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={renderHeader}
-          ListFooterComponent={renderFooter}
-          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
+              MANAGE PROFILES
+            </Text>
+          }
+          ListFooterComponent={
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                { backgroundColor: currentTheme.colors.elevation2 }
+              ]}
+              onPress={() => {
+                triggerLight(); // Modal open
+                setShowAddModal(true);
+              }}
+            >
+              <MaterialIcons name="add" size={24} color={currentTheme.colors.primary} />
+              <Text style={[styles.addButtonText, { color: currentTheme.colors.text }]}>
+                Add New Profile
+              </Text>
+            </TouchableOpacity>
+          }
         />
       </View>
 
-      {/* Create Profile Modal */}
-      <ProfileEditModal
-        visible={showCreateModal}
-        mode="create"
-        currentProfileCount={profileCount}
-        onSave={handleCreateProfile}
-        onCancel={() => setShowCreateModal(false)}
-      />
+      {/* Modal for adding a new profile */}
+      <Modal
+        visible={showAddModal}
+        transparent
+        animationType="fade"
+        supportedOrientations={['portrait', 'landscape']}
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: currentTheme.colors.elevation2 }]}>
+            <Text style={[styles.modalTitle, { color: currentTheme.colors.text }]}>
+              Create New Profile
+            </Text>
 
-      {/* Edit Profile Modal */}
-      <ProfileEditModal
-        visible={showEditModal}
-        mode="edit"
-        profile={selectedProfile}
-        currentProfileCount={profileCount}
-        onSave={handleUpdateProfile}
-        onCancel={() => {
-          setShowEditModal(false);
-          setSelectedProfile(null);
-        }}
-        onSetupPin={handleSetupPin}
-        onRemovePin={handleRemovePin}
-      />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: `${currentTheme.colors.textMuted}20`,
+                  color: currentTheme.colors.text,
+                  borderColor: currentTheme.colors.border
+                }
+              ]}
+              placeholder="Profile Name"
+              placeholderTextColor={currentTheme.colors.textMuted}
+              value={newProfileName}
+              onChangeText={setNewProfileName}
+              autoFocus
+            />
 
-      {/* PIN Setup Modal */}
-      <PinSetupModal
-        visible={showPinSetupModal}
-        title="Set Profile PIN"
-        onComplete={handlePinSetupComplete}
-        onCancel={() => {
-          setShowPinSetupModal(false);
-          setSelectedProfile(null);
-        }}
-      />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  triggerLight(); // Modal close
+                  setNewProfileName('');
+                  setShowAddModal(false);
+                }}
+              >
+                <Text style={{ color: currentTheme.colors.textMuted }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.createButton,
+                  { backgroundColor: currentTheme.colors.primary }
+                ]}
+                onPress={handleAddProfile}
+              >
+                <Text style={{ color: '#fff' }}>Create</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
-      {/* PIN Verify Modal */}
-      <PinEntryModal
-        visible={showPinVerifyModal}
-        profileName={selectedProfile?.name || ''}
-        onSubmit={handleVerifyPin}
-        onCancel={() => {
-          setShowPinVerifyModal(false);
-          setSelectedProfile(null);
-          setPendingAction(null);
-        }}
-      />
-
-      {/* Alert */}
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -495,13 +382,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginTop: 24,
-    marginBottom: 8,
+    marginBottom: 12,
     letterSpacing: 0.5,
-  },
-  sectionDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 16,
   },
   listContent: {
     paddingBottom: 24,
@@ -512,69 +394,27 @@ const styles = StyleSheet.create({
   profileContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   avatarContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginRight: 16,
-    position: 'relative',
-  },
-  pinBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   profileInfo: {
     flex: 1,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
   profileName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  adminBadge: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  kidsBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  kidsBadgeText: {
-    color: '#FFF',
-    fontSize: 8,
-    fontWeight: '700',
-  },
-  profileType: {
+  activeLabel: {
     fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
   },
-  actions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionButton: {
+  deleteButton: {
     padding: 8,
   },
   addButton: {
@@ -590,6 +430,49 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 8,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  input: {
+    width: '100%',
+    height: 50,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    height: 44,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    marginRight: 8,
+  },
+  createButton: {
+    marginLeft: 8,
+  },
 });
 
-export default ProfilesScreen;
+export default ProfilesScreen; 

@@ -30,7 +30,7 @@ import { SkeletonFeatured } from './SkeletonLoaders';
 import { hasValidLogoFormat, isTmdbUrl } from '../../utils/logoUtils';
 import { logger } from '../../utils/logger';
 import { useTheme } from '../../contexts/ThemeContext';
-import Focusable from '../common/Focusable';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 interface FeaturedContentProps {
   featuredContent: StreamingContent | null;
@@ -114,7 +114,10 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
         {onRetry ? (
           <TouchableOpacity
             style={[styles.noContentButton, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={onRetry}
+            onPress={() => {
+              triggerMedium();
+              onRetry();
+            }}
           >
             <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Retry</Text>
           </TouchableOpacity>
@@ -122,13 +125,19 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
           <>
             <TouchableOpacity
               style={[styles.noContentButton, { backgroundColor: currentTheme.colors.primary }]}
-              onPress={() => navigation.navigate('Addons')}
+              onPress={() => {
+                triggerLight();
+                navigation.navigate('Addons');
+              }}
             >
               <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Install Addons</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.noContentButton}
-              onPress={() => navigation.navigate('HomeScreenSettings')}
+              onPress={() => {
+                triggerLight();
+                navigation.navigate('HomeScreenSettings');
+              }}
             >
               <Text style={styles.noContentButtonText}>Settings</Text>
             </TouchableOpacity>
@@ -427,6 +436,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
         <TouchableOpacity
           activeOpacity={0.95}
           onPress={() => {
+            triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
               type: featuredContent.type
@@ -496,11 +506,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
           )}
 
           <Animated.View style={[styles.tabletButtons as ViewStyle, buttonsAnimatedStyle]}>
-            <Focusable
-              variant="hero"
-              borderRadius={30}
-              enableScale={false}
+            <TouchableOpacity
+              style={[styles.tabletPlayButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
               onPress={() => {
+                triggerMedium();
                 if (featuredContent) {
                   navigation.navigate('Streams', {
                     id: featuredContent.id,
@@ -509,51 +518,40 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                 }
               }}
               activeOpacity={0.8}
-              hasTVPreferredFocus={true}
-              accessibilityLabel={`Play ${featuredContent.name}`}
-              accessibilityHint="Double tap to start playing"
             >
-              <View style={[styles.tabletPlayButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}>
-                <MaterialIcons name="play-arrow" size={28} color={currentTheme.colors.black} />
-                <Text style={[styles.tabletPlayButtonText as TextStyle, { color: currentTheme.colors.black }]}>
-                  Play Now
-                </Text>
-              </View>
-            </Focusable>
+              <MaterialIcons name="play-arrow" size={28} color={currentTheme.colors.black} />
+              <Text style={[styles.tabletPlayButtonText as TextStyle, { color: currentTheme.colors.black }]}>
+                Play Now
+              </Text>
+            </TouchableOpacity>
 
-            <Focusable
-              variant="button"
-              borderRadius={25}
-              enableScale={false}
-              onPress={handleSaveToLibrary}
+            <TouchableOpacity
+              style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.3)' }]}
+              onPress={() => {
+                triggerMedium();
+                handleSaveToLibrary();
+              }}
               activeOpacity={0.7}
-              accessibilityLabel={isSaved ? `Remove ${featuredContent.name} from library` : `Save ${featuredContent.name} to library`}
-              accessibilityHint="Double tap to toggle save status"
             >
-              <View style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.3)' }]}>
-                <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color={currentTheme.colors.white} />
-                <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                  {isSaved ? "Saved" : "My List"}
-                </Text>
-              </View>
-            </Focusable>
+              <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color={currentTheme.colors.white} />
+              <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+                {isSaved ? "Saved" : "My List"}
+              </Text>
+            </TouchableOpacity>
 
-            <Focusable
-              variant="button"
-              borderRadius={25}
-              enableScale={false}
-              onPress={handleInfoPress}
+            <TouchableOpacity
+              style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)' }]}
+              onPress={() => {
+                triggerLight();
+                handleInfoPress();
+              }}
               activeOpacity={0.7}
-              accessibilityLabel={`More information about ${featuredContent.name}`}
-              accessibilityHint="Double tap to view details"
             >
-              <View style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)' }]}>
-                <MaterialIcons name="info-outline" size={20} color={currentTheme.colors.white} />
-                <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                  More Info
-                </Text>
-              </View>
-            </Focusable>
+              <MaterialIcons name="info-outline" size={20} color={currentTheme.colors.white} />
+              <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+                More Info
+              </Text>
+            </TouchableOpacity>
           </Animated.View>
         </Animated.View>
         
@@ -578,6 +576,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
         <TouchableOpacity
           activeOpacity={0.95}
           onPress={() => {
+            triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
               type: featuredContent.type
@@ -639,30 +638,24 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                 </Animated.View>
 
                 <Animated.View style={[styles.featuredButtons as ViewStyle, buttonsAnimatedStyle]}>
-                  <Focusable
-                    variant="button"
-                    borderRadius={22}
-                    enableScale={false}
-                    enableGlow={false}
-                    onPress={handleSaveToLibrary}
-                    activeOpacity={0.7}
-                    accessibilityLabel={isSaved ? `Remove ${featuredContent.name} from library` : `Save ${featuredContent.name} to library`}
-                    accessibilityHint="Double tap to toggle save status"
+                  <TouchableOpacity
                     style={styles.myListButton as ViewStyle}
-                  >
-                    <View style={styles.myListButtonContent}>
-                      <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={24} color={currentTheme.colors.white} />
-                      <Text style={[styles.myListButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                        {isSaved ? "Saved" : "Save"}
-                      </Text>
-                    </View>
-                  </Focusable>
-
-                  <Focusable
-                    variant="hero"
-                    borderRadius={30}
-                    enableScale={false}
                     onPress={() => {
+                      triggerMedium();
+                      handleSaveToLibrary();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={24} color={currentTheme.colors.white} />
+                    <Text style={[styles.myListButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+                      {isSaved ? "Saved" : "Save"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.playButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
+                    onPress={() => {
+                      triggerMedium();
                       if (featuredContent) {
                         navigation.navigate('Streams', {
                           id: featuredContent.id,
@@ -671,36 +664,26 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                       }
                     }}
                     activeOpacity={0.8}
-                    hasTVPreferredFocus={true}
-                    accessibilityLabel={`Play ${featuredContent.name}`}
-                    accessibilityHint="Double tap to start playing"
                   >
-                    <View style={[styles.playButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}>
-                      <MaterialIcons name="play-arrow" size={24} color={currentTheme.colors.black} />
-                      <Text style={[styles.playButtonText as TextStyle, { color: currentTheme.colors.black }]}>
-                        Play
-                      </Text>
-                    </View>
-                  </Focusable>
+                    <MaterialIcons name="play-arrow" size={24} color={currentTheme.colors.black} />
+                    <Text style={[styles.playButtonText as TextStyle, { color: currentTheme.colors.black }]}>
+                      Play
+                    </Text>
+                  </TouchableOpacity>
 
-                  <Focusable
-                    variant="button"
-                    borderRadius={22}
-                    enableScale={false}
-                    enableGlow={false}
-                    onPress={handleInfoPress}
-                    activeOpacity={0.7}
-                    accessibilityLabel={`More information about ${featuredContent.name}`}
-                    accessibilityHint="Double tap to view details"
+                  <TouchableOpacity
                     style={styles.infoButton as ViewStyle}
+                    onPress={() => {
+                      triggerLight();
+                      handleInfoPress();
+                    }}
+                    activeOpacity={0.7}
                   >
-                    <View style={styles.infoButtonContent}>
-                      <MaterialIcons name="info-outline" size={24} color={currentTheme.colors.white} />
-                      <Text style={[styles.infoButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                        Info
-                      </Text>
-                    </View>
-                  </Focusable>
+                    <MaterialIcons name="info-outline" size={24} color={currentTheme.colors.white} />
+                    <Text style={[styles.infoButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+                      Info
+                    </Text>
+                  </TouchableOpacity>
                 </Animated.View>
               </LinearGradient>
             </ImageBackground>
@@ -838,28 +821,24 @@ const styles = StyleSheet.create({
     width: 140,
   },
   myListButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
-    flex: undefined,
-  },
-  myListButtonContent: {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 0,
     gap: 6,
+    width: 44,
+    height: 44,
+    flex: undefined,
   },
   infoButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
-    flex: undefined,
-  },
-  infoButtonContent: {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 0,
     gap: 4,
+    width: 44,
+    height: 44,
+    flex: undefined,
   },
   playButtonText: {
     fontWeight: '600',
