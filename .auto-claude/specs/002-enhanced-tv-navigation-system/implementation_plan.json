@@ -417,7 +417,7 @@
           "id": "5.4",
           "title": "Enhance LibraryScreen with TV navigation",
           "description": "Add TV navigation to library/favorites screen",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/LibraryScreen.tsx"
           ],
@@ -426,13 +426,15 @@
             "Grid of items navigable via D-pad",
             "Long-press opens context menu",
             "Focus memory per tab"
-          ]
+          ],
+          "notes": "Created LibraryScreen.tv.tsx with complete TV navigation support:\n\n1. **Library tabs navigable via D-pad**: TVFilterTab component wraps each filter button (Trakt, Movies, TV Shows) in Focusable with visible focus states (scale 1.05, focus border) and handleFilterFocus callback for focus memory.\n\n2. **Grid of items navigable via D-pad**: \n   - TVLibraryItem component for local library items with Focusable wrapper\n   - TVTraktItem component for Trakt content items\n   - TVTraktFolder component for Trakt collection folders\n   - All use scale animations (1.05), focus borders, and tvParallaxProperties for Apple TV\n\n3. **Long-press opens context menu**: TVLibraryItem uses useContextMenu hook to open TV context menu on 300ms+ press with actions: removeFromList, markWatched/Unwatched, share, info\n\n4. **Focus memory per tab**: \n   - Uses useSpatialNavigation('LibraryScreen') for spatial navigation\n   - getFocusKeyForTab helper creates unique keys like 'library-movies', 'library-series', 'library-trakt-watched'\n   - handleItemFocus saves focus to both spatialNav and TVNavigationContext per-tab\n   - Focus is restored when switching tabs or navigating back to screen\n\n5. **Additional features**:\n   - Trakt folder navigation with D-pad support\n   - TV-optimized styling with larger fonts (16-24px), spacing, and touch targets\n   - Integration with TVNavigationContext for global focus state tracking\n   - TVContextMenu component included for context menu display\n\nCommitted as 4b7d7f99.",
+          "updated_at": "2026-01-11T00:09:48.425137+00:00"
         },
         {
           "id": "5.5",
           "title": "Enhance StreamsScreen with TV navigation",
           "description": "Add TV navigation to stream selection screen",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/screens/StreamsScreen.tsx"
           ],
@@ -441,13 +443,15 @@
             "Stream list fully navigable",
             "Select starts playback",
             "Back returns to metadata screen"
-          ]
+          ],
+          "notes": "Created StreamsScreen.tv.tsx with complete TV navigation support:\n\n1. **Provider tabs navigable via D-pad**: Created ProviderFilter.tv.tsx with horizontal D-pad navigation (left/right), visible focus states (scale 1.08, focus border), auto-scroll to keep focused item visible, and TVNavigationContext integration.\n\n2. **Stream list fully navigable**: Uses FlatList with flattened stream data for proper focus index tracking. Each StreamCard.tv.tsx item is D-pad focusable with visible focus states. Handles nextFocusUp/Down for inter-element navigation.\n\n3. **Select starts playback**: StreamCard.tv.tsx onPress handler triggers handleStreamPress which navigates to player.\n\n4. **Back returns to metadata screen**: Uses useTVBackHandler hook to handle TV remote back/menu button, calling navigation.goBack() to return to previous screen.\n\n5. **Additional features**:\n   - Focus memory persistence via useSpatialNavigation hook\n   - Long-press (300ms+) context menu on streams via StreamCard.tv.tsx\n   - Integration with TVNavigationContext for global focus state\n   - TV-optimized styling with larger fonts and spacing\n   - TVContextMenu component included for context menu display\n\nCommitted as a6960e9c.",
+          "updated_at": "2026-01-11T00:18:24.889579+00:00"
         },
         {
           "id": "5.6",
           "title": "Enhance Player with TV controls",
           "description": "Add TV remote playback controls to video players",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/player/KSPlayerCore.tsx",
             "src/components/player/AndroidVideoPlayer.tsx",
@@ -459,7 +463,9 @@
             "Volume with up/down (where supported)",
             "Back button exits player",
             "Control overlay shows on any D-pad input"
-          ]
+          ],
+          "notes": "Created TV-specific player controls with complete remote navigation support:\n\n1. **PlayerControls.tv.tsx** - TV-specific player controls component:\n   - **Play/Pause with select button**: useTVEventHandler listens for 'select' and 'playPause' events to toggle playback\n   - **Seek with left/right D-pad**: Left seeks -10s, right seeks +10s with animated feedback\n   - **Volume with up/down D-pad**: Passes volume direction to onVolumeChange callback (player-specific implementation)\n   - **Back button exits player**: Menu button triggers handleClose() via TV event handler\n   - **Control overlay shows on any D-pad input**: onShowControls callback triggered on any navigation event\n   - All buttons wrapped in Focusable component for D-pad navigation with scale animations and focus borders\n   - TV navigation hints overlay showing control mappings when controls visible\n\n2. **useTVPlayerControls.ts** - Hook for TV player control management:\n   - Comprehensive event handling for all TV remote buttons\n   - Auto-show controls on D-pad input\n   - Auto-hide controls after configurable timeout (default 5s)\n   - Android TV hardware back button support via BackHandler\n   - Debouncing to prevent rapid input issues\n   - createDefaultVolumeHandler utility for volume control integration\n\n3. **Updated hooks/index.ts** to export new hook\n\nCommitted as 76b8a5c3.",
+          "updated_at": "2026-01-11T00:24:32.931775+00:00"
         }
       ]
     },
@@ -472,7 +478,7 @@
           "id": "6.1",
           "title": "Handle empty content lists",
           "description": "Ensure focus moves to next available element when lists are empty",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/components/tv/TVFocusGuard.tv.tsx",
             "src/hooks/useSpatialNavigation.ts"
@@ -481,13 +487,15 @@
             "Empty lists don't trap focus",
             "Focus moves to navigation tabs or search bar",
             "Loading states are handled"
-          ]
+          ],
+          "notes": "Added empty list focus handling utilities to prevent focus traps:\n\n1. **useEmptyListFocusFallback hook** (useSpatialNavigation.ts):\n   - Monitors when content lists become empty (after filtering, loading, or removing items)\n   - Automatically moves focus to fallback elements (search bar, nav tabs, etc.)\n   - Handles loading states to prevent premature fallback\n   - Takes isEmpty, isLoading, and fallbackFocusIds configuration\n\n2. **useFocusableFallbackRefs hook** (useSpatialNavigation.ts):\n   - Registers multiple fallback refs at once\n   - Provides focusFirstAvailable() function to focus the first available fallback\n\n3. **useLoadingStateFocus hook** (useSpatialNavigation.ts):\n   - Handles focus during loading states\n   - Optionally focuses loading indicator\n   - Restores focus to content or fallback when loading completes\n\n4. **Enhanced TVFocusGuard.tv.tsx**:\n   - Added isLoading prop to prevent premature fallback during loading\n   - Added fallbackFocusIds array for multiple fallback targets (in order of priority)\n   - Added fallbackRef for direct ref-based fallback\n   - Added focusFallback() imperative method\n   - Added isEmpty() check method\n   - Empty container detection now automatically attempts to focus fallback elements when container becomes empty (after loading completes)\n\nCommitted as e096b053.",
+          "updated_at": "2026-01-11T00:29:09.069462+00:00"
         },
         {
           "id": "6.2",
           "title": "Handle rapid D-pad input",
           "description": "Prevent focus skipping or breaking on rapid button presses",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/hooks/useTVEventHandler.ts",
             "src/hooks/useSpatialNavigation.ts"
@@ -496,13 +504,15 @@
             "Rapid input doesn't skip elements",
             "Focus state remains consistent",
             "No visual glitches during fast navigation"
-          ]
+          ],
+          "notes": "Implemented rapid input protection for TV navigation to prevent focus skipping or breaking on rapid button presses:\n\n1. **useTVEventHandler.ts enhancements**:\n   - Added throttleNavigationMs option for throttling navigation events\n   - Added debounceMs option for debouncing all events\n   - Created useRapidInputProtectedTVEventHandler hook with:\n     - Per-direction throttling (minNavigationIntervalMs default: 50ms)\n     - Event queue with max capacity (maxQueuedEvents default: 3)\n     - Frame-aligned processing with requestAnimationFrame\n   - Added useThrottledCallback utility for general throttling\n   - Added useFocusChangeProtection for debounced focus tracking\n\n2. **useSpatialNavigation.ts enhancements**:\n   - Added enableRapidInputProtection option (default: true)\n   - Added focusSaveDebounceMs option (default: 16ms = 1 frame)\n   - Debounced saveFocus calls to prevent rapid state updates\n   - Added throttling to focusElement (MIN_FOCUS_ELEMENT_INTERVAL_MS: 50ms)\n   - Added isPendingFocusChange state for tracking pending changes\n\n3. **Focusable.tv.tsx enhancements**:\n   - Added RapidInputConfig with:\n     - enabled (default: true)\n     - minFocusIntervalMs (default: 50ms)\n     - cancelAnimationsOnRapidInput (default: true)\n   - Cancel running reanimated animations on rapid focus/blur\n   - Track focus change timing to coordinate with throttling\n\nCommitted as 3f967508.",
+          "updated_at": "2026-01-11T00:34:51.441774+00:00"
         },
         {
           "id": "6.3",
           "title": "Handle long-press during animation",
           "description": "Queue long-press action if started during focus animation",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/hooks/useLongPress.ts"
           ],
@@ -510,13 +520,15 @@
             "Long-press during animation doesn't cancel",
             "Action is queued and executed after animation",
             "No duplicate actions triggered"
-          ]
+          ],
+          "notes": "Implemented animation-aware queuing for long-press actions during focus animations:\n\n1. **useLongPress.ts enhancements**:\n   - Added AnimationAwareConfig interface with isAnimating() callback, maxQueueWaitMs (default 500ms), and lifecycle callbacks\n   - When isAnimating() returns true during long-press trigger, action is queued instead of executed immediately\n   - notifyAnimationComplete() executes queued action after animation finishes\n   - cancelQueuedAction() cancels pending queued action\n   - isActionQueued state tracks queue status\n   - Duplicate prevention via actionExecutedRef ensures actions only execute once\n   - Timeout fallback (maxQueueWaitMs) ensures action executes even if animation completion is not notified\n\n2. **Focusable.tv.tsx integration**:\n   - Added animationAwareLongPress prop for configuring queuing behavior\n   - isAnimatingRef tracks when focus animation is in progress\n   - withSpring animation callback uses runOnJS(handleAnimationComplete) to notify when animation finishes\n   - FocusableRef now exposes isAnimating() and notifyAnimationComplete() methods for external coordination\n   - Long-press actions started during focus animation are automatically queued and executed after animation completes\n\nCommitted as 3927aba8.",
+          "updated_at": "2026-01-11T00:40:03.024765+00:00"
         },
         {
           "id": "6.4",
           "title": "Add low-end device detection and animation fallback",
           "description": "Detect device performance and reduce/disable animations on low-end Android TV devices",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "src/hooks/useSpatialNavigation.ts",
             "src/components/common/Focusable.tv.tsx"
@@ -525,7 +537,9 @@
             "Device performance is detected",
             "Animations are reduced on low-end devices",
             "Focus states remain visible (fall back to border instead of scale)"
-          ]
+          ],
+          "notes": "Implemented low-end Android TV device detection and animation fallback system:\n\n1. **useDevicePerformance hook** (src/hooks/useDevicePerformance.ts):\n   - Detects device performance tier (HIGH, MEDIUM, LOW) based on RAM thresholds, known device patterns, and screen density\n   - Provides performance-optimized animation configurations per tier\n   - Cached globally, supports manual override for settings/testing\n   - Utility functions: getPerformanceTier(), getAnimationConfig(), shouldEnableScaleAnimation(), etc.\n\n2. **PerformanceContext** (src/contexts/PerformanceContext.tsx):\n   - Global context for device performance state\n   - Initializes performance detection at app startup\n   - Provides hooks: usePerformance(), usePerformanceOptional(), useShouldReduceAnimations()\n\n3. **Enhanced Focusable.tv.tsx**:\n   - Integrates with useDevicePerformance hook\n   - Uses withTiming instead of withSpring on low-end devices\n   - Disables parallax effects on low/medium performance devices\n   - Focus states remain visible via border on all devices\n\n4. **Enhanced useSpatialNavigation.ts**:\n   - Exposes performanceTier, shouldReduceAnimations, isLowEndDevice, animationConfig\n\n5. **Updated AppNavigator.tsx**:\n   - Added PerformanceProvider to app root hierarchy",
+          "updated_at": "2026-01-11T00:47:04.524594+00:00"
         },
         {
           "id": "6.5",
@@ -693,5 +707,5 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-11T00:03:07.303270+00:00"
+  "last_updated": "2026-01-11T00:47:04.524606+00:00"
 }

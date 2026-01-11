@@ -82,3 +82,24 @@ export type {
   TVPlayerControlsConfig,
   TVPlayerControlsResult,
 } from './useTVPlayerControls';
+
+// Device Performance Detection
+export {
+  useDevicePerformance,
+  PerformanceTier,
+  initializePerformanceDetection,
+  setManualPerformanceTier,
+  getPerformanceTier,
+  getAnimationConfig,
+  getSpringConfig,
+  getFocusScale,
+  shouldEnableScaleAnimation,
+  shouldEnableParallax,
+  shouldEnableShadowAnimation,
+  subscribeToPerformanceChanges,
+} from './useDevicePerformance';
+export type {
+  DeviceMetrics,
+  PerformanceAnimationConfig,
+  UseDevicePerformanceReturn,
+} from './useDevicePerformance';

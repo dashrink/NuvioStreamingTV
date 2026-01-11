@@ -31,21 +31,21 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 - [x] 4.3 Enhance HeroCarousel with TV focus
 - [x] 4.4 Enhance SeriesContent with TV navigation
 - [x] 4.5 Enhance StreamCard with TV focus
-- [ ] 4.6 Enhance Settings screens with TV navigation
+- [x] 4.6 Enhance Settings screens with TV navigation
 
 ### Phase 5: Screen-Level TV Support (6 subtasks)
-- [ ] 5.1 Enhance HomeScreen with TV navigation
-- [ ] 5.2 Enhance MetadataScreen with TV navigation
-- [ ] 5.3 Enhance SearchScreen with TV support
-- [ ] 5.4 Enhance LibraryScreen with TV navigation
-- [ ] 5.5 Enhance StreamsScreen with TV navigation
-- [ ] 5.6 Enhance Player with TV controls
+- [x] 5.1 Enhance HomeScreen with TV navigation
+- [x] 5.2 Enhance MetadataScreen with TV navigation
+- [x] 5.3 Enhance SearchScreen with TV support
+- [x] 5.4 Enhance LibraryScreen with TV navigation
+- [x] 5.5 Enhance StreamsScreen with TV navigation
+- [x] 5.6 Enhance Player with TV controls
 
 ### Phase 6: Edge Cases & Polish (5 subtasks)
-- [ ] 6.1 Handle empty content lists
-- [ ] 6.2 Handle rapid D-pad input
-- [ ] 6.3 Handle long-press during animation
-- [ ] 6.4 Add low-end device detection and animation fallback
+- [x] 6.1 Handle empty content lists
+- [x] 6.2 Handle rapid D-pad input
+- [x] 6.3 Handle long-press during animation
+- [x] 6.4 Add low-end device detection and animation fallback
 - [ ] 6.5 Handle voice search unavailability
 
 ### Phase 7: Testing (6 subtasks)
@@ -62,6 +62,83 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 ---
 
 ## Progress Log
+
+### 2026-01-11 - Subtask 6.4 Completed
+- Implemented low-end Android TV device detection and animation fallback system:
+  - **useDevicePerformance hook** (src/hooks/useDevicePerformance.ts):
+    - Detects device performance tier (HIGH, MEDIUM, LOW) based on:
+      - RAM thresholds (< 1.5GB = LOW, < 3GB = MEDIUM, >= 3GB = HIGH)
+      - Known device patterns (low-end TV boxes like MXQ, X96, T95 vs. high-end like NVIDIA Shield, Chromecast)
+      - Screen density heuristics
+    - Provides performance-optimized animation configurations per tier:
+      - HIGH: Full animations (scale 1.05, spring damping: 15, parallax enabled)
+      - MEDIUM: Reduced animations (scale 1.03, spring damping: 20, no parallax/shadows)
+      - LOW: Minimal animations (no scale, timing instead of spring, thicker focus border)
+    - Cached globally to avoid repeated detection
+    - Supports manual override for settings/testing
+    - Utility functions: getPerformanceTier(), getAnimationConfig(), shouldEnableScaleAnimation(), etc.
+  - **PerformanceContext** (src/contexts/PerformanceContext.tsx):
+    - Global context for device performance state
+    - Initializes performance detection at app startup
+    - Provides hooks: usePerformance(), usePerformanceOptional(), useShouldReduceAnimations()
+    - Supports manual tier override via setPerformanceTier()
+  - **Enhanced Focusable.tv.tsx**:
+    - Integrates with useDevicePerformance hook
+    - Automatically uses performance-appropriate animation configurations
+    - Uses withTiming (immediate) instead of withSpring on low-end devices
+    - Disables parallax effects on low/medium performance devices
+    - New props: usePerformanceOptimization (default: true), forcePerformanceTier
+    - Focus states remain visible on all devices (falls back to border instead of scale)
+  - **Enhanced useSpatialNavigation.ts**:
+    - Now exposes performanceTier, shouldReduceAnimations, isLowEndDevice, animationConfig
+    - Components using spatial navigation have direct access to performance info
+  - **Updated AppNavigator.tsx**:
+    - Added PerformanceProvider to app root hierarchy
+    - Provider order: PostHogProvider > PerformanceProvider > TVNavigationProvider > ...
+  - Updated hooks/index.ts with new exports
+
+### 2026-01-11 - Subtask 6.1 Completed
+- Added empty list focus handling utilities to prevent focus traps:
+  - **useEmptyListFocusFallback hook** (useSpatialNavigation.ts):
+    - Monitors when content lists become empty (after filtering, loading, or removing items)
+    - Automatically moves focus to fallback elements (search bar, nav tabs, etc.)
+    - Handles loading states to prevent premature fallback
+    - Takes isEmpty, isLoading, and fallbackFocusIds configuration
+  - **useFocusableFallbackRefs hook** (useSpatialNavigation.ts):
+    - Registers multiple fallback refs at once
+    - Provides focusFirstAvailable() function to focus the first available fallback
+  - **useLoadingStateFocus hook** (useSpatialNavigation.ts):
+    - Handles focus during loading states
+    - Optionally focuses loading indicator
+    - Restores focus to content or fallback when loading completes
+  - **Enhanced TVFocusGuard.tv.tsx**:
+    - Added isLoading prop to prevent premature fallback during loading
+    - Added fallbackFocusIds array for multiple fallback targets (in order of priority)
+    - Added fallbackRef for direct ref-based fallback
+    - Added focusFallback() imperative method and isEmpty() check
+    - Empty container detection now automatically attempts to focus fallback elements
+  - Updated hooks/index.ts with new exports
+- Committed as e096b053
+
+### 2026-01-11 - Subtask 5.6 Completed
+- Created TV-specific player controls with complete remote navigation support:
+  - **PlayerControls.tv.tsx** - TV-specific player controls component:
+    - **Play/Pause with select button**: useTVEventHandler listens for 'select' and 'playPause' events
+    - **Seek with left/right D-pad**: Left seeks -10s, right seeks +10s with animated feedback
+    - **Volume with up/down D-pad**: Passes volume direction to onVolumeChange callback
+    - **Back button exits player**: Menu button triggers handleClose() via TV event handler
+    - **Control overlay shows on any D-pad input**: onShowControls callback triggered on navigation events
+    - All buttons wrapped in Focusable component for D-pad navigation
+    - Focus states with scale animations (1.15-1.2x) and focus borders
+    - TV navigation hints overlay showing control mappings
+  - **useTVPlayerControls.ts** - Hook for TV player control management:
+    - Comprehensive event handling for all TV remote buttons
+    - Auto-show controls on D-pad input, auto-hide after 5s timeout
+    - Android TV hardware back button support via BackHandler
+    - Debouncing (100ms) to prevent rapid input issues
+    - createDefaultVolumeHandler utility for volume control integration
+  - Updated hooks/index.ts to export new hook
+- Committed as 76b8a5c3
 
 ### 2026-01-11 - Subtask 4.5 Completed
 - Created StreamCard.tv.tsx with complete TV focus support:

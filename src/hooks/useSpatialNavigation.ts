@@ -46,6 +46,12 @@ import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { findNodeHandle, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import {
+  useDevicePerformance,
+  PerformanceTier,
+  PerformanceAnimationConfig,
+  getPerformanceTier,
+} from './useDevicePerformance';
 
 // =============================================================================
 // Types & Interfaces
@@ -165,6 +171,16 @@ export interface UseSpatialNavigationReturn {
   refs: RefMap;
   /** Whether a focus change is currently pending (debounced) */
   isPendingFocusChange: boolean;
+
+  // Performance
+  /** Device performance tier */
+  performanceTier: PerformanceTier;
+  /** Whether animations should be reduced based on device performance */
+  shouldReduceAnimations: boolean;
+  /** Whether this is a low-end device (minimal animations) */
+  isLowEndDevice: boolean;
+  /** Animation configuration based on device performance */
+  animationConfig: PerformanceAnimationConfig;
 }
 
 // =============================================================================
@@ -205,6 +221,14 @@ export function useSpatialNavigation(
 
   // Get TV navigation context (optional - will work without it)
   const tvNavigation = useTVNavigationOptional();
+
+  // Get device performance for animation optimization
+  const {
+    performanceTier,
+    animationConfig,
+    shouldReduceAnimations,
+    isLowEndDevice,
+  } = useDevicePerformance();
 
   // Refs storage - maps focus IDs to React refs
   const refsRef = useRef<RefMap>({});
@@ -627,6 +651,12 @@ export function useSpatialNavigation(
     screenName,
     refs: refsRef.current,
     isPendingFocusChange,
+
+    // Performance
+    performanceTier,
+    shouldReduceAnimations,
+    isLowEndDevice,
+    animationConfig,
   };
 }
 

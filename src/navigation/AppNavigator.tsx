@@ -4,6 +4,7 @@ import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNa
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
 import { TVNavigationProvider, useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { PerformanceProvider } from '../contexts/PerformanceContext';
 import { TVBackHandler } from '../components/tv/TVBackHandler';
 import { TVNavigationBackHandlerProvider } from '../components/tv/TVNavigationBackHandlerProvider';
 import { mmkvStorage } from '../services/mmkvStorage';
@@ -1659,13 +1660,15 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
       host: "https://us.i.posthog.com",
     }}
   >
-    <TVNavigationProvider>
-      <TVBackHandler>
-        <LoadingProvider>
-          <InnerNavigator initialRouteName={initialRouteName} />
-        </LoadingProvider>
-      </TVBackHandler>
-    </TVNavigationProvider>
+    <PerformanceProvider>
+      <TVNavigationProvider>
+        <TVBackHandler>
+          <LoadingProvider>
+            <InnerNavigator initialRouteName={initialRouteName} />
+          </LoadingProvider>
+        </TVBackHandler>
+      </TVNavigationProvider>
+    </PerformanceProvider>
   </PostHogProvider>
 );
 

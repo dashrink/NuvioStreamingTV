@@ -13,6 +13,7 @@
  * - Integration with useLongPress for context menu triggers
  * - Support for hasTVPreferredFocus and isTVSelectable props
  * - Proper onFocus/onBlur lifecycle management
+ * - Performance-aware animation reduction for low-end Android TV devices
  *
  * @example
  * ```tsx
@@ -46,13 +47,21 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
   interpolateColor,
   interpolate,
   cancelAnimation,
   runOnJS,
-  runOnUI,
+  Easing,
 } from 'react-native-reanimated';
 import { useLongPress, AnimationAwareConfig } from '../../hooks/useLongPress';
+import {
+  useDevicePerformance,
+  PerformanceTier,
+  getPerformanceTier,
+  getSpringConfig,
+  getAnimationConfig,
+} from '../../hooks/useDevicePerformance';
 
 // =============================================================================
 // Types & Interfaces
@@ -164,6 +173,10 @@ export interface FocusableProps {
   rapidInputConfig?: RapidInputConfig;
   /** Animation-aware long-press configuration - enables queuing of actions during animations */
   animationAwareLongPress?: Omit<AnimationAwareConfig, 'isAnimating'>;
+  /** Whether to use performance-based animation settings (default: true) */
+  usePerformanceOptimization?: boolean;
+  /** Force a specific performance tier (overrides auto-detection) */
+  forcePerformanceTier?: PerformanceTier;
 }
 
 /**
@@ -223,6 +236,12 @@ const DEFAULT_RAPID_INPUT_CONFIG: Required<RapidInputConfig> = {
   enabled: true,
   minFocusIntervalMs: 50,
   cancelAnimationsOnRapidInput: true,
+};
+
+/** Timing config for immediate animations (low-end devices) */
+const IMMEDIATE_TIMING_CONFIG = {
+  duration: 50,
+  easing: Easing.linear,
 };
 
 // =============================================================================
@@ -301,14 +320,61 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       accessibilityHint,
       rapidInputConfig = {},
       animationAwareLongPress = {},
+      usePerformanceOptimization = true,
+      forcePerformanceTier,
     },
     ref
   ) => {
-    // Merge default animation config with provided config
-    const config: Required<FocusAnimationConfig> = {
-      ...DEFAULT_ANIMATION_CONFIG,
-      ...animationConfig,
-    };
+    // Get device performance tier for animation optimization
+    const { performanceTier: detectedTier, animationConfig: perfAnimConfig } = useDevicePerformance();
+    const performanceTier = forcePerformanceTier ?? (usePerformanceOptimization ? detectedTier : PerformanceTier.HIGH);
+
+    // Check if we should reduce animations based on performance tier
+    const shouldReduceAnimations = performanceTier === PerformanceTier.LOW || performanceTier === PerformanceTier.MEDIUM;
+    const isLowEndDevice = performanceTier === PerformanceTier.LOW;
+
+    // Merge default animation config with provided config and performance optimizations
+    const config: Required<FocusAnimationConfig> = useMemo(() => {
+      const baseConfig = {
+        ...DEFAULT_ANIMATION_CONFIG,
+        ...animationConfig,
+      };
+
+      // Apply performance-based overrides if optimization is enabled
+      if (usePerformanceOptimization) {
+        const perfConfig = forcePerformanceTier
+          ? getAnimationConfig()
+          : perfAnimConfig;
+
+        return {
+          focusScale: perfConfig.enableScaleAnimation ? baseConfig.focusScale : 1.0,
+          unfocusedOpacity: perfConfig.enableOpacityAnimation ? baseConfig.unfocusedOpacity : 1.0,
+          showFocusBorder: perfConfig.showFocusBorder,
+          focusBorderColor: baseConfig.focusBorderColor,
+          focusBorderWidth: perfConfig.focusBorderWidth,
+          animateShadow: perfConfig.enableShadowAnimation && baseConfig.animateShadow,
+        };
+      }
+
+      return baseConfig;
+    }, [animationConfig, usePerformanceOptimization, forcePerformanceTier, perfAnimConfig]);
+
+    // Get performance-optimized spring config
+    const springConfig = useMemo(() => {
+      if (!usePerformanceOptimization) {
+        return SPRING_CONFIG;
+      }
+
+      const perfConfig = forcePerformanceTier
+        ? getAnimationConfig()
+        : perfAnimConfig;
+
+      return {
+        damping: perfConfig.springDamping,
+        stiffness: perfConfig.springStiffness,
+        mass: 1,
+      };
+    }, [usePerformanceOptimization, forcePerformanceTier, perfAnimConfig]);
 
     // Merge rapid input protection config
     const rapidConfig: Required<RapidInputConfig> = {
@@ -490,19 +556,29 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
 
       isFocusedRef.current = true;
 
-      // Start the spring animation with a completion callback
-      focusProgress.value = withSpring(1, SPRING_CONFIG, (finished) => {
-        'worklet';
-        if (finished) {
-          // Use runOnJS to call the completion handler on the JS thread
-          runOnJS(handleAnimationComplete)();
-        }
-      });
+      // Start the animation with performance-appropriate method
+      if (isLowEndDevice) {
+        // Use timing for immediate response on low-end devices
+        focusProgress.value = withTiming(1, IMMEDIATE_TIMING_CONFIG, (finished) => {
+          'worklet';
+          if (finished) {
+            runOnJS(handleAnimationComplete)();
+          }
+        });
+      } else {
+        // Use spring animation for smooth feel on capable devices
+        focusProgress.value = withSpring(1, springConfig, (finished) => {
+          'worklet';
+          if (finished) {
+            runOnJS(handleAnimationComplete)();
+          }
+        });
+      }
 
       // Clear any pending focus callback and call the current one
       pendingFocusCallbackRef.current = null;
       onFocus?.();
-    }, [focusProgress, onFocus, rapidConfig, handleAnimationComplete]);
+    }, [focusProgress, onFocus, rapidConfig, handleAnimationComplete, isLowEndDevice, springConfig]);
 
     /**
      * Handle blur event with rapid input protection and animation tracking
@@ -526,19 +602,29 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
 
       isFocusedRef.current = false;
 
-      // Start the spring animation with a completion callback
-      focusProgress.value = withSpring(0, SPRING_CONFIG, (finished) => {
-        'worklet';
-        if (finished) {
-          // Use runOnJS to call the completion handler on the JS thread
-          runOnJS(handleAnimationComplete)();
-        }
-      });
+      // Start the animation with performance-appropriate method
+      if (isLowEndDevice) {
+        // Use timing for immediate response on low-end devices
+        focusProgress.value = withTiming(0, IMMEDIATE_TIMING_CONFIG, (finished) => {
+          'worklet';
+          if (finished) {
+            runOnJS(handleAnimationComplete)();
+          }
+        });
+      } else {
+        // Use spring animation for smooth feel on capable devices
+        focusProgress.value = withSpring(0, springConfig, (finished) => {
+          'worklet';
+          if (finished) {
+            runOnJS(handleAnimationComplete)();
+          }
+        });
+      }
 
       // Clear any pending focus callback
       pendingFocusCallbackRef.current = null;
       onBlur?.();
-    }, [focusProgress, onBlur, rapidConfig, handleAnimationComplete]);
+    }, [focusProgress, onBlur, rapidConfig, handleAnimationComplete, isLowEndDevice, springConfig]);
 
     /**
      * Handle press in (for press feedback)
@@ -606,8 +692,14 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       }
     }
 
-    // Build TV parallax properties (Apple TV only)
-    const tvParallaxPropsBuilt = buildTVParallaxProperties(tvParallaxProperties);
+    // Build TV parallax properties (Apple TV only, disabled on low-end devices)
+    const tvParallaxPropsBuilt = useMemo(() => {
+      // Disable parallax on low-end devices
+      if (shouldReduceAnimations) {
+        return undefined;
+      }
+      return buildTVParallaxProperties(tvParallaxProperties);
+    }, [tvParallaxProperties, shouldReduceAnimations]);
 
     // =============================================================================
     // Render
@@ -675,3 +767,6 @@ export type {
   TVParallaxPropertiesConfig,
   RapidInputConfig,
 };
+
+// Re-export PerformanceTier for convenience
+export { PerformanceTier };
