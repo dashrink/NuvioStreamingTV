@@ -6,6 +6,7 @@ import { styles } from '../utils/playerStyles';
 import { formatTime } from '../utils/playerUtils';
 import { logger } from '../../../utils/logger';
 import Focusable from '../../common/Focusable';
+import { triggerMedium } from '../../../hooks/useHaptics';
 
 interface ResumeOverlayProps {
   showResumeOverlay: boolean;
@@ -72,16 +73,22 @@ export const ResumeOverlay: React.FC<ResumeOverlayProps> = ({
         </View>
 
         <View style={styles.resumeButtons}>
-          <Focusable 
-            style={styles.resumeButton} 
-            onPress={handleStartFromBeginning}
+          <Focusable
+            style={styles.resumeButton}
+            onPress={() => {
+              triggerMedium();
+              handleStartFromBeginning();
+            }}
           >
             <Ionicons name="refresh" size={16} color="white" style={styles.buttonIcon} />
             <Text style={styles.resumeButtonText}>Start Over</Text>
           </Focusable>
-          <Focusable 
-            style={[styles.resumeButton, styles.resumeFromButton]} 
-            onPress={handleResume}
+          <Focusable
+            style={[styles.resumeButton, styles.resumeFromButton]}
+            onPress={() => {
+              triggerMedium();
+              handleResume();
+            }}
             hasTVPreferredFocus={Platform.isTV}
           >
             <Ionicons name="play" size={16} color="white" style={styles.buttonIcon} />

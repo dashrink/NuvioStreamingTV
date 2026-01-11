@@ -23,6 +23,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
 import CustomAlert from '../components/CustomAlert';
 import { useBackupOptions } from '../hooks/useBackupOptions';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const BackupScreen: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -80,6 +81,7 @@ const BackupScreen: React.FC = () => {
 
   // Toggle section collapse/expand
   const toggleSection = useCallback((section: 'coreData' | 'addonsIntegrations' | 'settingsPreferences') => {
+    triggerLight();
     const isExpanded = expandedSections[section];
 
     let heightAnim: Animated.Value;
@@ -286,7 +288,10 @@ const BackupScreen: React.FC = () => {
       <View style={styles.header}>
         <Focusable
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           hasTVPreferredFocus={true}
         >
           <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.white} />
@@ -420,13 +425,6 @@ const BackupScreen: React.FC = () => {
                 onValueChange={(v) => updatePreference('includeLocalScrapers', v)}
                 theme={currentTheme}
               />
-              <OptionToggle
-                label="Trakt Integration"
-                description="Sync data and authentication tokens"
-                value={preferences.includeTraktData}
-                onValueChange={(v) => updatePreference('includeTraktData', v)}
-                theme={currentTheme}
-              />
             </Animated.View>
 
             {/* Settings & Preferences Group */}
@@ -462,90 +460,59 @@ const BackupScreen: React.FC = () => {
               }}
             >
               <OptionToggle
+                label="Theme"
+                description="Dark/Light mode preference"
+                value={preferences.includeTheme}
+                onValueChange={(v) => updatePreference('includeTheme', v)}
+                theme={currentTheme}
+              />
+              <OptionToggle
                 label="App Settings"
-                description="Theme, preferences, and configurations"
+                description="UI preferences and options"
                 value={preferences.includeSettings}
                 onValueChange={(v) => updatePreference('includeSettings', v)}
-                theme={currentTheme}
-              />
-              <OptionToggle
-                label="User Preferences"
-                description="Addon order and UI settings"
-                value={preferences.includeUserPreferences}
-                onValueChange={(v) => updatePreference('includeUserPreferences', v)}
-                theme={currentTheme}
-              />
-              <OptionToggle
-                label="Catalog Settings"
-                description="Catalog filters and preferences"
-                value={preferences.includeCatalogSettings}
-                onValueChange={(v) => updatePreference('includeCatalogSettings', v)}
-                theme={currentTheme}
-              />
-              <OptionToggle
-                label="API Keys"
-                description="MDBList and OpenRouter keys"
-                value={preferences.includeApiKeys}
-                onValueChange={(v) => updatePreference('includeApiKeys', v)}
                 theme={currentTheme}
               />
             </Animated.View>
           </View>
 
-          {/* Backup Actions */}
+          {/* Action Buttons Section */}
           <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
             <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
-              Backup & Restore
+              Actions
             </Text>
 
             <Focusable
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: currentTheme.colors.primary,
-                  opacity: isLoading ? 0.6 : 1
-                }
-              ]}
+              style={[styles.actionButton, { backgroundColor: currentTheme.colors.primary }]}
               onPress={handleCreateBackup}
-              disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="white" size="small" />
+                <ActivityIndicator color={currentTheme.colors.darkBackground} size="small" />
               ) : (
                 <>
-                  <MaterialIcons name="backup" size={20} color="white" />
-                  <Text style={styles.actionButtonText}>Create Backup</Text>
+                  <MaterialIcons name="backup" size={20} color={currentTheme.colors.darkBackground} />
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.darkBackground }]}>
+                    Create Backup
+                  </Text>
                 </>
               )}
             </Focusable>
 
             <Focusable
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: currentTheme.colors.secondary,
-                  opacity: isLoading ? 0.6 : 1
-                }
-              ]}
+              style={[styles.actionButton, { backgroundColor: currentTheme.colors.secondary }]}
               onPress={handleRestoreBackup}
-              disabled={isLoading}
             >
-              <MaterialIcons name="restore" size={20} color="white" />
-              <Text style={styles.actionButtonText}>Restore from Backup</Text>
+              {isLoading ? (
+                <ActivityIndicator color={currentTheme.colors.darkBackground} size="small" />
+              ) : (
+                <>
+                  <MaterialIcons name="restore" size={20} color={currentTheme.colors.darkBackground} />
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.darkBackground }]}>
+                    Restore Backup
+                  </Text>
+                </>
+              )}
             </Focusable>
-          </View>
-
-          {/* Info Section */}
-          <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
-            <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
-              About Backups
-            </Text>
-            <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
-              • Customize what gets backed up using the toggles above{'\n'}
-              • Backup files are stored locally on your device{'\n'}
-              • Share your backup to transfer data between devices{'\n'}
-              • Restoring will overwrite your current data
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -553,30 +520,33 @@ const BackupScreen: React.FC = () => {
   );
 };
 
-interface OptionToggleProps {
+// OptionToggle component
+const OptionToggle: React.FC<{
   label: string;
   description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
   theme: any;
-}
-
-const OptionToggle: React.FC<OptionToggleProps> = ({ label, description, value, onValueChange, theme }) => (
-  <View style={[styles.optionRow, { borderBottomColor: theme.colors.outline }]}>
-    <View style={styles.optionLeft}>
-      <Text style={[styles.optionLabel, { color: theme.colors.highEmphasis }]}>
-        {label}
-      </Text>
-      <Text style={[styles.optionDescription, { color: theme.colors.mediumEmphasis }]}>
-        {description}
-      </Text>
+}> = ({ label, description, value, onValueChange, theme }) => {
+  return (
+    <View style={styles.optionItem}>
+      <View style={styles.optionInfo}>
+        <Text style={[styles.optionLabel, { color: theme.colors.highEmphasis }]}>
+          {label}
+        </Text>
+        <Text style={[styles.optionDescription, { color: theme.colors.mediumEmphasis }]}>
+          {description}
+        </Text>
+      </View>
+      <CustomSwitch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: theme.colors.elevation2, true: theme.colors.primaryLight }}
+        thumbColor={value ? theme.colors.primary : theme.colors.mediumEmphasis}
+      />
     </View>
-        <CustomSwitch
-      value={value}
-      onValueChange={onValueChange}
-    />
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -584,101 +554,93 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
+    paddingVertical: 12,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+  },
+  backText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  backText: {
-    fontSize: 17,
-    fontWeight: '400',
-  },
   headerTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: '700',
     paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 8,
+    paddingVertical: 16,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
   },
   section: {
-    marginBottom: 16,
     borderRadius: 12,
     padding: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   sectionDescription: {
     fontSize: 14,
     marginBottom: 16,
   },
-  groupLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
-  optionRow: {
+  groupLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  optionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
-    borderBottomWidth: 1,
   },
-  optionLeft: {
+  optionInfo: {
     flex: 1,
-    paddingRight: 16,
+    marginRight: 16,
   },
   optionLabel: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 4,
   },
   optionDescription: {
     fontSize: 13,
-    lineHeight: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderRadius: 8,
     marginBottom: 12,
   },
-  actionButtonText: {
-    color: 'white',
+  buttonText: {
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });
 

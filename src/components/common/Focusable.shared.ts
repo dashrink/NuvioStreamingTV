@@ -37,16 +37,17 @@ export interface FocusableProps {
 /**
  * TV-specific focus styling constants
  * Configured for optimal visibility at 10-foot viewing distance
+ * Updated: Thin border with subtle scale effect for cleaner focus indication
  */
 export const TV_FOCUS_STYLES = {
-  borderWidth: 3, // Thicker border for TV viewing distance
-  scaleDefault: 1.04, // Slightly more prominent scale for TV
-  fallbackColor: '#2d9cdb', // Fallback if theme not available
+  borderWidth: 1, // Thin border for cleaner focus indication
+  scaleDefault: 1.05, // Slightly enlarge on focus for visibility
+  fallbackColor: '#E5A00D', // Warm yellow/gold fallback color
   focusShadow: {
-    shadowColor: '#2d9cdb',
+    shadowColor: '#E5A00D',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 8, // Android elevation for shadow effect
+    shadowOpacity: 0.0,
+    shadowRadius: 0,
+    elevation: 0, // Removed elevation for cleaner look
   },
 };

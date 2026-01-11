@@ -2,23 +2,24 @@
  * TV Focus Configuration
  *
  * Provides consistent focus indicators and animations for TV viewing.
- * Optimized for 10-foot viewing distance with clear, large focus indicators.
+ * Optimized for 10-foot viewing distance with clear, thin focus indicators.
+ * Updated: Uses thin border with subtle scale effect for cleaner appearance.
  */
 
 /**
  * TV Focus animation and styling configuration
  */
 export const TV_FOCUS_CONFIG = {
-  // Border-based focus indicator
-  focusBorderWidth: 3,
-  focusBorderColor: '#2d9cdb', // Can be overridden by theme
+  // Border-based focus indicator - thin line for cleaner look
+  focusBorderWidth: 2,
+  focusBorderColor: '#E5A00D', // Warm yellow/gold, can be overridden by theme
 
-  // Scale animation on focus
+  // Scale animation on focus - slightly enlarge to show selection
   focusScale: 1.05,
-  focusScaleSubtle: 1.02,
+  focusScaleSubtle: 1.03,
 
   // Animation timing
-  focusAnimationDuration: 200,
+  focusAnimationDuration: 150,
 
   // Minimum touch target size for TV (in dp)
   minTouchTarget: 48,

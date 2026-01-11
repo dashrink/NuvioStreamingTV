@@ -34,4 +34,5 @@ backup_*/
 server/cache-server
 local-scrapers-repo
 trakt-docs
-trakt-docss
+trakt-docssandroid/.gradle
+screenshots

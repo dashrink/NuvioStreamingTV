@@ -1,6 +1,5 @@
-
 import React, { useRef } from 'react';
-import { View, Text, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, useWindowDimensions, ScrollView, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -9,6 +8,7 @@ import Animated, {
   SlideOutDown,
 } from 'react-native-reanimated';
 import Focusable from '../../common/Focusable';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface SpeedModalProps {
   showSpeedModal: boolean;
@@ -38,14 +38,17 @@ const SpeedModal: React.FC<SpeedModalProps> = ({
   const holdSpeedOptions = [1.5, 2.0, 2.5, 3.0];
 
   const handleClose = () => {
+    triggerLight();
     setShowSpeedModal(false);
   };
 
   const handleSpeedSelect = (speed: number) => {
+    triggerLight();
     setPlaybackSpeed(speed);
   };
 
   const handleHoldSpeedSelect = (speed: number) => {
+    triggerLight();
     setHoldToSpeedValue(speed);
   };
 
@@ -72,6 +75,28 @@ const SpeedModal: React.FC<SpeedModalProps> = ({
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, alignItems: 'center' }}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Playback Speed</Text>
+          </View>
+
+          {/* Current Speed Display */}
+          <View style={{
+            backgroundColor: 'rgba(59, 130, 246, 0.15)',
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 20,
+            borderWidth: 1,
+            borderColor: 'rgba(59, 130, 246, 0.3)',
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <MaterialIcons name="play-arrow" size={20} color="#3B82F6" />
+              <Text style={{
+                color: '#3B82F6',
+                fontSize: 18,
+                fontWeight: '700',
+                marginLeft: 6
+              }}>
+                Current: {currentSpeed}x
+              </Text>
+            </View>
           </View>
 
           {/* Speed Presets */}
@@ -147,7 +172,7 @@ const SpeedModal: React.FC<SpeedModalProps> = ({
                   alignItems: holdToSpeedEnabled ? 'flex-end' : 'flex-start',
                   paddingHorizontal: 3
                 }}
-                onPress={() => setHoldToSpeedEnabled(!holdToSpeedEnabled)}
+                onPress={() => { triggerMedium(); setHoldToSpeedEnabled(!holdToSpeedEnabled); }}
               >
                 <View style={{ width: 24, height: 24, backgroundColor: 'white', borderRadius: 12 }} />
               </Focusable>
@@ -186,6 +211,36 @@ const SpeedModal: React.FC<SpeedModalProps> = ({
                 </ScrollView>
               </View>
             )}
+
+            {/* Info Text */}
+            <View style={{
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderRadius: 10,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(34, 197, 94, 0.3)',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                <MaterialIcons name="info" size={16} color="#22C55E" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    color: '#22C55E',
+                    fontSize: 13,
+                    fontWeight: '600',
+                    marginBottom: 4,
+                  }}>
+                    Hold left/right sides
+                  </Text>
+                  <Text style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: 12,
+                    lineHeight: 16,
+                  }}>
+                    Hold and press the left or right side of the video player to temporarily boost playback speed.
+                  </Text>
+                </View>
+              </View>
+            </View>
           </View>
         </Animated.View>
       </View>

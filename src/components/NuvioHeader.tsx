@@ -6,6 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight } from '../hooks/useHaptics';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for NuvioHeader
 let GlassViewComp: any = null;
@@ -60,7 +61,10 @@ export const NuvioHeader = () => {
           </View>
           <TouchableOpacity
             style={styles.searchButton}
-            onPress={() => navigation.navigate('Search')}
+            onPress={() => {
+              triggerLight();
+              navigation.navigate('Search');
+            }}
           >
             <View style={[
               styles.iconWrapper,

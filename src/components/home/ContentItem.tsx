@@ -14,6 +14,7 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { triggerLight } from '../../hooks/useHaptics';
 import {
   isTV as isTVDevice,
   TV_SPACING,
@@ -208,12 +209,14 @@ const ContentItem = ({
   const itemRef = useRef<View>(null);
 
   const handleLongPress = useCallback(() => {
+    triggerLight(); // Haptic feedback for opening context menu
     setMenuVisible(true);
   }, []);
 
   const handlePress = useCallback(() => {
     // Validate ID before pressing to prevent errors with NaN/undefined IDs
     if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
+      triggerLight(); // Haptic feedback for navigation to details
       onPress(item.id, item.type);
     }
   }, [item.id, item.type, onPress]);
@@ -416,65 +419,44 @@ const ContentItem = ({
             )}
           </View>
         </Focusable>
-        {settings.showPosterTitles && (
-          <Text
-            style={[
-              styles.title,
-              {
-                color: currentTheme.colors.mediumEmphasis,
-                fontSize: getDeviceType(width) === 'tv' ? 16 : getDeviceType(width) === 'largeTablet' ? 15 : getDeviceType(width) === 'tablet' ? 14 : 13
-              }
-            ]}
-            numberOfLines={2}
-          >
+        {settings.showPosterTitle && item.name && (
+          <Text numberOfLines={1} style={[styles.posterTitle, { color: currentTheme.colors.text, marginTop: 4 }]}>
             {item.name}
           </Text>
         )}
       </Animated.View>
-
-      <DropUpMenu
-        visible={menuVisible}
-        onClose={handleMenuClose}
-        item={item}
-        onOptionSelect={handleOptionSelect}
-        isSaved={inLibrary}
-        isWatched={isWatched}
-      />
+      {menuVisible && (
+        <DropUpMenu
+          item={item}
+          inLibrary={inLibrary}
+          isWatched={isWatched}
+          onOptionSelect={handleOptionSelect}
+          onClose={handleMenuClose}
+        />
+      )}
     </>
   );
 };
 
 const styles = StyleSheet.create({
   itemContainer: {
-    width: POSTER_WIDTH,
+    justifyContent: 'flex-start',
   },
   contentItem: {
-    width: POSTER_WIDTH,
-    aspectRatio: 2 / 3,
-    margin: 0,
-    borderRadius: 12,
     overflow: 'hidden',
-    position: 'relative',
-    elevation: Platform.OS === 'android' ? 1 : 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
-    marginBottom: 8,
   },
   contentItemContainer: {
+    position: 'relative',
     width: '100%',
     height: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
   },
   poster: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+  },
+  posterTitle: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -484,45 +466,39 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
   },
   watchedIndicator: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    bottom: 6,
+    right: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 12,
     padding: 2,
   },
   libraryBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    borderRadius: 8,
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 4,
     padding: 4,
   },
   traktWatchlistIcon: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    padding: 2,
+    top: 6,
+    left: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 4,
+    padding: 4,
   },
   traktCollectionIcon: {
     position: 'absolute',
-    top: 8,
-    right: 32, // Positioned to the left of watchlist icon
-    padding: 2,
+    bottom: 6,
+    left: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 4,
+    padding: 4,
   },
-  title: {
-    fontSize: 13, // Will be overridden responsively
-    fontWeight: '500',
-    marginTop: 4,
-    textAlign: 'center',
-  }
 });
 
-export default React.memo(ContentItem, (prev, next) => {
-  // Re-render when identity or poster changes. Caching is handled by FastImage.
-  if (prev.item.id !== next.item.id) return false;
-  if (prev.item.poster !== next.item.poster) return false;
-  return true;
-});
+export default ContentItem;

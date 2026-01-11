@@ -13,6 +13,7 @@ import {
   InteractionManager,
   ScrollView
 } from 'react-native';
+import { UnifiedSpinner, PosterGridSkeleton } from '../components/loading';
 import { FlashList } from '@shopify/flash-list';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -22,9 +23,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import FastImage from '@d11/react-native-fast-image';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
-
-
-
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for CatalogScreen
 let GlassViewComp: any = null;
@@ -461,594 +459,298 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route, navigation }) => {
             // Flatten all items from all catalogs
             const allItems: StreamingContent[] = [];
             catalogs.forEach(catalog => {
-              allItems.push(...catalog.items);
+              if (catalog.metas && Array.isArray(catalog.metas)) {
+                allItems.push(...catalog.metas);
+              }
             });
 
-            // Convert StreamingContent to Meta format
-            const metaItems: Meta[] = allItems.map(item => ({
-              id: item.id,
-              type: item.type,
-              name: item.name,
-              poster: item.poster,
-              background: item.banner,
-              logo: item.logo,
-              description: item.description,
-              releaseInfo: item.year?.toString() || '',
-              imdbRating: item.imdbRating,
-              year: item.year,
-              genres: item.genres || [],
-              runtime: item.runtime,
-              certification: item.certification,
+            const metaItems = allItems.map(item => ({
+              ...item,
+              _dataSource: DataSource.TMDB
             }));
 
-            // Remove duplicates
-            const uniqueItems = metaItems.filter((item, index, self) =>
-              index === self.findIndex((t) => t.id === item.id)
-            );
-
-            InteractionManager.runAfterInteractions(() => {
-              setItems(uniqueItems);
-              setHasMore(false); // TMDB already returns a full set
-              setLoading(false);
-              setRefreshing(false);
-              setIsFetchingMore(false);
-              logger.log('[CatalogScreen] TMDB set items', {
-                count: uniqueItems.length,
-                hasMore: false
-              });
-            });
-            return;
-          } else {
-            InteractionManager.runAfterInteractions(() => {
-              setError("No content found for the selected filters");
-              setItems([]);
-              setLoading(false);
-              setRefreshing(false);
-              setIsFetchingMore(false);
-              logger.log('[CatalogScreen] TMDB returned no items');
-            });
-            return;
-          }
-        } catch (error) {
-          logger.error('Failed to get TMDB catalog:', error);
-          InteractionManager.runAfterInteractions(() => {
-            setError('Failed to load content from TMDB');
-            setItems([]);
-            setLoading(false);
-            setRefreshing(false);
-            setIsFetchingMore(false);
-            logger.log('[CatalogScreen] TMDB error, cleared items');
-          });
-          return;
-        }
-      }
-
-      // Use this flag to track if we found and processed any items
-      let foundItems = false;
-      let allItems: Meta[] = [];
-
-      // Get all installed addon manifests directly
-      const manifests = await stremioService.getInstalledAddonsAsync();
-
-      if (addonId) {
-        // If addon ID is provided, find the specific addon
-        const addon = manifests.find(a => a.id === addonId);
-
-        if (!addon) {
-          throw new Error(`Addon ${addonId} not found`);
-        }
-
-        // Create filters array for genre filtering if provided
-        const filters = effectiveGenreFilter ? [{ title: 'genre', value: effectiveGenreFilter }] : [];
-
-        // Load items from the catalog
-        const catalogItems = await stremioService.getCatalog(addon, type, id, pageParam, filters);
-        logger.log('[CatalogScreen] Fetched addon catalog page', {
-          addon: addon.id,
-          page: pageParam,
-          fetched: catalogItems.length
-        });
-
-        if (catalogItems.length > 0) {
-          foundItems = true;
-          InteractionManager.runAfterInteractions(() => {
-            if (shouldRefresh || pageParam === 1) {
-              setItems(catalogItems);
-            } else {
-              setItems(prev => {
-                const map = new Map<string, Meta>();
-                for (const it of prev) map.set(`${it.id}-${it.type}`, it);
-                for (const it of catalogItems) map.set(`${it.id}-${it.type}`, it);
-                return Array.from(map.values());
-              });
-            }
-            // Prefer service-provided hasMore for addons that support it; fallback to page-size heuristic
-            let nextHasMore = false;
-            try {
-              const svcHasMore = addonId ? stremioService.getCatalogHasMore(addonId, type, id) : undefined;
-              // If service explicitly provides hasMore, use it
-              // Otherwise, only assume there's more if we got a reasonable number of items (>= 5)
-              // This prevents infinite loops when addons return just 1-2 items per page
-              const MIN_ITEMS_FOR_MORE = 5;
-              nextHasMore = typeof svcHasMore === 'boolean' ? svcHasMore : (catalogItems.length >= MIN_ITEMS_FOR_MORE);
-            } catch {
-              // Fallback: only assume more if we got at least 5 items
-              nextHasMore = catalogItems.length >= 5;
-            }
-            setHasMore(nextHasMore);
-            logger.log('[CatalogScreen] Updated items and hasMore', {
-              total: (shouldRefresh || pageParam === 1) ? catalogItems.length : undefined,
-              appended: !(shouldRefresh || pageParam === 1) ? catalogItems.length : undefined,
-              hasMore: nextHasMore
-            });
-          });
-        }
-      } else if (effectiveGenreFilter) {
-        // Get all addons that have catalogs of the specified type
-        const typeManifests = manifests.filter(manifest =>
-          manifest.catalogs && manifest.catalogs.some(catalog => catalog.type === type)
-        );
-
-        // Add debug logging for genre filter
-        logger.log(`Using genre filter: "${effectiveGenreFilter}" for type: ${type}`);
-
-        // For each addon, try to get content with the genre filter
-        for (const manifest of typeManifests) {
-          try {
-            // Find catalogs of this type
-            const typeCatalogs = manifest.catalogs?.filter(catalog => catalog.type === type) || [];
-
-            // For each catalog, try to get content
-            for (const catalog of typeCatalogs) {
-              try {
-                const filters = [{ title: 'genre', value: effectiveGenreFilter }];
-
-                // Debug logging for each catalog request
-                logger.log(`Requesting from ${manifest.name}, catalog ${catalog.id} with genre "${effectiveGenreFilter}"`);
-
-                const catalogItems = await stremioService.getCatalog(manifest, type, catalog.id, 1, filters);
-
-                if (catalogItems && catalogItems.length > 0) {
-                  // Log first few items' genres to debug
-                  const sampleItems = catalogItems.slice(0, 3);
-                  sampleItems.forEach(item => {
-                    logger.log(`Item "${item.name}" has genres: ${JSON.stringify(item.genres)}`);
-                  });
-
-                  // Filter items client-side to ensure they contain the requested genre
-                  // Some addons might not properly filter by genre on the server
-                  let filteredItems = catalogItems;
-                  if (effectiveGenreFilter) {
-                    const normalizedGenreFilter = effectiveGenreFilter.toLowerCase().trim();
-
-                    filteredItems = catalogItems.filter(item => {
-                      // Skip items without genres
-                      if (!item.genres || !Array.isArray(item.genres)) {
-                        return false;
-                      }
-
-                      // Check for genre match (exact or substring)
-                      return item.genres.some(genre => {
-                        const normalizedGenre = genre.toLowerCase().trim();
-                        return normalizedGenre === normalizedGenreFilter ||
-                          normalizedGenre.includes(normalizedGenreFilter) ||
-                          normalizedGenreFilter.includes(normalizedGenre);
-                      });
-                    });
-
-                    logger.log(`Filtered ${catalogItems.length} items to ${filteredItems.length} matching genre "${effectiveGenreFilter}"`);
-                  }
-
-                  allItems = [...allItems, ...filteredItems];
-                  foundItems = filteredItems.length > 0;
-                }
-              } catch (error) {
-                logger.log(`Failed to load items from ${manifest.name} catalog ${catalog.id}:`, error);
-                // Continue with other catalogs
-              }
-            }
-          } catch (error) {
-            logger.log(`Failed to process addon ${manifest.name}:`, error);
-            // Continue with other addons
-          }
-        }
-
-        // Remove duplicates by ID
-        const uniqueItems = allItems.filter((item, index, self) =>
-          index === self.findIndex((t) => t.id === item.id)
-        );
-
-        if (uniqueItems.length > 0) {
-          foundItems = true;
-          InteractionManager.runAfterInteractions(() => {
-            setItems(uniqueItems);
+            setItems(metaItems);
             setHasMore(false);
-            logger.log('[CatalogScreen] Genre aggregated uniqueItems', { count: uniqueItems.length });
-          });
+            setError(null);
+          } else {
+            setItems([]);
+            setError('No results found');
+          }
+        } catch (tmdbError) {
+          logger.error('TMDB fetch failed:', tmdbError);
+          setError('Failed to load catalog from TMDB');
+          setItems([]);
+        }
+      } else {
+        // Use Stremio addon
+        logger.log('Using Stremio addon for CatalogScreen');
+        const params = {
+          type: type || '',
+          id: id || '',
+          ...(effectiveGenreFilter && { genre: effectiveGenreFilter }),
+          ...selectedFilters
+        };
+
+        const response = await stremioService.getCatalogAsync(addonId || '', params);
+
+        logger.log('[CatalogScreen] getCatalogAsync response:', {
+          hasData: !!response?.metas,
+          itemCount: response?.metas?.length || 0,
+          caches: response?.caches,
+        });
+
+        if (response && response.metas) {
+          setItems(response.metas);
+          setHasMore(false);
+        } else {
+          setError('Failed to load catalog');
+          setItems([]);
         }
       }
-
-      if (!foundItems) {
-        InteractionManager.runAfterInteractions(() => {
-          setError("No content found for the selected filters");
-          logger.log('[CatalogScreen] No items found after loading');
-        });
-      }
-    } catch (err) {
-      InteractionManager.runAfterInteractions(() => {
-        setError(err instanceof Error ? err.message : 'Failed to load catalog items');
-      });
-      logger.error('Failed to load catalog:', err);
+    } catch (err: any) {
+      logger.error('Error loading items:', err);
+      setError(err.message || 'Failed to load items');
+      setItems([]);
     } finally {
-      InteractionManager.runAfterInteractions(() => {
-        setLoading(false);
-        setRefreshing(false);
-        setIsFetchingMore(false);
-        logger.log('[CatalogScreen] loadItems finished', {
-          shouldRefresh,
-          pageParam
-        });
-      });
+      setLoading(false);
+      setRefreshing(false);
+      setIsFetchingMore(false);
     }
-  }, [addonId, type, id, activeGenreFilter, dataSource]);
+  }, [addonId, type, id, selectedFilters, dataSource, activeGenreFilter]);
 
+  // Initial load
   useEffect(() => {
+    loadItems(false, 1);
+  }, [loadItems]);
+
+  const onRefresh = useCallback(() => {
     loadItems(true, 1);
   }, [loadItems]);
 
-  const handleRefresh = useCallback(() => {
-    setItems([]); // Clear items on refresh
-    loadItems(true);
-  }, [loadItems]);
-
-  // Handle filter chip selection
-  const handleFilterChange = useCallback((filterName: string, value: string | undefined) => {
-    logger.log('[CatalogScreen] Filter changed:', filterName, value);
-
-    if (filterName === 'genre') {
-      setActiveGenreFilter(value);
-    } else {
-      setSelectedFilters(prev => {
-        if (value === undefined) {
-          const { [filterName]: _, ...rest } = prev;
-          return rest;
-        }
-        return { ...prev, [filterName]: value };
-      });
+  const onEndReached = useCallback(() => {
+    if (!loading && !isFetchingMore && hasMore) {
+      setIsFetchingMore(true);
+      loadItems(false, page + 1);
     }
+  }, [loading, isFetchingMore, hasMore, page, loadItems]);
 
-    // Reset pagination - don't clear items to avoid flash of empty state
-    // loadItems will replace items when new data arrives
+  const handleFilterChange = useCallback((filterName: string, filterValue: string) => {
+    setSelectedFilters(prev => {
+      const newFilters = { ...prev };
+      if (filterValue) {
+        newFilters[filterName] = filterValue;
+      } else {
+        delete newFilters[filterName];
+      }
+      return newFilters;
+    });
+    // Reset items when filter changes
     setPage(1);
+    setItems([]);
     setLoading(true);
   }, []);
 
-
-  const effectiveNumColumns = React.useMemo(() => {
-    const isPhone = screenData.width < 600; // basic breakpoint; tablets generally above this
-    if (!isPhone || mobileColumnsPref === 'auto') return screenData.numColumns;
-    // clamp to 2 or 3 on phones
-    return mobileColumnsPref === 2 ? 2 : 3;
-  }, [screenData.width, screenData.numColumns, mobileColumnsPref]);
-
-  const effectiveItemWidth = React.useMemo(() => {
-    if (effectiveNumColumns === screenData.numColumns) return screenData.itemWidth;
-    // recompute width for custom columns on mobile to maintain spacing roughly similar
-    const HORIZONTAL_PADDING = (screenData as any).containerPadding ? (screenData as any).containerPadding * 2 : 16 * 2;
-    const ITEM_SPACING = (screenData as any).itemSpacing ?? 8;
-    const availableWidth = screenData.width - HORIZONTAL_PADDING;
-    const totalSpacing = ITEM_SPACING * (effectiveNumColumns - 1);
-    const width = (availableWidth - totalSpacing) / effectiveNumColumns;
-    return Math.floor(width);
-  }, [effectiveNumColumns, screenData.width, screenData.itemWidth]);
-
-  // Helper function to optimize poster URLs
-  const optimizePosterUrl = useCallback((poster: string | undefined) => {
-    if (!poster || poster.includes('placeholder')) {
-      return 'https://via.placeholder.com/300x450/333333/666666?text=No+Image';
-    }
-
-    // For TMDB images, use smaller sizes for better performance
-    if (poster.includes('image.tmdb.org')) {
-      return poster.replace(/\/w\d+\//, '/w300/');
-    }
-
-    return poster;
+  const handleGenreFilterChange = useCallback((genreOption: string) => {
+    logger.log('Genre filter changed to:', genreOption);
+    setActiveGenreFilter(genreOption === 'All' ? undefined : genreOption);
+    // Reset items when filter changes
+    setPage(1);
+    setItems([]);
+    setLoading(true);
   }, []);
 
-  const renderItem = useCallback(({ item, index }: { item: Meta; index: number }) => {
-    // Calculate if this is the last item in a row
-    const isLastInRow = (index + 1) % effectiveNumColumns === 0;
-    // For proper spacing
-    const rightMargin = isLastInRow ? 0 : ((screenData as any).itemSpacing ?? SPACING.sm);
-
-    // Calculate aspect ratio based on posterShape
-    const shape = item.posterShape || 'poster';
-    const aspectRatio = shape === 'landscape' ? 16 / 9 : (shape === 'square' ? 1 : 2 / 3);
-
-    // Use TouchableOpacity for mobile
-    const ItemWrapper = TouchableOpacity;
-
-    return (
-      <ItemWrapper
-        style={[
-          styles.item,
-          {
-            marginRight: rightMargin,
-            width: effectiveItemWidth
-          }
-        ]}
-        onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type, addonId })}
-        activeOpacity={0.7}
-      >
-        <FastImage
-          source={{ uri: optimizePosterUrl(item.poster) }}
-          style={[styles.poster, { aspectRatio }]}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-
-        {type === 'movie' && nowPlayingMovies.has(item.id) && (
-          Platform.OS === 'ios' ? (
-            <View style={styles.badgeBlur}>
-              {GlassViewComp && liquidGlassAvailable ? (
-                <GlassViewComp style={{ borderRadius: 10 }} glassEffectStyle="regular">
-                  <View style={styles.badgeContent}>
-                    <MaterialIcons
-                      name="theaters"
-                      size={12}
-                      color={colors.white}
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={styles.badgeText}>In Theaters</Text>
-                  </View>
-                </GlassViewComp>
-              ) : (
-                <BlurView intensity={40} tint={isDarkMode ? 'dark' : 'light'} style={{ borderRadius: 10 }}>
-                  <View style={styles.badgeContent}>
-                    <MaterialIcons
-                      name="theaters"
-                      size={12}
-                      color={colors.white}
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={styles.badgeText}>In Theaters</Text>
-                  </View>
-                </BlurView>
-              )}
-            </View>
-          ) : (
-            <View style={styles.badgeContainer}>
-              <MaterialIcons
-                name="theaters"
-                size={12}
-                color={colors.white}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={styles.badgeText}>In Theaters</Text>
-            </View>
-          )
-        )}
-
-        {/* Poster Title */}
-        {showTitles && (
-          <Text
-            style={{
-              fontSize: 12,
-              fontWeight: '500',
-              color: colors.mediumGray,
-              marginTop: 6,
-              textAlign: 'center',
-              paddingHorizontal: 4,
+  const renderItemWithSkeleton = useCallback(({ item, index }: { item: Meta; index: number }) => {
+    // Use actual data
+    if (item.poster) {
+      return (
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => {
+            navigation.navigate('Detail', {
+              meta: item,
+              addonId: addonId || undefined,
+            });
+          }}
+          activeOpacity={0.8}
+        >
+          <FastImage
+            source={{ uri: item.poster, priority: FastImage.priority.normal }}
+            style={styles.poster}
+            onError={() => {
+              logger.log(`[CatalogScreen] FastImage error loading poster for item: ${item.id}`);
             }}
-            numberOfLines={2}
-          >
-            {item.name}
-          </Text>
-        )}
-      </ItemWrapper>
-    );
-  }, [navigation, styles, effectiveNumColumns, effectiveItemWidth, screenData, type, nowPlayingMovies, colors.white, colors.mediumGray, optimizePosterUrl, addonId, isDarkMode, showTitles, getGridNavigationTargets, getItemRef, handleItemFocus, items.length]);
+          />
+          {nowPlayingMovies.has(item.id) && (
+            <View style={styles.badgeBlur}>
+              <BlurView intensity={90}>
+                <View style={styles.badgeContent}>
+                  <MaterialIcons name="theaters" size={14} color={colors.primary} />
+                  <Text style={[styles.badgeText, { marginLeft: 4 }]}>In Theaters</Text>
+                </View>
+              </BlurView>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    }
 
-  const renderEmptyState = () => (
-    <View style={styles.centered}>
-      <MaterialIcons name="search-off" size={56} color={colors.mediumGray} />
-      <Text style={styles.emptyText}>
-        No content found
-      </Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleRefresh}
-      >
-        <Text style={styles.buttonText}>Try Again</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    // Show skeleton for missing data
+    return <PosterGridSkeleton key={`skeleton-${index}`} />;
+  }, [styles, navigation, addonId, nowPlayingMovies, colors]);
 
-  const renderErrorState = () => (
-    <View style={styles.centered}>
-      <MaterialIcons name="error-outline" size={56} color={colors.mediumGray} />
-      <Text style={styles.errorText}>
-        {error}
-      </Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => loadItems(true)}
-      >
-        <Text style={styles.buttonText}>Retry</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderLoadingState = () => (
-    <View style={styles.centered}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={styles.loadingText}>Loading content...</Text>
-    </View>
-  );
-
-  const isScreenLoading = loading || isLoadingCustomNames;
-
-  if (isScreenLoading && items.length === 0) {
+  // Loading state
+  if (loading && items.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialIcons name="chevron-left" size={28} color={colors.white} />
-            <Text style={styles.backText}>Back</Text>
-          </TouchableOpacity>
+        <View style={styles.centered}>
+          <UnifiedSpinner size="large" />
+          <Text style={styles.loadingText}>Loading catalog...</Text>
         </View>
-        <Text style={styles.headerTitle}>{displayName || originalName || `${type.charAt(0).toUpperCase() + type.slice(1)}s`}</Text>
-        {renderLoadingState()}
       </SafeAreaView>
     );
   }
 
+  // Error state
   if (error && items.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" />
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <MaterialIcons name="chevron-left" size={28} color={colors.white} />
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerTitle}>{displayName || `${type.charAt(0).toUpperCase() + type.slice(1)}s`}</Text>
-        {renderErrorState()}
+        <View style={styles.centered}>
+          <MaterialIcons name="error-outline" size={48} color={colors.primary} />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => loadItems(true, 1)}
+          >
+            <Text style={styles.buttonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
 
-  // Use TouchableOpacity for mobile
-  const BackButtonComponent = TouchableOpacity;
+  // Empty state
+  if (!loading && items.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centered}>
+          <MaterialIcons name="inbox" size={48} color={colors.primary} />
+          <Text style={styles.emptyText}>No items found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
       <View style={styles.header}>
-        <BackButtonComponent
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <MaterialIcons name="chevron-left" size={28} color={colors.white} />
+          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           <Text style={styles.backText}>Back</Text>
-        </BackButtonComponent>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.headerTitle}>{displayName || `${type.charAt(0).toUpperCase() + type.slice(1)}s`}</Text>
 
-      {/* Filter chip bar - shows when catalog has filterable extras */}
-      {catalogExtras.length > 0 && (
-        <View style={styles.filterContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScrollContent}
-          >
-            {catalogExtras.map(extra => (
-              <React.Fragment key={extra.name}>
-                {/* All option - clears filter */}
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    (extra.name === 'genre' ? !activeGenreFilter : !selectedFilters[extra.name]) && styles.filterChipActive
-                  ]}
-                  onPress={() => handleFilterChange(extra.name, undefined)}
-                >
-                  <Text style={[
-                    styles.filterChipText,
-                    (extra.name === 'genre' ? !activeGenreFilter : !selectedFilters[extra.name]) && styles.filterChipTextActive
-                  ]}>All</Text>
-                </TouchableOpacity>
+      <View style={styles.headerTitle}>
+        <Text style={styles.headerTitle}>{displayName}</Text>
+      </View>
 
-                {/* Filter options from catalog extra */}
-                {extra.options?.map(option => {
-                  const isActive = extra.name === 'genre'
-                    ? activeGenreFilter === option
-                    : selectedFilters[extra.name] === option;
-                  return (
+      {catalogExtras && catalogExtras.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterContainer}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          {catalogExtras.map(extra => (
+            <View key={extra.name}>
+              {extra.name === 'genre' && (
+                <>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterChip,
+                      activeGenreFilter === undefined && styles.filterChipActive,
+                    ]}
+                    onPress={() => handleGenreFilterChange('All')}
+                  >
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        activeGenreFilter === undefined && styles.filterChipTextActive,
+                      ]}
+                    >
+                      All
+                    </Text>
+                  </TouchableOpacity>
+                  {extra.options?.map(option => (
                     <TouchableOpacity
                       key={option}
-                      style={[styles.filterChip, isActive && styles.filterChipActive]}
-                      onPress={() => handleFilterChange(extra.name, option)}
+                      style={[
+                        styles.filterChip,
+                        activeGenreFilter === option && styles.filterChipActive,
+                      ]}
+                      onPress={() => handleGenreFilterChange(option)}
                     >
-                      <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          activeGenreFilter === option && styles.filterChipTextActive,
+                        ]}
+                      >
                         {option}
                       </Text>
                     </TouchableOpacity>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </ScrollView>
-        </View>
+                  ))}
+                </>
+              )}
+            </View>
+          ))}
+        </ScrollView>
       )}
 
-      {items.length > 0 ? (
-        <FlashList
-          ref={flashListRef}
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={(item) => `${item.id}-${item.type}`}
-          numColumns={effectiveNumColumns}
-          key={effectiveNumColumns}
-          ItemSeparatorComponent={() => <View style={{ height: ((screenData as any).itemSpacing ?? SPACING.sm) }} />}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
-          }
-          contentContainerStyle={[styles.list, { paddingHorizontal: (screenData as any).containerPadding ?? SPACING.lg, paddingTop: SPACING.sm, paddingBottom: SPACING.lg }]}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true}
-          getItemType={() => 'item'}
-          onEndReachedThreshold={0.6}
-          onEndReached={() => {
-            logger.log('[CatalogScreen] onEndReached fired', {
-              hasMore,
-              loading,
-              refreshing,
-              isFetchingMore,
-              page
-            });
-            if (!hasMore) {
-              logger.log('[CatalogScreen] onEndReached guard: hasMore is false');
-              return;
-            }
-            if (loading) {
-              logger.log('[CatalogScreen] onEndReached guard: initial loading is true');
-              return;
-            }
-            if (refreshing) {
-              logger.log('[CatalogScreen] onEndReached guard: refreshing is true');
-              return;
-            }
-            if (isFetchingMore) {
-              logger.log('[CatalogScreen] onEndReached guard: already fetching more');
-              return;
-            }
-            setIsFetchingMore(true);
-            const next = page + 1;
-            setPage(next);
-            logger.log('[CatalogScreen] onEndReached loading next page', { next });
-            loadItems(false, next);
-          }}
-          ListFooterComponent={isFetchingMore ? (
-            <View style={{ paddingVertical: 16 }}>
-              <ActivityIndicator size="small" color={colors.primary} />
+      <FlashList
+        ref={flashListRef}
+        data={items}
+        renderItem={renderItemWithSkeleton}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        numColumns={screenData.numColumns}
+        estimatedItemSize={250}
+        contentContainerStyle={{
+          paddingHorizontal: screenData.containerPadding,
+        }}
+        ItemSeparatorComponent={() => <View style={{ height: SPACING.md }} />}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <View style={[styles.centered, { marginBottom: SPACING.xl }]}>
+              <UnifiedSpinner size="small" />
             </View>
-          ) : null}
-        />
-      ) : renderEmptyState()}
+          ) : null
+        }
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
     </SafeAreaView>
   );
 };

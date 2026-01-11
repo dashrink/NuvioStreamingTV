@@ -23,6 +23,7 @@ import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { useCalendarData } from '../../hooks/useCalendarData';
 import { memoryManager } from '../../utils/memoryManager';
 import { tmdbService } from '../../services/tmdbService';
+import { triggerLight } from '../../hooks/useHaptics';
 import Focusable from '../common/Focusable';
 
 // Compute base sizes; actual tablet sizes will be adjusted inside component for responsiveness
@@ -201,6 +202,7 @@ export const ThisWeekSection = React.memo(() => {
   }, [calendarData]);
 
   const handleEpisodePress = (episode: ThisWeekEpisode) => {
+    triggerLight();
     // For grouped episodes, always go to series details
     if (episode.isGroup) {
       navigation.navigate('Metadata', {
@@ -234,6 +236,7 @@ export const ThisWeekSection = React.memo(() => {
   };
 
   const handleViewAll = () => {
+    triggerLight();
     navigation.navigate('Calendar' as any);
   };
 
@@ -526,56 +529,52 @@ const styles = StyleSheet.create({
   poster: {
     width: '100%',
     height: '100%',
-    borderRadius: 16,
   },
   gradient: {
+    width: '100%',
+    height: '100%',
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
     bottom: 0,
     justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    width: '100%',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingTop: 8,
   },
   statusBadge: {
-    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
-    overflow: 'hidden',
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   statusText: {
+    fontSize: 11,
+    fontWeight: '600',
     color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
   },
   contentArea: {
-    width: '100%',
+    gap: 4,
   },
   seriesName: {
     fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontWeight: '700',
+    color: '#fff',
   },
   metaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
   },
   seasonBadge: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   dotSeparator: {
-    marginHorizontal: 6,
     fontSize: 12,
     color: 'rgba(255,255,255,0.5)',
   },
@@ -586,12 +585,12 @@ const styles = StyleSheet.create({
   },
   cardStackEffect: {
     position: 'absolute',
-    top: -6,
-    width: '92%',
-    height: '100%',
-    left: '4%',
+    top: 8,
+    left: 8,
+    right: 8,
+    bottom: 8,
     borderRadius: 16,
-    borderWidth: 1,
     zIndex: -1,
+    borderWidth: 1,
   },
-}); 
+});

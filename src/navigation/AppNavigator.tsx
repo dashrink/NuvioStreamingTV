@@ -698,7 +698,8 @@ const MainTabs = () => {
                     ? options.title
                     : route.name;
 
-              const isFocused = props.state.index === index;
+              // isSelected = the current active route (tab)
+              const isSelected = props.state.index === index;
 
               const onPress = () => {
                 const event = props.navigation.emit({
@@ -706,7 +707,7 @@ const MainTabs = () => {
                   target: route.key,
                   canPreventDefault: true,
                 });
-                if (isFocused) {
+                if (isSelected) {
                   // Same tab pressed - emit scroll to top
                   emitScrollToTop(route.name);
                 } else if (!event.defaultPrevented) {
@@ -719,17 +720,21 @@ const MainTabs = () => {
                   key={route.key}
                   activeOpacity={0.8}
                   onPress={onPress}
+                  hasTVPreferredFocus={index === 0}
+                  scaleOnFocus={1.05}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 10,
                     marginHorizontal: 2,
                     borderRadius: 24,
-                    backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
+                    // Remove background highlight - let TV focus handle highlighting via border
+                    backgroundColor: 'transparent',
                   }}
                 >
                   <Text style={{
-                    color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                    fontWeight: '700',
+                    // Selected tab has primary color, others have white text
+                    color: isSelected ? currentTheme.colors.primary : currentTheme.colors.white,
+                    fontWeight: isSelected ? '800' : '600',
                     fontSize: 14,
                     letterSpacing: 0.2,
                   }}>
@@ -804,7 +809,8 @@ const MainTabs = () => {
                   ? options.title
                   : route.name;
 
-            const isFocused = props.state.index === index;
+            // isSelected = the current active route (tab)
+            const isSelected = props.state.index === index;
 
             const onPress = () => {
               const event = props.navigation.emit({
@@ -813,7 +819,7 @@ const MainTabs = () => {
                 canPreventDefault: true,
               });
 
-              if (isFocused) {
+              if (isSelected) {
                 // Same tab pressed - emit scroll to top
                 emitScrollToTop(route.name);
               } else if (!event.defaultPrevented) {
@@ -852,17 +858,20 @@ const MainTabs = () => {
                 key={route.key}
                 onPress={onPress}
                 hasTVPreferredFocus={index === 0}
+                scaleOnFocus={1.05}
                 style={{
                   paddingHorizontal: 10,
                   paddingVertical: 5,
                   marginHorizontal: 4,
                   borderRadius: 16,
-                  backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  // Remove background highlight - let TV focus handle highlighting via border
+                  backgroundColor: 'transparent',
                 }}
               >
                 <Text style={{
-                  color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                  fontWeight: '700',
+                  // Selected tab has primary color, others have white text
+                  color: isSelected ? currentTheme.colors.primary : currentTheme.colors.white,
+                  fontWeight: isSelected ? '800' : '600',
                   fontSize: 12,
                   letterSpacing: 0.2,
                 }}>

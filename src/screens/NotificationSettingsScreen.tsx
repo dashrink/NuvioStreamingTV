@@ -14,6 +14,7 @@ import CustomAlert from '../components/CustomAlert';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { notificationService, NotificationSettings } from '../services/notificationService';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { logger } from '../utils/logger';
@@ -118,6 +119,7 @@ const NotificationSettingsScreen = () => {
 
   // Set time before airing
   const setTimeBeforeAiring = (hours: number) => {
+    triggerMedium();
     updateSetting('timeBeforeAiring', hours);
   };
 
@@ -249,7 +251,10 @@ const NotificationSettingsScreen = () => {
         <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
           >
             <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
           </TouchableOpacity>
@@ -270,7 +275,10 @@ const NotificationSettingsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
           <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
@@ -300,9 +308,12 @@ const NotificationSettingsScreen = () => {
                 <MaterialIcons name="notifications" size={24} color={currentTheme.colors.text} />
                 <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Enable Notifications</Text>
               </View>
-                            <CustomSwitch
+              <CustomSwitch
                 value={settings.enabled}
-                onValueChange={(value: boolean) => updateSetting('enabled', value)}
+                onValueChange={(value: boolean) => {
+                  triggerMedium();
+                  updateSetting('enabled', value);
+                }}
               />
             </View>
           </View>
@@ -317,9 +328,12 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="new-releases" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>New Episodes</Text>
                   </View>
-                                    <CustomSwitch
+                  <CustomSwitch
                     value={settings.newEpisodeNotifications}
-                    onValueChange={(value: boolean) => updateSetting('newEpisodeNotifications', value)}
+                    onValueChange={(value: boolean) => {
+                      triggerMedium();
+                      updateSetting('newEpisodeNotifications', value);
+                    }}
                   />
                 </View>
                 
@@ -328,9 +342,12 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="event" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Upcoming Shows</Text>
                   </View>
-                                    <CustomSwitch
+                  <CustomSwitch
                     value={settings.upcomingShowsNotifications}
-                    onValueChange={(value: boolean) => updateSetting('upcomingShowsNotifications', value)}
+                    onValueChange={(value: boolean) => {
+                      triggerMedium();
+                      updateSetting('upcomingShowsNotifications', value);
+                    }}
                   />
                 </View>
                 
@@ -339,9 +356,12 @@ const NotificationSettingsScreen = () => {
                     <MaterialIcons name="alarm" size={24} color={currentTheme.colors.text} />
                     <Text style={[styles.settingText, { color: currentTheme.colors.text }]}>Reminders</Text>
                   </View>
-                                    <CustomSwitch
+                  <CustomSwitch
                     value={settings.reminderNotifications}
-                    onValueChange={(value: boolean) => updateSetting('reminderNotifications', value)}
+                    onValueChange={(value: boolean) => {
+                      triggerMedium();
+                      updateSetting('reminderNotifications', value);
+                    }}
                   />
                 </View>
               </View>
@@ -366,19 +386,21 @@ const NotificationSettingsScreen = () => {
                         settings.timeBeforeAiring === hours && {
                           backgroundColor: currentTheme.colors.primary + '30',
                           borderColor: currentTheme.colors.primary,
-                        }
+                        },
                       ]}
                       onPress={() => setTimeBeforeAiring(hours)}
                     >
-                      <Text style={[
-                        styles.timingText,
-                        { color: currentTheme.colors.text },
-                        settings.timeBeforeAiring === hours && {
-                          color: currentTheme.colors.primary,
-                          fontWeight: 'bold',
-                        }
-                      ]}>
-                        {hours === 1 ? '1 hour' : `${hours} hours`}
+                      <Text 
+                        style={[
+                          styles.timingOptionText,
+                          { color: currentTheme.colors.text },
+                          settings.timeBeforeAiring === hours && {
+                            color: currentTheme.colors.primary,
+                            fontWeight: '600',
+                          },
+                        ]}
+                      >
+                        {hours}h
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -386,116 +408,75 @@ const NotificationSettingsScreen = () => {
               </View>
               
               <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
-                <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Notification Status</Text>
+                <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Statistics</Text>
                 
-                <View style={[styles.statsContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
+                <View style={styles.statsContainer}>
                   <View style={styles.statItem}>
-                    <MaterialIcons name="schedule" size={20} color={currentTheme.colors.primary} />
-                    <Text style={[styles.statLabel, { color: currentTheme.colors.textMuted }]}>Upcoming</Text>
-                    <Text style={[styles.statValue, { color: currentTheme.colors.text }]}>{notificationStats.upcoming}</Text>
+                    <Text style={[styles.statLabel, { color: currentTheme.colors.lightGray }]}>Total Scheduled</Text>
+                    <Text style={[styles.statValue, { color: currentTheme.colors.primary }]}>
+                      {notificationStats.total}
+                    </Text>
                   </View>
                   <View style={styles.statItem}>
-                    <MaterialIcons name="today" size={20} color={currentTheme.colors.primary} />
-                    <Text style={[styles.statLabel, { color: currentTheme.colors.textMuted }]}>This Week</Text>
-                    <Text style={[styles.statValue, { color: currentTheme.colors.text }]}>{notificationStats.thisWeek}</Text>
+                    <Text style={[styles.statLabel, { color: currentTheme.colors.lightGray }]}>Upcoming</Text>
+                    <Text style={[styles.statValue, { color: currentTheme.colors.primary }]}>
+                      {notificationStats.upcoming}
+                    </Text>
                   </View>
                   <View style={styles.statItem}>
-                    <MaterialIcons name="notifications-active" size={20} color={currentTheme.colors.primary} />
-                    <Text style={[styles.statLabel, { color: currentTheme.colors.textMuted }]}>Total</Text>
-                    <Text style={[styles.statValue, { color: currentTheme.colors.text }]}>{notificationStats.total}</Text>
+                    <Text style={[styles.statLabel, { color: currentTheme.colors.lightGray }]}>This Week</Text>
+                    <Text style={[styles.statValue, { color: currentTheme.colors.primary }]}>
+                      {notificationStats.thisWeek}
+                    </Text>
                   </View>
                 </View>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.resetButton,
-                    { 
-                      backgroundColor: currentTheme.colors.primary + '20',
-                      borderColor: currentTheme.colors.primary + '50'
-                    }
-                  ]}
-                  onPress={handleSyncNotifications}
-                  disabled={isSyncing}
-                >
-                  <MaterialIcons 
-                    name={isSyncing ? "sync" : "sync"} 
-                    size={24} 
-                    color={currentTheme.colors.primary}
-                    style={isSyncing ? { transform: [{ rotate: '360deg' }] } : {}}
-                  />
-                  <Text style={[styles.resetButtonText, { color: currentTheme.colors.primary }]}>
-                    {isSyncing ? 'Syncing...' : 'Sync Library & Trakt'}
-                  </Text>
-                </TouchableOpacity>
-                
-                <Text style={[styles.resetDescription, { color: currentTheme.colors.lightGray }]}>
-                  Automatically syncs notifications for all shows in your library and Trakt watchlist/collection.
-                </Text>
               </View>
               
               <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
-                <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Advanced</Text>
-                
                 <TouchableOpacity 
-                  style={[
-                    styles.resetButton,
-                    { 
-                      backgroundColor: currentTheme.colors.error + '20',
-                      borderColor: currentTheme.colors.error + '50'
-                    }
-                  ]}
-                  onPress={resetAllNotifications}
-                >
-                  <MaterialIcons name="refresh" size={24} color={currentTheme.colors.error} />
-                  <Text style={[styles.resetButtonText, { color: currentTheme.colors.error }]}>Reset All Notifications</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.resetButton, 
-                    { 
-                      marginTop: 12,
-                      backgroundColor: currentTheme.colors.primary + '20',
-                      borderColor: currentTheme.colors.primary + '50'
-                    }
-                  ]}
+                  style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
                   onPress={handleTestNotification}
-                  disabled={countdown !== null}
                 >
-                  <MaterialIcons name="bug-report" size={24} color={currentTheme.colors.primary} />
-                  <Text style={[styles.resetButtonText, { color: currentTheme.colors.primary }]}>
-                    {countdown !== null 
-                      ? `Notification in ${countdown}s...` 
-                      : 'Test Notification (5 sec)'}
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.darkBackground }]}>
+                    Send Test Notification
                   </Text>
                 </TouchableOpacity>
-
-                {countdown !== null && (
-                  <View style={styles.countdownContainer}>
-                    <MaterialIcons 
-                      name="timer" 
-                      size={16} 
-                      color={currentTheme.colors.primary} 
-                      style={styles.countdownIcon} 
-                    />
-                    <Text style={[styles.countdownText, { color: currentTheme.colors.primary }]}>
-                      Notification will appear in {countdown} seconds
-                    </Text>
-                  </View>
-                )}
+              </View>
+              
+              <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
+                <TouchableOpacity 
+                  style={[styles.button, { backgroundColor: currentTheme.colors.elevation1 }]}
+                  onPress={handleSyncNotifications}
+                  disabled={isSyncing}
+                >
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.text }]}>
+                    {isSyncing ? 'Syncing...' : 'Sync All Notifications'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={[styles.section, { borderBottomColor: currentTheme.colors.border }]}>
+                <TouchableOpacity 
+                  style={[styles.button, { backgroundColor: currentTheme.colors.error + '20' }]}
+                  onPress={resetAllNotifications}
+                >
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.error }]}>
+                    Reset All Notifications
+                  </Text>
+                </TouchableOpacity>
               </View>
             </>
           )}
         </Animated.View>
       </ScrollView>
-    <CustomAlert
-      visible={alertVisible}
-      title={alertTitle}
-      message={alertMessage}
-      onClose={() => setAlertVisible(false)}
-      actions={alertActions}
-    />
-  </SafeAreaView>
+      
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        actions={alertActions}
+      />
+    </SafeAreaView>
   );
 };
 
@@ -505,53 +486,44 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    marginTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT : 0,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
+    gap: 8,
   },
   backText: {
-    fontSize: 17,
-    marginLeft: 8,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 16,
+    marginLeft: 16,
+  },
+  headerActions: {
+    width: 40,
   },
   content: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
+    paddingHorizontal: 16,
   },
   section: {
-    padding: 16,
     borderBottomWidth: 1,
+    paddingVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontWeight: '600',
+    marginBottom: 12,
   },
   settingItem: {
     flexDirection: 'row',
@@ -563,84 +535,68 @@ const styles = StyleSheet.create({
   settingInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+    flex: 1,
   },
   settingText: {
     fontSize: 16,
-    marginLeft: 12,
+    fontWeight: '500',
   },
   settingDescription: {
     fontSize: 14,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   timingOptions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    marginTop: 8,
+    gap: 12,
   },
   timingOption: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    flex: 1,
+    paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 8,
-    width: '48%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  timingText: {
-    fontSize: 14,
-  },
-  resetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  resetButtonText: {
+  timingOptionText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  resetDescription: {
-    fontSize: 12,
-    fontStyle: 'italic',
-  },
-  countdownContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 4,
-  },
-  countdownIcon: {
-    marginRight: 8,
-  },
-  countdownText: {
-    fontSize: 14,
+    fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    gap: 12,
   },
   statItem: {
-    alignItems: 'center',
     flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   statLabel: {
     fontSize: 12,
-    marginTop: 4,
-    textAlign: 'center',
+    marginBottom: 4,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 2,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  button: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
   },
 });
 

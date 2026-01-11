@@ -24,6 +24,7 @@ import { mmkvStorage } from '../services/mmkvStorage';
 import FastImage from '@d11/react-native-fast-image';
 import { tmdbService } from '../services/tmdbService';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -428,6 +429,7 @@ const TMDBSettingsScreen = () => {
   };
 
   const handleShowSelect = (show: typeof EXAMPLE_SHOWS[0]) => {
+    triggerLight();
     setSelectedShow(show);
     try {
       mmkvStorage.setItem('tmdb_settings_selected_show', show.imdbId);
@@ -436,816 +438,468 @@ const TMDBSettingsScreen = () => {
     }
   };
 
-  const renderLogoExample = (logo: string | null, banner: string | null, isLoading: boolean) => {
-    if (isLoading) {
-      return (
-        <View style={[styles.exampleImage, styles.loadingContainer]}>
-          <ActivityIndicator size="small" color={currentTheme.colors.primary} />
-        </View>
-      );
-    }
-
+  const renderLogoExample = () => {
     return (
-      <View style={styles.bannerContainer}>
-        <FastImage
-          source={{ uri: banner || undefined }}
-          style={styles.bannerImage}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-        <View style={styles.bannerOverlay} />
-        {logo && (
-          <FastImage
-            source={{ uri: logo }}
-            style={styles.logoOverBanner}
-            resizeMode={FastImage.resizeMode.contain}
-          />
+      <View style={styles.logoContainer}>
+        {loadingLogos ? (
+          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+        ) : tmdbLogo ? (
+          <View style={styles.logoWrapper}>
+            <FastImage
+              source={{ uri: tmdbLogo }}
+              style={styles.logo}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            {isPreviewFallback && (
+              <Text style={[styles.fallbackText, { color: currentTheme.colors.text }]}>
+                (Fallback: {previewLanguage})
+              </Text>
+            )}
+          </View>
+        ) : (
+          <Text style={[styles.noLogoText, { color: currentTheme.colors.textSecondary }]}>
+            No logo available for this title
+          </Text>
         )}
-        {!logo && (
-          <View style={styles.noLogoContainer}>
-            <Text style={styles.noLogoText}>No logo available</Text>
+      </View>
+    );
+  };
+
+  const renderPreview = () => {
+    return (
+      <View style={[styles.previewSection, { backgroundColor: currentTheme.colors.surface }]}>
+        <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+          TMDB Logo Preview
+        </Text>
+        <Text style={[styles.previewDescription, { color: currentTheme.colors.textSecondary }]}>
+          This shows how TMDB logos appear in the app
+        </Text>
+
+        {/* Show Selector */}
+        <View style={styles.showSelectorContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {EXAMPLE_SHOWS.map((show) => (
+              <TouchableOpacity
+                key={show.imdbId}
+                style={[
+                  styles.showButton,
+                  selectedShow.imdbId === show.imdbId && [
+                    styles.selectedShowButton,
+                    { backgroundColor: currentTheme.colors.primary },
+                  ],
+                  { borderColor: currentTheme.colors.primary }
+                ]}
+                onPress={() => {
+                  handleShowSelect(show);
+                  fetchExampleLogos(show);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.showButtonText,
+                    selectedShow.imdbId === show.imdbId
+                      ? { color: currentTheme.colors.onPrimary }
+                      : { color: currentTheme.colors.text },
+                  ]}
+                >
+                  {show.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Logo Display */}
+        {renderLogoExample()}
+
+        {/* Banner Display */}
+        {tmdbBanner && (
+          <View style={styles.bannerContainer}>
+            <Text style={[styles.bannerLabel, { color: currentTheme.colors.text }]}>
+              Background Image
+            </Text>
+            <FastImage
+              source={{ uri: tmdbBanner }}
+              style={styles.banner}
+              resizeMode={FastImage.resizeMode.cover}
+            />
           </View>
         )}
       </View>
     );
   };
 
-  // Load example logos when show or language changes
-  useEffect(() => {
-    if (settings.enrichMetadataWithTMDB && settings.useTmdbLocalizedMetadata) {
-      fetchExampleLogos(selectedShow);
-    }
-  }, [selectedShow, settings.enrichMetadataWithTMDB, settings.useTmdbLocalizedMetadata, settings.tmdbLanguagePreference]);
+  const renderLanguageOption = (lang: { name: string; code: string }) => {
+    const isSelected = settings.tmdbLanguagePreference === lang.code;
 
-  // Load selected show from AsyncStorage on mount
-  useEffect(() => {
-    const loadSelectedShow = async () => {
-      try {
-        const savedShowId = await mmkvStorage.getItem('tmdb_settings_selected_show');
-        if (savedShowId) {
-          const foundShow = EXAMPLE_SHOWS.find(show => show.imdbId === savedShowId);
-          if (foundShow) {
-            setSelectedShow(foundShow);
-          }
-        }
-      } catch (e) {
-        if (__DEV__) console.error('Error loading selected show:', e);
-      }
-    };
-
-    loadSelectedShow();
-  }, []);
-
-  const headerBaseHeight = Platform.OS === 'android' ? 80 : 60;
-  const topSpacing = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top;
-  const headerHeight = headerBaseHeight + topSpacing;
-
-  if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: currentTheme.colors.text }]}>Loading Settings...</Text>
-        </View>
-      </View>
+      <TouchableOpacity
+        key={lang.code}
+        style={[
+          styles.languageOption,
+          isSelected && [styles.selectedLanguageOption, { backgroundColor: currentTheme.colors.primary }],
+          { borderBottomColor: currentTheme.colors.border },
+        ]}
+        onPress={() => {
+          triggerLight();
+          updateSetting('tmdbLanguagePreference', lang.code);
+          setLanguagePickerVisible(false);
+          // Refresh preview with new language
+          if (selectedShow) {
+            fetchExampleLogos(selectedShow);
+          }
+        }}
+      >
+        <Text
+          style={[
+            styles.languageOptionText,
+            isSelected && { color: currentTheme.colors.onPrimary },
+            !isSelected && { color: currentTheme.colors.text },
+          ]}
+        >
+          {lang.name}
+        </Text>
+        {isSelected && (
+          <MaterialIcons
+            name="check"
+            size={20}
+            color={currentTheme.colors.onPrimary}
+          />
+        )}
+      </TouchableOpacity>
     );
-  }
+  };
+
+  const availableLanguages = [
+    { name: 'English', code: 'en' },
+    { name: 'Spanish', code: 'es' },
+    { name: 'French', code: 'fr' },
+    { name: 'German', code: 'de' },
+    { name: 'Italian', code: 'it' },
+    { name: 'Portuguese', code: 'pt' },
+    { name: 'Russian', code: 'ru' },
+    { name: 'Japanese', code: 'ja' },
+    { name: 'Chinese (Simplified)', code: 'zh' },
+    { name: 'Korean', code: 'ko' },
+  ];
+
+  const filteredLanguages = availableLanguages.filter(lang =>
+    lang.name.toLowerCase().includes(languageSearch.toLowerCase()) ||
+    lang.code.includes(languageSearch.toLowerCase())
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-      <StatusBar barStyle="light-content" />
-      <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.primary} />
-            <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-          TMDb Settings
-        </Text>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
+      <StatusBar barStyle={currentTheme.dark ? 'light-content' : 'dark-content'} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
       >
-        {/* Metadata Enrichment Section */}
-        <View style={[styles.sectionCard, { backgroundColor: currentTheme.colors.elevation2 }]}>
-          <View style={styles.sectionHeader}>
-            <MaterialIcons name="movie" size={20} color={currentTheme.colors.primary} />
-            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Metadata Enrichment</Text>
-          </View>
-          <Text style={[styles.sectionDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-            Enhance your content metadata with TMDb data for better details and information.
-          </Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* API Key Section */}
+          <View style={[styles.section, { backgroundColor: currentTheme.colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+              TMDB API Key
+            </Text>
 
-          <View style={styles.settingRow}>
-            <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Enable Enrichment</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                Augments addon metadata with TMDb for cast, certification, logos/posters, and episode fallback.
-              </Text>
-            </View>
-                        <CustomSwitch
-              value={settings.enrichMetadataWithTMDB}
-              onValueChange={(v: boolean) => updateSetting('enrichMetadataWithTMDB', v)}
-            />
-          </View>
-
-          {settings.enrichMetadataWithTMDB && (
-            <>
-              <View style={styles.divider} />
-
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Localized Text</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Fetch titles and descriptions in your preferred language from TMDb.
-                  </Text>
+            {/* Current Status */}
+            <View style={styles.statusContainer}>
+              {useCustomKey && isKeySet ? (
+                <View style={styles.statusBadge}>
+                  <MaterialIcons name="check-circle" size={16} color="#4CAF50" />
+                  <Text style={styles.statusText}>Custom API Key Set</Text>
                 </View>
-                                <CustomSwitch
-                  value={settings.useTmdbLocalizedMetadata}
-                  onValueChange={(v: boolean) => updateSetting('useTmdbLocalizedMetadata', v)}
-                />
-              </View>
-
-              {settings.useTmdbLocalizedMetadata && (
-                <>
-                  <View style={styles.divider} />
-
-                  <View style={styles.settingRow}>
-                    <View style={styles.settingTextContainer}>
-                      <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Language</Text>
-                      <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                        Current: {(settings.tmdbLanguagePreference || 'en').toUpperCase()}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(true)}
-                      style={[styles.languageButton, { backgroundColor: currentTheme.colors.primary }]}
-                    >
-                      <Text style={[styles.languageButtonText, { color: currentTheme.colors.white }]}>Change</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Logo Preview */}
-                  <View style={styles.divider} />
-
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text, marginBottom: 8 }]}>Logo Preview</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis, marginBottom: 12 }]}>
-                    Preview shows how localized logos will appear in the selected language.
-                  </Text>
-
-                  {/* Show selector */}
-                  <Text style={[styles.selectorLabel, { color: currentTheme.colors.mediumEmphasis }]}>Example:</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.showsScrollContent}
-                    style={styles.showsScrollView}
-                  >
-                    {EXAMPLE_SHOWS.map((show) => (
-                      <TouchableOpacity
-                        key={show.imdbId}
-                        style={[
-                          styles.showItem,
-                          { backgroundColor: currentTheme.colors.elevation1 },
-                          selectedShow.imdbId === show.imdbId && [styles.selectedShowItem, { borderColor: currentTheme.colors.primary }]
-                        ]}
-                        onPress={() => handleShowSelect(show)}
-                        activeOpacity={0.7}
-                      >
-                        <Text
-                          style={[
-                            styles.showItemText,
-                            { color: currentTheme.colors.mediumEmphasis },
-                            selectedShow.imdbId === show.imdbId && [styles.selectedShowItemText, { color: currentTheme.colors.white }]
-                          ]}
-                        >
-                          {show.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-
-                  {/* Preview card */}
-                  <View style={[styles.logoPreviewCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
-                    {renderLogoExample(tmdbLogo, tmdbBanner, loadingLogos)}
-                    {tmdbLogo && (
-                      <Text style={[styles.logoSourceLabel, { color: currentTheme.colors.mediumEmphasis }]}>
-                        {`Language: ${(previewLanguage || '').toUpperCase() || 'N/A'}${isPreviewFallback ? ' (fallback to available)' : ''}`}
-                      </Text>
-                    )}
-                  </View>
-                </>
+              ) : (
+                <View style={styles.statusBadge}>
+                  <MaterialIcons name="info" size={16} color={currentTheme.colors.primary} />
+                  <Text style={styles.statusText}>Using Built-in API Key</Text>
+                </View>
               )}
-
-              {/* Granular Enrichment Options */}
-              <View style={styles.divider} />
-
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text, marginBottom: 4 }]}>Enrichment Options</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis, marginBottom: 16 }]}>
-                Control which data is fetched from TMDb. Disabled options will use addon data if available.
-              </Text>
-
-              {/* Cast & Crew */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Cast & Crew</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Actors, directors, writers with profile photos
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichCast}
-                  onValueChange={(v) => updateSetting('tmdbEnrichCast', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Title & Description */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Title & Description</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Use TMDb localized title and overview text
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichTitleDescription}
-                  onValueChange={(v) => updateSetting('tmdbEnrichTitleDescription', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Title Logos */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Title Logos</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    High-quality title treatment images
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichLogos}
-                  onValueChange={(v) => updateSetting('tmdbEnrichLogos', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Banners/Backdrops */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Banners & Backdrops</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    High-resolution backdrop images
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichBanners}
-                  onValueChange={(v) => updateSetting('tmdbEnrichBanners', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Certification */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Content Certification</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Age ratings (PG-13, R, TV-MA, etc.)
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichCertification}
-                  onValueChange={(v) => updateSetting('tmdbEnrichCertification', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Recommendations */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Recommendations</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Similar content suggestions
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichRecommendations}
-                  onValueChange={(v) => updateSetting('tmdbEnrichRecommendations', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Episode Data */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Episode Data</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Episode thumbnails, info & fallbacks for TV shows
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichEpisodes}
-                  onValueChange={(v) => updateSetting('tmdbEnrichEpisodes', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Season Posters */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Season Posters</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Season-specific poster images
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichSeasonPosters}
-                  onValueChange={(v) => updateSetting('tmdbEnrichSeasonPosters', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Production Info */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Production Info</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Networks & production companies with logos
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichProductionInfo}
-                  onValueChange={(v) => updateSetting('tmdbEnrichProductionInfo', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Movie Details */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Movie Details</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Budget, revenue, runtime, tagline
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichMovieDetails}
-                  onValueChange={(v) => updateSetting('tmdbEnrichMovieDetails', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* TV Details */}
-              <View style={styles.settingRow}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>TV Show Details</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Status, seasons count, networks, creators
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichTvDetails}
-                  onValueChange={(v) => updateSetting('tmdbEnrichTvDetails', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-
-              {/* Collections */}
-              <View style={[styles.settingRow, { marginBottom: 0 }]}>
-                <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Movie Collections</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                    Franchise movies (Marvel, Star Wars, etc.)
-                  </Text>
-                </View>
-                <Switch
-                  value={settings.tmdbEnrichCollections}
-                  onValueChange={(v) => updateSetting('tmdbEnrichCollections', v)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? currentTheme.colors.white : ''}
-                  ios_backgroundColor={'rgba(255,255,255,0.1)'}
-                />
-              </View>
-            </>
-          )}
-        </View>
-
-        {/* API Configuration Section */}
-        <View style={[styles.sectionCard, { backgroundColor: currentTheme.colors.elevation2 }]}>
-          <View style={styles.sectionHeader}>
-            <MaterialIcons name="api" size={20} color={currentTheme.colors.primary} />
-            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>API Configuration</Text>
-          </View>
-          <Text style={[styles.sectionDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-            Configure your TMDb API access for enhanced functionality.
-          </Text>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Custom API Key</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                Use your own TMDb API key for better performance and dedicated rate limits.
-              </Text>
             </View>
-                        <CustomSwitch
-              value={useCustomKey}
-              onValueChange={toggleUseCustomKey}
-            />
-          </View>
 
-          {useCustomKey && (
-            <>
-              <View style={styles.divider} />
-
-              {/* API Key Status */}
-              <View style={styles.statusRow}>
-                <MaterialIcons
-                  name={isKeySet ? "check-circle" : "error-outline"}
-                  size={20}
-                  color={isKeySet ? currentTheme.colors.success : currentTheme.colors.warning}
-                />
-                <Text style={[styles.statusText, {
-                  color: isKeySet ? currentTheme.colors.success : currentTheme.colors.warning
-                }]}>
-                  {isKeySet ? "Custom API key active" : "API key required"}
+            {/* Toggle Use Custom Key */}
+            <View style={styles.settingRow}>
+              <View style={styles.settingLabel}>
+                <Text style={[styles.settingLabelText, { color: currentTheme.colors.text }]}>
+                  Use Custom API Key
+                </Text>
+                <Text style={[styles.settingDescription, { color: currentTheme.colors.textSecondary }]}>
+                  {useCustomKey ? 'Currently using your custom key' : 'Currently using built-in key'}
                 </Text>
               </View>
+              <CustomSwitch
+                value={useCustomKey}
+                onValueChange={toggleUseCustomKey}
+              />
+            </View>
 
-              {/* API Key Input */}
-              <View style={styles.apiKeyContainer}>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    ref={apiKeyInputRef}
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: currentTheme.colors.elevation1,
-                        color: currentTheme.colors.text,
-                        borderColor: isInputFocused ? currentTheme.colors.primary : 'transparent'
-                      }
-                    ]}
-                    value={apiKey}
-                    onChangeText={(text) => {
-                      setApiKey(text);
-                      if (testResult) setTestResult(null);
-                    }}
-                    placeholder="Paste your TMDb API key (v3)"
-                    placeholderTextColor={currentTheme.colors.mediumEmphasis}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    spellCheck={false}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
-                  />
-                  <TouchableOpacity
-                    style={styles.pasteButton}
-                    onPress={pasteFromClipboard}
-                  >
-                    <MaterialIcons name="content-paste" size={20} color={currentTheme.colors.primary} />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={saveApiKey}
-                  >
-                    <Text style={[styles.buttonText, { color: currentTheme.colors.white }]}>Save</Text>
-                  </TouchableOpacity>
-
-                  {isKeySet && (
-                    <TouchableOpacity
-                      style={[styles.button, styles.clearButton, { borderColor: currentTheme.colors.error }]}
-                      onPress={clearApiKey}
-                    >
-                      <Text style={[styles.buttonText, { color: currentTheme.colors.error }]}>Clear</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                {testResult && (
-                  <View style={[
-                    styles.resultMessage,
-                    { backgroundColor: testResult.success ? currentTheme.colors.success + '1A' : currentTheme.colors.error + '1A' }
-                  ]}>
-                    <MaterialIcons
-                      name={testResult.success ? "check-circle" : "error"}
-                      size={16}
-                      color={testResult.success ? currentTheme.colors.success : currentTheme.colors.error}
-                      style={styles.resultIcon}
-                    />
-                    <Text style={[
-                      styles.resultText,
-                      { color: testResult.success ? currentTheme.colors.success : currentTheme.colors.error }
-                    ]}>
-                      {testResult.message}
-                    </Text>
-                  </View>
-                )}
-
-                <TouchableOpacity
-                  style={styles.helpLink}
-                  onPress={openTMDBWebsite}
+            {/* Test Result */}
+            {testResult && (
+              <View
+                style={[
+                  styles.testResultContainer,
+                  {
+                    backgroundColor: testResult.success
+                      ? 'rgba(76, 175, 80, 0.1)'
+                      : 'rgba(244, 67, 54, 0.1)',
+                    borderColor: testResult.success ? '#4CAF50' : '#F44336',
+                  },
+                ]}
+              >
+                <MaterialIcons
+                  name={testResult.success ? 'check-circle' : 'error'}
+                  size={18}
+                  color={testResult.success ? '#4CAF50' : '#F44336'}
+                />
+                <Text
+                  style={[
+                    styles.testResultText,
+                    { color: testResult.success ? '#4CAF50' : '#F44336' },
+                  ]}
                 >
-                  <MaterialIcons name="help" size={16} color={currentTheme.colors.primary} style={styles.helpIcon} />
-                  <Text style={[styles.helpText, { color: currentTheme.colors.primary }]}>
-                    How to get a TMDb API key?
-                  </Text>
+                  {testResult.message}
+                </Text>
+              </View>
+            )}
+
+            {/* API Key Input */}
+            {useCustomKey && (
+              <View style={styles.apiKeyInputContainer}>
+                <TextInput
+                  ref={apiKeyInputRef}
+                  style={[
+                    styles.apiKeyInput,
+                    {
+                      backgroundColor: currentTheme.colors.background,
+                      color: currentTheme.colors.text,
+                      borderColor: isInputFocused
+                        ? currentTheme.colors.primary
+                        : currentTheme.colors.border,
+                    },
+                  ]}
+                  placeholder="Enter your TMDB API key"
+                  placeholderTextColor={currentTheme.colors.textSecondary}
+                  value={apiKey}
+                  onChangeText={setApiKey}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                  secureTextEntry={false}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity
+                  style={styles.pasteButton}
+                  onPress={pasteFromClipboard}
+                  disabled={isLoading}
+                >
+                  <MaterialIcons
+                    name="content-paste"
+                    size={20}
+                    color={currentTheme.colors.primary}
+                  />
                 </TouchableOpacity>
               </View>
-            </>
-          )}
+            )}
 
-          {!useCustomKey && (
-            <View style={styles.infoContainer}>
-              <MaterialIcons name="info-outline" size={18} color={currentTheme.colors.primary} />
-              <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
-                Currently using built-in API key. Consider using your own key for better performance.
-              </Text>
+            {/* Action Buttons */}
+            <View style={styles.buttonContainer}>
+              {useCustomKey && (
+                <>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      styles.primaryButton,
+                      { backgroundColor: currentTheme.colors.primary },
+                    ]}
+                    onPress={saveApiKey}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <Text style={styles.buttonText}>Save API Key</Text>
+                    )}
+                  </TouchableOpacity>
+                  {isKeySet && (
+                    <TouchableOpacity
+                      style={[styles.button, styles.secondaryButton]}
+                      onPress={clearApiKey}
+                      disabled={isLoading}
+                    >
+                      <Text style={[styles.buttonText, { color: currentTheme.colors.primary }]}>
+                        Clear API Key
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
             </View>
-          )}
+
+            {/* Get API Key Link */}
+            <TouchableOpacity
+              style={styles.linkContainer}
+              onPress={openTMDBWebsite}
+            >
+              <MaterialIcons name="open-in-new" size={16} color={currentTheme.colors.primary} />
+              <Text style={[styles.link, { color: currentTheme.colors.primary }]}>
+                Get your API key from TMDB
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Language Preference Section */}
+          <View style={[styles.section, { backgroundColor: currentTheme.colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+              Logo Language Preference
+            </Text>
+            <Text style={[styles.sectionDescription, { color: currentTheme.colors.textSecondary }]}>
+              Select your preferred language for TMDB logo text
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.languageSelector,
+                {
+                  backgroundColor: currentTheme.colors.background,
+                  borderColor: currentTheme.colors.border,
+                },
+              ]}
+              onPress={() => setLanguagePickerVisible(true)}
+            >
+              <Text style={[styles.languageSelectorText, { color: currentTheme.colors.text }]}>
+                {availableLanguages.find(l => l.code === settings.tmdbLanguagePreference)?.name ||
+                  'English'}
+              </Text>
+              <MaterialIcons
+                name="expand-more"
+                size={24}
+                color={currentTheme.colors.primary}
+              />
+            </TouchableOpacity>
+          </View>
 
           {/* Cache Management Section */}
-          <View style={styles.divider} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Cache Size</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                {cacheSize}
-              </Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: currentTheme.colors.error }]}
-            onPress={handleClearCache}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialIcons name="delete-outline" size={18} color={currentTheme.colors.white} />
-              <Text style={[styles.buttonText, { color: currentTheme.colors.white, marginLeft: 8 }]}>Clear Cache</Text>
-            </View>
-          </TouchableOpacity>
-
-          <View style={[styles.infoContainer, { marginTop: 12 }]}>
-            <MaterialIcons name="info-outline" size={18} color={currentTheme.colors.primary} />
-            <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
-              TMDB responses are cached for 7 days to improve performance
+          <View style={[styles.section, { backgroundColor: currentTheme.colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+              Cache Management
             </Text>
-          </View>
-        </View>
 
-        {/* Language Picker Modal */}
-        <Modal
-          visible={languagePickerVisible}
-          transparent
-          animationType="slide"
-          supportedOrientations={['portrait', 'landscape']}
-          onRequestClose={() => setLanguagePickerVisible(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setLanguagePickerVisible(false)}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback>
-                <View style={[styles.modalContent, { backgroundColor: currentTheme.colors.darkBackground }]}>
-                  {/* Header */}
-                  <View style={styles.modalHeader}>
-                    <View style={[styles.dragHandle, { backgroundColor: currentTheme.colors.elevation3 }]} />
-                    <Text style={[styles.modalTitle, { color: currentTheme.colors.text }]}>Choose Language</Text>
-                    <Text style={[styles.modalSubtitle, { color: currentTheme.colors.mediumEmphasis }]}>Select your preferred language for TMDb content</Text>
-                  </View>
-
-                  {/* Search Section */}
-                  <View style={styles.searchSection}>
-                    <View style={[styles.searchContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
-                      <MaterialIcons name="search" size={20} color={currentTheme.colors.mediumEmphasis} style={styles.searchIcon} />
-                      <TextInput
-                        placeholder="Search languages..."
-                        placeholderTextColor={currentTheme.colors.mediumEmphasis}
-                        style={[styles.searchInput, { color: currentTheme.colors.text }]}
-                        value={languageSearch}
-                        onChangeText={setLanguageSearch}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                      />
-                      {languageSearch.length > 0 && (
-                        <TouchableOpacity onPress={() => setLanguageSearch('')} style={styles.searchClearButton}>
-                          <MaterialIcons name="close" size={20} color={currentTheme.colors.mediumEmphasis} />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-
-                  {/* Popular Languages */}
-                  {languageSearch.length === 0 && (
-                    <View style={styles.popularSection}>
-                      <Text style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}>Popular</Text>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.popularChips}
-                      >
-                        {[
-                          { code: 'en', label: 'EN' },
-                          { code: 'ar', label: 'AR' },
-                          { code: 'es', label: 'ES' },
-                          { code: 'fr', label: 'FR' },
-                          { code: 'de', label: 'DE' },
-                          { code: 'tr', label: 'TR' },
-                        ].map(({ code, label }) => (
-                          <TouchableOpacity
-                            key={code}
-                            onPress={() => { updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
-                            style={[
-                              styles.popularChip,
-                              settings.tmdbLanguagePreference === code && styles.selectedChip,
-                              {
-                                backgroundColor: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.elevation1,
-                                borderColor: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : 'rgba(255,255,255,0.1)',
-                              }
-                            ]}
-                          >
-                            <Text style={[
-                              styles.popularChipText,
-                              settings.tmdbLanguagePreference === code && styles.selectedChipText,
-                              { color: settings.tmdbLanguagePreference === code ? currentTheme.colors.white : currentTheme.colors.text }
-                            ]}>
-                              {label}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-
-                  {/* All Languages */}
-                  <View style={styles.languagesSection}>
-                    <Text style={[
-                      styles.sectionTitle,
-                      languageSearch.length > 0 && styles.searchResultsTitle,
-                      { color: languageSearch.length > 0 ? currentTheme.colors.text : currentTheme.colors.mediumEmphasis }
-                    ]}>
-                      {languageSearch.length > 0 ? 'Search Results' : 'All Languages'}
-                    </Text>
-
-                    <ScrollView style={styles.languageList} showsVerticalScrollIndicator={false}>
-                      {(() => {
-                        const languages = [
-                          { code: 'en', label: 'English', native: 'English' },
-                          { code: 'ar', label: 'العربية', native: 'Arabic' },
-                          { code: 'es', label: 'Español', native: 'Spanish' },
-                          { code: 'fr', label: 'Français', native: 'French' },
-                          { code: 'de', label: 'Deutsch', native: 'German' },
-                          { code: 'it', label: 'Italiano', native: 'Italian' },
-                          { code: 'pt', label: 'Português', native: 'Portuguese' },
-                          { code: 'ru', label: 'Русский', native: 'Russian' },
-                          { code: 'tr', label: 'Türkçe', native: 'Turkish' },
-                          { code: 'ja', label: '日本語', native: 'Japanese' },
-                          { code: 'ko', label: '한국어', native: 'Korean' },
-                          { code: 'zh', label: '中文', native: 'Chinese' },
-                          { code: 'hi', label: 'हिन्दी', native: 'Hindi' },
-                          { code: 'he', label: 'עברית', native: 'Hebrew' },
-                          { code: 'id', label: 'Bahasa Indonesia', native: 'Indonesian' },
-                          { code: 'nl', label: 'Nederlands', native: 'Dutch' },
-                          { code: 'sv', label: 'Svenska', native: 'Swedish' },
-                          { code: 'no', label: 'Norsk', native: 'Norwegian' },
-                          { code: 'da', label: 'Dansk', native: 'Danish' },
-                          { code: 'fi', label: 'Suomi', native: 'Finnish' },
-                          { code: 'pl', label: 'Polski', native: 'Polish' },
-                          { code: 'cs', label: 'Čeština', native: 'Czech' },
-                          { code: 'ro', label: 'Română', native: 'Romanian' },
-                          { code: 'uk', label: 'Українська', native: 'Ukrainian' },
-                          { code: 'vi', label: 'Tiếng Việt', native: 'Vietnamese' },
-                          { code: 'th', label: 'ไทย', native: 'Thai' },
-                        ];
-
-                        const filteredLanguages = languages.filter(({ label, code, native }) =>
-                          (languageSearch || '').length === 0 ||
-                          label.toLowerCase().includes(languageSearch.toLowerCase()) ||
-                          native.toLowerCase().includes(languageSearch.toLowerCase()) ||
-                          code.toLowerCase().includes(languageSearch.toLowerCase())
-                        );
-
-                        return (
-                          <>
-                            {filteredLanguages.map(({ code, label, native }) => (
-                              <TouchableOpacity
-                                key={code}
-                                onPress={() => { updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
-                                style={[
-                                  styles.languageItem,
-                                  settings.tmdbLanguagePreference === code && styles.selectedLanguageItem
-                                ]}
-                                activeOpacity={0.7}
-                              >
-                                <View style={styles.languageContent}>
-                                  <View style={styles.languageInfo}>
-                                    <Text style={[
-                                      styles.languageName,
-                                      settings.tmdbLanguagePreference === code && styles.selectedLanguageName,
-                                      {
-                                        color: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.text,
-                                      }
-                                    ]}>
-                                      {native}
-                                    </Text>
-                                    <Text style={[
-                                      styles.languageCode,
-                                      settings.tmdbLanguagePreference === code && styles.selectedLanguageCode,
-                                      {
-                                        color: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.mediumEmphasis,
-                                      }
-                                    ]}>
-                                      {label} • {code.toUpperCase()}
-                                    </Text>
-                                  </View>
-                                  {settings.tmdbLanguagePreference === code && (
-                                    <View style={styles.checkmarkContainer}>
-                                      <MaterialIcons name="check-circle" size={24} color={currentTheme.colors.primary} />
-                                    </View>
-                                  )}
-                                </View>
-                              </TouchableOpacity>
-                            ))}
-                            {languageSearch.length > 0 && filteredLanguages.length === 0 && (
-                              <View style={styles.noResultsContainer}>
-                                <MaterialIcons name="search-off" size={48} color={currentTheme.colors.mediumEmphasis} />
-                                <Text style={[styles.noResultsText, { color: currentTheme.colors.mediumEmphasis }]}>
-                                  No languages found for "{languageSearch}"
-                                </Text>
-                                <TouchableOpacity
-                                  onPress={() => setLanguageSearch('')}
-                                  style={[styles.clearSearchButton, { backgroundColor: currentTheme.colors.elevation1 }]}
-                                >
-                                  <Text style={[styles.clearSearchButtonText, { color: currentTheme.colors.primary }]}>Clear search</Text>
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </ScrollView>
-                  </View>
-
-                  {/* Footer Actions */}
-                  <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(false)}
-                      style={styles.cancelButton}
-                    >
-                      <Text style={[styles.cancelButtonText, { color: currentTheme.colors.text }]}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => setLanguagePickerVisible(false)}
-                      style={[styles.doneButton, { backgroundColor: currentTheme.colors.primary }]}
-                    >
-                      <Text style={[styles.doneButtonText, { color: currentTheme.colors.white }]}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
+            <View style={styles.cacheInfoContainer}>
+              <View>
+                <Text style={[styles.cacheLabel, { color: currentTheme.colors.textSecondary }]}>
+                  Cache Size
+                </Text>
+                <Text style={[styles.cacheSize, { color: currentTheme.colors.text }]}>
+                  {cacheSize}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.secondaryButton,
+                  { borderColor: currentTheme.colors.primary },
+                ]}
+                onPress={handleClearCache}
+              >
+                <Text style={[styles.buttonText, { color: currentTheme.colors.primary }]}>
+                  Clear Cache
+                </Text>
+              </TouchableOpacity>
             </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      </ScrollView>
+          </View>
+
+          {/* Logo Preview */}
+          {renderPreview()}
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Language Picker Modal */}
+      <Modal
+        visible={languagePickerVisible}
+        animationType="slide"
+        transparent={true}
+      >
+        <TouchableWithoutFeedback onPress={() => setLanguagePickerVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View
+                style={[
+                  styles.modalContent,
+                  { backgroundColor: currentTheme.colors.surface },
+                ]}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: currentTheme.colors.text }]}>
+                    Select Language
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setLanguagePickerVisible(false)}
+                  >
+                    <MaterialIcons
+                      name="close"
+                      size={24}
+                      color={currentTheme.colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Search Input */}
+                <View
+                  style={[
+                    styles.searchContainer,
+                    { backgroundColor: currentTheme.colors.background },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="search"
+                    size={20}
+                    color={currentTheme.colors.textSecondary}
+                  />
+                  <TextInput
+                    style={[
+                      styles.searchInput,
+                      { color: currentTheme.colors.text },
+                    ]}
+                    placeholder="Search languages..."
+                    placeholderTextColor={currentTheme.colors.textSecondary}
+                    value={languageSearch}
+                    onChangeText={setLanguageSearch}
+                  />
+                </View>
+
+                {/* Language Options */}
+                <ScrollView style={styles.languageList}>
+                  {filteredLanguages.length > 0 ? (
+                    filteredLanguages.map(lang => renderLanguageOption(lang))
+                  ) : (
+                    <Text
+                      style={[
+                        styles.noResultsText,
+                        { color: currentTheme.colors.textSecondary },
+                      ]}
+                    >
+                      No languages found
+                    </Text>
+                  )}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Custom Alert */}
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
-        onClose={() => setAlertVisible(false)}
         actions={alertActions}
+        onDismiss={() => setAlertVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -1253,476 +907,289 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
+  flex: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-  },
-  headerContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-    backgroundColor: 'transparent',
-    zIndex: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-    paddingLeft: 4,
   },
   scrollView: {
     flex: 1,
-    zIndex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
+  scrollViewContent: {
+    paddingVertical: 16,
   },
-  sectionCard: {
-    borderRadius: 16,
-    marginBottom: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+  section: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 8,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  previewDescription: {
+    fontSize: 13,
+    marginBottom: 16,
+  },
+  statusContainer: {
+    marginBottom: 16,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  statusText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
   },
   settingRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
     marginBottom: 16,
   },
-  settingTextContainer: {
+  settingLabel: {
     flex: 1,
-    marginRight: 16,
   },
-  settingTitle: {
+  settingLabelText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 4,
   },
   settingDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    opacity: 0.8,
+    fontSize: 13,
   },
-  languageButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  languageButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginVertical: 16,
-  },
-  statusRow: {
+  testResultContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  apiKeyContainer: {
-    marginTop: 16,
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginTop: 16,
     padding: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
   },
-  inputContainer: {
+  testResultText: {
+    marginLeft: 8,
+    flex: 1,
+    fontSize: 14,
+  },
+  apiKeyInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  input: {
+  apiKeyInput: {
     flex: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    borderWidth: 2,
+    height: 48,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    fontSize: 14,
+    marginRight: 8,
   },
   pasteButton: {
-    position: 'absolute',
-    right: 12,
-    padding: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
-  buttonRow: {
+  buttonContainer: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  button: {
+    height: 48,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  primaryButton: {
+    borderWidth: 0,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  linkContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  link: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 48,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  languageSelectorText: {
+    fontSize: 16,
+  },
+  cacheInfoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  button: {
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 8,
+  cacheLabel: {
+    fontSize: 13,
+    marginBottom: 4,
   },
-  buttonText: {
+  cacheSize: {
+    fontSize: 18,
     fontWeight: '600',
-    fontSize: 15,
   },
-  resultMessage: {
+  previewSection: {
+    marginHorizontal: 16,
+    marginVertical: 8,
     borderRadius: 12,
     padding: 16,
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  resultIcon: {
-    marginRight: 12,
-  },
-  resultText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  helpLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-    paddingVertical: 8,
-  },
-  helpIcon: {
-    marginRight: 8,
-  },
-  helpText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  infoText: {
-    fontSize: 14,
-    flex: 1,
-    lineHeight: 20,
-    opacity: 0.8,
-    marginLeft: 8,
-  },
-  clearButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    marginRight: 0,
-    marginLeft: 8,
-    flex: 0,
+  showSelectorContainer: {
+    marginBottom: 16,
+    marginHorizontal: -16,
     paddingHorizontal: 16,
   },
-
-  // Modal Styles
+  showButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 2,
+    marginRight: 8,
+  },
+  selectedShowButton: {
+    borderWidth: 0,
+  },
+  showButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  logoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+    marginBottom: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  logoWrapper: {
+    alignItems: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 100,
+  },
+  fallbackText: {
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  noLogoText: {
+    fontSize: 14,
+  },
+  bannerContainer: {
+    marginBottom: 16,
+  },
+  bannerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  banner: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-    minHeight: '70%', // Increased minimum height
-    flex: 1,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 0,
+    maxHeight: '90%',
   },
   modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    marginBottom: 12,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    fontSize: 18,
+    fontWeight: '600',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchIcon: {
-    marginRight: 12,
+    marginHorizontal: 16,
+    marginVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    height: 40,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    paddingVertical: 0,
-  },
-  searchClearButton: {
-    padding: 4,
     marginLeft: 8,
-  },
-  popularSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  searchResultsTitle: {
-    color: '#FFFFFF',
-  },
-  popularChips: {
-    paddingVertical: 2,
-  },
-  popularChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  selectedChip: {
-    // Border color handled by inline styles
-  },
-  popularChipText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  selectedChipText: {
-    color: '#FFFFFF',
-  },
-  languagesSection: {
-    flex: 1,
-    paddingHorizontal: 20,
+    fontSize: 16,
   },
   languageList: {
-    flex: 1,
-  },
-  languageItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 4,
-    minHeight: 60,
-  },
-  selectedLanguageItem: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-  },
-  languageContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  languageInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  languageName: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  selectedLanguageName: {
-    fontWeight: '600',
-  },
-  languageCode: {
-    fontSize: 12,
-  },
-  selectedLanguageCode: {
-  },
-  checkmarkContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noResultsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  noResultsText: {
-    fontSize: 16,
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  clearSearchButton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  clearSearchButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  doneButton: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  doneButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-
-  // Logo Source Styles
-  selectorLabel: {
-    fontSize: 13,
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  showsScrollView: {
+    maxHeight: 300,
+    marginHorizontal: 16,
     marginBottom: 16,
   },
-  showsScrollContent: {
-    paddingRight: 16,
-    paddingVertical: 2,
-  },
-  showItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 6,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  selectedShowItem: {
-    borderWidth: 2,
-  },
-  showItemText: {
-    fontSize: 13,
-  },
-  selectedShowItemText: {
-    fontWeight: '600',
-  },
-  logoPreviewCard: {
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 12,
-  },
-  exampleImage: {
-    height: 60,
-    width: '100%',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 8,
-  },
-  bannerContainer: {
-    height: 80,
-    width: '100%',
-    borderRadius: 8,
-    overflow: 'hidden',
-    position: 'relative',
-    marginTop: 4,
-  },
-  bannerImage: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  bannerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  logoOverBanner: {
-    position: 'absolute',
-    width: '80%',
-    height: '70%',
-    alignSelf: 'center',
-    top: '15%',
-  },
-  noLogoContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  noLogoText: {
-    color: '#fff',
-    fontSize: 13,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
     borderRadius: 4,
   },
-  logoSourceLabel: {
-    fontSize: 11,
-    marginTop: 6,
+  selectedLanguageOption: {
+    borderRadius: 8,
+    borderBottomWidth: 0,
+  },
+  languageOptionText: {
+    fontSize: 16,
+  },
+  noResultsText: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 16,
   },
 });
 
-export default TMDBSettingsScreen; 
+export default TMDBSettingsScreen;

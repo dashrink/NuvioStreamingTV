@@ -13,6 +13,86 @@ import {
 import { storageService } from '../services/storageService';
 import { logger } from '../utils/logger';
 
+/**
+ * useTraktIntegration - React hook for Trakt.tv integration
+ *
+ * This hook provides a complete interface for syncing user content with Trakt.tv,
+ * including watchlist management, collections, ratings, and watch progress.
+ *
+ * ## Architecture Overview
+ *
+ * ```
+ * UI Components
+ *       ↓
+ * useTraktIntegration (this hook) - Local state + optimistic updates
+ *       ↓
+ * TraktService (singleton) - API calls with rate limiting
+ *       ↓
+ * Trakt.tv API
+ * ```
+ *
+ * ## Key Patterns
+ *
+ * ### 1. Rate Limiting
+ * All Trakt API calls go through traktService which enforces:
+ * - 500ms minimum interval between API requests
+ * - Exponential backoff on 429 (rate limit) responses
+ * - Request queuing for burst protection
+ *
+ * ### 2. Optimistic Updates
+ * UI state is updated immediately before API confirmation for better UX:
+ * - Local state (watchlistItems, collectionItems, ratedContent) updates instantly
+ * - API call happens in background
+ * - On failure, state rolls back to previous value
+ *
+ * ### 3. IMDb ID Normalization
+ * All methods normalize IMDb IDs to include the 'tt' prefix:
+ * - Input: "1234567" or "tt1234567"
+ * - Normalized: "tt1234567"
+ *
+ * ### 4. Content Type Handling
+ * IMPORTANT: Trakt uses 'show' not 'series' for TV content
+ * - StreamingContent.type: 'movie' | 'series'
+ * - Trakt API types: 'movie' | 'show'
+ * - Always convert before passing to this hook
+ *
+ * ### 5. Data Flow
+ * ```
+ * Initial Load:
+ * checkAuthStatus() → loadAllCollections() → populates local Sets
+ *
+ * Status Checks (read-heavy):
+ * isInWatchlist() → reads from local Set (O(1), no API call)
+ * isInCollection() → reads from local Set (O(1), no API call)
+ * getUserRating() → reads from local ratedContent array
+ *
+ * Mutations (write operations):
+ * addToWatchlist() → optimistic update → API call → success/rollback
+ * addRating() → optimistic update → API call → success/rollback
+ * ```
+ *
+ * @returns Hook state and methods for Trakt integration
+ *
+ * @example
+ * ```tsx
+ * const {
+ *   isAuthenticated,
+ *   isInWatchlist,
+ *   addToWatchlist,
+ *   getUserRating,
+ *   addRating
+ * } = useTraktIntegration();
+ *
+ * // Check if movie is in watchlist (fast, uses cached Set)
+ * const inWatchlist = isInWatchlist('tt1234567', 'movie');
+ *
+ * // Add to watchlist (optimistic update)
+ * await addToWatchlist('tt1234567', 'movie');
+ *
+ * // Rate content (1-10 scale)
+ * await addRating('tt1234567', 'movie', 8);
+ * ```
+ */
 export function useTraktIntegration() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -198,7 +278,27 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated, loadWatchedItems]);
 
-  // Add content to Trakt watchlist
+  /**
+   * Add content to user's Trakt watchlist
+   *
+   * Performs an optimistic update: the local watchlistItems Set is updated immediately,
+   * then the API call is made. If the API call fails, no rollback is performed as
+   * the data will sync correctly on next app focus.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   *
+   * @example
+   * ```tsx
+   * // For movies
+   * await addToWatchlist('tt1234567', 'movie');
+   *
+   * // For TV shows - convert 'series' to 'show'
+   * const type = item.type === 'movie' ? 'movie' : 'show';
+   * await addToWatchlist(item.imdbId, type);
+   * ```
+   */
   const addToWatchlist = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -218,7 +318,16 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Remove content from Trakt watchlist
+  /**
+   * Remove content from user's Trakt watchlist
+   *
+   * Performs an optimistic update: the local watchlistItems Set is updated immediately
+   * by removing the item, then the API call is made.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const removeFromWatchlist = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -241,7 +350,16 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Add content to Trakt collection
+  /**
+   * Add content to user's Trakt collection
+   *
+   * Collections represent content the user owns (e.g., DVDs, digital purchases).
+   * This is different from the watchlist which represents content to watch.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const addToCollection = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -260,7 +378,13 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Remove content from Trakt collection
+  /**
+   * Remove content from user's Trakt collection
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if API call succeeded
+   */
   const removeFromCollection = useCallback(async (imdbId: string, type: 'movie' | 'show'): Promise<boolean> => {
     if (!isAuthenticated) return false;
 
@@ -283,14 +407,40 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Check if content is in Trakt watchlist
+  /**
+   * Check if content is in user's Trakt watchlist (synchronous, uses cached data)
+   *
+   * This is a fast O(1) lookup against the locally cached watchlistItems Set.
+   * No API call is made - data is populated by loadAllCollections() on auth
+   * and refreshed on app focus.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns boolean - true if item is in watchlist
+   *
+   * @example
+   * ```tsx
+   * // Safe for render functions - no async, no side effects
+   * const isBookmarked = isInWatchlist(item.imdbId, 'movie');
+   * ```
+   */
   const isInWatchlist = useCallback((imdbId: string, type: 'movie' | 'show'): boolean => {
     // Ensure consistent IMDb ID format (with 'tt' prefix)
     const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
     return watchlistItems.has(`${type}:${normalizedImdbId}`);
   }, [watchlistItems]);
 
-  // Check if content is in Trakt collection
+  /**
+   * Check if content is in user's Trakt collection (synchronous, uses cached data)
+   *
+   * This is a fast O(1) lookup against the locally cached collectionItems Set.
+   * No API call is made - data is populated by loadAllCollections() on auth
+   * and refreshed on app focus.
+   *
+   * @param imdbId - IMDb ID (with or without 'tt' prefix, will be normalized)
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns boolean - true if item is in collection
+   */
   const isInCollection = useCallback((imdbId: string, type: 'movie' | 'show'): boolean => {
     // Ensure consistent IMDb ID format (with 'tt' prefix)
     const normalizedImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
@@ -406,17 +556,13 @@ export function useTraktIntegration() {
 
   // Get playback progress from Trakt
   const getTraktPlaybackProgress = useCallback(async (type?: 'movies' | 'shows'): Promise<TraktPlaybackItem[]> => {
-    // getTraktPlaybackProgress call logging removed
-
     if (!isAuthenticated) {
       logger.log('[useTraktIntegration] getTraktPlaybackProgress: Not authenticated');
       return [];
     }
 
     try {
-      // traktService.getPlaybackProgress call logging removed
       const result = await traktService.getPlaybackProgress(type);
-      // Playback progress logging removed
       return result;
     } catch (error) {
       logger.error('[useTraktIntegration] Error getting playback progress:', error);
@@ -424,292 +570,86 @@ export function useTraktIntegration() {
     }
   }, [isAuthenticated]);
 
-  // Sync all local progress to Trakt
-  const syncAllProgress = useCallback(async (): Promise<boolean> => {
-    if (!isAuthenticated) return false;
+  // Check if a movie is in the watchlist (optimized version using local state)
+  const isMovieInWatchlist = useCallback((imdbId: string): boolean => {
+    return isInWatchlist(imdbId, 'movie');
+  }, [isInWatchlist]);
 
-    try {
-      const unsyncedProgress = await storageService.getUnsyncedProgress();
-      logger.log(`[useTraktIntegration] Found ${unsyncedProgress.length} unsynced progress entries`);
+  // Check if a show is in the watchlist (optimized version using local state)
+  const isShowInWatchlist = useCallback((imdbId: string): boolean => {
+    return isInWatchlist(imdbId, 'show');
+  }, [isInWatchlist]);
 
-      let syncedCount = 0;
-      const batchSize = 5; // Process in smaller batches
-      const delayBetweenBatches = 2000; // 2 seconds between batches
+  // Check if a movie is in the collection (optimized version using local state)
+  const isMovieInCollection = useCallback((imdbId: string): boolean => {
+    return isInCollection(imdbId, 'movie');
+  }, [isInCollection]);
 
-      // Process items in batches to avoid overwhelming the API
-      for (let i = 0; i < unsyncedProgress.length; i += batchSize) {
-        const batch = unsyncedProgress.slice(i, i + batchSize);
+  // Check if a show is in the collection (optimized version using local state)
+  const isShowInCollection = useCallback((imdbId: string): boolean => {
+    return isInCollection(imdbId, 'show');
+  }, [isInCollection]);
 
-        // Process batch items with individual error handling
-        const batchPromises = batch.map(async (item) => {
-          try {
-            const season = item.episodeId ? parseInt(item.episodeId.split('S')[1]?.split('E')[0] || '0') : undefined;
-            const episode = item.episodeId ? parseInt(item.episodeId.split('E')[1] || '0') : undefined;
+  // Add a show to the watchlist
+  const addShowToWatchlist = useCallback(async (imdbId: string): Promise<boolean> => {
+    return addToWatchlist(imdbId, 'show');
+  }, [addToWatchlist]);
 
-            // Build content data from stored progress
-            const contentData: TraktContentData = {
-              type: item.type as 'movie' | 'episode',
-              imdbId: item.id,
-              title: 'Unknown', // We don't store title in progress, this would need metadata lookup
-              year: 0,
-              season: season,
-              episode: episode
-            };
+  // Remove a show from the watchlist
+  const removeShowFromWatchlist = useCallback(async (imdbId: string): Promise<boolean> => {
+    return removeFromWatchlist(imdbId, 'show');
+  }, [removeFromWatchlist]);
 
-            const progressPercent = (item.progress.currentTime / item.progress.duration) * 100;
-            const isCompleted = progressPercent >= traktService.completionThreshold;
+  // Add a movie to the watchlist
+  const addMovieToWatchlist = useCallback(async (imdbId: string): Promise<boolean> => {
+    return addToWatchlist(imdbId, 'movie');
+  }, [addToWatchlist]);
 
-            let success = false;
+  // Remove a movie from the watchlist
+  const removeMovieFromWatchlist = useCallback(async (imdbId: string): Promise<boolean> => {
+    return removeFromWatchlist(imdbId, 'movie');
+  }, [removeFromWatchlist]);
 
-            if (isCompleted) {
-              // Item is completed - add to history with original watched date
-              const watchedAt = new Date(item.progress.lastUpdated);
-              logger.log(`[useTraktIntegration] Syncing completed item to history with date ${watchedAt.toISOString()}: ${item.type}:${item.id}`);
+  // Add a show to the collection
+  const addShowToCollection = useCallback(async (imdbId: string): Promise<boolean> => {
+    return addToCollection(imdbId, 'show');
+  }, [addToCollection]);
 
-              if (item.type === 'movie') {
-                success = await traktService.addToWatchedMovies(item.id, watchedAt);
-              } else if (item.type === 'series' || item.type === 'episode') { // Handle both type strings for safety
-                if (season !== undefined && episode !== undefined) {
-                  success = await traktService.addToWatchedEpisodes(item.id, season, episode, watchedAt);
-                }
-              }
-            } else {
-              // Item is in progress - sync as paused (scrobble)
-              success = await traktService.syncProgressToTrakt(contentData, progressPercent, true);
-            }
+  // Remove a show from the collection
+  const removeShowFromCollection = useCallback(async (imdbId: string): Promise<boolean> => {
+    return removeFromCollection(imdbId, 'show');
+  }, [removeFromCollection]);
 
-            if (success) {
-              await storageService.updateTraktSyncStatus(
-                item.id,
-                item.type,
-                true,
-                isCompleted ? 100 : progressPercent,
-                item.episodeId
-              );
-              return true;
-            }
-            return false;
-          } catch (error) {
-            logger.error('[useTraktIntegration] Error syncing individual progress:', error);
-            return false;
-          }
-        });
+  // Add a movie to the collection
+  const addMovieToCollection = useCallback(async (imdbId: string): Promise<boolean> => {
+    return addToCollection(imdbId, 'movie');
+  }, [addToCollection]);
 
-        // Wait for batch to complete
-        const batchResults = await Promise.all(batchPromises);
-        syncedCount += batchResults.filter(result => result).length;
+  // Remove a movie from the collection
+  const removeMovieFromCollection = useCallback(async (imdbId: string): Promise<boolean> => {
+    return removeFromCollection(imdbId, 'movie');
+  }, [removeFromCollection]);
 
-        // Delay between batches to avoid rate limiting
-        if (i + batchSize < unsyncedProgress.length) {
-          await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
+  // Listen to app state changes for auth refresh
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (status: AppStateStatus) => {
+      if (status === 'active') {
+        logger.log('[useTraktIntegration] App came to foreground, checking auth status...');
+        await refreshAuthStatus();
+        // Refresh collections on app focus
+        if (isAuthenticated) {
+          await loadAllCollections();
         }
       }
-
-      logger.log(`[useTraktIntegration] Synced ${syncedCount}/${unsyncedProgress.length} progress entries`);
-      return syncedCount > 0;
-    } catch (error) {
-      logger.error('[useTraktIntegration] Error syncing all progress:', error);
-      return false;
-    }
-  }, [isAuthenticated]);
-
-  // Fetch and merge Trakt progress with local progress
-  const fetchAndMergeTraktProgress = useCallback(async (): Promise<boolean> => {
-    if (!isAuthenticated) {
-      return false;
-    }
-
-    try {
-      // Fetch both playback progress and recently watched movies
-      const [traktProgress, watchedMovies, watchedShows] = await Promise.all([
-        getTraktPlaybackProgress(),
-        traktService.getWatchedMovies(),
-        traktService.getWatchedShows()
-      ]);
-
-      // Progress retrieval logging removed
-
-      // Batch process all updates to reduce storage notifications
-      const updatePromises: Promise<void>[] = [];
-
-      // Process playback progress (in-progress items)
-      for (const item of traktProgress) {
-        try {
-          let id: string;
-          let type: string;
-          let episodeId: string | undefined;
-
-          if (item.type === 'movie' && item.movie) {
-            id = item.movie.ids.imdb;
-            type = 'movie';
-          } else if (item.type === 'episode' && item.show && item.episode) {
-            id = item.show.ids.imdb;
-            type = 'series';
-            episodeId = `${id}:${item.episode.season}:${item.episode.number}`;
-          } else {
-            continue;
-          }
-
-          // Try to calculate exact time if we have stored duration
-          const exactTime = await (async () => {
-            const storedDuration = await storageService.getContentDuration(id, type, episodeId);
-            if (storedDuration && storedDuration > 0) {
-              return (item.progress / 100) * storedDuration;
-            }
-            return undefined;
-          })();
-
-          // Merge with local progress
-          await storageService.mergeWithTraktProgress(
-            id,
-            type,
-            item.progress,
-            item.paused_at,
-            episodeId,
-            exactTime
-          );
-
-          // FIX: Mark as already synced so it won't be re-uploaded to Trakt
-          await storageService.updateTraktSyncStatus(
-            id,
-            type,
-            true, // synced = true
-            item.progress,
-            episodeId
-          );
-        } catch (error) {
-          logger.error('[useTraktIntegration] Error preparing Trakt progress update:', error);
-        }
-      }
-
-      // Process watched movies (100% completed)
-      for (const movie of watchedMovies) {
-        try {
-          if (movie.movie?.ids?.imdb) {
-            const id = movie.movie.ids.imdb;
-            const watchedAt = movie.last_watched_at;
-
-            await storageService.mergeWithTraktProgress(
-              id,
-              'movie',
-              100,
-              watchedAt
-            );
-
-            // FIX: Mark as already synced
-            await storageService.updateTraktSyncStatus(
-              id,
-              'movie',
-              true,
-              100
-            );
-          }
-        } catch (error) {
-    logger.error('[useTraktIntegration] Error preparing watched movie update:', error);
-        }
-      }
-
-      // Process watched shows (100% completed episodes)
-      for (const show of watchedShows) {
-        try {
-          if (show.show?.ids?.imdb && show.seasons) {
-            const showImdbId = show.show.ids.imdb;
-
-            for (const season of show.seasons) {
-              for (const episode of season.episodes) {
-                const episodeId = `${showImdbId}:${season.number}:${episode.number}`;
-          
-                await storageService.mergeWithTraktProgress(
-                  showImdbId,
-                  'series',
-                  100,
-                  episode.last_watched_at,
-                  episodeId
-                );
-
-                // FIX: Mark as already synced
-                await storageService.updateTraktSyncStatus(
-                  showImdbId,
-                  'series',
-                  true,
-                  100,
-                  episodeId
-                );
-              }
-            }
-          }
-        } catch (error) {
-          logger.error('[useTraktIntegration] Error preparing watched show update:', error);
-        }
-      }
-      
-      // Execute all updates in parallel
-      await Promise.all(updatePromises);
-
-      // Trakt merge logging removed
-      return true;
-    } catch (error) {
-      logger.error('[useTraktIntegration] Error fetching and merging Trakt progress:', error);
-      return false;
-    }
-  }, [isAuthenticated, getTraktPlaybackProgress]);
-
-  // Initialize and check auth status
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
-
-  // Load watched items when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadWatchedItems();
-    }
-  }, [isAuthenticated, loadWatchedItems]);
-
-  // Auto-sync when authenticated changes OR when auth status is refreshed
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Fetch Trakt progress and merge with local
-      fetchAndMergeTraktProgress().then((success) => {
-        // Trakt progress merge success logging removed
-      });
-    }
-  }, [isAuthenticated, fetchAndMergeTraktProgress]);
-
-  // App focus sync - sync when app comes back into focus (much smarter than periodic)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active') {
-        fetchAndMergeTraktProgress().catch(error => {
-          logger.error('[useTraktIntegration] App focus sync failed:', error);
-        });
-      }
-    };
-
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    });
 
     return () => {
-      subscription?.remove();
+      subscription.remove();
     };
-  }, [isAuthenticated, fetchAndMergeTraktProgress]);
-
-  // Note: Auth check sync removed - fetchAndMergeTraktProgress is already called
-  // by the isAuthenticated useEffect (lines 595-602) and app focus sync (lines 605-621)
-  // Having another useEffect on lastAuthCheck caused infinite update depth errors
-
-  // Manual force sync function for testing/troubleshooting
-  const forceSyncTraktProgress = useCallback(async (): Promise<boolean> => {
-    logger.log('[useTraktIntegration] Manual force sync triggered');
-    if (!isAuthenticated) {
-      logger.log('[useTraktIntegration] Cannot force sync - not authenticated');
-      return false;
-    }
-    return await fetchAndMergeTraktProgress();
-  }, [isAuthenticated, fetchAndMergeTraktProgress]);
+  }, [isAuthenticated, refreshAuthStatus, loadAllCollections]);
 
   return {
+    // State
     isAuthenticated,
     isLoading,
     userProfile,
@@ -721,30 +661,52 @@ export function useTraktIntegration() {
     collectionShows,
     continueWatching,
     ratedContent,
+    watchlistItems,
+    collectionItems,
+
+    // Core methods
     checkAuthStatus,
+    refreshAuthStatus,
     loadWatchedItems,
     loadAllCollections,
+
+    // Status checks
     isMovieWatched,
     isEpisodeWatched,
+    isInWatchlist,
+    isInCollection,
+    isMovieInWatchlist,
+    isShowInWatchlist,
+    isMovieInCollection,
+    isShowInCollection,
+
+    // Watch tracking
     markMovieAsWatched,
     markEpisodeAsWatched,
-    refreshAuthStatus,
+
+    // Watchlist operations
+    addToWatchlist,
+    removeFromWatchlist,
+    addMovieToWatchlist,
+    removeMovieFromWatchlist,
+    addShowToWatchlist,
+    removeShowFromWatchlist,
+
+    // Collection operations
+    addToCollection,
+    removeFromCollection,
+    addMovieToCollection,
+    removeMovieFromCollection,
+    addShowToCollection,
+    removeShowFromCollection,
+
+    // Scrobbling methods
     startWatching,
     updateProgress,
     updateProgressImmediate,
     stopWatching,
     stopWatchingImmediate,
-    syncProgress, // legacy
+    syncProgress,
     getTraktPlaybackProgress,
-    syncAllProgress,
-    fetchAndMergeTraktProgress,
-    forceSyncTraktProgress, // For manual testing
-    // Trakt content management
-    addToWatchlist,
-    removeFromWatchlist,
-    addToCollection,
-    removeFromCollection,
-    isInWatchlist,
-    isInCollection
   };
 }

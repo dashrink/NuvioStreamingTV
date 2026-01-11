@@ -11,7 +11,9 @@ import { SettingsCard, SettingItem, CustomSwitch, ChevronRight } from './Setting
 import { useRealtimeConfig } from '../../hooks/useRealtimeConfig';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { isTV, TV_TYPOGRAPHY, TV_SPACING } from '../../utils/tvStyles';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { useTVMode } from '../../hooks/useTVMode';
 import Focusable from '../../components/common/Focusable';
 

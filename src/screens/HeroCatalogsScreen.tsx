@@ -17,6 +17,7 @@ import CustomAlert from '../components/CustomAlert';
 import { useSettings, settingsEmitter } from '../hooks/useSettings';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { colors } from '../styles/colors';
 import { catalogService, StreamingAddon } from '../services/catalogService';
 import { useCustomCatalogNames } from '../hooks/useCustomCatalogNames';
@@ -84,12 +85,13 @@ const HeroCatalogsScreen: React.FC = () => {
   }, [showSavedIndicator, fadeAnim]);
 
   const handleSave = useCallback(() => {
+    triggerMedium();
     // First update the settings
     updateSetting('selectedHeroCatalogs', selectedCatalogs);
-    
+
     // Show the confirmation indicator
     setShowSavedIndicator(true);
-    
+
     // Short delay before navigating back to allow settings to save
     // and the user to see the confirmation message
     setTimeout(() => {
@@ -98,6 +100,7 @@ const HeroCatalogsScreen: React.FC = () => {
   }, [navigation, selectedCatalogs, updateSetting]);
 
   const handleBack = useCallback(() => {
+    triggerLight();
     navigation.goBack();
   }, [navigation]);
 
@@ -138,14 +141,17 @@ const HeroCatalogsScreen: React.FC = () => {
   }, []);
 
   const handleSelectAll = useCallback(() => {
+    triggerLight();
     setSelectedCatalogs(catalogs.map(catalog => catalog.id));
   }, [catalogs]);
 
   const handleSelectNone = useCallback(() => {
+    triggerLight();
     setSelectedCatalogs([]);
   }, []);
 
   const toggleCatalog = useCallback((catalogId: string) => {
+    triggerLight();
     setSelectedCatalogs(prev => {
       if (prev.includes(catalogId)) {
         return prev.filter(id => id !== catalogId);

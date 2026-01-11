@@ -35,6 +35,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackActions } from '@react-navigation/native';
 import CustomAlert from '../components/CustomAlert';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -210,6 +211,7 @@ const CastMoviesScreen: React.FC = () => {
   }, [displayLimit, filteredAndSortedMovies.length, isLoadingMore]);
 
   const handleMoviePress = async (movie: CastMovie) => {
+    triggerLight();
     if (__DEV__) {
       console.log('=== CastMoviesScreen: Movie Press ===');
       console.log('Movie data:', {
@@ -273,12 +275,13 @@ const CastMoviesScreen: React.FC = () => {
   };
 
   const handleBack = () => {
+    triggerLight();
     navigation.goBack();
   };
 
   const renderFilterButton = (filter: 'all' | 'movies' | 'tv', label: string, count: number) => {
     const isSelected = selectedFilter === filter;
-    
+
     return (
       <Animated.View entering={FadeIn.delay(100)}>
         <TouchableOpacity
@@ -286,14 +289,17 @@ const CastMoviesScreen: React.FC = () => {
             paddingHorizontal: 18,
             paddingVertical: 10,
             borderRadius: 25,
-            backgroundColor: isSelected 
-              ? currentTheme.colors.primary 
+            backgroundColor: isSelected
+              ? currentTheme.colors.primary
               : 'rgba(255, 255, 255, 0.08)',
             marginRight: 12,
             borderWidth: isSelected ? 0 : 1,
             borderColor: 'rgba(255, 255, 255, 0.12)',
           }}
-          onPress={() => setSelectedFilter(filter)}
+          onPress={() => {
+            triggerLight();
+            setSelectedFilter(filter);
+          }}
           activeOpacity={0.8}
         >
           <Text style={{
@@ -311,7 +317,7 @@ const CastMoviesScreen: React.FC = () => {
 
   const renderSortButton = (sort: 'popularity' | 'latest' | 'upcoming', label: string, icon: string) => {
     const isSelected = sortBy === sort;
-    
+
     return (
       <Animated.View entering={FadeIn.delay(200)}>
         <TouchableOpacity
@@ -319,14 +325,17 @@ const CastMoviesScreen: React.FC = () => {
             paddingHorizontal: 16,
             paddingVertical: 8,
             borderRadius: 20,
-            backgroundColor: isSelected 
-              ? 'rgba(255, 255, 255, 0.15)' 
+            backgroundColor: isSelected
+              ? 'rgba(255, 255, 255, 0.15)'
               : 'transparent',
             marginRight: 12,
             flexDirection: 'row',
             alignItems: 'center',
           }}
-          onPress={() => setSortBy(sort)}
+          onPress={() => {
+            triggerLight();
+            setSortBy(sort);
+          }}
           activeOpacity={0.7}
         >
           <MaterialIcons 
@@ -747,7 +756,10 @@ const CastMoviesScreen: React.FC = () => {
                       borderWidth: 1,
                       borderColor: 'rgba(255, 255, 255, 0.2)',
                     }}
-                    onPress={handleLoadMore}
+                    onPress={() => {
+                      triggerMedium();
+                      handleLoadMore();
+                    }}
                     activeOpacity={0.7}
                   >
                     <Text style={{

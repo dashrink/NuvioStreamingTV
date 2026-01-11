@@ -49,15 +49,16 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 import { aiService, ChatMessage, ContentContext, createMovieContext, createEpisodeContext, createSeriesContext, generateConversationStarters } from '../services/aiService';
 import { tmdbService } from '../services/tmdbService';
 import Markdown from 'react-native-markdown-display';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring, 
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
   withTiming,
   interpolate,
   Extrapolate,
   runOnJS
 } from 'react-native-reanimated';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -300,11 +301,16 @@ interface SuggestionChipProps {
 
 const SuggestionChip: React.FC<SuggestionChipProps> = React.memo(({ text, onPress }) => {
   const { currentTheme } = useTheme();
-  
+
+  const handlePress = () => {
+    triggerLight();
+    onPress();
+  };
+
   return (
     <TouchableOpacity
       style={[styles.suggestionChip, { backgroundColor: currentTheme.colors.elevation1 }]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
     >
       <Text style={[styles.suggestionText, { color: currentTheme.colors.primary }]}>
@@ -602,6 +608,7 @@ const AIChatScreen: React.FC = () => {
   }, [context, messages, isLoading]);
 
   const handleSendPress = useCallback(() => {
+    triggerMedium();
     sendMessage(inputText);
   }, [inputText, sendMessage]);
 
@@ -684,8 +691,9 @@ const AIChatScreen: React.FC = () => {
         headerAnimatedStyle
       ]}>
         <View style={styles.headerContent}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
+              triggerLight();
               if (Platform.OS === 'android') {
                 modalOpacity.value = withSpring(0, { damping: 18, stiffness: 160 }, (finished) => {
                   if (finished) runOnJS(navigation.goBack)();

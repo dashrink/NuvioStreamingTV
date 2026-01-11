@@ -15,6 +15,7 @@ import { useTrailer } from '../../contexts/TrailerContext';
 import { logger } from '../../utils/logger';
 import TrailerService from '../../services/trailerService';
 import Video, { VideoRef, OnLoadData, OnProgressData } from 'react-native-video';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -134,8 +135,9 @@ const TrailerModal: React.FC<TrailerModalProps> = memo(({
   }, [trailer, contentTitle, pauseTrailer]);
 
   const handleClose = useCallback(() => {
+    triggerLight(); // Haptic feedback for modal close
     setIsPlaying(false);
-    
+
     // Resume hero section trailer when modal closes
     try {
       resumeTrailer();
@@ -143,7 +145,7 @@ const TrailerModal: React.FC<TrailerModalProps> = memo(({
     } catch (error) {
       logger.warn('TrailerModal', 'Error resuming hero trailer:', error);
     }
-    
+
     onClose();
   }, [onClose, resumeTrailer]);
 
@@ -255,7 +257,7 @@ const TrailerModal: React.FC<TrailerModalProps> = memo(({
                 </Text>
                 <TouchableOpacity
                   style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
-                  onPress={loadTrailer}
+                  onPress={() => { triggerMedium(); loadTrailer(); }}
                 >
                   <Text style={styles.retryButtonText}>Try Again</Text>
                 </TouchableOpacity>

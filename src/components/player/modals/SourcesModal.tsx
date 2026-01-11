@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Stream } from '../../../types/streams';
 import Focusable from '../../common/Focusable';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface SourcesModalProps {
   showSourcesModal: boolean;
@@ -62,6 +63,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
   const MENU_WIDTH = Math.min(width * 0.85, 400);
 
   const handleClose = () => {
+    triggerLight();
     setShowSourcesModal(false);
   };
 
@@ -71,6 +73,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
 
   const handleStreamSelect = (stream: Stream) => {
     if (stream.url !== currentStreamUrl && !isChangingSource) {
+      triggerMedium();
       onSelectStream(stream);
     }
   };
@@ -236,7 +239,10 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
             <View style={{ padding: 40, alignItems: 'center', opacity: 0.5 }}>
               <MaterialIcons name="cloud-off" size={48} color="white" />
               <Text style={{ color: 'white', marginTop: 16, textAlign: 'center', fontWeight: '600' }}>
-                No sources found
+                No sources available
+              </Text>
+              <Text style={{ color: 'rgba(255, 255, 255, 0.6)', marginTop: 8, textAlign: 'center', fontSize: 14 }}>
+                Try searching for different content
               </Text>
             </View>
           )}

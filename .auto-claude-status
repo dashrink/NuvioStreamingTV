@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "015-standardize-haptic-feedback-for-touch-interactions",
+  "state": "building",
+  "subtasks": {
+    "completed": 34,
+    "total": 35,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "",
+    "id": 0,
+    "total": 0
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 22,
+    "started_at": "2026-01-10T22:41:16.082498"
+  },
+  "last_update": "2026-01-10T23:32:52.293386"
+}

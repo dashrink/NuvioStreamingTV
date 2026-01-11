@@ -12,7 +12,8 @@ import ScreenHeader from '../../components/common/ScreenHeader';
 import PluginIcon from '../../components/icons/PluginIcon';
 import { SettingsCard, SettingItem, CustomSwitch, ChevronRight } from './SettingsComponents';
 import { useRealtimeConfig } from '../../hooks/useRealtimeConfig';
-import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { useTVMode } from '../../hooks/useTVMode';
 
 const { width } = Dimensions.get('window');

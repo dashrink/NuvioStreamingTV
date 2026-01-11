@@ -9,6 +9,7 @@ import ContentItem from './ContentItem';
 import Focusable from '../common/Focusable';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { triggerLight } from '../../hooks/useHaptics';
 import {
   isTV as isTVDevice,
   TV_SPACING,
@@ -229,13 +230,14 @@ const CatalogSection = ({
         </View>
         <Focusable
           ref={viewAllButtonRef}
-          onPress={() =>
+          onPress={() => {
+            triggerLight(); // Haptic feedback for navigation
             navigation.navigate('Catalog', {
               id: catalog.id,
               type: catalog.type,
               addonId: catalog.addon
-            })
-          }
+            });
+          }}
           style={[
             styles.viewAllButton,
             {
@@ -293,7 +295,7 @@ const CatalogSection = ({
         windowSize={isTV ? 4 : isLargeTablet ? 4 : 3}
         updateCellsBatchingPeriod={50}
       />
-    </View >
+    </View>
   );
 };
 

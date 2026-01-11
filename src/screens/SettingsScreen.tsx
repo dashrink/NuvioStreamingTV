@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 import {
   View,
@@ -85,6 +86,11 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
   const itemRefs = useRef<{ [key: string]: any }>({});
   const useTVStyle = isTV;
 
+  const handleCategorySelect = (categoryId: string) => {
+    triggerLight();
+    onCategorySelect(categoryId);
+  };
+
   return (
     <View style={[
       styles.sidebar,
@@ -127,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onCategorySelect, c
                 useTVStyle && styles.tvSidebarItemActive
               ]
             ]}
-            onPress={() => onCategorySelect(category.id)}
+            onPress={() => handleCategorySelect(category.id)}
           >
             <View style={[
               styles.sidebarItemIconContainer,
@@ -217,9 +223,14 @@ const SettingsScreen: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('account');
 
   // States for dynamic content
+  const [addonCount, setAddonCount] = useState<number>(0);
+  const [catalogCount, setCatalogCount] = useState<number>(0);
   const [mdblistKeySet, setMdblistKeySet] = useState<boolean>(false);
-  const [totalDownloads, setTotalDownloads] = useState<number>(0);
+  const [openRouterKeySet, setOpenRouterKeySet] = useState<boolean>(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
+  const [totalDownloads, setTotalDownloads] = useState<number | null>(null);
   const [displayDownloads, setDisplayDownloads] = useState<number | null>(null);
+  const [isCountingUp, setIsCountingUp] = useState<boolean>(false);
 
   // Use Realtime Config Hook
   const settingsConfig = useRealtimeConfig();
@@ -245,35 +256,73 @@ const SettingsScreen: React.FC = () => {
 
   const loadData = useCallback(async () => {
     try {
+      // Load addon count and get their catalogs
+      const addons = await stremioService.getInstalledAddonsAsync();
+      setAddonCount(addons.length);
+      setInitialLoadComplete(true);
+
+      // Count total available catalogs
+      let totalCatalogs = 0;
+      addons.forEach(addon => {
+        if (addon.catalogs && addon.catalogs.length > 0) {
+          totalCatalogs += addon.catalogs.length;
+        }
+      });
+
+      // Load saved catalog settings
+      const catalogSettingsJson = await mmkvStorage.getItem('catalog_settings');
+      if (catalogSettingsJson) {
+        const catalogSettings = JSON.parse(catalogSettingsJson);
+        // Filter out _lastUpdate key and count only explicitly disabled catalogs
+        const disabledCount = Object.entries(catalogSettings)
+          .filter(([key, value]) => key !== '_lastUpdate' && value === false)
+          .length;
+        // Since catalogs are enabled by default, subtract disabled ones from total
+        setCatalogCount(totalCatalogs - disabledCount);
+      } else {
+        // If no settings saved, all catalogs are enabled by default
+        setCatalogCount(totalCatalogs);
+      }
+
       // Check MDBList API key status
       const mdblistKey = await mmkvStorage.getItem('mdblist_api_key');
       setMdblistKeySet(!!mdblistKey);
 
-      // Load GitHub total downloads
+      // Check OpenRouter API key status
+      const openRouterKey = await mmkvStorage.getItem('openrouter_api_key');
+      setOpenRouterKeySet(!!openRouterKey);
+
+      // Load GitHub total downloads (initial load only, polling happens in useEffect)
       const downloads = await fetchTotalDownloads();
       if (downloads !== null) {
         setTotalDownloads(downloads);
         setDisplayDownloads(downloads);
       }
+
     } catch (error) {
       if (__DEV__) console.error('Error loading settings data:', error);
     }
   }, []);
 
+  // Load data initially and when catalogs are updated
   useEffect(() => {
     loadData();
   }, [loadData, lastUpdate]);
 
+  // Add focus listener to reload data when screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadData();
     });
+
     return unsubscribe;
   }, [navigation, loadData]);
 
-  // Poll GitHub downloads
+  // Poll GitHub downloads every 10 seconds when on the About section
   useEffect(() => {
+    // Only poll when viewing the About section (where downloads counter is shown)
     const shouldPoll = isTablet ? selectedCategory === 'about' : true;
+
     if (!shouldPoll) return;
 
     const pollInterval = setInterval(async () => {
@@ -285,16 +334,17 @@ const SettingsScreen: React.FC = () => {
       } catch (error) {
         if (__DEV__) console.error('Error polling downloads:', error);
       }
-    }, 3600000);
+    }, 3600000); // 3600000 milliseconds (1 hour)
 
     return () => clearInterval(pollInterval);
-  }, [selectedCategory, totalDownloads]);
+  }, [selectedCategory, isTablet, totalDownloads]);
 
   // Animate counting up when totalDownloads changes
   useEffect(() => {
     if (totalDownloads === null || displayDownloads === null) return;
     if (totalDownloads === displayDownloads) return;
 
+    setIsCountingUp(true);
     const start = displayDownloads;
     const end = totalDownloads;
     const duration = 2000;
@@ -313,6 +363,7 @@ const SettingsScreen: React.FC = () => {
         requestAnimationFrame(animate);
       } else {
         setDisplayDownloads(end);
+        setIsCountingUp(false);
       }
     };
 
@@ -369,7 +420,10 @@ const SettingsScreen: React.FC = () => {
                 description={isAuthenticated ? `@${userProfile?.username || 'User'}` : "Sign in to sync"}
                 customIcon={<TraktIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />}
                 renderControl={() => <ChevronRight />}
-                onPress={() => navigation.navigate('TraktSettings')}
+                onPress={() => {
+                  triggerLight();
+                  navigation.navigate('TraktSettings');
+                }}
                 isLast={true}
                 isTablet={isTablet}
               />
@@ -398,7 +452,10 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               title="Test Onboarding"
               icon="play-circle"
-              onPress={() => navigation.navigate('Onboarding')}
+              onPress={() => {
+                triggerLight();
+                navigation.navigate('Onboarding');
+              }}
               renderControl={() => <ChevronRight />}
               isTablet={isTablet}
             />
@@ -407,6 +464,7 @@ const SettingsScreen: React.FC = () => {
               icon="refresh-ccw"
               onPress={async () => {
                 try {
+                  triggerLight();
                   await mmkvStorage.removeItem('hasCompletedOnboarding');
                   openAlert('Success', 'Onboarding has been reset. Restart the app to see the onboarding flow.');
                 } catch (error) {
@@ -416,640 +474,263 @@ const SettingsScreen: React.FC = () => {
               renderControl={() => <ChevronRight />}
               isTablet={isTablet}
             />
-            <SettingItem
-              title="Test Announcement"
-              icon="bell"
-              description="Show what's new overlay"
-              onPress={async () => {
-                try {
-                  await mmkvStorage.removeItem('announcement_v1.0.0_shown');
-                  openAlert('Success', 'Announcement reset. Restart the app to see the announcement overlay.');
-                } catch (error) {
-                  openAlert('Error', 'Failed to reset announcement.');
-                }
-              }}
-              renderControl={() => <ChevronRight />}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Reset Campaigns"
-              description="Clear campaign impressions"
-              icon="refresh-cw"
-              onPress={async () => {
-                await campaignService.resetCampaigns();
-                openAlert('Success', 'Campaign history reset. Restart app to see posters again.');
-              }}
-              renderControl={() => <ChevronRight />}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Clear All Data"
-              icon="trash-2"
-              onPress={() => {
-                openAlert(
-                  'Clear All Data',
-                  'This will reset all settings and clear all cached data. Are you sure?',
-                  [
-                    { label: 'Cancel', onPress: () => { } },
-                    {
-                      label: 'Clear',
-                      onPress: async () => {
-                        try {
-                          await mmkvStorage.clear();
-                          openAlert('Success', 'All data cleared. Please restart the app.');
-                        } catch (error) {
-                          openAlert('Error', 'Failed to clear data.');
-                        }
-                      }
-                    }
-                  ]
-                );
-              }}
-              isLast={true}
-              isTablet={isTablet}
-            />
           </SettingsCard>
         ) : null;
 
       case 'cache':
         return mdblistKeySet ? (
-          <SettingsCard title="CACHE MANAGEMENT" isTablet={isTablet}>
+          <SettingsCard title="CACHE" isTablet={isTablet}>
             <SettingItem
               title="Clear MDBList Cache"
-              icon="database"
+              description="Remove all cached MDBList data"
+              icon="trash-2"
               onPress={handleClearMDBListCache}
-              isLast={true}
+              renderControl={() => <ChevronRight />}
               isTablet={isTablet}
+              isLast={true}
             />
           </SettingsCard>
         ) : null;
-
-      case 'backup':
-        return (
-          <SettingsCard title="BACKUP & RESTORE" isTablet={isTablet}>
-            <SettingItem
-              title="Backup & Restore"
-              description="Create and restore app backups"
-              icon="archive"
-              renderControl={() => <ChevronRight />}
-              onPress={() => navigation.navigate('Backup')}
-              isLast={true}
-              isTablet={isTablet}
-            />
-          </SettingsCard>
-        );
-
-      case 'updates':
-        return (
-          <SettingsCard title="UPDATES" isTablet={isTablet}>
-            <SettingItem
-              title="App Updates"
-              description="Check for updates and manage app version"
-              icon="refresh-ccw"
-              renderControl={() => <ChevronRight />}
-              badge={Platform.OS === 'android' && hasUpdateBadge ? 1 : undefined}
-              onPress={async () => {
-                if (Platform.OS === 'android') {
-                  try { await mmkvStorage.removeItem('@update_badge_pending'); } catch { }
-                  setHasUpdateBadge(false);
-                }
-                navigation.navigate('Update');
-              }}
-              isLast={true}
-              isTablet={isTablet}
-            />
-          </SettingsCard>
-        );
 
       default:
         return null;
     }
   };
 
-  // Keep headers below floating top navigator on tablets
-  const tabletNavOffset = isTablet ? 64 : 0;
-  const tvNavOffset = useTVLayout ? TV_SPACING.screenPadding : 0;
-
-  // TABLET/TV LAYOUT - Use sidebar navigation on both tablet and TV
-  if (isTablet || useTVLayout) {
-    return (
-      <View style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground },
-        useTVLayout && styles.tvContainer
-      ]}>
-        <StatusBar barStyle={'light-content'} />
-        <View style={[styles.tabletContainer, useTVLayout && styles.tvTabletContainer]}>
-          <Sidebar
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-            currentTheme={currentTheme}
-            categories={visibleCategories}
-            extraTopPadding={useTVLayout ? tvNavOffset : tabletNavOffset}
-          />
-
-          <View style={[
-            styles.tabletContent,
-            useTVLayout && styles.tvContent,
-            {
-              paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + (useTVLayout ? tvNavOffset : tabletNavOffset),
-            }
-          ]}>
-            <ScrollView
-              ref={tabletScrollViewRef}
-              style={[styles.tabletScrollView, useTVLayout && styles.tvScrollView]}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[styles.tabletScrollContent, useTVLayout && styles.tvScrollContent]}
-            >
-              {renderCategoryContent(selectedCategory)}
-
-              {selectedCategory === 'about' && (
-                <AboutFooter displayDownloads={displayDownloads} />
-              )}
-            </ScrollView>
-          </View>
-        </View>
-        <CustomAlert
-          visible={alertVisible}
-          title={alertTitle}
-          message={alertMessage}
-          actions={alertActions}
-          onClose={() => setAlertVisible(false)}
-        />
-      </View>
-    );
-  }
-
-  // MOBILE LAYOUT - Simplified navigation hub
   return (
-    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-      <StatusBar barStyle={'light-content'} />
-      <ScreenHeader title="Settings" />
-      <View style={{ flex: 1 }}>
-        <View style={styles.contentContainer}>
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: currentTheme.colors.background }]}>
+        {isTablet ? (
+          // Tablet layout with sidebar
+          <View style={styles.tabletContainer}>
+            <Sidebar
+              selectedCategory={selectedCategory}
+              onCategorySelect={setSelectedCategory}
+              currentTheme={currentTheme}
+              categories={visibleCategories}
+              extraTopPadding={0}
+            />
+            <View style={[styles.tabletContent, { backgroundColor: currentTheme.colors.background }]}>
+              <ScrollView
+                ref={tabletScrollViewRef}
+                showsVerticalScrollIndicator={false}
+                style={styles.contentScroll}
+              >
+                {renderCategoryContent(selectedCategory)}
+                {selectedCategory === 'about' && <AboutFooter />}
+              </ScrollView>
+            </View>
+          </View>
+        ) : (
+          // Mobile layout with stacked sections
           <ScrollView
             ref={mobileScrollViewRef}
-            style={styles.scrollView}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            style={styles.contentScroll}
           >
-            {/* Account */}
-            {(settingsConfig?.categories?.['account']?.visible !== false) && isItemVisible('trakt') && (
-              <SettingsCard title="ACCOUNT">
-                {isItemVisible('trakt') && (
-                  <SettingItem
-                    title="Trakt"
-                    description={isAuthenticated ? `@${userProfile?.username || 'User'}` : "Sign in to sync"}
-                    customIcon={<TraktIcon size={20} color={currentTheme.colors.primary} />}
-                    renderControl={() => <ChevronRight />}
-                    onPress={() => navigation.navigate('TraktSettings')}
-                    isLast
-                  />
-                )}
-              </SettingsCard>
-            )}
-
-            {/* General Settings */}
-            {(
-              (settingsConfig?.categories?.['content']?.visible !== false) ||
-              (settingsConfig?.categories?.['appearance']?.visible !== false) ||
-              (settingsConfig?.categories?.['integrations']?.visible !== false) ||
-              (settingsConfig?.categories?.['playback']?.visible !== false)
-            ) && (
-                <SettingsCard title="GENERAL">
-                  {(settingsConfig?.categories?.['content']?.visible !== false) && (
-                    <SettingItem
-                      title="Content & Discovery"
-                      description="Addons, catalogs, and sources"
-                      icon="compass"
-                      renderControl={() => <ChevronRight />}
-                      onPress={() => navigation.navigate('ContentDiscoverySettings')}
-                    />
-                  )}
-                  {(settingsConfig?.categories?.['appearance']?.visible !== false) && (
-                    <SettingItem
-                      title="Appearance"
-                      description={currentTheme.name}
-                      icon="sliders"
-                      renderControl={() => <ChevronRight />}
-                      onPress={() => navigation.navigate('AppearanceSettings')}
-                    />
-                  )}
-                  {(settingsConfig?.categories?.['integrations']?.visible !== false) && (
-                    <SettingItem
-                      title="Integrations"
-                      description="MDBList, TMDB, AI"
-                      icon="layers"
-                      renderControl={() => <ChevronRight />}
-                      onPress={() => navigation.navigate('IntegrationsSettings')}
-                    />
-                  )}
-                  {(settingsConfig?.categories?.['playback']?.visible !== false) && (
-                    <SettingItem
-                      title="Playback"
-                      description="Player, trailers, downloads"
-                      icon="play-circle"
-                      renderControl={() => <ChevronRight />}
-                      onPress={() => navigation.navigate('PlaybackSettings')}
-                      isLast
-                    />
-                  )}
-                </SettingsCard>
-              )}
-
-            {/* Data */}
-            {(
-              (settingsConfig?.categories?.['backup']?.visible !== false) ||
-              (settingsConfig?.categories?.['updates']?.visible !== false)
-            ) && (
-                <SettingsCard title="DATA">
-                  {(settingsConfig?.categories?.['backup']?.visible !== false) && (
-                    <SettingItem
-                      title="Backup & Restore"
-                      description="Create and restore app backups"
-                      icon="archive"
-                      renderControl={() => <ChevronRight />}
-                      onPress={() => navigation.navigate('Backup')}
-                    />
-                  )}
-                  {(settingsConfig?.categories?.['updates']?.visible !== false) && (
-                    <SettingItem
-                      title="App Updates"
-                      description="Check for updates"
-                      icon="refresh-ccw"
-                      badge={Platform.OS === 'android' && hasUpdateBadge ? 1 : undefined}
-                      renderControl={() => <ChevronRight />}
-                      onPress={async () => {
-                        if (Platform.OS === 'android') {
-                          try { await mmkvStorage.removeItem('@update_badge_pending'); } catch { }
-                          setHasUpdateBadge(false);
-                        }
-                        navigation.navigate('Update');
-                      }}
-                      isLast
-                    />
-                  )}
-                </SettingsCard>
-              )}
-
-            {/* Cache - only if MDBList is set */}
-            {mdblistKeySet && (
-              <SettingsCard title="CACHE">
-                <SettingItem
-                  title="Clear MDBList Cache"
-                  icon="database"
-                  onPress={handleClearMDBListCache}
-                  isLast
-                />
-              </SettingsCard>
-            )}
-
-            {/* About */}
-            <SettingsCard title="ABOUT">
-              <SettingItem
-                title="About Nuvio"
-                description={getDisplayedAppVersion()}
-                icon="info"
-                renderControl={() => <ChevronRight />}
-                onPress={() => navigation.navigate('AboutSettings')}
-                isLast
-              />
-            </SettingsCard>
-
-            {/* Developer - only in DEV mode */}
-            {__DEV__ && (
-              <SettingsCard title="DEVELOPER">
-                <SettingItem
-                  title="Developer Tools"
-                  description="Testing and debug options"
-                  icon="code"
-                  renderControl={() => <ChevronRight />}
-                  onPress={() => navigation.navigate('DeveloperSettings')}
-                  isLast
-                />
-              </SettingsCard>
-            )}
-
-            {/* Downloads Counter */}
-            {settingsConfig?.items?.['downloads_counter']?.visible !== false && displayDownloads !== null && (
-              <View style={styles.downloadsContainer}>
-                <Text style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}>
-                  {displayDownloads.toLocaleString()}
-                </Text>
-                <Text style={[styles.downloadsLabel, { color: currentTheme.colors.mediumEmphasis }]}>
-                  downloads and counting
-                </Text>
+            <ScreenHeader title="Settings" />
+            {/* Render all visible categories */}
+            {visibleCategories.map((category) => (
+              <View key={category.id}>
+                {renderCategoryContent(category.id)}
               </View>
-            )}
-
-            {/* Support & Community Buttons */}
-            <View style={styles.discordContainer}>
-              <Focusable
-                style={[styles.discordButton, { backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, marginBottom: 8 }]}
-                onPress={() => WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                  presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                })}
-              >
-                <FastImage
-                  source={require('../../assets/support_me_on_kofi_red.png')}
-                  style={styles.kofiImage}
-                  resizeMode={FastImage.resizeMode.contain}
-                />
-              </Focusable>
-
-              <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <Focusable
-                  style={[styles.discordButton, { backgroundColor: currentTheme.colors.elevation1 }]}
-                  onPress={() => Linking.openURL('https://discord.gg/KVgDTjhA4H')}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.discordButtonContent}>
-                    <FastImage
-                      source={{ uri: 'https://pngimg.com/uploads/discord/discord_PNG3.png' }}
-                      style={styles.discordLogo}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                    <Text style={[styles.discordButtonText, { color: currentTheme.colors.highEmphasis }]}>
-                      Discord
-                    </Text>
-                  </View>
-                </Focusable>
-
-                <Focusable
-                  style={[styles.discordButton, { backgroundColor: '#FF4500' + '15' }]}
-                  onPress={() => Linking.openURL('https://www.reddit.com/r/Nuvio/')}
-                >
-                  <View style={styles.discordButtonContent}>
-                    <FastImage
-                      source={{ uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png' }}
-                      style={styles.discordLogo}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                    <Text style={[styles.discordButtonText, { color: '#FF4500' }]}>
-                      Reddit
-                    </Text>
-                  </View>
-                </Focusable>
-              </View>
-            </View>
-
-            {/* Monkey Animation */}
-            <View style={styles.monkeyContainer}>
-              <LottieView
-                source={require('../assets/lottie/monito.json')}
-                autoPlay
-                loop
-                style={styles.monkeyAnimation}
-                resizeMode="contain"
-              />
-            </View>
-
-            <View style={styles.brandLogoContainer}>
-              <FastImage
-                source={require('../../assets/nuviotext.png')}
-                style={styles.brandLogo}
-                resizeMode={FastImage.resizeMode.contain}
-              />
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: currentTheme.colors.mediumEmphasis }]}>
-                Made with ❤️ by Tapframe and friends
-              </Text>
-            </View>
-
-            <View style={{ height: 50 }} />
+            ))}
+            <AboutFooter />
           </ScrollView>
-        </View>
-      </View>
+        )}
+      </SafeAreaView>
+
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
         actions={alertActions}
-        onClose={() => setAlertVisible(false)}
+        onDismiss={() => setAlertVisible(false)}
       />
     </View>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // Mobile styles
-  contentContainer: {
+  safeArea: {
     flex: 1,
-    zIndex: 1,
-    width: '100%',
   },
-  scrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    width: '100%',
-    paddingTop: 8,
-    paddingBottom: 32,
-  },
-  // Tablet-specific styles
   tabletContainer: {
     flex: 1,
     flexDirection: 'row',
   },
   sidebar: {
-    width: 280,
+    width: 240,
     borderRightWidth: 1,
+    maxHeight: '100%',
+  },
+  tvSidebar: {
+    width: 280,
   },
   sidebarHeader: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48,
     borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  tvSidebarHeader: {
+    paddingHorizontal: 20,
   },
   sidebarTitle: {
-    fontSize: 42,
+    fontSize: 20,
     fontWeight: '700',
-    letterSpacing: -0.3,
+  },
+  tvSidebarTitle: {
+    fontSize: 28,
+    fontWeight: '700',
   },
   sidebarContent: {
     flex: 1,
-    paddingTop: 12,
-    paddingBottom: 24,
   },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginHorizontal: 8,
+    borderRadius: 8,
+    marginVertical: 4,
+  },
+  tvSidebarItem: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginHorizontal: 12,
-    marginVertical: 2,
-    borderRadius: 10,
+    marginVertical: 8,
+    borderRadius: 12,
   },
   sidebarItemActive: {
-    borderRadius: 10,
+    backgroundColor: 'rgba(255,0,0,0.1)',
+  },
+  tvSidebarItemActive: {
+    backgroundColor: 'rgba(255,0,0,0.15)',
   },
   sidebarItemIconContainer: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: 8,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  tvSidebarItemIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    marginRight: 16,
   },
   sidebarItemText: {
-    fontSize: 15,
-    marginLeft: 12,
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  tvSidebarItemText: {
+    fontSize: 18,
+    fontWeight: '500',
   },
   tabletContent: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
-  tabletScrollView: {
-    flex: 1,
-    paddingHorizontal: 40,
-  },
-  tabletScrollContent: {
-    paddingTop: 8,
-    paddingBottom: 40,
-  },
-  // TV-specific styles for 10-foot viewing experience
-  tvContainer: {
-    paddingHorizontal: 0,
-  },
-  tvTabletContainer: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  tvSidebar: {
-    width: 360,
-    borderRightWidth: 2,
-  },
-  tvSidebarHeader: {
-    paddingHorizontal: TV_SPACING.xl,
-    paddingBottom: TV_SPACING.xl,
-  },
-  tvSidebarTitle: {
-    fontSize: TV_TYPOGRAPHY.displaySmall,
-    fontWeight: '700',
-    letterSpacing: -0.5,
-  },
-  tvSidebarItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: TV_SPACING.lg,
-    paddingVertical: TV_SPACING.lg,
-    marginHorizontal: TV_SPACING.md,
-    marginVertical: TV_SPACING.xs,
-    borderRadius: 16,
-    minHeight: TV_TOUCH_TARGETS.standard.height,
-  },
-  tvSidebarItemActive: {
-    borderRadius: 16,
-  },
-  tvSidebarItemIconContainer: {
-    width: TV_TOUCH_TARGETS.standard.width - 8,
-    height: TV_TOUCH_TARGETS.standard.height - 8,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tvSidebarItemText: {
-    fontSize: TV_TYPOGRAPHY.titleMedium,
-    marginLeft: TV_SPACING.lg,
-  },
-  tvContent: {
+  contentScroll: {
     flex: 1,
   },
-  tvScrollView: {
-    flex: 1,
-    paddingHorizontal: TV_SPACING.screenPadding,
-  },
-  tvScrollContent: {
-    paddingTop: TV_SPACING.lg,
-    paddingBottom: TV_SPACING.xxl,
-  },
-  // Footer and social styles
-  footer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 48,
-  },
-  footerText: {
-    fontSize: 13,
-    opacity: 0.5,
-    letterSpacing: 0.2,
-  },
-  discordContainer: {
-    marginTop: 12,
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  discordButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    maxWidth: 200,
-  },
-  discordButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  discordLogo: {
-    width: 18,
-    height: 18,
-    marginRight: 10,
-  },
-  discordButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  kofiImage: {
-    height: 34,
-    width: 155,
-  },
-  downloadsContainer: {
-    marginTop: 32,
+  cardContainer: {
     marginBottom: 16,
-    alignItems: 'center',
   },
-  downloadsNumber: {
-    fontSize: 36,
-    fontWeight: '800',
+  tabletCardContainer: {
+    marginBottom: 20,
+  },
+  cardTitle: {
+    fontSize: 12,
+    fontWeight: '600',
     letterSpacing: 0.5,
-    marginBottom: 6,
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  downloadsLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    opacity: 0.5,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+  tabletCardTitle: {
+    fontSize: 13,
+    marginBottom: 10,
   },
-  monkeyContainer: {
+  card: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  tabletCard: {
+    borderRadius: 12,
+  },
+  settingItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 16,
   },
-  monkeyAnimation: {
-    width: 180,
-    height: 180,
+  tabletSettingItem: {
+    paddingHorizontal: 18,
+    paddingVertical: 14,
   },
-  brandLogoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 16,
-    opacity: 0.8,
+  settingItemBorder: {
+    borderBottomWidth: 1,
   },
-  brandLogo: {
-    width: 120,
+  settingIconContainer: {
+    width: 40,
     height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  tabletSettingIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    marginRight: 14,
+  },
+  settingContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  settingTextContainer: {
+    flex: 1,
+  },
+  settingTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  tabletSettingTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  settingDescription: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  tabletSettingDescription: {
+    fontSize: 13,
+  },
+  settingControl: {
+    marginLeft: 12,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginHorizontal: 8,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

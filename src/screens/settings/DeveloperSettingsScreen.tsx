@@ -10,7 +10,8 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import CustomAlert from '../../components/CustomAlert';
 import { SettingsCard, SettingItem, ChevronRight } from './SettingsComponents';
-import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { useTVMode } from '../../hooks/useTVMode';
 
 const DeveloperSettingsScreen: React.FC = () => {

@@ -20,6 +20,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { SvgXml } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
@@ -148,7 +149,10 @@ const AISettingsScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <Focusable 
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           style={styles.backButton}
           hasTVPreferredFocus={true}
         >
@@ -256,7 +260,10 @@ const AISettingsScreen: React.FC = () => {
               {!isKeySet ? (
                 <Focusable
                   style={[styles.saveButton, { backgroundColor: currentTheme.colors.primary }]}
-                  onPress={handleSaveApiKey}
+                  onPress={() => {
+                    triggerMedium();
+                    handleSaveApiKey();
+                  }}
                   disabled={loading}
                 >
                   <MaterialIcons 
@@ -273,7 +280,10 @@ const AISettingsScreen: React.FC = () => {
                 <View style={styles.buttonRow}>
                   <Focusable
                     style={[styles.updateButton, { backgroundColor: currentTheme.colors.primary }]}
-                    onPress={handleSaveApiKey}
+                    onPress={() => {
+                      triggerMedium();
+                      handleSaveApiKey();
+                    }}
                     disabled={loading}
                   >
                     <MaterialIcons 
@@ -287,7 +297,10 @@ const AISettingsScreen: React.FC = () => {
                   
                   <Focusable
                     style={[styles.removeButton, { borderColor: currentTheme.colors.error }]}
-                    onPress={handleRemoveApiKey}
+                    onPress={() => {
+                      triggerHeavy();
+                      handleRemoveApiKey();
+                    }}
                   >
                     <MaterialIcons 
                       name="delete" 
@@ -314,67 +327,19 @@ const AISettingsScreen: React.FC = () => {
                 style={{ marginRight: 8 }}
               />
               <Text style={[styles.getKeyButtonText, { color: currentTheme.colors.primary }]}>
-                Get Free API Key from OpenRouter
+                Get Free API Key
               </Text>
             </Focusable>
           </View>
         </View>
-
-        {/* Enable Toggle (top) */}
-        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}> 
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>Enable AI Chat</Text>
-                        <CustomSwitch
-              value={!!settings.aiChatEnabled}
-              onValueChange={(v: boolean) => updateSetting('aiChatEnabled', v)}
-            />
-          </View>
-          <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis, marginTop: 8 }]}>When enabled, the Ask AI button will appear on content pages.</Text>
-        </View>
-
-        {/* Status Card */}
-        {isKeySet && (
-          <View style={[styles.statusCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
-            <View style={styles.statusHeader}>
-              <MaterialIcons 
-                name="check-circle" 
-                size={24} 
-                color={currentTheme.colors.success || '#4CAF50'}
-              />
-              <Text style={[styles.statusTitle, { color: currentTheme.colors.success || '#4CAF50' }]}>
-                AI Chat Enabled
-              </Text>
-            </View>
-            <Text style={[styles.statusDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-              You can now ask questions about movies and TV shows. Look for the "Ask AI" button on content pages!
-            </Text>
-          </View>
-        )}
-
-        {/* Usage Info */}
-        <View style={[styles.usageCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
-          <Text style={[styles.usageTitle, { color: currentTheme.colors.highEmphasis }]}>
-            How it works
-          </Text>
-          <Text style={[styles.usageText, { color: currentTheme.colors.mediumEmphasis }]}>
-            • OpenRouter provides access to multiple AI models{'\n'}
-            • Your API key stays private and secure{'\n'}
-            • Free tier includes generous usage limits{'\n'}
-            • Chat with context about specific episodes/movies{'\n'}
-            • Get detailed analysis and explanations
-          </Text>
-        </View>
-        {/* OpenRouter branding */}
-        <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 32 }}>
-          <SvgXml xml={OPENROUTER_SVG.replace(/CURRENTCOLOR/g, currentTheme.colors.mediumEmphasis)} width={180} height={60} />
-        </View>
       </ScrollView>
+
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
-        onClose={() => setAlertVisible(false)}
         actions={alertActions}
+        onClose={() => setAlertVisible(false)}
       />
     </SafeAreaView>
   );
@@ -385,196 +350,175 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
   },
   backText: {
-    fontSize: 17,
+    fontSize: 16,
     marginLeft: 8,
+    fontWeight: '500',
   },
   headerActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    marginLeft: 8,
+    gap: 8,
   },
   headerTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: 'bold',
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    gap: 16,
   },
   infoCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginHorizontal: 16,
-    marginBottom: 20,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
   },
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 12,
   },
   infoTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginLeft: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   infoDescription: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: 16,
+    fontSize: 14,
+    lineHeight: 20,
   },
   featureList: {
-    gap: 8,
+    gap: 12,
+    marginTop: 8,
   },
   featureItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: 12,
   },
   featureText: {
-    fontSize: 15,
-    marginLeft: 8,
+    fontSize: 14,
     flex: 1,
+    lineHeight: 20,
   },
   card: {
-    borderRadius: 16,
-    padding: 20,
-    marginHorizontal: 16,
-    marginBottom: 20,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
   },
   cardTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    marginBottom: 16,
+    fontSize: 12,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   apiKeySection: {
     gap: 12,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   description: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
   input: {
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
     borderWidth: 1,
+    minHeight: 40,
   },
   buttonContainer: {
+    gap: 12,
     marginTop: 8,
+  },
+  saveButton: {
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   updateButton: {
+    flex: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    flex: 1,
+    minHeight: 44,
   },
   updateButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
   },
   removeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderWidth: 2,
     flex: 1,
-  },
-  removeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  getKeyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    minHeight: 44,
+  },
+  removeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  getKeyButton: {
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
     marginTop: 8,
   },
   getKeyButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  statusCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 12,
-  },
-  statusDescription: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  usageCard: {
-    borderRadius: 16,
-    padding: 20,
-  },
-  usageTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  usageText: {
-    fontSize: 15,
-    lineHeight: 24,
+    textAlign: 'center',
   },
 });
 

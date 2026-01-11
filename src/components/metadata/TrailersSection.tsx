@@ -20,6 +20,7 @@ import { logger } from '../../utils/logger';
 import TrailerService from '../../services/trailerService';
 import TrailerModal from './TrailerModal';
 import Animated, { useSharedValue, withTiming, withDelay, useAnimatedStyle } from 'react-native-reanimated';
+import { triggerLight } from '../../hooks/useHaptics';
 
 // Enhanced responsive breakpoints for Trailers Section
 const BREAKPOINTS = {
@@ -373,6 +374,7 @@ const TrailersSection: React.FC<TrailersSectionProps> = memo(({
 
   // Handle trailer selection
   const handleTrailerPress = (trailer: TrailerVideo) => {
+    triggerLight(); // Haptic feedback for trailer selection
     // Pause hero section trailer when modal opens
     try {
       pauseTrailer();
@@ -394,12 +396,14 @@ const TrailersSection: React.FC<TrailersSectionProps> = memo(({
 
   // Handle category selection
   const handleCategorySelect = (category: string) => {
+    triggerLight(); // Haptic feedback for category selection
     setSelectedCategory(category);
     setDropdownVisible(false);
   };
 
   // Toggle dropdown
   const toggleDropdown = () => {
+    triggerLight(); // Haptic feedback for dropdown toggle
     setDropdownVisible(!dropdownVisible);
   };
 
@@ -565,7 +569,7 @@ const TrailersSection: React.FC<TrailersSectionProps> = memo(({
         <TouchableOpacity
           style={styles.dropdownOverlay}
           activeOpacity={1}
-          onPress={() => setDropdownVisible(false)}
+          onPress={() => { triggerLight(); setDropdownVisible(false); }}
         >
           <View style={[styles.dropdownContainer, {
             backgroundColor: currentTheme.colors.background,

@@ -14,7 +14,8 @@ import { fetchTotalDownloads } from '../../services/githubReleaseService';
 import { getDisplayedAppVersion } from '../../utils/version';
 import ScreenHeader from '../../components/common/ScreenHeader';
 import { SettingsCard, SettingItem, ChevronRight } from './SettingsComponents';
-import { isTV, TV_SPACING } from '../../utils/tvStyles';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { useTVMode } from '../../hooks/useTVMode';
 
 const { width } = Dimensions.get('window');

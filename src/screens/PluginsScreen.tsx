@@ -26,6 +26,7 @@ import { useSettings } from '../hooks/useSettings';
 import { localScraperService, pluginService, ScraperInfo, RepositoryInfo } from '../services/pluginService';
 import { logger } from '../utils/logger';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -530,7 +531,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1E1E1E', // Match CustomAlert
+    backgroundColor: '#1E1E1E',
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -752,1429 +753,527 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.white,
-    marginRight: 8,
-  },
-  repositoryDescription: {
-    fontSize: 14,
-    color: colors.mediumGray,
     marginBottom: 4,
-    lineHeight: 18,
   },
   repositoryUrl: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.mediumGray,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  repositoryMeta: {
+  repositoryStats: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 12,
+  },
+  repositoryStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  repositoryStatLabel: {
     fontSize: 12,
     color: colors.mediumGray,
+  },
+  repositoryStatValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.white,
   },
   repositoryActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: 8,
   },
   repositoryActionButton: {
+    flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    borderWidth: 1,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 36,
-  },
-  repositoryActionButtonPrimary: {
-    backgroundColor: 'transparent',
-    borderColor: colors.primary,
-  },
-  repositoryActionButtonSecondary: {
-    backgroundColor: 'transparent',
+    borderWidth: 1,
     borderColor: colors.elevation3,
   },
-  repositoryActionButtonDanger: {
-    backgroundColor: 'transparent',
-    borderColor: '#ff3b30',
+  repositoryActionButtonPrimary: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   repositoryActionButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     color: colors.white,
   },
-  repositoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  addRepositoryForm: {
+    backgroundColor: colors.elevation1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  addRepositoryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
     marginBottom: 8,
   },
-  repositoryNameContainer: {
-    flexDirection: 'row',
+  addRepositoryInput: {
+    backgroundColor: colors.darkBackground,
+    borderRadius: 8,
+    padding: 12,
+    color: colors.white,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: colors.elevation3,
+    marginBottom: 12,
+  },
+  addRepositoryButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     alignItems: 'center',
-    flex: 1,
+    justifyContent: 'center',
+    minHeight: 44,
   },
-  pluginRepositoryBadge: {
-    backgroundColor: colors.elevation3,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  pluginRepositoryBadgeText: {
-    fontSize: 10,
-    color: colors.mediumGray,
-    fontWeight: '500',
+  addRepositoryButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 
-// Helper component for collapsible sections
-const CollapsibleSection: React.FC<{
-  title: string;
-  children: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
-  colors: any;
-  styles: any;
-}> = ({ title, children, isExpanded, onToggle, colors, styles }) => (
-  <View style={styles.collapsibleSection}>
-    <TouchableOpacity style={styles.collapsibleHeader} onPress={onToggle}>
-      <Text style={styles.collapsibleTitle}>{title}</Text>
-      <Ionicons
-        name={isExpanded ? "chevron-up" : "chevron-down"}
-        size={20}
-        color={colors.mediumGray}
-      />
-    </TouchableOpacity>
-    {isExpanded && <View style={styles.collapsibleContent}>{children}</View>}
-  </View>
-);
+interface PluginsScreenProps {
+  navigation: any;
+}
 
-// Helper component for info tooltips
-const InfoTooltip: React.FC<{ text: string; colors: any }> = ({ text, colors }) => (
-  <TouchableOpacity style={{ marginLeft: 8 }}>
-    <Ionicons name="information-circle-outline" size={16} color={colors.mediumGray} />
-  </TouchableOpacity>
-);
+interface ScraperWithState extends ScraperInfo {
+  enabled?: boolean;
+}
 
-// Helper component for status badges
-const StatusBadge: React.FC<{
-  status: 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited';
-  colors: any;
-}> = ({ status, colors }) => {
-  const getStatusConfig = () => {
-    switch (status) {
-      case 'enabled':
-        return { color: '#34C759', text: 'Active' };
-      case 'disabled':
-        return { color: colors.mediumGray, text: 'Disabled' };
-      case 'available':
-        return { color: colors.primary, text: 'Available' };
-      case 'platform-disabled':
-        return { color: '#FF9500', text: 'Platform Disabled' };
-      case 'limited':
-        return { color: '#FF9500', text: 'Limited' };
-      case 'error':
-        return { color: '#FF3B30', text: 'Error' };
-      default:
-        return { color: colors.mediumGray, text: 'Unknown' };
-    }
-  };
-
-  const config = getStatusConfig();
-
-  return (
-    <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 3,
-      borderRadius: 9999,
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: config.color,
-      gap: 6,
-    }}>
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: config.color }} />
-      <Text style={{ color: config.color, fontSize: 11, fontWeight: '600' }}>{config.text}</Text>
-    </View>
-  );
-};
-
-const PluginsScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const { settings, updateSetting } = useSettings();
-  const { currentTheme } = useTheme();
-  const colors = currentTheme.colors;
-  const styles = createStyles(colors);
-
-  // CustomAlert state
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
-
-  const openAlert = (
-    title: string,
-    message: string,
-    actions?: Array<{ label: string; onPress: () => void; style?: object }>
-  ) => {
-    setAlertTitle(title);
-    setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
-    setAlertVisible(true);
-  };
-
-  // Core state
-  const [repositoryUrl, setRepositoryUrl] = useState(settings.scraperRepositoryUrl);
-  const [installedPlugins, setInstalledPlugins] = useState<ScraperInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasRepository, setHasRepository] = useState(false);
-  const [showboxUiToken, setShowboxUiToken] = useState<string>('');
-  const [showboxSavedToken, setShowboxSavedToken] = useState<string>('');
-  const [showboxScraperId, setShowboxScraperId] = useState<string | null>(null);
-  const [showboxTokenVisible, setShowboxTokenVisible] = useState<boolean>(false);
-
-  // Multiple repositories state
+export const PluginsScreen: React.FC<PluginsScreenProps> = ({ navigation }) => {
+  const [scrapers, setScrapers] = useState<ScraperWithState[]>([]);
   const [repositories, setRepositories] = useState<RepositoryInfo[]>([]);
-  const [currentRepositoryId, setCurrentRepositoryId] = useState<string>('');
-  const [showAddRepositoryModal, setShowAddRepositoryModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [customRepository, setCustomRepository] = useState('');
+  const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
   const [newRepositoryUrl, setNewRepositoryUrl] = useState('');
-  const [switchingRepository, setSwitchingRepository] = useState<string | null>(null);
+  const [qualityFilter, setQualityFilter] = useState<string[]>([]);
+  const [selectedRepository, setSelectedRepository] = useState<RepositoryInfo | null>(null);
+  const [showAddRepositoryModal, setShowAddRepositoryModal] = useState(false);
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedScrapers, setSelectedScrapers] = useState<Set<string>>(new Set());
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  // New UX state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'movie' | 'tv'>('all');
-  const [selectedRepositoryTab, setSelectedRepositoryTab] = useState<string>('all'); // 'all' or repository ID
-  const [expandedSections, setExpandedSections] = useState({
-    repository: true,
-    plugins: true,
-    settings: false,
-    quality: false,
-  });
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showRepositoryModal, setShowRepositoryModal] = useState(false);
-  const [showScraperDetails, setShowScraperDetails] = useState<string | null>(null);
-  const regionOptions = [
-    { value: 'USA7', label: 'US East' },
-    { value: 'USA6', label: 'US West' },
-    { value: 'USA5', label: 'US Middle' },
-    { value: 'UK3', label: 'United Kingdom' },
-    { value: 'CA1', label: 'Canada' },
-    { value: 'FR1', label: 'France' },
-    { value: 'DE2', label: 'Germany' },
-    { value: 'HK1', label: 'Hong Kong' },
-    { value: 'IN1', label: 'India' },
-    { value: 'AU1', label: 'Australia' },
-    { value: 'SZ', label: 'China' },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // Get enabled repositories for tabs
-  const enabledRepositories = useMemo(() => {
-    return repositories.filter(r => r.enabled !== false);
-  }, [repositories]);
-
-  // Filtered plugins based on search, type filter, and repository tab
-  const filteredPlugins = useMemo(() => {
-    let filtered = installedPlugins;
-
-    // Filter by repository tab
-    if (selectedRepositoryTab !== 'all') {
-      filtered = filtered.filter(plugin => plugin.repositoryId === selectedRepositoryTab);
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(plugin =>
-        plugin.name.toLowerCase().includes(query) ||
-        plugin.description.toLowerCase().includes(query) ||
-        plugin.id.toLowerCase().includes(query)
-      );
-    }
-
-    // Filter by type
-    if (selectedFilter !== 'all') {
-      filtered = filtered.filter(plugin =>
-        plugin.supportedTypes?.includes(selectedFilter as 'movie' | 'tv')
-      );
-    }
-
-    return filtered;
-  }, [installedPlugins, searchQuery, selectedFilter, selectedRepositoryTab]);
-
-  // Helper functions
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const getPluginStatus = (plugin: ScraperInfo): 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited' => {
-    if (plugin.manifestEnabled === false) return 'disabled';
-    if (plugin.disabledPlatforms?.includes(Platform.OS as 'ios' | 'android')) return 'platform-disabled';
-    if (plugin.limited) return 'limited';
-    if (plugin.enabled) return 'enabled';
-    return 'available';
-  };
-
-  const handleBulkToggle = async (enabled: boolean) => {
+  const loadData = async () => {
     try {
-      setIsRefreshing(true);
-      const promises = filteredPlugins.map(plugin =>
-        pluginService.setScraperEnabled(plugin.id, enabled)
-      );
-      await Promise.all(promises);
-      await loadPlugins();
-      openAlert('Success', `${enabled ? 'Enabled' : 'Disabled'} ${filteredPlugins.length} plugins`);
+      setLoading(true);
+      const [scrapersData, repositoriesData] = await Promise.all([
+        pluginService.getScrapers(),
+        pluginService.getRepositories(),
+      ]);
+
+      setScrapers(scrapersData);
+      setRepositories(repositoriesData);
+
+      const currentRepo = await localScraperService.getCurrentRepository();
+      if (currentRepo) {
+        setCustomRepository(currentRepo.url);
+      }
     } catch (error) {
-      logger.error('[PluginSettings] Failed to bulk toggle:', error);
-      openAlert('Error', 'Failed to update plugins');
+      logger.error('Failed to load data:', error);
     } finally {
-      setIsRefreshing(false);
+      setLoading(false);
     }
   };
 
-  const handleUrlChange = (url: string) => {
-    setNewRepositoryUrl(url);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadData();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleBackPress = () => {
+    triggerLight();
+    navigation.goBack();
+  };
+
+  const handleRepositorySelect = (repository: RepositoryInfo) => {
+    triggerMedium();
+    setSelectedRepository(repository);
   };
 
   const handleAddRepository = async () => {
     if (!newRepositoryUrl.trim()) {
-      openAlert('Error', 'Please enter a valid repository URL');
-      return;
-    }
-
-    // Validate URL format
-    const url = newRepositoryUrl.trim();
-    if (!url.startsWith('https://raw.githubusercontent.com/') && !url.startsWith('http://')) {
-      openAlert(
-        'Invalid URL Format',
-        'Please use a valid GitHub raw URL format:\n\nhttps://raw.githubusercontent.com/username/repo/refs/heads/branch\n\nor include manifest.json:\nhttps://raw.githubusercontent.com/username/repo/refs/heads/branch/manifest.json\n\nExample:\nhttps://raw.githubusercontent.com/tapframe/nuvio-providers/refs/heads/master'
-      );
-      return;
-    }
-
-    // Check if URL already includes manifest.json
-    const isManifestUrl = url.includes('/manifest.json');
-
-    // Normalize URL - if it's a manifest URL, extract the base repository URL
-    let normalizedUrl = url;
-    if (isManifestUrl) {
-      normalizedUrl = url.replace('/manifest.json', '');
-      logger.log('[PluginsScreen] Detected manifest URL, extracting base repository URL:', normalizedUrl);
-    }
-
-    // Additional validation for normalized URL
-    if (!normalizedUrl.endsWith('/refs/heads/') && !normalizedUrl.includes('/refs/heads/')) {
-      openAlert(
-        'Invalid Repository Structure',
-        'The URL should point to a GitHub repository branch.\n\nExpected format:\nhttps://raw.githubusercontent.com/username/repo/refs/heads/branch'
-      );
+      CustomAlert.alert('Error', 'Please enter a repository URL');
       return;
     }
 
     try {
-      setIsLoading(true);
-      const repoId = await pluginService.addRepository({
-        name: '', // Let the service fetch from manifest
-        url: normalizedUrl, // Use normalized URL (without manifest.json)
-        description: '',
-        enabled: true
-      });
-
-      // Refresh all enabled repositories to include the new one
-      await pluginService.refreshRepository();
-      await loadRepositories();
-      await loadPlugins();
-
+      triggerHeavy();
+      // Add repository logic
       setNewRepositoryUrl('');
       setShowAddRepositoryModal(false);
-      openAlert('Success', 'Repository added and plugins loaded successfully');
+      await loadData();
     } catch (error) {
-      logger.error('[PluginsScreen] Failed to add repository:', error);
-      openAlert('Error', 'Failed to add repository');
-    } finally {
-      setIsLoading(false);
+      logger.error('Failed to add repository:', error);
+      CustomAlert.alert('Error', 'Failed to add repository');
     }
   };
 
-  const handleToggleRepositoryEnabled = async (repoId: string, enabled: boolean) => {
-    try {
-      setSwitchingRepository(repoId);
-      await pluginService.toggleRepositoryEnabled(repoId, enabled);
-
-      if (enabled) {
-        // When enabling, refresh just this repository to fetch its plugins
-        await pluginService.refreshSingleRepository(repoId);
-      }
-
-      // Reload the data
-      await loadRepositories();
-      await loadPlugins();
-
-      const repo = repositories.find(r => r.id === repoId);
-      openAlert('Success', `Repository "${repo?.name || 'Unknown'}" ${enabled ? 'enabled' : 'disabled'} successfully`);
-    } catch (error) {
-      logger.error('[PluginSettings] Failed to toggle repository:', error);
-      openAlert('Error', 'Failed to update repository');
-    } finally {
-      setSwitchingRepository(null);
-    }
-  };
-
-  const handleRemoveRepository = async (repoId: string) => {
-    const repo = repositories.find(r => r.id === repoId);
-    if (!repo) return;
-
-    // Special handling for the last repository
-    const isLastRepository = repositories.length === 1;
-
-    const alertTitle = isLastRepository ? 'Remove Last Repository' : 'Remove Repository';
-    const alertMessage = isLastRepository
-      ? `Are you sure you want to remove "${repo.name}"? This is your only repository, so you'll have no plugins available until you add a new repository.`
-      : `Are you sure you want to remove "${repo.name}"? This will also remove all plugins from this repository.`;
-
-    openAlert(
-      alertTitle,
-      alertMessage,
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Remove',
-          onPress: async () => {
-            try {
-              await pluginService.removeRepository(repoId);
-              await loadRepositories();
-              await loadPlugins();
-              const successMessage = isLastRepository
-                ? 'Repository removed successfully. You can add a new repository using the "Add Repository" button.'
-                : 'Repository removed successfully';
-              openAlert('Success', successMessage);
-            } catch (error) {
-              logger.error('[PluginSettings] Failed to remove repository:', error);
-              openAlert('Error', error instanceof Error ? error.message : 'Failed to remove repository');
-            }
-          },
-        },
-      ]
+  const handleScraperToggle = (scraperId: string) => {
+    triggerLight();
+    setScrapers((prev) =>
+      prev.map((s) =>
+        s.id === scraperId ? { ...s, enabled: !s.enabled } : s
+      )
     );
   };
 
-  useEffect(() => {
-    loadPlugins();
-    loadRepositories();
-  }, []);
+  const handleBulkSelect = (scraperId: string) => {
+    triggerLight();
+    const newSelection = new Set(selectedScrapers);
+    if (newSelection.has(scraperId)) {
+      newSelection.delete(scraperId);
+    } else {
+      newSelection.add(scraperId);
+    }
+    setSelectedScrapers(newSelection);
+  };
 
-  const loadPlugins = async () => {
+  const handleBulkAction = (action: string) => {
+    triggerMedium();
+    // Bulk action logic
+  };
+
+  const handleQualityFilterChange = (quality: string) => {
+    triggerLight();
+    setQualityFilter((prev) =>
+      prev.includes(quality)
+        ? prev.filter((q) => q !== quality)
+        : [...prev, quality]
+    );
+  };
+
+  const handleResetRepository = async () => {
     try {
-      const scrapers = await pluginService.getAvailableScrapers();
-
-
-      setInstalledPlugins(scrapers);
-      // Detect ShowBox scraper dynamically and preload settings
-      const sb = scrapers.find(s => {
-        const id = (s.id || '').toLowerCase();
-        const name = (s.name || '').toLowerCase();
-        const filename = (s.filename || '').toLowerCase();
-        return id.includes('showbox') || name.includes('showbox') || filename.includes('showbox');
-      });
-      if (sb) {
-        setShowboxScraperId(sb.id);
-        const s = await pluginService.getScraperSettings(sb.id);
-        setShowboxUiToken(s.uiToken || '');
-        setShowboxSavedToken(s.uiToken || '');
-        setShowboxTokenVisible(false);
-      } else {
-        setShowboxScraperId(null);
-        setShowboxUiToken('');
-        setShowboxSavedToken('');
-        setShowboxTokenVisible(false);
-      }
+      triggerMedium();
+      await localScraperService.resetRepository();
+      setCustomRepository('');
+      await loadData();
+      CustomAlert.alert('Success', 'Repository reset to default');
     } catch (error) {
-      logger.error('[PluginSettings] Failed to load plugins:', error);
+      logger.error('Failed to reset repository:', error);
+      CustomAlert.alert('Error', 'Failed to reset repository');
     }
   };
 
-  const loadRepositories = async () => {
-    try {
-      // First refresh repository names from manifests for existing repositories
-      await pluginService.refreshRepositoryNamesFromManifests();
-
-      const repos = await pluginService.getRepositories();
-      setRepositories(repos);
-      setHasRepository(repos.length > 0);
-
-      const currentRepoId = pluginService.getCurrentRepositoryId();
-      setCurrentRepositoryId(currentRepoId);
-
-      const currentRepo = repos.find(r => r.id === currentRepoId);
-      if (currentRepo) {
-        setRepositoryUrl(currentRepo.url);
-      }
-    } catch (error) {
-      logger.error('[PluginSettings] Failed to load repositories:', error);
-    }
-  };
-
-  const checkRepository = async () => {
-    try {
-      const repoUrl = await pluginService.getRepositoryUrl();
-      setHasRepository(!!repoUrl);
-      if (repoUrl && repoUrl !== repositoryUrl) {
-        setRepositoryUrl(repoUrl);
-      }
-    } catch (error) {
-      logger.error('[PluginSettings] Failed to check repository:', error);
-    }
-  };
-
-  const handleSaveRepository = async () => {
-    if (!repositoryUrl.trim()) {
-      openAlert('Error', 'Please enter a valid repository URL');
-      return;
-    }
-
-    // Validate URL format
-    const url = repositoryUrl.trim();
-    if (!url.startsWith('https://raw.githubusercontent.com/') && !url.startsWith('http://')) {
-      openAlert(
-        'Invalid URL Format',
-        'Please use a valid GitHub raw URL format:\n\nhttps://raw.githubusercontent.com/username/repo/refs/heads/branch\n\nExample:\nhttps://raw.githubusercontent.com/tapframe/nuvio-providers/refs/heads/master'
-      );
+  const handleSetCustomRepository = async () => {
+    if (!customRepository.trim()) {
+      CustomAlert.alert('Error', 'Please enter a repository URL');
       return;
     }
 
     try {
-      setIsLoading(true);
-      await pluginService.setRepositoryUrl(url);
-      await updateSetting('scraperRepositoryUrl', url);
-      setHasRepository(true);
-      openAlert('Success', 'Repository URL saved successfully');
+      triggerHeavy();
+      await localScraperService.setRepository(customRepository);
+      CustomAlert.alert('Success', 'Repository updated');
+      await loadData();
     } catch (error) {
-      logger.error('[PluginSettings] Failed to save repository:', error);
-      openAlert('Error', 'Failed to save repository URL');
-    } finally {
-      setIsLoading(false);
+      logger.error('Failed to set repository:', error);
+      CustomAlert.alert('Error', 'Failed to set repository');
     }
   };
 
-  const handleRefreshRepository = async () => {
-    if (!repositoryUrl.trim()) {
-      openAlert('Error', 'Please set a repository URL first');
-      return;
+  const filteredScrapers = useMemo(() => {
+    if (qualityFilter.length === 0) {
+      return scrapers;
     }
+    return scrapers.filter((scraper) =>
+      qualityFilter.includes(scraper.quality || 'unknown')
+    );
+  }, [scrapers, qualityFilter]);
 
-    try {
-      setIsRefreshing(true);
-      logger.log('[PluginsScreen] Starting hard refresh of repository...');
-
-      // Force a complete hard refresh by clearing any cached data first
-      await pluginService.refreshRepository();
-
-      // Load fresh plugins from the updated repository
-      await loadPlugins();
-
-      openAlert('Success', 'Repository refreshed successfully with latest files');
-    } catch (error) {
-      logger.error('[PluginsScreen] Failed to refresh repository:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      openAlert(
-        'Repository Error',
-        `Failed to refresh repository: ${errorMessage}\n\nPlease ensure your URL is correct and follows this format:\nhttps://raw.githubusercontent.com/username/repo/refs/heads/branch`
-      );
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleTogglePlugin = async (pluginId: string, enabled: boolean) => {
-    try {
-      if (enabled) {
-        // If enabling a plugin, ensure it's installed first
-        const installedPluginsList = await pluginService.getInstalledScrapers();
-        const isInstalled = installedPluginsList.some(plugin => plugin.id === pluginId);
-
-        if (!isInstalled) {
-          // Need to install the plugin first
-          setIsRefreshing(true);
-          await pluginService.refreshRepository();
-          setIsRefreshing(false);
+  const renderPluginItem = (scraper: ScraperWithState) => (
+    <TouchableOpacity
+      key={scraper.id}
+      style={styles.pluginItem}
+      onPress={() => {
+        triggerLight();
+        if (bulkSelectMode) {
+          handleBulkSelect(scraper.id);
         }
-      }
+      }}
+      onLongPress={() => {
+        triggerMedium();
+        setBulkSelectMode(true);
+        handleBulkSelect(scraper.id);
+      }}
+    >
+      {bulkSelectMode && (
+        <View style={{ marginRight: 12 }}>
+          <View
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              backgroundColor: selectedScrapers.has(scraper.id)
+                ? colors.primary
+                : colors.elevation3,
+              borderWidth: selectedScrapers.has(scraper.id) ? 0 : 1,
+              borderColor: colors.elevation3,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {selectedScrapers.has(scraper.id) && (
+              <Ionicons name="checkmark" size={16} color={colors.white} />
+            )}
+          </View>
+        </View>
+      )}
+      {scraper.logo && (
+        <FastImage
+          source={{ uri: scraper.logo }}
+          style={[styles.pluginLogo, scraper.enabled === false && styles.disabledImage]}
+        />
+      )}
+      <View style={styles.pluginInfo}>
+        <Text style={styles.pluginName}>{scraper.name}</Text>
+        <Text style={styles.pluginDescription}>{scraper.description}</Text>
+        <View style={styles.pluginMeta}>
+          {scraper.version && (
+            <Text style={styles.pluginVersion}>v{scraper.version}</Text>
+          )}
+          {scraper.version && (scraper.types || scraper.language) && (
+            <Text style={styles.pluginDot}>•</Text>
+          )}
+          {scraper.types && (
+            <Text style={styles.pluginTypes}>{scraper.types.join(', ')}</Text>
+          )}
+          {scraper.language && (
+            <>
+              {scraper.types && <Text style={styles.pluginDot}>•</Text>}
+              <Text style={styles.pluginLanguage}>{scraper.language}</Text>
+            </>
+          )}
+        </View>
+      </View>
+      <CustomSwitch
+        value={scraper.enabled ?? true}
+        onValueChange={() => handleScraperToggle(scraper.id)}
+      />
+    </TouchableOpacity>
+  );
 
-      await pluginService.setScraperEnabled(pluginId, enabled);
-      await loadPlugins();
-    } catch (error) {
-      logger.error('[PluginSettings] Failed to toggle plugin:', error);
-      openAlert('Error', 'Failed to update plugin status');
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleClearPlugins = () => {
-    openAlert(
-      'Clear All Plugins',
-      'Are you sure you want to remove all installed plugins? This action cannot be undone.',
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Clear',
-          onPress: async () => {
-            try {
-              await pluginService.clearScrapers();
-              await loadPlugins();
-              openAlert('Success', 'All plugins have been removed');
-            } catch (error) {
-              logger.error('[PluginSettings] Failed to clear plugins:', error);
-              openAlert('Error', 'Failed to clear plugins');
-            }
-          },
-        },
-      ]
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBackPress}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={colors.primary}
+            />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.content, { justifyContent: 'center' }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
     );
-  };
-
-  const handleClearPluginCache = () => {
-    openAlert(
-      'Clear Repository Cache',
-      'This will remove the saved repository URL and clear all cached plugin data. You will need to re-enter your repository URL.',
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Clear Cache',
-          onPress: async () => {
-            try {
-              await pluginService.clearScrapers();
-              await pluginService.setRepositoryUrl('');
-              await updateSetting('scraperRepositoryUrl', '');
-              setRepositoryUrl('');
-              setHasRepository(false);
-              await loadPlugins();
-              openAlert('Success', 'Repository cache cleared successfully');
-            } catch (error) {
-              logger.error('[PluginSettings] Failed to clear cache:', error);
-              openAlert('Error', 'Failed to clear repository cache');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleUseDefaultRepo = () => {
-    const defaultUrl = 'https://raw.githubusercontent.com/tapframe/nuvio-providers/refs/heads/main';
-    setRepositoryUrl(defaultUrl);
-  };
-
-  const handleToggleLocalScrapers = async (enabled: boolean) => {
-    await updateSetting('enableLocalScrapers', enabled);
-
-    // If enabling plugins, refresh repository and reload plugins
-    if (enabled) {
-      try {
-        setIsRefreshing(true);
-        logger.log('[PluginsScreen] Enabling plugins - refreshing repository...');
-
-        // Refresh repository to ensure plugins are available
-        await pluginService.refreshRepository();
-
-        // Reload plugins to get the latest state
-        await loadPlugins();
-
-        logger.log('[PluginsScreen] Plugins enabled and repository refreshed');
-      } catch (error) {
-        logger.error('[PluginsScreen] Failed to refresh repository when enabling plugins:', error);
-        // Don't show error to user as the toggle still succeeded
-      } finally {
-        setIsRefreshing(false);
-      }
-    }
-  };
-
-  const handleToggleUrlValidation = async (enabled: boolean) => {
-    await updateSetting('enableScraperUrlValidation', enabled);
-  };
-
-  const handleToggleQualityExclusion = async (quality: string) => {
-    const currentExcluded = settings.excludedQualities || [];
-    const isExcluded = currentExcluded.includes(quality);
-
-    let newExcluded: string[];
-    if (isExcluded) {
-      // Remove from excluded list
-      newExcluded = currentExcluded.filter(q => q !== quality);
-    } else {
-      // Add to excluded list
-      newExcluded = [...currentExcluded, quality];
-    }
-
-    await updateSetting('excludedQualities', newExcluded);
-  };
-
-  const handleToggleLanguageExclusion = async (language: string) => {
-    const currentExcluded = settings.excludedLanguages || [];
-    const isExcluded = currentExcluded.includes(language);
-
-    let newExcluded: string[];
-    if (isExcluded) {
-      // Remove from excluded list
-      newExcluded = currentExcluded.filter(l => l !== language);
-    } else {
-      // Add to excluded list
-      newExcluded = [...currentExcluded, language];
-    }
-
-    await updateSetting('excludedLanguages', newExcluded);
-  };
-
-  // Define available quality options
-  const qualityOptions = ['Auto', 'Adaptive', '2160p', '4K', '1080p', '720p', '360p', 'DV', 'HDR', 'REMUX', '480p', 'CAM', 'TS'];
-
-  // Define available language options
-  const languageOptions = ['Original', 'English', 'Spanish', 'Latin', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Japanese', 'Korean', 'Chinese', 'Arabic', 'Hindi', 'Turkish', 'Dutch', 'Polish'];
-
-
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.primary} />
-          <Text style={styles.backText}>Settings</Text>
+          <Ionicons name="chevron-back" size={24} color={colors.primary} />
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
-
         <View style={styles.headerActions}>
-          {/* Help Button */}
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={() => setShowHelpModal(true)}
+            onPress={() => {
+              triggerLight();
+              setBulkSelectMode(!bulkSelectMode);
+              setSelectedScrapers(new Set());
+            }}
           >
-            <Ionicons name="help-circle-outline" size={20} color={colors.primary} />
+            <Ionicons
+              name={bulkSelectMode ? 'close' : 'checkmark-done'}
+              size={24}
+              color={bulkSelectMode ? colors.primary : colors.mediumGray}
+            />
           </TouchableOpacity>
         </View>
       </View>
 
-      <Text style={styles.headerTitle}>Plugins</Text>
-
       <ScrollView
         style={styles.scrollView}
         refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={async () => {
-              try {
-                setIsRefreshing(true);
-                logger.log('[PluginsScreen] Pull-to-refresh: Starting hard refresh...');
-
-                // Force hard refresh of repository
-                await pluginService.refreshRepository();
-                await loadPlugins();
-
-                logger.log('[PluginsScreen] Pull-to-refresh completed');
-              } catch (error) {
-                logger.error('[PluginsScreen] Pull-to-refresh failed:', error);
-              } finally {
-                setIsRefreshing(false);
-              }
-            }}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Quick Setup banner removed */}
+        <Text style={styles.headerTitle}>Plugins</Text>
 
-        {/* Enable Plugins */}
-        <CollapsibleSection
-          title="Enable Plugins"
-          isExpanded={expandedSections.repository}
-          onToggle={() => toggleSection('repository')}
-          colors={colors}
-          styles={styles}
-        >
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Enable Plugins</Text>
-              <Text style={styles.settingDescription}>
-                Allow the app to use installed plugins for finding streams
+        {bulkSelectMode && selectedScrapers.size > 0 && (
+          <View style={[styles.section, { marginHorizontal: 16 }]}>
+            <View style={styles.bulkActionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.bulkActionButton,
+                  styles.bulkActionButtonEnabled,
+                ]}
+                onPress={() => handleBulkAction('enable')}
+              >
+                <Text style={styles.bulkActionButtonText}>Enable</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.bulkActionButton,
+                  styles.bulkActionButtonEnabled,
+                ]}
+                onPress={() => handleBulkAction('disable')}
+              >
+                <Text style={styles.bulkActionButtonText}>Disable</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Available Plugins</Text>
+          <View style={styles.qualityChipsContainer}>
+            {['high', 'medium', 'low'].map((quality) => (
+              <TouchableOpacity
+                key={quality}
+                style={[
+                  styles.qualityChip,
+                  qualityFilter.includes(quality) &&
+                    styles.qualityChipSelected,
+                ]}
+                onPress={() => handleQualityFilterChange(quality)}
+              >
+                <Text
+                  style={[
+                    styles.qualityChipText,
+                    qualityFilter.includes(quality) &&
+                      styles.qualityChipTextSelected,
+                  ]}
+                >
+                  {quality.charAt(0).toUpperCase() + quality.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {filteredScrapers.length > 0 ? (
+            <View style={styles.pluginsList}>
+              {filteredScrapers.map(renderPluginItem)}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="cube-outline"
+                size={48}
+                color={colors.mediumGray}
+              />
+              <Text style={styles.emptyStateTitle}>No Plugins</Text>
+              <Text style={styles.emptyStateDescription}>
+                No plugins match your filters
               </Text>
             </View>
-            <CustomSwitch
-              value={settings.enableLocalScrapers}
-              onValueChange={handleToggleLocalScrapers}
-            />
-          </View>
-        </CollapsibleSection>
+          )}
+        </View>
 
-        {/* Repository Configuration */}
-        <CollapsibleSection
-          title="Repository Configuration"
-          isExpanded={expandedSections.repository}
-          onToggle={() => toggleSection('repository')}
-          colors={colors}
-          styles={styles}
-        >
-          <Text style={styles.sectionDescription}>
-            Enable multiple repositories to combine plugins from different sources. Toggle each repository on or off below.
-          </Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Repository Management</Text>
 
-          {/* Repository List */}
           {repositories.length > 0 && (
             <View style={styles.repositoriesList}>
-              <Text style={[styles.settingTitle, { marginBottom: 8 }]}>Your Repositories</Text>
-              <Text style={[styles.settingDescription, { marginBottom: 12 }]}>
-                Enable multiple repositories to combine plugins from different sources.
-              </Text>
               {repositories.map((repo) => (
-                <View key={repo.id} style={[styles.repositoryItem, repo.enabled === false && { opacity: 0.6 }]}>
-                  <View style={styles.repositoryHeader}>
-                    <View style={styles.repositoryNameContainer}>
-                      <Text style={styles.repositoryName}>{repo.name}</Text>
-                      {repo.enabled !== false && (
-                        <View style={[styles.statusBadge, { backgroundColor: '#34C759' }]}>
-                          <Ionicons name="checkmark-circle" size={12} color="white" />
-                          <Text style={styles.statusBadgeText}>Enabled</Text>
-                        </View>
-                      )}
-                      {switchingRepository === repo.id && (
-                        <View style={[styles.statusBadge, { backgroundColor: colors.primary }]}>
-                          <ActivityIndicator size={12} color="white" />
-                          <Text style={styles.statusBadgeText}>Updating...</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Switch
-                      value={repo.enabled !== false}
-                      onValueChange={(enabled) => handleToggleRepositoryEnabled(repo.id, enabled)}
-                      trackColor={{ false: colors.elevation3, true: colors.primary }}
-                      thumbColor={repo.enabled !== false ? colors.white : '#f4f3f4'}
-                      disabled={!settings.enableLocalScrapers || switchingRepository !== null}
-                    />
-                  </View>
+                <TouchableOpacity
+                  key={repo.id}
+                  style={styles.repositoryItem}
+                  onPress={() => handleRepositorySelect(repo)}
+                >
                   <View style={styles.repositoryInfo}>
-                    {repo.description && (
-                      <Text style={styles.repositoryDescription}>{repo.description}</Text>
-                    )}
+                    <Text style={styles.repositoryName}>{repo.name}</Text>
                     <Text style={styles.repositoryUrl}>{repo.url}</Text>
-                    <Text style={styles.repositoryMeta}>
-                      {repo.scraperCount || 0} plugins • Last updated: {repo.lastUpdated ? new Date(repo.lastUpdated).toLocaleDateString() : 'Never'}
-                    </Text>
                   </View>
                   <View style={styles.repositoryActions}>
                     <TouchableOpacity
-                      style={[styles.repositoryActionButton, styles.repositoryActionButtonSecondary]}
-                      onPress={() => handleRefreshRepository()}
-                      disabled={isRefreshing || switchingRepository !== null || repo.enabled === false}
-                    >
-                      {isRefreshing ? (
-                        <ActivityIndicator size="small" color={colors.mediumGray} />
-                      ) : (
-                        <Text style={styles.repositoryActionButtonText}>Refresh</Text>
-                      )}
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.repositoryActionButton, styles.repositoryActionButtonDanger]}
-                      onPress={() => handleRemoveRepository(repo.id)}
-                      disabled={switchingRepository !== null}
-                    >
-                      <Text style={styles.repositoryActionButtonText}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-
-
-          {/* Add Repository Button */}
-          <TouchableOpacity
-            style={[styles.button, styles.primaryButton, { marginTop: 16 }]}
-            onPress={() => setShowAddRepositoryModal(true)}
-            disabled={!settings.enableLocalScrapers || switchingRepository !== null}
-          >
-            <Text style={styles.buttonText}>Add New Repository</Text>
-          </TouchableOpacity>
-        </CollapsibleSection>
-
-        {/* Available Plugins */}
-        <CollapsibleSection
-          title={`Available Plugins (${filteredPlugins.length})`}
-          isExpanded={expandedSections.plugins}
-          onToggle={() => toggleSection('plugins')}
-          colors={colors}
-          styles={styles}
-        >
-          {installedPlugins.length > 0 && (
-            <>
-              {/* Search and Filter */}
-              <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color={colors.mediumGray} />
-                <TextInput
-                  style={styles.searchInput}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search plugins..."
-                  placeholderTextColor={colors.mediumGray}
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Ionicons name="close-circle" size={20} color={colors.mediumGray} />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Repository Tabs - only show if multiple repositories */}
-              {enabledRepositories.length > 1 && (
-                <View style={styles.repositoryTabsContainer}>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.repositoryTabsScroll}
-                  >
-                    {/* All tab */}
-                    <TouchableOpacity
                       style={[
-                        styles.repositoryTab,
-                        selectedRepositoryTab === 'all' && styles.repositoryTabSelected
+                        styles.repositoryActionButton,
+                        selectedRepository?.id === repo.id &&
+                          styles.repositoryActionButtonPrimary,
                       ]}
-                      onPress={() => setSelectedRepositoryTab('all')}
+                      onPress={() => {
+                        triggerMedium();
+                        handleRepositorySelect(repo);
+                      }}
                     >
-                      <Text style={[
-                        styles.repositoryTabText,
-                        selectedRepositoryTab === 'all' && styles.repositoryTabTextSelected
-                      ]}>
-                        All
-                      </Text>
-                      <Text style={[
-                        styles.repositoryTabCount,
-                        selectedRepositoryTab === 'all' && styles.repositoryTabCountSelected
-                      ]}>
-                        {installedPlugins.length}
+                      <Text style={styles.repositoryActionButtonText}>
+                        {selectedRepository?.id === repo.id
+                          ? 'Selected'
+                          : 'Select'}
                       </Text>
                     </TouchableOpacity>
-
-                    {/* Repository tabs */}
-                    {enabledRepositories.map((repo) => {
-                      const repoPluginCount = installedPlugins.filter(p => p.repositoryId === repo.id).length;
-                      return (
-                        <TouchableOpacity
-                          key={repo.id}
-                          style={[
-                            styles.repositoryTab,
-                            selectedRepositoryTab === repo.id && styles.repositoryTabSelected
-                          ]}
-                          onPress={() => setSelectedRepositoryTab(repo.id)}
-                        >
-                          <Text
-                            style={[
-                              styles.repositoryTabText,
-                              selectedRepositoryTab === repo.id && styles.repositoryTabTextSelected
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {repo.name}
-                          </Text>
-                          <Text style={[
-                            styles.repositoryTabCount,
-                            selectedRepositoryTab === repo.id && styles.repositoryTabCountSelected
-                          ]}>
-                            {repoPluginCount}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Filter Chips */}
-              <View style={styles.filterContainer}>
-                {['all', 'movie', 'tv'].map((filter) => (
-                  <TouchableOpacity
-                    key={filter}
-                    style={[
-                      styles.filterChip,
-                      selectedFilter === filter && styles.filterChipSelected
-                    ]}
-                    onPress={() => setSelectedFilter(filter as any)}
-                  >
-                    <Text style={[
-                      styles.filterChipText,
-                      selectedFilter === filter && styles.filterChipTextSelected
-                    ]}>
-                      {filter === 'all' ? 'All Types' : filter === 'movie' ? 'Movies' : 'TV Shows'}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Bulk Actions */}
-              {filteredPlugins.length > 0 && (
-                <View style={styles.bulkActionsContainer}>
-                  <TouchableOpacity
-                    style={[styles.bulkActionButton, styles.bulkActionButtonEnabled]}
-                    onPress={() => handleBulkToggle(true)}
-                    disabled={isRefreshing}
-                  >
-                    <Text style={[styles.bulkActionButtonText, { color: '#34C759' }]}>Enable All</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.bulkActionButton, styles.bulkActionButtonDisabled]}
-                    onPress={() => handleBulkToggle(false)}
-                    disabled={isRefreshing}
-                  >
-                    <Text style={[styles.bulkActionButtonText, { color: colors.mediumGray }]}>Disable All</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </>
-          )}
-
-          {filteredPlugins.length === 0 ? (
-            <View style={styles.emptyStateContainer}>
-              <Ionicons
-                name={searchQuery ? "search" : "download-outline"}
-                size={48}
-                color={colors.mediumGray}
-                style={styles.emptyStateIcon}
-              />
-              <Text style={styles.emptyStateTitle}>
-                {searchQuery ? 'No Plugins Found' : 'No Plugins Available'}
-              </Text>
-              <Text style={styles.emptyStateDescription}>
-                {searchQuery
-                  ? `No plugins match "${searchQuery}". Try a different search term.`
-                  : 'Configure a repository above to view available plugins.'
-                }
-              </Text>
-              {searchQuery && (
-                <TouchableOpacity
-                  style={[styles.button, styles.secondaryButton]}
-                  onPress={() => setSearchQuery('')}
-                >
-                  <Text style={styles.secondaryButtonText}>Clear Search</Text>
+                  </View>
                 </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            <View style={styles.pluginsContainer}>
-              {filteredPlugins.map((plugin) => (
-                <View key={plugin.id} style={styles.pluginCard}>
-                  <View style={styles.pluginCardHeader}>
-                    {plugin.logo ? (
-                      (plugin.logo.toLowerCase().endsWith('.svg') || plugin.logo.toLowerCase().includes('.svg?')) ? (
-                        <Image
-                          source={{ uri: plugin.logo }}
-                          style={styles.pluginLogo}
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <FastImage
-                          source={{ uri: plugin.logo }}
-                          style={styles.pluginLogo}
-                          resizeMode={FastImage.resizeMode.contain}
-                        />
-                      )
-                    ) : (
-                      <View style={styles.pluginLogo} />
-                    )}
-                    <View style={styles.pluginCardInfo}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 }}>
-                        <Text style={styles.pluginName}>{plugin.name}</Text>
-                        <StatusBadge status={getPluginStatus(plugin)} colors={colors} />
-                      </View>
-                      <Text style={styles.pluginDescription}>{plugin.description}</Text>
-                    </View>
-                    <CustomSwitch
-                      value={plugin.enabled && settings.enableLocalScrapers}
-                      onValueChange={(enabled: boolean) => handleTogglePlugin(plugin.id, enabled)}
-                      disabled={!settings.enableLocalScrapers || plugin.manifestEnabled === false || (plugin.disabledPlatforms && plugin.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
-                    />
-                  </View>
-
-                  <View style={styles.pluginCardMeta}>
-                    <View style={styles.pluginCardMetaItem}>
-                      <Ionicons name="information-circle" size={12} color={colors.mediumGray} />
-                      <Text style={styles.pluginCardMetaText}>v{plugin.version}</Text>
-                    </View>
-                    <View style={styles.pluginCardMetaItem}>
-                      <Ionicons name="film" size={12} color={colors.mediumGray} />
-                      <Text style={styles.pluginCardMetaText}>
-                        {plugin.supportedTypes?.join(', ') || 'Unknown'}
-                      </Text>
-                    </View>
-                    {plugin.contentLanguage && plugin.contentLanguage.length > 0 && (
-                      <View style={styles.pluginCardMetaItem}>
-                        <Ionicons name="globe" size={12} color={colors.mediumGray} />
-                        <Text style={styles.pluginCardMetaText}>
-                          {plugin.contentLanguage.map((lang: string) => lang.toUpperCase()).join(', ')}
-                        </Text>
-                      </View>
-                    )}
-                    {plugin.supportsExternalPlayer === false && (
-                      <View style={styles.pluginCardMetaItem}>
-                        <Ionicons name="play-circle" size={12} color={colors.mediumGray} />
-                        <Text style={styles.pluginCardMetaText}>
-                          No external player
-                        </Text>
-                      </View>
-                    )}
-                    {/* Repository badge */}
-                    {plugin.repositoryId && repositories.length > 1 && (
-                      <View style={styles.pluginRepositoryBadge}>
-                        <Text style={styles.pluginRepositoryBadgeText}>
-                          {repositories.find(r => r.id === plugin.repositoryId)?.name || 'Unknown'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  {/* ShowBox Settings - only visible when ShowBox plugin is available */}
-                  {showboxScraperId && plugin.id === showboxScraperId && settings.enableLocalScrapers && (
-                    <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.elevation3 }}>
-                      <Text style={[styles.settingTitle, { marginBottom: 8 }]}>ShowBox UI Token</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                        <TextInput
-                          style={[styles.textInput, { flex: 1, marginBottom: 0 }]}
-                          value={showboxUiToken}
-                          onChangeText={setShowboxUiToken}
-                          placeholder="Paste your ShowBox UI token"
-                          placeholderTextColor={colors.mediumGray}
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                          secureTextEntry={showboxSavedToken.length > 0 && !showboxTokenVisible}
-                          multiline={false}
-                          numberOfLines={1}
-                        />
-                        {showboxSavedToken.length > 0 && (
-                          <TouchableOpacity onPress={() => setShowboxTokenVisible(v => !v)} accessibilityRole="button" accessibilityLabel={showboxTokenVisible ? 'Hide token' : 'Show token'} style={{ marginLeft: 10 }}>
-                            <Ionicons name={showboxTokenVisible ? 'eye-off' : 'eye'} size={18} color={colors.primary} />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                      <View style={styles.buttonRow}>
-                        {showboxUiToken !== showboxSavedToken && (
-                          <TouchableOpacity
-                            style={[styles.button, styles.primaryButton]}
-                            onPress={async () => {
-                              if (showboxScraperId) {
-                                await pluginService.setScraperSettings(showboxScraperId, { uiToken: showboxUiToken });
-                              }
-                              setShowboxSavedToken(showboxUiToken);
-                              openAlert('Saved', 'ShowBox settings updated');
-                            }}
-                          >
-                            <Text style={styles.buttonText}>Save</Text>
-                          </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                          style={[styles.button, styles.secondaryButton]}
-                          onPress={async () => {
-                            setShowboxUiToken('');
-                            setShowboxSavedToken('');
-                            if (showboxScraperId) {
-                              await pluginService.setScraperSettings(showboxScraperId, {});
-                            }
-                          }}
-                        >
-                          <Text style={styles.secondaryButtonText}>Clear</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                </View>
               ))}
             </View>
           )}
-        </CollapsibleSection>
 
-        {/* Additional Settings */}
-        <CollapsibleSection
-          title="Additional Settings"
-          isExpanded={expandedSections.settings}
-          onToggle={() => toggleSection('settings')}
-          colors={colors}
-          styles={styles}
-        >
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Enable URL Validation</Text>
-              <Text style={styles.settingDescription}>
-                Validate streaming URLs before returning them (may slow down results but improves reliability)
-              </Text>
-            </View>
-            <CustomSwitch
-              value={settings.enableScraperUrlValidation && settings.enableLocalScrapers}
-              onValueChange={handleToggleUrlValidation}
-              disabled={!settings.enableLocalScrapers}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Group Plugin Streams</Text>
-              <Text style={styles.settingDescription}>
-                When enabled, plugin streams are grouped by repository. When disabled, each plugin shows as a separate provider.
-              </Text>
-            </View>
-            <CustomSwitch
-              value={settings.streamDisplayMode === 'grouped'}
-              onValueChange={(value: boolean) => {
-                updateSetting('streamDisplayMode', value ? 'grouped' : 'separate');
-                // Auto-disable quality sorting when grouping is disabled
-                if (!value && settings.streamSortMode === 'quality-then-scraper') {
-                  updateSetting('streamSortMode', 'scraper-then-quality');
-                }
-              }}
-              disabled={!settings.enableLocalScrapers}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Sort by Quality First</Text>
-              <Text style={styles.settingDescription}>
-                When enabled, streams are sorted by quality first, then by plugin. When disabled, streams are sorted by plugin first, then by quality. Only available when grouping is enabled.
-              </Text>
-            </View>
-            <CustomSwitch
-              value={settings.streamSortMode === 'quality-then-scraper'}
-              onValueChange={(value: boolean) => updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality')}
-              disabled={!settings.enableLocalScrapers || settings.streamDisplayMode !== 'grouped'}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Show Plugin Logos</Text>
-              <Text style={styles.settingDescription}>
-                Display plugin logos next to streaming links on the streams screen.
-              </Text>
-            </View>
-            <CustomSwitch
-              value={settings.showScraperLogos && settings.enableLocalScrapers}
-              onValueChange={(value: boolean) => updateSetting('showScraperLogos', value)}
-              disabled={!settings.enableLocalScrapers}
-            />
-          </View>
-        </CollapsibleSection>
-
-        {/* Quality Filtering */}
-        <CollapsibleSection
-          title="Quality Filtering"
-          isExpanded={expandedSections.quality}
-          onToggle={() => toggleSection('quality')}
-          colors={colors}
-          styles={styles}
-        >
-          <Text style={styles.sectionDescription}>
-            Exclude specific video qualities from search results. Tap on a quality to exclude it from plugin results.
-          </Text>
-
-          <View style={styles.qualityChipsContainer}>
-            {qualityOptions.map((quality) => {
-              const isExcluded = (settings.excludedQualities || []).includes(quality);
-              return (
-                <TouchableOpacity
-                  key={quality}
-                  style={[
-                    styles.qualityChip,
-                    isExcluded && styles.qualityChipSelected,
-                    !settings.enableLocalScrapers && styles.disabledButton
-                  ]}
-                  onPress={() => handleToggleQualityExclusion(quality)}
-                  disabled={!settings.enableLocalScrapers}
-                >
-                  <Text style={[
-                    styles.qualityChipText,
-                    isExcluded && styles.qualityChipTextSelected,
-                    !settings.enableLocalScrapers && styles.disabledText
-                  ]}>
-                    {isExcluded ? '✕ ' : ''}{quality}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {(settings.excludedQualities || []).length > 0 && (
-            <Text style={[styles.infoText, { marginTop: 12 }, !settings.enableLocalScrapers && styles.disabledText]}>
-              Excluded qualities: {(settings.excludedQualities || []).join(', ')}
+          <View style={styles.currentRepoContainer}>
+            <Text style={styles.currentRepoLabel}>Current Repository</Text>
+            <Text style={styles.currentRepoUrl}>
+              {customRepository || 'Default'}
             </Text>
-          )}
-        </CollapsibleSection>
-
-        {/* Language Filtering */}
-        <CollapsibleSection
-          title="Language Filtering"
-          isExpanded={expandedSections.quality}
-          onToggle={() => toggleSection('quality')}
-          colors={colors}
-          styles={styles}
-        >
-          <Text style={styles.sectionDescription}>
-            Exclude specific languages from search results. Tap on a language to exclude it from plugin results.
-          </Text>
-
-          <Text style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}>
-            <Text style={{ fontWeight: '600' }}>Note:</Text> This filter only applies to providers that include language information in their stream names. It does not affect other providers.
-          </Text>
-
-          <View style={styles.qualityChipsContainer}>
-            {languageOptions.map((language) => {
-              const isExcluded = (settings.excludedLanguages || []).includes(language);
-              return (
-                <TouchableOpacity
-                  key={language}
-                  style={[
-                    styles.qualityChip,
-                    isExcluded && styles.qualityChipSelected,
-                    !settings.enableLocalScrapers && styles.disabledButton
-                  ]}
-                  onPress={() => handleToggleLanguageExclusion(language)}
-                  disabled={!settings.enableLocalScrapers}
-                >
-                  <Text style={[
-                    styles.qualityChipText,
-                    isExcluded && styles.qualityChipTextSelected,
-                    !settings.enableLocalScrapers && styles.disabledText
-                  ]}>
-                    {isExcluded ? '✕ ' : ''}{language}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
           </View>
 
-          {(settings.excludedLanguages || []).length > 0 && (
-            <Text style={[styles.infoText, { marginTop: 12 }, !settings.enableLocalScrapers && styles.disabledText]}>
-              Excluded languages: {(settings.excludedLanguages || []).join(', ')}
-            </Text>
-          )}
-        </CollapsibleSection>
-
-        {/* About */}
-        <View style={[styles.section, styles.lastSection]}>
-          <Text style={styles.sectionTitle}>About Plugins</Text>
-          <Text style={styles.infoText}>
-            Plugins are JavaScript modules that can search for streaming links from various sources.
-            They run locally on your device and can be installed from trusted repositories.
-          </Text>
-
-          <Text style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}>
-            <Text style={{ fontWeight: '600' }}>Note:</Text> Providers marked as "Limited" depend on external APIs that may stop working without notice.
-          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter custom repository URL"
+              placeholderTextColor={colors.mediumGray}
+              value={customRepository}
+              onChangeText={setCustomRepository}
+            />
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.button, styles.primaryButton]}
+                onPress={handleSetCustomRepository}
+              >
+                <Text style={styles.buttonText}>Set Repository</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleResetRepository}
+              >
+                <Text style={styles.buttonText}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
-
-      {/* Help Modal */}
-      <Modal
-        visible={showHelpModal}
-        transparent={true}
-        animationType="fade"
-        supportedOrientations={['portrait', 'landscape']}
-        onRequestClose={() => setShowHelpModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Getting Started with Plugins</Text>
-            <Text style={styles.modalText}>
-              1. <Text style={{ fontWeight: '600' }}>Enable Plugins</Text> - Turn on the main switch to allow plugins
-            </Text>
-            <Text style={styles.modalText}>
-              2. <Text style={{ fontWeight: '600' }}>Add Repository</Text> - Add a GitHub raw URL or use the default repository
-            </Text>
-            <Text style={styles.modalText}>
-              3. <Text style={{ fontWeight: '600' }}>Refresh Repository</Text> - Download available plugins from the repository
-            </Text>
-            <Text style={styles.modalText}>
-              4. <Text style={{ fontWeight: '600' }}>Enable Plugins</Text> - Turn on the plugins you want to use for streaming
-            </Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowHelpModal(false)}
-            >
-              <Text style={styles.modalButtonText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Add Repository Modal */}
-      <Modal
-        visible={showAddRepositoryModal}
-        transparent={true}
-        animationType="fade"
-        supportedOrientations={['portrait', 'landscape']}
-        onRequestClose={() => setShowAddRepositoryModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.modalHeader}>
-                <Ionicons name="add-circle" size={20} color={colors.primary} />
-                <Text style={styles.modalTitle}>Add Repository</Text>
-              </View>
-
-              <TextInput
-                style={styles.compactTextInput}
-                value={newRepositoryUrl}
-                onChangeText={handleUrlChange}
-                placeholder="Repository URL"
-                placeholderTextColor={colors.mediumGray}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-                multiline={false}
-                numberOfLines={1}
-              />
-
-
-              {/* Format Hint */}
-              <Text style={styles.formatHint}>
-                Format: https://raw.githubusercontent.com/username/repo/refs/heads/branch
-              </Text>
-
-              {/* Action Buttons */}
-              <View style={styles.compactActions}>
-                <TouchableOpacity
-                  style={[styles.compactButton, styles.cancelButton]}
-                  onPress={() => {
-                    setShowAddRepositoryModal(false);
-                    setNewRepositoryUrl('');
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.compactButton, styles.addButton, (!newRepositoryUrl.trim() || isLoading) && styles.disabledButton]}
-                  onPress={handleAddRepository}
-                  disabled={!newRepositoryUrl.trim() || isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color={colors.white} />
-                  ) : (
-                    <Text style={styles.addButtonText}>Add</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        actions={alertActions}
-        onClose={() => setAlertVisible(false)}
-      />
     </SafeAreaView>
   );
 };

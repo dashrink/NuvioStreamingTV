@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform, Dimensions, Animated, Easing, Keyboard } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, Dimensions, Animated, Easing, Keyboard } from 'react-native';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { UnifiedSpinner } from '../components/loading';
 import { useAccount } from '../contexts/AccountContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -573,7 +574,7 @@ const AuthScreen: React.FC = () => {
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" size="small" />
+                    <UnifiedSpinner size="small" color="#FFFFFF" />
                   ) : (
                     <Animated.Text style={[styles.ctaText, { opacity: ctaTextOpacity, transform: [{ translateY: ctaTextTranslateY }] }]}>
                       {mode === 'signin' ? 'Sign In' : 'Create Account'}

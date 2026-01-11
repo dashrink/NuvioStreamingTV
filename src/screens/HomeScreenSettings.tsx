@@ -20,6 +20,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import CustomSwitch from '../components/common/CustomSwitch';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -64,10 +65,17 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
 
+  const handlePress = onPress
+    ? () => {
+        triggerLight();
+        onPress();
+      }
+    : undefined;
+
   return (
     <TouchableOpacity
       activeOpacity={onPress ? 0.7 : 1}
-      onPress={onPress}
+      onPress={handlePress}
       style={[
         styles.settingItem,
         !isLast && styles.settingItemBorder,
@@ -134,6 +142,7 @@ const HomeScreenSettings: React.FC = () => {
   );
 
   const handleBack = useCallback(() => {
+    triggerLight();
     navigation.goBack();
   }, [navigation]);
 
@@ -178,7 +187,10 @@ const HomeScreenSettings: React.FC = () => {
   const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
     <TouchableOpacity
       style={styles.radioOption}
-      onPress={onPress}
+      onPress={() => {
+        triggerLight();
+        onPress();
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.radioContainer}>
@@ -214,7 +226,10 @@ const HomeScreenSettings: React.FC = () => {
         return (
           <TouchableOpacity
             key={opt.value}
-            onPress={() => onChange(opt.value)}
+            onPress={() => {
+              triggerLight();
+              onChange(opt.value);
+            }}
             activeOpacity={0.85}
             style={[
               styles.segment,
@@ -311,7 +326,10 @@ const HomeScreenSettings: React.FC = () => {
             renderControl={() => (
               <CustomSwitch
                 value={settings.showHeroSection}
-                onValueChange={(value) => handleUpdateSetting('showHeroSection', value)}
+                onValueChange={(value) => {
+                  triggerMedium();
+                  handleUpdateSetting('showHeroSection', value);
+                }}
               />
             )}
           />
@@ -324,7 +342,10 @@ const HomeScreenSettings: React.FC = () => {
             renderControl={() => (
               <CustomSwitch
                 value={settings.showThisWeekSection}
-                onValueChange={(value) => handleUpdateSetting('showThisWeekSection', value)}
+                onValueChange={(value) => {
+                  triggerMedium();
+                  handleUpdateSetting('showThisWeekSection', value);
+                }}
               />
             )}
           />
@@ -364,7 +385,10 @@ const HomeScreenSettings: React.FC = () => {
               <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
               <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Using Catalogs</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('HeroCatalogs')}
+                onPress={() => {
+                  triggerLight();
+                  navigation.navigate('HeroCatalogs');
+                }}
                 style={[styles.manageLink, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' }]}
                 activeOpacity={0.8}
               >
@@ -373,7 +397,7 @@ const HomeScreenSettings: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {settings.heroStyle === 'carousel' && (
+            {settings.heroStyle === 'carousel'&& (
               <SettingsCard isDarkMode={isDarkMode} colors={colors}>
                 <SettingItem
                   title="Dynamic Hero Background"
@@ -384,7 +408,10 @@ const HomeScreenSettings: React.FC = () => {
                   renderControl={() => (
                     <CustomSwitch
                       value={settings.enableHomeHeroBackground}
-                      onValueChange={(value) => handleUpdateSetting('enableHomeHeroBackground', value)}
+                      onValueChange={(value) => {
+                        triggerMedium();
+                        handleUpdateSetting('enableHomeHeroBackground', value);
+                      }}
                     />
                   )}
                 />
@@ -400,7 +427,10 @@ const HomeScreenSettings: React.FC = () => {
             <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Show Titles</Text>
             <CustomSwitch
               value={settings.showPosterTitles}
-              onValueChange={(value) => handleUpdateSetting('showPosterTitles', value)}
+              onValueChange={(value) => {
+                triggerMedium();
+                handleUpdateSetting('showPosterTitles', value);
+              }}
             />
           </View>
           <View style={styles.settingsRow}>
@@ -415,19 +445,40 @@ const HomeScreenSettings: React.FC = () => {
           <View style={styles.settingsRow}>
             <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Poster Corners</Text>
             <SegmentedControl
-              options={[{ label: 'Square', value: '0' }, { label: 'Rounded', value: '12' }, { label: 'Pill', value: '20' }]}
-              value={String(settings.posterBorderRadius)}
-              onChange={(val) => handleUpdateSetting('posterBorderRadius', Number(val) as any)}
+              options={[{ label: 'Sharp', value: 'sharp' }, { label: 'Round', value: 'round' }]}
+              value={settings.posterCorners}
+              onChange={(val) => handleUpdateSetting('posterCorners', val as any)}
             />
           </View>
         </SettingsCard>
 
-        <SectionHeader title="ABOUT THESE SETTINGS" isDarkMode={isDarkMode} colors={colors} />
-        <View style={[styles.infoCard, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.03)' }]}>
-          <Text style={[styles.infoText, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>
-            These settings control how content is displayed on your Home screen. Changes are applied immediately without requiring an app restart.
-          </Text>
-        </View>
+        <SettingsCard isDarkMode={isDarkMode} colors={colors}>
+          <Text style={[styles.cardHeader, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Appearance</Text>
+          <View style={styles.settingsRowInline}>
+            <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Dark Mode</Text>
+            <CustomSwitch
+              value={settings.enableDarkMode}
+              onValueChange={(value) => {
+                triggerMedium();
+                handleUpdateSetting('enableDarkMode', value);
+              }}
+            />
+          </View>
+        </SettingsCard>
+
+        <SettingsCard isDarkMode={isDarkMode} colors={colors}>
+          <Text style={[styles.cardHeader, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Content</Text>
+          <View style={styles.settingsRowInline}>
+            <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>NSFW Content</Text>
+            <CustomSwitch
+              value={settings.showNSFW}
+              onValueChange={(value) => {
+                triggerMedium();
+                handleUpdateSetting('showNSFW', value);
+              }}
+            />
+          </View>
+        </SettingsCard>
       </ScrollView>
     </SafeAreaView>
   );
@@ -435,262 +486,210 @@ const HomeScreenSettings: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
+    paddingTop: 12,
+    paddingBottom: 8
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
+    paddingVertical: 8,
+    paddingRight: 16
   },
   backText: {
-    fontSize: 17,
-    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8
   },
   headerActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    marginLeft: 8,
+    gap: 8
   },
   headerTitle: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    fontSize: 28,
+    fontWeight: '800',
+    marginHorizontal: 16,
+    marginBottom: 16
   },
   scrollView: {
-    flex: 1,
+    flex: 1
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingHorizontal: 16,
+    paddingBottom: 32
   },
   sectionHeader: {
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 8,
+    marginTop: 24,
+    marginBottom: 12
   },
   sectionHeaderText: {
     fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.8,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase'
   },
   card: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 12,
     borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 16,
+    overflow: 'hidden'
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
-    minHeight: 44,
+    paddingVertical: 16,
+    paddingHorizontal: 16
   },
   settingItemBorder: {
-    // Border styling handled directly in the component with borderBottomWidth
+    borderBottomWidth: 1
   },
   settingIconContainer: {
-    marginRight: 12,
-    width: 24,
-    height: 24,
-    alignItems: 'center',
+    marginRight: 16,
+    width: 32,
     justifyContent: 'center',
+    alignItems: 'center'
   },
   settingContent: {
-    flex: 1,
-    marginRight: 8,
+    flex: 1
   },
   settingTitleRow: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    gap: 4,
+    marginBottom: 4
   },
   settingTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginBottom: 4
   },
   settingDescription: {
-    fontSize: 14,
-    opacity: 0.7,
+    fontSize: 13,
+    marginTop: 2
   },
   settingControl: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingLeft: 12,
-  },
-  settingInlineNote: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginTop: 8,
-    marginBottom: 8,
-    textAlign: 'center',
-    alignSelf: 'center',
-    width: '100%',
-    paddingHorizontal: 16,
-  },
-  radioCardContainer: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    overflow: 'hidden',
+    marginLeft: 12
   },
   radioOption: {
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16
   },
   radioContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 2,
-    marginRight: 10,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
   },
   radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6
   },
   radioLabel: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  radioDescription: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 0,
-  },
-  radioDescriptionText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  infoCard: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    padding: 16,
-    borderRadius: 12,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontWeight: '500'
   },
   segmentContainer: {
     flexDirection: 'row',
-    borderRadius: 10,
+    borderRadius: 8,
     padding: 4,
-    gap: 6,
-    marginTop: 8,
+    marginVertical: 12
   },
   segment: {
     flex: 1,
-    borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 6
   },
   segmentFirst: {
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6
   },
   segmentLast: {
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 6
   },
   segmentCard: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)'
+    marginBottom: 16,
+    paddingHorizontal: 0
   },
   segmentTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    opacity: 0.9,
-  },
-  segmentHint: {
-    marginTop: 8,
-    fontSize: 12,
-    opacity: 0.7,
-  },
-  manageLink: {
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  settingsRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  settingsRowInline: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  rowLabel: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
-    opacity: 0.9,
+    marginBottom: 8,
+    paddingHorizontal: 16
+  },
+  segmentHint: {
+    fontSize: 12,
+    marginTop: 8,
+    paddingHorizontal: 16
+  },
+  manageLink: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 12
   },
   cardHeader: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginTop: 8,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    opacity: 0.9,
+    paddingTop: 8
+  },
+  settingsRowInline: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16
+  },
+  settingsRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 16
+  },
+  rowLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8
+  },
+  settingInlineNote: {
+    fontSize: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    fontStyle: 'italic'
   },
   savedIndicator: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 60 : 90,
-    alignSelf: 'center',
+    top: 100,
+    left: 16,
+    right: 16,
+    borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 24,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    gap: 8,
+    zIndex: 1000
   },
   savedIndicatorText: {
     color: '#FFFFFF',
-    marginLeft: 6,
     fontWeight: '600',
-  },
+    fontSize: 14
+  }
 });
 
-export default HomeScreenSettings; 
+export default HomeScreenSettings;

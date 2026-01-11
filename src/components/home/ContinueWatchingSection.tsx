@@ -1187,11 +1187,6 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   // Memoized item separator
   const ItemSeparator = useCallback(() => <View style={{ width: itemSpacing }} />, [itemSpacing]);
 
-  // If no continue watching items, don't render anything
-  if (continueWatchingItems.length === 0) {
-    return null;
-  }
-
   // Convert items to TV format for TV component
   const tvItems: TVContinueWatchingItem[] = useMemo(() => {
     return continueWatchingItems.map(item => ({
@@ -1208,6 +1203,11 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       addonId: item.addonId,
     }));
   }, [continueWatchingItems]);
+
+  // If no continue watching items, don't render anything
+  if (continueWatchingItems.length === 0) {
+    return null;
+  }
 
   // Use TV-optimized component when on TV platform
   if (Platform.isTV) {

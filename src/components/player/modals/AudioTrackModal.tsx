@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { getTrackDisplayName, DEBUG_MODE } from '../utils/playerUtils';
 import { logger } from '../../../utils/logger';
+import { triggerLight } from '../../../hooks/useHaptics';
 import Focusable from '../../common/Focusable';
 
 interface AudioTrackModalProps {
@@ -32,7 +33,10 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
   const menuWidth = Math.min(width * 0.9, 420);
   const menuMaxHeight = height * 0.9;
 
-  const handleClose = () => setShowAudioModal(false);
+  const handleClose = () => {
+    triggerLight();
+    setShowAudioModal(false);
+  };
 
   if (!showAudioModal) return null;
 
@@ -76,12 +80,8 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                 const isSelected = selectedAudioTrack === track.id;
 
                 return (
-                  <TouchableOpacity
+                  <View
                     key={track.id}
-                    onPress={() => {
-                      selectAudioTrack(track.id);
-                      setTimeout(handleClose, 200);
-                    }}
                     style={{
                       padding: 10,
                       borderRadius: 12,
@@ -91,17 +91,26 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                       alignItems: 'center'
                     }}
                   >
-                    <View style={{ flex: 1 }}>
-                      <Text style={{
-                        color: isSelected ? 'black' : 'white',
-                        fontWeight: isSelected ? '700' : '400',
-                        fontSize: 15
-                      }}>
-                        {getTrackDisplayName(track)}
-                      </Text>
-                    </View>
-                    {isSelected && <MaterialIcons name="check" size={18} color="black" />}
-                  </TouchableOpacity>
+                    <Focusable
+                      style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+                      onPress={() => {
+                        triggerLight();
+                        selectAudioTrack(track.id);
+                        setTimeout(handleClose, 200);
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={{
+                          color: isSelected ? 'black' : 'white',
+                          fontWeight: isSelected ? '700' : '400',
+                          fontSize: 15
+                        }}>
+                          {getTrackDisplayName(track)}
+                        </Text>
+                      </View>
+                      {isSelected && <MaterialIcons name="check" size={18} color="black" />}
+                    </Focusable>
+                  </View>
                 );
               })}
 

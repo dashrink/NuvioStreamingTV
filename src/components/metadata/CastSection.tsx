@@ -13,6 +13,7 @@ import Animated, {
   FadeIn,
 } from 'react-native-reanimated';
 import { useTheme } from '../../contexts/ThemeContext';
+import { triggerLight } from '../../hooks/useHaptics';
 
 // Enhanced responsive breakpoints for Cast Section
 const BREAKPOINTS = {
@@ -152,7 +153,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
           <Animated.View 
             entering={FadeIn.duration(300).delay(50 + index * 30)} 
           >
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.castCard,
                 {
@@ -160,7 +161,10 @@ export const CastSection: React.FC<CastSectionProps> = ({
                   marginRight: castCardSpacing
                 }
               ]}
-              onPress={() => onSelectCastMember(item)}
+              onPress={() => {
+                triggerLight();
+                onSelectCastMember(item);
+              }}
               activeOpacity={0.7}
             >
               <View style={[

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Episode } from '../../../types/metadata';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 const TMDB_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
 const EPISODE_PLACEHOLDER = 'https://via.placeholder.com/500x280/1a1a1a/666666?text=No+Preview';
@@ -87,7 +88,10 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
         styles.episodeCard,
         isCurrent && { borderWidth: 2, borderColor: currentTheme.colors.primary }
       ]}
-      onPress={onPress}
+      onPress={() => {
+        triggerLight();
+        onPress();
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.episodeImageContainer}>

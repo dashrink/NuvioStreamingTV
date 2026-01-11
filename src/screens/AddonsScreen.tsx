@@ -48,6 +48,7 @@ if (Platform.OS === 'ios') {
 // Removed community blur and expo-constants for Android overlay
 import axios from 'axios';
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 // Extend Manifest type to include logo only (remove disabled status)
 interface ExtendedManifest extends Manifest {
@@ -58,6 +59,12 @@ interface ExtendedManifest extends Manifest {
     configurationRequired?: boolean;
     configurationURL?: string;
   };
+}
+
+// Interface for Community Addon structure from the JSON URL
+interface CommunityAddon {
+  transportUrl: string;
+  manifest: ExtendedManifest;
 }
 
 const { width } = Dimensions.get('window');
@@ -470,6 +477,67 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 6,
     marginRight: 8,
   },
+  communityAddonsList: {
+    paddingHorizontal: 20,
+  },
+  communityAddonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 10,
+  },
+  communityAddonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    marginRight: 15,
+  },
+  communityAddonIconPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    marginRight: 15,
+    backgroundColor: colors.darkGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  communityAddonDetails: {
+    flex: 1,
+    marginRight: 10,
+  },
+  communityAddonName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.white,
+    marginBottom: 3,
+  },
+  communityAddonDesc: {
+    fontSize: 13,
+    color: colors.lightGray,
+    marginBottom: 5,
+    opacity: 0.9,
+  },
+  communityAddonMetaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    opacity: 0.8,
+  },
+  communityAddonVersion: {
+    fontSize: 12,
+    color: colors.lightGray,
+  },
+  communityAddonDot: {
+    fontSize: 12,
+    color: colors.lightGray,
+    marginHorizontal: 5,
+  },
+  communityAddonCategory: {
+    fontSize: 12,
+    color: colors.lightGray,
+    flexShrink: 1,
+  },
   separator: {
     height: 10,
   },
@@ -556,6 +624,27 @@ const AddonsScreen = () => {
   const colors = currentTheme.colors;
   const styles = createStyles(colors);
 
+  // State for community addons
+  const [communityAddons, setCommunityAddons] = useState<CommunityAddon[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(true);
+  const [communityError, setCommunityError] = useState<string | null>(null);
+
+  // Promotional addon: Nuvio Streams
+  const PROMO_ADDON_URL = 'https://nuviostreams.hayd.uk/manifest.json';
+  const promoAddon: ExtendedManifest = {
+    id: 'org.nuvio.streams',
+    name: 'Nuvio Streams | Elfhosted',
+    version: '0.5.0',
+    description: 'Stremio addon for high-quality streaming links.',
+    // @ts-ignore - logo not in base manifest type
+    logo: 'https://raw.githubusercontent.com/tapframe/NuvioStreaming/refs/heads/appstore/assets/titlelogo.png',
+    types: ['movie', 'series'],
+    catalogs: [],
+    behaviorHints: { configurable: true },
+    // help handleConfigureAddon derive configure URL from the transport
+    transport: 'http://nuviostreams.hayd.uk:7001',
+  };
+
 
   useEffect(() => {
     loadAddons();
@@ -624,46 +713,73 @@ const AddonsScreen = () => {
       return;
     }
 
-    // Replace stremio:// with https:// if present
-    if (urlToInstall.startsWith('stremio://')) {
-      urlToInstall = urlToInstall.replace(/^stremio:\/\//, 'https://');
-    }
-
     try {
-      setInstalling(true);
-      const manifest = await stremioService.getManifest(urlToInstall);
-      setAddonDetails(manifest);
-      setAddonUrl(urlToInstall);
+      setAddonUrl('');
+      triggerMedium();
+
+      // Validate addon URL and get manifest
+      const manifest = await stremioService.validateAddonUrl(urlToInstall);
+
+      if (!manifest) {
+        setAlertTitle('Error');
+        setAlertMessage('Invalid addon URL');
+        setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+        setAlertVisible(true);
+        return;
+      }
+
+      setAddonDetails(manifest as ExtendedManifest);
       setShowConfirmModal(true);
     } catch (error) {
-      logger.error('Failed to fetch addon details:', error);
+      logger.error('Error validating addon:', error);
       setAlertTitle('Error');
-      setAlertMessage(`Failed to fetch addon details from ${urlToInstall}`);
+      setAlertMessage('Failed to validate addon. Please check the URL and try again.');
       setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
       setAlertVisible(true);
-    } finally {
-      setInstalling(false);
     }
   };
 
-  const confirmInstallAddon = async () => {
-    if (!addonDetails || !addonUrl) return;
+  const handleInstallAddon = async () => {
+    if (!addonDetails) {
+      return;
+    }
 
     try {
       setInstalling(true);
-      await stremioService.installAddon(addonUrl);
-      setAddonUrl('');
+      triggerMedium();
+
+      const urlToInstall = addonUrl || (addonDetails as any).url;
+
+      const result = await stremioService.installAddonAsync(
+        urlToInstall || PROMO_ADDON_URL,
+        addonDetails
+      );
+
       setShowConfirmModal(false);
+      setAddonUrl('');
       setAddonDetails(null);
-      loadAddons();
-      setAlertTitle('Success');
-      setAlertMessage('Addon installed successfully');
-      setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
-      setAlertVisible(true);
+
+      if (result) {
+        triggerHeavy();
+        setAlertTitle('Success');
+        setAlertMessage('Addon installed successfully');
+        setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+        setAlertVisible(true);
+        await loadAddons();
+      } else {
+        setAlertTitle('Error');
+        setAlertMessage('Failed to install addon');
+        setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+        setAlertVisible(true);
+      }
     } catch (error) {
-      logger.error('Failed to install addon:', error);
+      logger.error('Error installing addon:', error);
       setAlertTitle('Error');
-      setAlertMessage('Failed to install addon');
+      setAlertMessage(
+        error instanceof Error
+          ? error.message
+          : 'Failed to install addon. Please try again.'
+      );
       setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
       setAlertVisible(true);
     } finally {
@@ -671,551 +787,436 @@ const AddonsScreen = () => {
     }
   };
 
-  const refreshAddons = async () => {
-    loadAddons();
-    loadAddons();
-  };
-
-  const moveAddonUp = (addon: ExtendedManifest) => {
-    if (stremioService.moveAddonUp(addon.id)) {
-      // Refresh the list to reflect the new order
-      loadAddons();
-    }
-  };
-
-  const moveAddonDown = (addon: ExtendedManifest) => {
-    if (stremioService.moveAddonDown(addon.id)) {
-      // Refresh the list to reflect the new order
-      loadAddons();
-    }
-  };
-
-  const handleRemoveAddon = (addon: ExtendedManifest) => {
-    setAlertTitle('Uninstall Addon');
-    setAlertMessage(`Are you sure you want to uninstall ${addon.name}?`);
+  const handleDeleteAddon = (addon: ExtendedManifest) => {
+    triggerMedium();
+    setAlertTitle('Delete Addon');
+    setAlertMessage(`Are you sure you want to delete "${addon.name}"?`);
     setAlertActions([
-      { label: 'Cancel', onPress: () => setAlertVisible(false), style: { color: colors.mediumGray } },
+      { label: 'Cancel', onPress: () => setAlertVisible(false) },
       {
-        label: 'Uninstall',
+        label: 'Delete',
         onPress: async () => {
-          await stremioService.removeAddon(addon.id);
-          setAddons(prev => prev.filter(a => a.id !== addon.id));
-          // Ensure we re-read from storage/order to avoid reappearing on next load
-          await loadAddons();
+          setAlertVisible(false);
+          try {
+            triggerMedium();
+            const success = await stremioService.deleteAddonAsync(addon.id || addon.name);
+            if (success) {
+              triggerHeavy();
+              setAlertTitle('Success');
+              setAlertMessage('Addon deleted successfully');
+              setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+              setAlertVisible(true);
+              await loadAddons();
+            } else {
+              setAlertTitle('Error');
+              setAlertMessage('Failed to delete addon');
+              setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+              setAlertVisible(true);
+            }
+          } catch (error) {
+            logger.error('Error deleting addon:', error);
+            setAlertTitle('Error');
+            setAlertMessage('Failed to delete addon');
+            setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
+            setAlertVisible(true);
+          }
         },
-        style: { color: colors.error }
+        style: 'destructive',
       },
     ]);
     setAlertVisible(true);
   };
 
-  // Add function to handle configuration
-  const handleConfigureAddon = (addon: ExtendedManifest, transportUrl?: string) => {
-    // Try different ways to get the configuration URL
-    let configUrl = '';
+  const handleConfigureAddon = (addon: ExtendedManifest) => {
+    triggerLight();
+    const configUrl = (addon.behaviorHints?.configurationURL || 
+      (addon as any).transport + '/configure');
 
-    // Debug log the addon data to help troubleshoot
-    logger.info(`Configure addon: ${addon.name}, ID: ${addon.id}`);
-    if (transportUrl) {
-      logger.info(`TransportUrl provided: ${transportUrl}`);
+    if (configUrl) {
+      Linking.openURL(configUrl).catch((err) =>
+        logger.error('Failed to open configuration URL:', err)
+      );
     }
+  };
 
-    // First check if the addon has a configurationURL directly
-    if (addon.behaviorHints?.configurationURL) {
-      configUrl = addon.behaviorHints.configurationURL;
-      logger.info(`Using configurationURL from behaviorHints: ${configUrl}`);
-    }
-    // If a transport URL was provided directly (for community addons)
-    else if (transportUrl) {
-      // Remove any trailing filename like manifest.json
-      const baseUrl = transportUrl.replace(/\/[^\/]+\.json$/, '/');
-      configUrl = `${baseUrl}configure`;
-      logger.info(`Using transportUrl to create config URL: ${configUrl}`);
-    }
-    // If the addon has a url property (this is set during installation)
-    else if (addon.url) {
-      configUrl = `${addon.url}configure`;
-      logger.info(`Using addon.url property: ${configUrl}`);
-    }
-    // For com.stremio.*.addon format (common format for installed addons)
-    else if (addon.id && addon.id.match(/^com\.stremio\.(.*?)\.addon$/)) {
-      // Extract the domain part
-      const match = addon.id.match(/^com\.stremio\.(.*?)\.addon$/);
-      if (match && match[1]) {
-        // Construct URL from the domain part of the ID
-        const addonName = match[1];
-        // For torrentio specifically, use known URL
-        if (addonName === 'torrentio') {
-          configUrl = 'https://torrentio.strem.fun/configure';
-          logger.info(`Special case for torrentio: ${configUrl}`);
-        } else {
-          // Try to construct a reasonable URL for other addons
-          configUrl = `https://${addonName}.strem.fun/configure`;
-          logger.info(`Constructed URL from addon name: ${configUrl}`);
-        }
-      }
-    }
-    // If the ID is a URL, use that as the base (common for installed addons)
-    else if (addon.id && addon.id.startsWith('http')) {
-      // Get base URL from addon id (remove manifest.json or any trailing file)
-      const baseUrl = addon.id.replace(/\/[^\/]+\.json$/, '/');
-      configUrl = `${baseUrl}configure`;
-      logger.info(`Using addon.id as HTTP URL: ${configUrl}`);
-    }
-    // If the ID uses stremio:// protocol but contains http URL (common format)
-    else if (addon.id && (addon.id.includes('https://') || addon.id.includes('http://'))) {
-      // Extract the HTTP URL using a more flexible regex
-      const match = addon.id.match(/(https?:\/\/[^\/]+)(\/[^\s]*)?/);
-      if (match) {
-        // Use the domain and path if available, otherwise just domain with /configure
-        const domain = match[1];
-        const path = match[2] ? match[2].replace(/\/[^\/]+\.json$/, '/') : '/';
-        configUrl = `${domain}${path}configure`;
-        logger.info(`Extracted HTTP URL from stremio:// format: ${configUrl}`);
-      }
-    }
+  const handleReorderAddon = async (addonId: string, direction: 'up' | 'down') => {
+    triggerMedium();
+    const currentIndex = addons.findIndex(a => a.id === addonId);
 
-    // Special case for common addon format like stremio://addon.stremio.com/...
-    if (!configUrl && addon.id && addon.id.startsWith('stremio://')) {
-      // Try to convert stremio://domain.com/... to https://domain.com/...
-      const domainMatch = addon.id.match(/stremio:\/\/([^\/]+)(\/[^\s]*)?/);
-      if (domainMatch) {
-        const domain = domainMatch[1];
-        const path = domainMatch[2] ? domainMatch[2].replace(/\/[^\/]+\.json$/, '/') : '/';
-        configUrl = `https://${domain}${path}configure`;
-        logger.info(`Converted stremio:// protocol to https:// for config URL: ${configUrl}`);
-      }
-    }
-
-    // Use transport property if available (some addons include this)
-    if (!configUrl && addon.transport && typeof addon.transport === 'string' && addon.transport.includes('http')) {
-      const baseUrl = addon.transport.replace(/\/[^\/]+\.json$/, '/');
-      configUrl = `${baseUrl}configure`;
-      logger.info(`Using addon.transport for config URL: ${configUrl}`);
-    }
-
-    // Get the URL from manifest's originalUrl if available
-    if (!configUrl && (addon as any).originalUrl) {
-      const baseUrl = (addon as any).originalUrl.replace(/\/[^\/]+\.json$/, '/');
-      configUrl = `${baseUrl}configure`;
-      logger.info(`Using originalUrl property: ${configUrl}`);
-    }
-
-    // If we couldn't determine a config URL, show an error
-    if (!configUrl) {
-      logger.error(`Failed to determine config URL for addon: ${addon.name}, ID: ${addon.id}`);
-      setAlertTitle('Configuration Unavailable');
-      setAlertMessage('Could not determine configuration URL for this addon.');
-      setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
-      setAlertVisible(true);
+    if (
+      (direction === 'up' && currentIndex === 0) ||
+      (direction === 'down' && currentIndex === addons.length - 1)
+    ) {
       return;
     }
 
-    // Log the URL being opened
-    logger.info(`Opening configuration for addon: ${addon.name} at URL: ${configUrl}`);
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const newAddons = [...addons];
+    [newAddons[currentIndex], newAddons[newIndex]] = [
+      newAddons[newIndex],
+      newAddons[currentIndex],
+    ];
 
-    // Check if the URL can be opened
-    Linking.canOpenURL(configUrl).then(supported => {
-      if (supported) {
-        Linking.openURL(configUrl);
-      } else {
-        logger.error(`URL cannot be opened: ${configUrl}`);
-        setAlertTitle('Cannot Open Configuration');
-        setAlertMessage(`The configuration URL (${configUrl}) cannot be opened. The addon may not have a configuration page.`);
-        setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
-        setAlertVisible(true);
-      }
-    }).catch(err => {
-      logger.error(`Error checking if URL can be opened: ${configUrl}`, err);
-      setAlertTitle('Error');
-      setAlertMessage('Could not open configuration page.');
-      setAlertActions([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
-      setAlertVisible(true);
-    });
+    setAddons(newAddons);
+
+    try {
+      const addonIds = newAddons.map(a => a.id || a.name);
+      await mmkvStorage.setItem('addon_order', JSON.stringify(addonIds));
+      triggerLight();
+    } catch (error) {
+      logger.error('Error reordering addons:', error);
+      await loadAddons();
+    }
   };
 
-  const toggleReorderMode = () => {
-    setReorderMode(!reorderMode);
-  };
-
-  const renderAddonItem = ({ item, index }: { item: ExtendedManifest, index: number }) => {
-    const types = item.types || [];
-    const description = item.description || '';
-    // @ts-ignore - some addons might have logo property even though it's not in the type
-    const logo = item.logo || null;
-    // Check if addon is configurable
-    const isConfigurable = item.behaviorHints?.configurable === true;
-    // Check if addon is pre-installed
-    const isPreInstalled = stremioService.isPreInstalledAddon(item.id);
-
-    // Format the types into a simple category text
-    const categoryText = types.length > 0
-      ? types.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' • ')
-      : 'No categories';
-
-    const isFirstItem = index === 0;
-    const isLastItem = index === addons.length - 1;
-
+  if (loading) {
     return (
-      <View style={styles.addonItem}>
-        {reorderMode && (
-          <View style={styles.reorderButtons}>
-            <TouchableOpacity
-              style={[styles.reorderButton, isFirstItem && styles.disabledButton]}
-              onPress={() => moveAddonUp(item)}
-              disabled={isFirstItem}
-            >
-              <MaterialIcons
-                name="arrow-upward"
-                size={20}
-                color={isFirstItem ? colors.mediumGray : colors.white}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.reorderButton, isLastItem && styles.disabledButton]}
-              onPress={() => moveAddonDown(item)}
-              disabled={isLastItem}
-            >
-              <MaterialIcons
-                name="arrow-downward"
-                size={20}
-                color={isLastItem ? colors.mediumGray : colors.white}
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.addonHeader}>
-          {logo ? (
-            <FastImage
-              source={{ uri: logo }}
-              style={styles.addonIcon}
-              resizeMode={FastImage.resizeMode.contain}
-            />
-          ) : (
-            <View style={styles.addonIconPlaceholder}>
-              <MaterialIcons name="extension" size={22} color={colors.mediumGray} />
-            </View>
-          )}
-          <View style={styles.addonTitleContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-              <Text style={styles.addonName}>{item.name}</Text>
-              {isPreInstalled && (
-                <View style={[styles.priorityBadge, { marginLeft: 8, backgroundColor: colors.success }]}>
-                  <Text style={[styles.priorityText, { fontSize: 10 }]}>PRE-INSTALLED</Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.addonMetaContainer}>
-              <Text style={styles.addonVersion}>v{item.version || '1.0.0'}</Text>
-              <Text style={styles.addonDot}>•</Text>
-              <Text style={styles.addonCategory}>{categoryText}</Text>
-            </View>
-          </View>
-          <View style={styles.addonActions}>
-            {!reorderMode ? (
-              <>
-                {isConfigurable && (
-                  <TouchableOpacity
-                    style={styles.configButton}
-                    onPress={() => handleConfigureAddon(item, item.transport)}
-                  >
-                    <MaterialIcons name="settings" size={20} color={colors.primary} />
-                  </TouchableOpacity>
-                )}
-                {!stremioService.isPreInstalledAddon(item.id) && (
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleRemoveAddon(item)}
-                  >
-                    <MaterialIcons name="delete" size={20} color={colors.error} />
-                  </TouchableOpacity>
-                )}
-              </>
-            ) : (
-              <View style={styles.priorityBadge}>
-                <Text style={styles.priorityText}>#{index + 1}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        <Text style={styles.addonDescription}>
-          {description.length > 100 ? description.substring(0, 100) + '...' : description}
-        </Text>
-      </View>
-    );
-  };
-
-  const StatsCard = ({ value, label }: { value: number; label: string }) => (
-    <View style={styles.statsCard}>
-      <Text style={styles.statsValue}>{value}</Text>
-      <Text style={styles.statsLabel}>{label}</Text>
-    </View>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <MaterialIcons name="chevron-left" size={28} color={colors.white} />
-          <Text style={styles.backText}>Settings</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerActions}>
-          {/* Reorder Mode Toggle Button */}
-          <TouchableOpacity
-            style={[styles.headerButton, reorderMode && styles.activeHeaderButton]}
-            onPress={toggleReorderMode}
-          >
-            <MaterialIcons
-              name="swap-vert"
-              size={24}
-              color={reorderMode ? colors.primary : colors.white}
-            />
-          </TouchableOpacity>
-
-          {/* Refresh Button */}
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={refreshAddons}
-            disabled={loading}
-          >
-            <MaterialIcons
-              name="refresh"
-              size={24}
-              color={loading ? colors.mediumGray : colors.white}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Text style={styles.headerTitle}>
-        Addons
-        {reorderMode && <Text style={styles.reorderModeText}> (Reorder Mode)</Text>}
-      </Text>
-
-      {reorderMode && (
-        <View style={styles.reorderInfoBanner}>
-          <MaterialIcons name="info-outline" size={18} color={colors.primary} />
-          <Text style={styles.reorderInfoText}>
-            Addons at the top have higher priority when loading content
-          </Text>
-        </View>
-      )}
-
-      {loading ? (
+      <SafeAreaView style={[styles.container]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      ) : (
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentInsetAdjustmentBehavior="automatic"
-        >
+      </SafeAreaView>
+    );
+  }
 
-          {/* Overview Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>OVERVIEW</Text>
-            <View style={styles.statsContainer}>
-              <StatsCard value={addons.length} label="Addons" />
-              <View style={styles.statsDivider} />
-              <StatsCard value={addons.length} label="Active" />
-              <View style={styles.statsDivider} />
-              <StatsCard value={catalogCount} label="Catalogs" />
-            </View>
-          </View>
+  const handlePromoAddonPress = () => {
+    triggerMedium();
+    setAddonDetails(promoAddon);
+    setAddonUrl(PROMO_ADDON_URL);
+    setShowConfirmModal(true);
+  };
 
-          {/* Hide Add Addon Section in reorder mode */}
-          {!reorderMode && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>ADD NEW ADDON</Text>
-              <View style={styles.addAddonContainer}>
-                <TextInput
-                  style={styles.addonInput}
-                  placeholder="Addon URL"
-                  placeholderTextColor={colors.mediumGray}
-                  value={addonUrl}
-                  onChangeText={setAddonUrl}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  style={[styles.addButton, { opacity: installing || !addonUrl ? 0.6 : 1 }]}
-                  onPress={() => handleAddAddon()}
-                  disabled={installing || !addonUrl}
-                >
-                  <Text style={styles.addButtonText}>
-                    {installing ? 'Loading...' : 'Add Addon'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Installed Addons Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {reorderMode ? "DRAG ADDONS TO REORDER" : "INSTALLED ADDONS"}
-            </Text>
-            <View style={styles.addonList}>
-              {addons.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <MaterialIcons name="extension-off" size={32} color={colors.mediumGray} />
-                  <Text style={styles.emptyText}>No addons installed</Text>
-                </View>
-              ) : (
-                addons.map((addon, index) => (
-                  <View
-                    key={addon.id}
-                    style={{ marginBottom: index === addons.length - 1 ? 32 : 0 }}
-                  >
-                    {renderAddonItem({ item: addon, index })}
-                  </View>
-                ))
-              )}
-            </View>
-          </View>
-        </ScrollView>
-      )}
-
-      {/* Addon Details Confirmation Modal */}
-      <Modal
-        visible={showConfirmModal}
-        transparent
-        animationType="fade"
-        supportedOrientations={['portrait', 'landscape']}
-        onRequestClose={() => {
-          setShowConfirmModal(false);
-          setAddonDetails(null);
-        }}
-      >
-        <View style={styles.modalContainer}>
-          {Platform.OS === 'ios' ? (
-            GlassViewComp && liquidGlassAvailable ? (
-              <GlassViewComp style={styles.blurOverlay} glassEffectStyle="regular" />
-            ) : (
-              <ExpoBlurView intensity={80} style={styles.blurOverlay} tint="dark" />
-            )
-          ) : (
-            // Android: use solid themed background instead of semi-transparent overlay
-            <View style={[styles.androidBlurContainer, { backgroundColor: colors.darkBackground }]} />
-          )}
-          <View style={styles.modalContent}>
-            {addonDetails && (
-              <>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Install Addon</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowConfirmModal(false);
-                      setAddonDetails(null);
-                    }}
-                  >
-                    <MaterialIcons name="close" size={24} color={colors.white} />
-                  </TouchableOpacity>
-                </View>
-
-                <ScrollView
-                  style={styles.modalScrollContent}
-                  showsVerticalScrollIndicator={false}
-                  bounces={true}
-                >
-                  <View style={styles.addonDetailHeader}>
-                    {/* @ts-ignore */}
-                    {addonDetails.logo ? (
-                      <FastImage
-                        source={{ uri: addonDetails.logo }}
-                        style={styles.addonLogo}
-                        resizeMode={FastImage.resizeMode.contain}
-                      />
-                    ) : (
-                      <View style={styles.addonLogoPlaceholder}>
-                        <MaterialIcons name="extension" size={40} color={colors.mediumGray} />
-                      </View>
-                    )}
-                    <Text style={styles.addonDetailName}>{addonDetails.name}</Text>
-                    <Text style={styles.addonDetailVersion}>v{addonDetails.version || '1.0.0'}</Text>
-                  </View>
-
-                  <View style={styles.addonDetailSection}>
-                    <Text style={styles.addonDetailSectionTitle}>Description</Text>
-                    <Text style={styles.addonDetailDescription}>
-                      {addonDetails.description || 'No description available'}
-                    </Text>
-                  </View>
-
-                  {addonDetails.types && addonDetails.types.length > 0 && (
-                    <View style={styles.addonDetailSection}>
-                      <Text style={styles.addonDetailSectionTitle}>Supported Types</Text>
-                      <View style={styles.addonDetailChips}>
-                        {addonDetails.types.map((type, index) => (
-                          <View key={index} style={styles.addonDetailChip}>
-                            <Text style={styles.addonDetailChipText}>{type}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-
-                  {addonDetails.catalogs && addonDetails.catalogs.length > 0 && (
-                    <View style={styles.addonDetailSection}>
-                      <Text style={styles.addonDetailSectionTitle}>Catalogs</Text>
-                      <View style={styles.addonDetailChips}>
-                        {addonDetails.catalogs.map((catalog, index) => (
-                          <View key={index} style={styles.addonDetailChip}>
-                            <Text style={styles.addonDetailChipText}>
-                              {catalog.type} - {catalog.id}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-                </ScrollView>
-
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton]}
-                    onPress={() => {
-                      setShowConfirmModal(false);
-                      setAddonDetails(null);
-                    }}
-                  >
-                    <Text style={styles.modalButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.installButton]}
-                    onPress={confirmInstallAddon}
-                    disabled={installing}
-                  >
-                    {installing ? (
-                      <ActivityIndicator size="small" color={colors.white} />
-                    ) : (
-                      <Text style={styles.modalButtonText}>Install</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-      {/* Custom Alert Modal */}
+  return (
+    <SafeAreaView style={[styles.container]}>
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
-        onClose={() => setAlertVisible(false)}
         actions={alertActions}
+        onDismiss={() => setAlertVisible(false)}
       />
+      <View style={styles.header}>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => {
+              triggerLight();
+              navigation.goBack();
+            }}
+          >
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.headerTitle}>Add-Ons</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.headerButton, reorderMode && styles.activeHeaderButton]}
+            onPress={() => {
+              triggerMedium();
+              setReorderMode(!reorderMode);
+            }}
+          >
+            <MaterialIcons
+              name="drag-handle"
+              size={24}
+              color={reorderMode ? colors.primary : colors.lightGray}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {reorderMode && (
+        <View style={styles.reorderInfoBanner}>
+          <MaterialIcons name="info" size={20} color={colors.primary} />
+          <Text style={styles.reorderInfoText}>Drag to reorder add-ons</Text>
+        </View>
+      )}
+
+      <ScrollView style={styles.scrollView}>
+        {/* Stats Section */}
+        <View style={styles.section}>
+          <View style={styles.statsContainer}>
+            <View style={styles.statsCard}>
+              <Text style={styles.statsValue}>{addons.length}</Text>
+              <Text style={styles.statsLabel}>Add-Ons</Text>
+            </View>
+            <View style={styles.statsDivider} />
+            <View style={styles.statsCard}>
+              <Text style={styles.statsValue}>{catalogCount}</Text>
+              <Text style={styles.statsLabel}>Catalogs</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Add Addon Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Add New</Text>
+          <View style={styles.addAddonContainer}>
+            <TextInput
+              style={styles.addonInput}
+              placeholder="Addon URL"
+              placeholderTextColor={colors.mediumGray}
+              value={addonUrl}
+              onChangeText={setAddonUrl}
+            />
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => {
+                triggerMedium();
+                handleAddAddon();
+              }}
+            >
+              <Text style={styles.addButtonText}>Add Addon</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Installed Addons Section */}
+        {addons.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Installed</Text>
+            <View style={styles.addonList}>
+              {addons.map((addon, index) => (
+                <View key={addon.id || addon.name} style={{ position: 'relative' }}>
+                  {reorderMode && (
+                    <View style={styles.reorderButtons}>
+                      <TouchableOpacity
+                        style={[
+                          styles.reorderButton,
+                          index === 0 && styles.disabledButton,
+                        ]}
+                        onPress={() => handleReorderAddon(addon.id || addon.name, 'up')}
+                        disabled={index === 0}
+                      >
+                        <MaterialIcons
+                          name="arrow-upward"
+                          size={16}
+                          color={colors.white}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[
+                          styles.reorderButton,
+                          index === addons.length - 1 && styles.disabledButton,
+                        ]}
+                        onPress={() => handleReorderAddon(addon.id || addon.name, 'down')}
+                        disabled={index === addons.length - 1}
+                      >
+                        <MaterialIcons
+                          name="arrow-downward"
+                          size={16}
+                          color={colors.white}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    onPress={() => {
+                      triggerLight();
+                      setAddonDetails(addon);
+                      setShowConfirmModal(true);
+                    }}
+                    disabled={reorderMode}
+                  >
+                    <View style={styles.addonItem}>
+                      <View style={styles.addonHeader}>
+                        {addon.logo ? (
+                          <FastImage
+                            source={{ uri: addon.logo }}
+                            style={styles.addonIcon}
+                          />
+                        ) : (
+                          <View style={styles.addonIconPlaceholder}>
+                            <MaterialIcons
+                              name="extension"
+                              size={20}
+                              color={colors.primary}
+                            />
+                          </View>
+                        )}
+
+                        <View style={styles.addonTitleContainer}>
+                          <Text style={styles.addonName}>{addon.name}</Text>
+                          <View style={styles.addonMetaContainer}>
+                            {addon.version && (
+                              <>
+                                <Text style={styles.addonVersion}>v{addon.version}</Text>
+                                <Text style={styles.addonDot}>•</Text>
+                              </>
+                            )}
+                            {addon.types && addon.types.length > 0 && (
+                              <Text style={styles.addonCategory}>
+                                {addon.types.join(', ')}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+
+                      {addon.description && (
+                        <Text
+                          style={styles.addonDescription}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {addon.description}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Empty State */}
+        {addons.length === 0 && !loading && (
+          <View style={styles.section}>
+            <View style={styles.emptyContainer}>
+              <MaterialIcons
+                name="extension"
+                size={48}
+                color={colors.mediumGray}
+              />
+              <Text style={styles.emptyText}>No add-ons installed</Text>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Confirmation Modal */}
+      <Modal
+        visible={showConfirmModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          triggerLight();
+          setShowConfirmModal(false);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.blurOverlay} />
+          <View style={styles.modalContent}>
+            {addonDetails && (
+              <ScrollView>
+                {/* Header with Logo and Basic Info */}
+                <View style={styles.addonDetailHeader}>
+                  {addonDetails.logo ? (
+                    <FastImage
+                      source={{ uri: addonDetails.logo }}
+                      style={styles.addonLogo}
+                    />
+                  ) : (
+                    <View style={styles.addonLogoPlaceholder}>
+                      <MaterialIcons
+                        name="extension"
+                        size={32}
+                        color={colors.primary}
+                      />
+                    </View>
+                  )}
+                  <Text style={styles.addonDetailName}>{addonDetails.name}</Text>
+                  {addonDetails.version && (
+                    <Text style={styles.addonDetailVersion}>v{addonDetails.version}</Text>
+                  )}
+                </View>
+
+                {/* Description Section */}
+                {addonDetails.description && (
+                  <View style={styles.addonDetailSection}>
+                    <Text style={styles.addonDetailSectionTitle}>Description</Text>
+                    <Text style={styles.addonDetailDescription}>
+                      {addonDetails.description}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Types Section */}
+                {addonDetails.types && addonDetails.types.length > 0 && (
+                  <View style={styles.addonDetailSection}>
+                    <Text style={styles.addonDetailSectionTitle}>Content Types</Text>
+                    <View style={styles.addonDetailChips}>
+                      {addonDetails.types.map((type) => (
+                        <View key={type} style={styles.addonDetailChip}>
+                          <Text style={styles.addonDetailChipText}>{type}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Catalogs Section */}
+                {addonDetails.catalogs && addonDetails.catalogs.length > 0 && (
+                  <View style={styles.addonDetailSection}>
+                    <Text style={styles.addonDetailSectionTitle}>Catalogs</Text>
+                    <View style={styles.addonDetailChips}>
+                      {addonDetails.catalogs.map((catalog, idx) => (
+                        <View key={idx} style={styles.addonDetailChip}>
+                          <Text style={styles.addonDetailChipText}>
+                            {(catalog as any).name || catalog.type}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Modal Actions */}
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => {
+                      triggerLight();
+                      setShowConfirmModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Close</Text>
+                  </TouchableOpacity>
+
+                  {addonDetails.id && addons.find(a => a.id === addonDetails.id) ? (
+                    <>
+                      {addonDetails.behaviorHints?.configurable && (
+                        <TouchableOpacity
+                          style={styles.installButton}
+                          onPress={() => {
+                            triggerMedium();
+                            handleConfigureAddon(addonDetails);
+                          }}
+                        >
+                          <Text style={styles.modalButtonText}>Configure</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity
+                        style={[styles.installButton, { backgroundColor: colors.error}]}
+                        onPress={() => {
+                          triggerMedium();
+                          setShowConfirmModal(false);
+                          handleDeleteAddon(addonDetails);
+                        }}
+                      >
+                        <Text style={styles.modalButtonText}>Delete</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.installButton}
+                      onPress={handleInstallAddon}
+                      disabled={installing}
+                    >
+                      {installing ? (
+                        <ActivityIndicator color={colors.white} />
+                      ) : (
+                        <Text style={styles.modalButtonText}>Install</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

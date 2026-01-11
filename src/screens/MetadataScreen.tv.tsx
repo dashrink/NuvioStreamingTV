@@ -81,14 +81,11 @@ import { tmdbService } from '../services/tmdbService';
 import { catalogService } from '../services/catalogService';
 
 // TV-specific imports from the modular tvStyles directory
-import {
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_FOCUS_CONFIG,
-  isTV,
-  getDeviceType,
-  scaleForTV,
-} from '../utils/tvStyles/index';
+import { TV_SPACING } from '../utils/tvStyles/spacing';
+import { TV_TYPOGRAPHY } from '../utils/tvStyles/typography';
+import { TV_FOCUS_CONFIG } from '../utils/tvStyles/focus';
+import { isTV, getDeviceType } from '../utils/tvStyles/deviceDetection';
+import { scaleForTV } from '../utils/tvStyles/helpers';
 
 const { height, width } = Dimensions.get('window');
 

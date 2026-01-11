@@ -10,14 +10,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Focusable from '../common/Focusable';
 import { useFocusGroup } from '../../hooks/useFocusGroup';
 import { useTheme } from '../../contexts/ThemeContext';
-import {
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_FOCUS_CONFIG,
-  isTV,
-  scaleForTV,
-  getDeviceType,
-} from '../../utils/tvStyles';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
+import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
+import { scaleForTV } from '../../utils/tvStyles/helpers';
 
 /**
  * Folder definition for library collections

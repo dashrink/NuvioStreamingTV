@@ -12,6 +12,7 @@ import {
 import CustomSwitch from '../components/common/CustomSwitch';
 import { useNavigation } from '@react-navigation/native';
 import { useSettings, AppSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts/ThemeContext';
 import CustomAlert from '../components/CustomAlert';
@@ -37,9 +38,14 @@ const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
+  const handlePress = () => {
+    triggerLight();
+    onPress();
+  };
+
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
       style={[
         styles.settingItem,
@@ -156,6 +162,7 @@ const PlayerSettingsScreen: React.FC = () => {
   ];
 
   const handleBack = () => {
+    triggerLight();
     navigation.goBack();
   };
 
@@ -289,9 +296,12 @@ const PlayerSettingsScreen: React.FC = () => {
                     Automatically start the highest quality stream available.
                   </Text>
                 </View>
-                                <CustomSwitch
+                <CustomSwitch
                   value={settings.autoplayBestStream}
-                  onValueChange={(value: boolean) => updateSetting('autoplayBestStream', value)}
+                  onValueChange={(value: boolean) => {
+                    triggerMedium();
+                    updateSetting('autoplayBestStream', value);
+                  }}
                 />
               </View>
             </View>
@@ -326,9 +336,12 @@ const PlayerSettingsScreen: React.FC = () => {
                     Skip the resume prompt and automatically continue where you left off (if less than 85% watched).
                   </Text>
                 </View>
-                                <CustomSwitch
+                <CustomSwitch
                   value={settings.alwaysResume}
-                  onValueChange={(value: boolean) => updateSetting('alwaysResume', value)}
+                  onValueChange={(value: boolean) => {
+                    triggerMedium();
+                    updateSetting('alwaysResume', value);
+                  }}
                 />
               </View>
             </View>
@@ -374,7 +387,10 @@ const PlayerSettingsScreen: React.FC = () => {
                     ] as const).map((option) => (
                       <TouchableOpacity
                         key={option.id}
-                        onPress={() => updateSetting('videoPlayerEngine', option.id)}
+                        onPress={() => {
+                          triggerLight();
+                          updateSetting('videoPlayerEngine', option.id);
+                        }}
                         style={[
                           styles.optionButton,
                           styles.optionButtonWide,
@@ -436,6 +452,7 @@ const PlayerSettingsScreen: React.FC = () => {
                       <TouchableOpacity
                         key={option.id}
                         onPress={() => {
+                          triggerLight();
                           updateSetting('decoderMode', option.id);
                           openAlert(
                             'Restart Required',
@@ -451,71 +468,6 @@ const PlayerSettingsScreen: React.FC = () => {
                           style={[
                             styles.optionButtonText,
                             { color: settings.decoderMode === option.id ? '#fff' : currentTheme.colors.text },
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* GPU Mode for Android Internal Player */}
-                <View style={[styles.settingItem, styles.settingItemBorder, { borderTopColor: 'rgba(255,255,255,0.08)', borderTopWidth: 1 }]}>
-                  <View style={styles.settingContent}>
-                    <View style={[
-                      styles.settingIconContainer,
-                      { backgroundColor: 'rgba(255,255,255,0.1)' }
-                    ]}>
-                      <MaterialIcons
-                        name="videocam"
-                        size={20}
-                        color={currentTheme.colors.primary}
-                      />
-                    </View>
-                    <View style={styles.settingText}>
-                      <Text
-                        style={[
-                          styles.settingTitle,
-                          { color: currentTheme.colors.text },
-                        ]}
-                      >
-                        GPU Rendering
-                      </Text>
-                      <Text
-                        style={[
-                          styles.settingDescription,
-                          { color: currentTheme.colors.textMuted },
-                        ]}
-                      >
-                        GPU-Next offers better HDR and color management.
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.optionButtonsRow}>
-                    {([
-                      { id: 'gpu', label: 'GPU', desc: 'Standard' },
-                      { id: 'gpu-next', label: 'GPU-Next', desc: 'Advanced' },
-                    ] as const).map((option) => (
-                      <TouchableOpacity
-                        key={option.id}
-                        onPress={() => {
-                          updateSetting('gpuMode', option.id);
-                          openAlert(
-                            'Restart Required',
-                            'Please restart the app for the GPU mode change to take effect.'
-                          );
-                        }}
-                        style={[
-                          styles.optionButton,
-                          styles.optionButtonWide,
-                          settings.gpuMode === option.id && { backgroundColor: currentTheme.colors.primary },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.optionButtonText,
-                            { color: settings.gpuMode === option.id ? '#fff' : currentTheme.colors.text },
                           ]}
                         >
                           {option.label}
@@ -560,9 +512,12 @@ const PlayerSettingsScreen: React.FC = () => {
                         Play downloaded content in your preferred external player.
                       </Text>
                     </View>
-                                        <CustomSwitch
+                    <CustomSwitch
                       value={settings.useExternalPlayerForDownloads}
-                      onValueChange={(value: boolean) => updateSetting('useExternalPlayerForDownloads', value)}
+                      onValueChange={(value) => {
+                        triggerMedium();
+                        updateSetting('useExternalPlayerForDownloads', value);
+                      }}
                     />
                   </View>
                 </View>
@@ -575,7 +530,13 @@ const PlayerSettingsScreen: React.FC = () => {
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
-        onClose={() => setAlertVisible(false)}
+        buttons={[
+          {
+            text: 'OK',
+            onPress: () => setAlertVisible(false),
+          },
+        ]}
+        onDismiss={() => setAlertVisible(false)}
       />
     </SafeAreaView>
   );
@@ -678,16 +639,15 @@ const styles = StyleSheet.create({
   },
   optionButtonsRow: {
     flexDirection: 'row',
-    marginTop: 12,
-    paddingHorizontal: 52,
     gap: 8,
+    marginTop: 12,
   },
   optionButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -695,9 +655,9 @@ const styles = StyleSheet.create({
     flex: 1.5,
   },
   optionButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
 });
 
-export default PlayerSettingsScreen; 
+export default PlayerSettingsScreen;

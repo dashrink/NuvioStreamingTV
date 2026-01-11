@@ -20,6 +20,7 @@ import { logger } from '../../utils/logger';
 import { useTraktComments } from '../../hooks/useTraktComments';
 import { useSettings } from '../../hooks/useSettings';
 import BottomSheet, { BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 // Enhanced responsive breakpoints for Comments Section
 const BREAKPOINTS = {
@@ -349,6 +350,7 @@ const CompactCommentCard: React.FC<{
         onPressIn={() => setIsPressed(true)}
         onPressOut={() => setIsPressed(false)}
         onPress={() => {
+          triggerLight(); // Haptic feedback for comment card tap
           console.log('CompactCommentCard: TouchableOpacity pressed for comment:', comment.id);
           onPress();
         }}
@@ -615,7 +617,7 @@ const ExpandedCommentBottomSheet: React.FC<{
         keyboardShouldPersistTaps="handled"
       >
         {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <TouchableOpacity style={styles.closeButton} onPress={() => { triggerLight(); onClose(); }}>
           <MaterialIcons name="close" size={24} color={theme.colors.highEmphasis} />
         </TouchableOpacity>
 
@@ -671,7 +673,7 @@ const ExpandedCommentBottomSheet: React.FC<{
             <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>Contains spoilers</Text>
             <TouchableOpacity
               style={[styles.revealButton, { borderColor: theme.colors.primary }]}
-              onPress={onSpoilerPress}
+              onPress={() => { triggerMedium(); onSpoilerPress(); }}
               activeOpacity={0.9}
             >
               <MaterialIcons name="visibility" size={18} color={theme.colors.primary} />
@@ -942,7 +944,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
           </Text>
           <TouchableOpacity
             style={[styles.retryButton, { borderColor: currentTheme.colors.error }]}
-            onPress={refresh}
+            onPress={() => { triggerMedium(); refresh(); }}
           >
             <Text style={[styles.retryButtonText, { color: currentTheme.colors.error }]}>
               Retry
@@ -985,7 +987,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
               <View style={styles.loadMoreContainer}>
                 <TouchableOpacity
                   style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.card }]}
-                  onPress={loadMore}
+                  onPress={() => { triggerLight(); loadMore(); }}
                   disabled={loading}
                 >
                   {loading ? (
@@ -1171,7 +1173,7 @@ export const CommentBottomSheet: React.FC<{
             <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>Contains spoilers</Text>
             <TouchableOpacity
               style={[styles.revealButton, { borderColor: theme.colors.primary }]}
-              onPress={onSpoilerPress}
+              onPress={() => { triggerMedium(); onSpoilerPress(); }}
               activeOpacity={0.9}
             >
               <MaterialIcons name="visibility" size={18} color={theme.colors.primary} />

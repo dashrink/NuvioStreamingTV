@@ -73,7 +73,9 @@
       "jsEngine": "hermes"
     },
     "extra": {
-      "eas": {}
+      "eas": {
+        "projectId": "729065cb-4961-483c-aec6-dea93c598fd5"
+      }
     },
     "owner": "dashrinko",
     "plugins": [

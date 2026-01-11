@@ -31,6 +31,7 @@ import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 import { useCalendarData } from '../hooks/useCalendarData';
+import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -92,6 +93,7 @@ const CalendarScreen = () => {
   }, []);
   
   const handleSeriesPress = useCallback((seriesId: string, episode?: CalendarEpisode) => {
+    triggerLight();
     navigation.navigate('Metadata', {
       id: seriesId,
       type: 'series',
@@ -107,6 +109,7 @@ const CalendarScreen = () => {
     }
     
     // For episodes with dates, go to the stream screen
+    triggerLight();
     const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
     navigation.navigate('Streams', {
       id: episode.seriesId,
@@ -248,6 +251,7 @@ const CalendarScreen = () => {
   
   // Handle date selection from calendar
   const handleDateSelect = useCallback((date: Date) => {
+    triggerLight();
     logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
     setSelectedDate(date);
     
@@ -264,6 +268,7 @@ const CalendarScreen = () => {
 
   // Reset date filter
   const clearDateFilter = useCallback(() => {
+    triggerLight();
     logger.log(`[Calendar] Clearing date filter`);
     setSelectedDate(null);
     setFilteredEpisodes([]);
@@ -288,7 +293,10 @@ const CalendarScreen = () => {
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
         <Focusable 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            triggerLight();
+            navigation.goBack();
+          }}
           hasTVPreferredFocus={Platform.isTV}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
@@ -398,59 +406,82 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 16,
+    color: '#999',
   },
-  sectionHeader: {
-    paddingVertical: 8,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  filterInfoText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  clearFilterButton: {
+    padding: 8,
   },
   episodeItem: {
     flexDirection: 'row',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   poster: {
-    width: 120,
-    height: 68,
-    borderRadius: 8,
+    width: 80,
+    height: 120,
+    borderRadius: 4,
+    marginRight: 12,
   },
   episodeDetails: {
     flex: 1,
-    marginLeft: 12,
     justifyContent: 'space-between',
   },
   seriesName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 4,
   },
   episodeTitle: {
     fontSize: 14,
-    lineHeight: 20,
+    marginBottom: 4,
   },
   overview: {
     fontSize: 12,
-    marginTop: 4,
-    lineHeight: 16,
+    marginBottom: 8,
   },
   metadataContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   date: {
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: 4,
   },
   ratingContainer: {
@@ -458,19 +489,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rating: {
-    fontSize: 14,
+    fontSize: 12,
     marginLeft: 4,
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  noEpisodesText: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 24,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginTop: 16,
     textAlign: 'center',
   },
@@ -478,75 +522,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
-    paddingHorizontal: 32,
-  },
-  filterInfoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-  },
-  filterInfoText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  clearFilterButton: {
-    padding: 8,
   },
   emptyFilterContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 24,
   },
   emptyFilterText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
+    fontSize: 16,
+    marginTop: 12,
     textAlign: 'center',
   },
   clearFilterButtonLarge: {
     marginTop: 20,
-    padding: 16,
-    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 6,
   },
   clearFilterButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 12 : 12,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 12,
-  },
-  emptyLibraryContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  discoverButton: {
-    padding: 16,
-    borderRadius: 8,
-  },
-  discoverButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  noEpisodesText: {
     fontSize: 14,
-    marginBottom: 4,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 
-export default CalendarScreen; 
+export default CalendarScreen;

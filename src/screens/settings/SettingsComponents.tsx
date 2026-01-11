@@ -3,7 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Switch, Platform, Dimensions,
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import Focusable from '../../components/common/Focusable';
-import { isTV, TV_TYPOGRAPHY, TV_SPACING, TV_TOUCH_TARGETS, TV_FOCUS_CONFIG } from '../../utils/tvStyles';
+import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
+import { TV_TOUCH_TARGETS } from '../../utils/tvStyles/touchTargets';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;

@@ -25,6 +25,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { mmkvStorage } from '../services/mmkvStorage';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -202,6 +203,7 @@ const OnboardingScreen = () => {
   });
 
   const handleNext = () => {
+    triggerMedium();
     if (currentIndex < onboardingData.length - 1) {
       const nextIndex = currentIndex + 1;
       flatListRef.current?.scrollToOffset({
@@ -214,6 +216,7 @@ const OnboardingScreen = () => {
   };
 
   const handleSkip = () => {
+    triggerLight();
     (async () => {
       try {
         await mmkvStorage.setItem('hasCompletedOnboarding', 'true');
@@ -336,8 +339,8 @@ const OnboardingScreen = () => {
             onPress={handleNext}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
-            activeOpacity={1} // Only used by mobile fallback inside Focusable
-            style={{ borderRadius: 16 }} // Ensure external container has radius
+            activeOpacity={1}
+            style={{ borderRadius: 16 }}
             focusedStyle={{ transform: [{ scale: 1.05 }] }}
           >
             <Animated.View style={[styles.button, buttonStyle]}>

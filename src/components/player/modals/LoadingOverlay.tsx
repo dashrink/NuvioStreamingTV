@@ -13,6 +13,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { styles } from '../utils/playerStyles';
 import Focusable from '../../common/Focusable';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -121,7 +122,10 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       
       <Focusable 
         style={styles.loadingCloseButton}
-        onPress={onClose}
+        onPress={() => {
+          triggerLight();
+          onClose();
+        }}
         hasTVPreferredFocus={Platform.isTV}
       >
         <MaterialIcons name="close" size={24} color="#ffffff" />

@@ -86,10 +86,7 @@ const Focusable = React.forwardRef<any, FocusableProps>(
     );
 
     const animatedStyle = useAnimatedStyle(() => {
-      // For Apple TV, we prefer the native parallax effect over manual scaling
-      if (Platform.OS === 'ios') return {};
-
-      // Android TV: Apply scaling animations
+      // Apply scaling animations on both platforms for consistent focus indication
       return {
         transform: [
           {

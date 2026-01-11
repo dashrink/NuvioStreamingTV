@@ -35,6 +35,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../../contexts/ThemeContext';
 import { logger } from '../../utils/logger';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 
@@ -102,7 +103,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
             <Focusable
               style={styles.backButton}
-              onPress={handleBack}
+              onPress={() => {
+                triggerLight();
+                handleBack();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons
@@ -130,7 +134,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
 
             <Focusable
               style={styles.headerActionButton}
-              onPress={handleToggleLibrary}
+              onPress={() => {
+                triggerMedium();
+                handleToggleLibrary();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
@@ -147,7 +154,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
             <Focusable
               style={styles.backButton}
-              onPress={handleBack}
+              onPress={() => {
+                triggerLight();
+                handleBack();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons
@@ -175,7 +185,10 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
 
             <Focusable
               style={styles.headerActionButton}
-              onPress={handleToggleLibrary}
+              onPress={() => {
+                triggerMedium();
+                handleToggleLibrary();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
@@ -258,4 +271,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(FloatingHeader); 
+export default React.memo(FloatingHeader);

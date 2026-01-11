@@ -20,17 +20,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolate,
-  Extrapolate,
-} from 'react-native-reanimated';
-import FastImage from '@d11/react-native-fast-image';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
 import Focusable from '../common/Focusable';
+import ContentItem from '../home/ContentItem';
+import { StreamingContent } from '../../services/catalogService';
 import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
 import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
@@ -84,29 +78,9 @@ export interface TVContinueWatchingSectionProps {
 // ============================================================================
 
 const TV_CONTINUE_WATCHING = {
-  // Item sizing optimized for 10-foot viewing
-  itemWidth: 480,        // Larger width for TV
-  itemHeight: 200,       // Taller for better readability
-  posterWidth: 130,      // Wider poster
-
-  // Progress bar sizing for visibility at distance
-  progressBarHeight: 10, // Thick enough to see from 10 feet
-  progressBarRadius: 5,
-
-  // Typography for TV distance
-  titleFontSize: 24,
-  episodeFontSize: 20,
-  progressFontSize: 18,
-  yearFontSize: 18,
-
   // Spacing
   itemSpacing: 24,
   horizontalPadding: 48,
-  contentPadding: 20,
-
-  // Focus animation
-  focusScale: 1.05,
-  focusBorderWidth: 4,
 
   // Section header
   headerFontSize: 36,
@@ -122,187 +96,30 @@ const TV_CONTINUE_WATCHING = {
 interface TVContinueWatchingItemProps {
   item: TVContinueWatchingItem;
   index: number;
-  isFocused: boolean;
   onPress: () => void;
-  onLongPress?: () => void;
   onFocus: () => void;
-  currentTheme: any;
-  posterBorderRadius: number;
 }
 
 const TVContinueWatchingItemComponent = React.memo<TVContinueWatchingItemProps>(({
   item,
   index,
-  isFocused,
   onPress,
-  onLongPress,
   onFocus,
-  currentTheme,
-  posterBorderRadius,
 }) => {
-  const isUpNext = item.type === 'series' && item.progress === 0;
-
-  // Animated glow effect for focus
-  const glowOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    glowOpacity.value = withSpring(isFocused ? 1 : 0, {
-      damping: TV_ANIMATIONS.focusSpring.damping,
-      stiffness: TV_ANIMATIONS.focusSpring.stiffness,
-    });
-  }, [isFocused]);
-
-  const glowStyle = useAnimatedStyle(() => ({
-    shadowOpacity: interpolate(
-      glowOpacity.value,
-      [0, 1],
-      [0.1, 0.8],
-      Extrapolate.CLAMP
-    ),
-    shadowRadius: interpolate(
-      glowOpacity.value,
-      [0, 1],
-      [4, 16],
-      Extrapolate.CLAMP
-    ),
-  }));
+  // Map TVContinueWatchingItem to StreamingContent
+  const contentItem: StreamingContent = {
+    ...item,
+    title: item.name,
+  } as unknown as StreamingContent;
 
   return (
-    <Focusable
-      style={[
-        styles.itemContainer,
-        {
-          backgroundColor: currentTheme.colors.elevation1,
-          borderRadius: posterBorderRadius,
-          borderWidth: TV_CONTINUE_WATCHING.focusBorderWidth,
-          borderColor: 'transparent',
-        },
-      ]}
-      focusedStyle={{
-        borderColor: currentTheme.colors.primary,
-        shadowColor: currentTheme.colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 16,
-        elevation: 12,
-      }}
-      scaleOnFocus={TV_CONTINUE_WATCHING.focusScale}
+    <ContentItem
+      item={contentItem}
+      index={index}
       onPress={onPress}
-      onLongPress={onLongPress}
-      onFocus={onFocus}
-      hasTVPreferredFocus={index === 0}
-      testID={`tv-continue-watching-item-${item.id}`}
-    >
-      {/* Poster Image */}
-      <View style={[
-        styles.posterContainer,
-        { borderTopLeftRadius: posterBorderRadius, borderBottomLeftRadius: posterBorderRadius }
-      ]}>
-        <FastImage
-          source={{
-            uri: item.poster || 'https://via.placeholder.com/300x450',
-            priority: FastImage.priority.high,
-            cache: FastImage.cacheControl.immutable,
-          }}
-          style={[
-            styles.poster,
-            { borderTopLeftRadius: posterBorderRadius, borderBottomLeftRadius: posterBorderRadius }
-          ]}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-      </View>
-
-      {/* Content Details */}
-      <View style={styles.contentDetails}>
-        {/* Title Row with Up Next Badge */}
-        <View style={styles.titleRow}>
-          <Text
-            style={[
-              styles.itemTitle,
-              { color: currentTheme.colors.highEmphasis }
-            ]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-          {isUpNext && (
-            <View style={[
-              styles.upNextBadge,
-              { backgroundColor: currentTheme.colors.primary }
-            ]}>
-              <Text style={styles.upNextText}>Up Next</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Episode Info or Year */}
-        {item.type === 'series' && item.season && item.episode ? (
-          <View style={styles.episodeRow}>
-            <Text style={[
-              styles.episodeText,
-              { color: currentTheme.colors.mediumEmphasis }
-            ]}>
-              Season {item.season}, Episode {item.episode}
-            </Text>
-            {item.episodeTitle && (
-              <Text
-                style={[
-                  styles.episodeTitle,
-                  { color: currentTheme.colors.mediumEmphasis }
-                ]}
-                numberOfLines={1}
-              >
-                {item.episodeTitle}
-              </Text>
-            )}
-          </View>
-        ) : (
-          <Text style={[
-            styles.yearText,
-            { color: currentTheme.colors.mediumEmphasis }
-          ]}>
-            {item.year} {'\u2022'} {item.type === 'movie' ? 'Movie' : 'Series'}
-          </Text>
-        )}
-
-        {/* Progress Bar - Enhanced for TV visibility */}
-        {item.progress > 0 && (
-          <View style={styles.progressContainer}>
-            <View style={[
-              styles.progressTrack,
-              { backgroundColor: 'rgba(255,255,255,0.15)' }
-            ]}>
-              <View
-                style={[
-                  styles.progressBar,
-                  {
-                    width: `${item.progress}%`,
-                    backgroundColor: currentTheme.colors.primary,
-                  }
-                ]}
-              />
-              {/* Progress glow effect for better visibility */}
-              <View
-                style={[
-                  styles.progressGlow,
-                  {
-                    width: `${item.progress}%`,
-                    backgroundColor: currentTheme.colors.primary,
-                    opacity: 0.5,
-                  }
-                ]}
-              />
-            </View>
-            <Text style={[
-              styles.progressLabel,
-              { color: currentTheme.colors.textMuted }
-            ]}>
-              {Math.round(item.progress)}% watched
-            </Text>
-          </View>
-        )}
-      </View>
-    </Focusable>
+      onItemFocus={onFocus}
+      hasTVPreferredFocus={false}
+    />
   );
 });
 
@@ -393,21 +210,13 @@ export const TVContinueWatchingSection: React.FC<TVContinueWatchingSectionProps>
       <TVContinueWatchingItemComponent
         item={item}
         index={index}
-        isFocused={index === focusedIndex}
         onPress={() => handleItemPress(item, index)}
-        onLongPress={() => handleItemLongPress(item, index)}
         onFocus={() => handleFocusChange(index)}
-        currentTheme={currentTheme}
-        posterBorderRadius={settings.posterBorderRadius ?? 12}
       />
     ),
     [
-      focusedIndex,
       handleItemPress,
-      handleItemLongPress,
       handleFocusChange,
-      currentTheme,
-      settings.posterBorderRadius,
     ]
   );
 
@@ -459,7 +268,8 @@ export const TVContinueWatchingSection: React.FC<TVContinueWatchingSectionProps>
         scrollEnabled={!Platform.isTV} // Disable scroll on TV (D-pad handles it)
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={ItemSeparator}
-        estimatedItemSize={TV_CONTINUE_WATCHING.itemWidth}
+        // @ts-ignore
+        estimatedItemSize={150 + TV_CONTINUE_WATCHING.itemSpacing}
         onEndReachedThreshold={0.5}
         removeClippedSubviews={true}
         testID={`${testID}-list`}
@@ -478,7 +288,7 @@ const styles = StyleSheet.create({
     paddingTop: TV_SPACING.md,
   },
   loadingContainer: {
-    height: TV_CONTINUE_WATCHING.itemHeight + 100,
+    height: 300,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -507,104 +317,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: TV_CONTINUE_WATCHING.horizontalPadding,
     paddingVertical: TV_SPACING.md,
-  },
-  itemContainer: {
-    width: TV_CONTINUE_WATCHING.itemWidth,
-    height: TV_CONTINUE_WATCHING.itemHeight,
-    flexDirection: 'row',
-    overflow: 'hidden',
-    // Base shadow for depth
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  posterContainer: {
-    width: TV_CONTINUE_WATCHING.posterWidth,
-    height: '100%',
-  },
-  poster: {
-    width: '100%',
-    height: '100%',
-  },
-  contentDetails: {
-    flex: 1,
-    padding: TV_CONTINUE_WATCHING.contentPadding,
-    justifyContent: 'space-between',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  itemTitle: {
-    fontSize: TV_CONTINUE_WATCHING.titleFontSize,
-    fontWeight: '700',
-    flex: 1,
-    marginRight: 12,
-  },
-  upNextBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  upNextText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  episodeRow: {
-    marginBottom: 12,
-  },
-  episodeText: {
-    fontSize: TV_CONTINUE_WATCHING.episodeFontSize,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  episodeTitle: {
-    fontSize: TV_CONTINUE_WATCHING.episodeFontSize - 2,
-    fontWeight: '500',
-  },
-  yearText: {
-    fontSize: TV_CONTINUE_WATCHING.yearFontSize,
-    fontWeight: '500',
-    marginBottom: 12,
-  },
-  progressContainer: {
-    marginTop: 'auto',
-  },
-  progressTrack: {
-    height: TV_CONTINUE_WATCHING.progressBarHeight,
-    borderRadius: TV_CONTINUE_WATCHING.progressBarRadius,
-    marginBottom: 8,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: TV_CONTINUE_WATCHING.progressBarRadius,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  progressGlow: {
-    height: '100%',
-    borderRadius: TV_CONTINUE_WATCHING.progressBarRadius,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    // Glow effect for better visibility at distance
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  progressLabel: {
-    fontSize: TV_CONTINUE_WATCHING.progressFontSize,
-    fontWeight: '600',
   },
 });
 

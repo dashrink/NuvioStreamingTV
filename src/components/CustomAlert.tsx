@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../contexts/ThemeContext';
 import { Portal } from 'react-native-paper';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 interface CustomAlertProps {
   visible: boolean;
@@ -65,7 +66,13 @@ export const CustomAlert = ({
   }));
 
   // Safe action handler to prevent crashes
-  const handleActionPress = useCallback((action: { label: string; onPress: () => void; style?: object }) => {
+  const handleActionPress = useCallback((action: { label: string; onPress: () => void; style?: object }, isPrimary: boolean) => {
+    // Trigger appropriate haptic feedback based on action type
+    if (isPrimary) {
+      triggerMedium(); // Important action (confirm, submit, etc.)
+    } else {
+      triggerLight(); // Secondary action (cancel, dismiss)
+    }
     try {
       action.onPress();
       // Don't auto-close here if the action handles it, or check if we should
@@ -75,6 +82,12 @@ export const CustomAlert = ({
       console.warn('[CustomAlert] Error in action handler:', error);
       onClose();
     }
+  }, [onClose]);
+
+  // Handle backdrop press with haptic feedback
+  const handleBackdropPress = useCallback(() => {
+    triggerLight(); // Modal close
+    onClose();
   }, [onClose]);
 
   // Use Portal with Modal for proper rendering and animations
@@ -96,7 +109,7 @@ export const CustomAlert = ({
             overlayStyle
           ]}
         >
-          <Pressable style={styles.overlayPressable} onPress={onClose} />
+          <Pressable style={styles.overlayPressable} onPress={handleBackdropPress} />
           <View style={styles.centered}>
             <Animated.View style={[
               styles.alertContainer,
@@ -130,7 +143,7 @@ export const CustomAlert = ({
                         action.style,
                         actions.length === 1 && { minWidth: 120, maxWidth: '100%' }
                       ]}
-                      onPress={() => handleActionPress(action)}
+                      onPress={() => handleActionPress(action, isPrimary)}
                       activeOpacity={0.7}
                     >
                       <Text style={[

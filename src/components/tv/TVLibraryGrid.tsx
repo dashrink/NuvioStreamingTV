@@ -14,15 +14,12 @@ import Focusable from '../common/Focusable';
 import { useSpatialNavigation } from '../../hooks/useSpatialNavigation';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
-import {
-  TV_CATALOG,
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_FOCUS_CONFIG,
-  isTV,
-  scaleForTV,
-  getDeviceType,
-} from '../../utils/tvStyles';
+import { TV_CATALOG } from '../../utils/tvStyles/layout';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
+import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
+import { scaleForTV } from '../../utils/tvStyles/helpers';
 
 /**
  * Grid item types supported by TVLibraryGrid

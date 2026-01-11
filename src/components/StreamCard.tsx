@@ -16,6 +16,7 @@ import QualityBadge from './metadata/QualityBadge';
 import { useSettings } from '../hooks/useSettings';
 import { useDownloads } from '../contexts/DownloadsContext';
 import { useToast } from '../contexts/ToastContext';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 interface StreamCardProps {
   stream: Stream;
@@ -62,8 +63,15 @@ const StreamCard = memo(({
   const { startDownload } = useDownloads();
   const { showSuccess, showInfo } = useToast();
 
+  // Handle stream selection with haptic feedback
+  const handlePress = useCallback(() => {
+    triggerMedium(); // Stream selection is an important action
+    onPress();
+  }, [onPress]);
+
   // Handle long press to copy stream URL to clipboard
   const handleLongPress = useCallback(async () => {
+    triggerLight(); // Light haptic for secondary action (copy URL)
     if (stream.url) {
       try {
         await Clipboard.setString(stream.url);
@@ -122,6 +130,7 @@ const StreamCard = memo(({
   }, [stream.name, stream.title, stream.behaviorHints, stream.size]);
 
   const handleDownload = useCallback(async () => {
+    triggerMedium(); // Download is an important action
     try {
       const url = stream.url;
       if (!url) return;
@@ -183,7 +192,7 @@ const StreamCard = memo(({
         isLoading && styles.streamCardLoading,
         isDebrid && styles.streamCardHighlighted
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       onLongPress={handleLongPress}
       disabled={isLoading}
       activeOpacity={0.7}

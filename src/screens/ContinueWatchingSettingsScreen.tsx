@@ -16,8 +16,8 @@ import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../hooks/useSettings';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import CustomSwitch from '../components/common/CustomSwitch';
 
 // TTL options in milliseconds - organized in rows
 const TTL_OPTIONS = [
@@ -58,6 +58,7 @@ const ContinueWatchingSettingsScreen: React.FC = () => {
   }, [colors.darkBackground]);
 
   const handleBack = useCallback(() => {
+    triggerLight();
     navigation.goBack();
   }, [navigation]);
 
@@ -87,6 +88,19 @@ const ContinueWatchingSettingsScreen: React.FC = () => {
     updateSetting(key, value);
     setShowSavedIndicator(true);
   }, [updateSetting]);
+
+  const CustomSwitch = ({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) => (
+    <Switch
+      value={value}
+      onValueChange={(val) => {
+        triggerMedium();
+        onValueChange(val);
+      }}
+      trackColor={{ false: colors.elevation2, true: colors.primary }}
+      thumbColor={value ? colors.white : colors.mediumEmphasis}
+      ios_backgroundColor={colors.elevation2}
+    />
+  );
 
   const SettingItem = ({ 
     title, 
@@ -131,7 +145,10 @@ const ContinueWatchingSettingsScreen: React.FC = () => {
             borderColor: isSelected ? colors.primary : colors.border,
           }
         ]}
-        onPress={() => handleUpdateSetting('streamCacheTTL', option.value)}
+        onPress={() => {
+          triggerLight();
+          handleUpdateSetting('streamCacheTTL', option.value);
+        }}
         activeOpacity={0.7}
       >
         <Text style={[

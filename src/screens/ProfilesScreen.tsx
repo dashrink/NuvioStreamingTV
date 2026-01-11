@@ -34,6 +34,7 @@ import {
   KIDS_AVATAR_OPTIONS,
 } from '../types/profile';
 import CustomAlert from '../components/CustomAlert';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -91,10 +92,12 @@ const ProfilesScreen: React.FC = () => {
   };
 
   const handleBack = () => {
+    triggerLight(); // Navigation
     navigation.goBack();
   };
 
   const handleCreateProfile = async (input: CreateProfileInput) => {
+    triggerMedium(); // Primary button action
     const newProfile = await createProfile(input);
     if (newProfile) {
       setShowCreateModal(false);
@@ -121,6 +124,8 @@ const ProfilesScreen: React.FC = () => {
   };
 
   const handleDeleteProfile = async (profile: Profile) => {
+    triggerHeavy(); // Destructive action
+
     // Check if it's the last profile
     if (profileCount <= 1) {
       openAlert('Cannot Delete', 'You must have at least one profile.');
@@ -239,7 +244,10 @@ const ProfilesScreen: React.FC = () => {
               borderColor: isActive ? currentTheme.colors.primary : 'transparent',
             },
           ]}
-          onPress={() => handleEditProfile(item)}
+          onPress={() => {
+            triggerMedium(); // Profile selection (theme/profile selection pattern)
+            handleEditProfile(item);
+          }}
           activeOpacity={0.7}
         >
           {/* Avatar */}
@@ -338,7 +346,12 @@ const ProfilesScreen: React.FC = () => {
           opacity: canCreateProfile ? 1 : 0.5,
         },
       ]}
-      onPress={() => canCreateProfile && setShowCreateModal(true)}
+      onPress={() => {
+        if (canCreateProfile) {
+          triggerLight(); // Modal open
+          setShowCreateModal(true);
+        }
+      }}
       disabled={!canCreateProfile}
     >
       <MaterialIcons
@@ -553,10 +566,9 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 8,
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
   profileType: {
-    fontSize: 13,
+    fontSize: 12,
   },
   actions: {
     flexDirection: 'row',
@@ -572,11 +584,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 12,
-    gap: 8,
   },
   addButtonText: {
     fontSize: 16,
     fontWeight: '500',
+    marginLeft: 8,
   },
 });
 

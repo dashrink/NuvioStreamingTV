@@ -13,6 +13,7 @@ import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
 import { logger } from '../../../utils/logger';
 import Focusable from '../../common/Focusable';
+import { triggerLight } from '../../../hooks/useHaptics';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -98,7 +99,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <Focusable style={StyleSheet.absoluteFill} onPress={() => setShowEpisodesModal(false)}>
+      <Focusable style={StyleSheet.absoluteFill} onPress={() => { triggerLight(); setShowEpisodesModal(false); }}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
       </Focusable>
 
@@ -131,7 +132,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                 <Focusable
                   key={season}
                   hasTVPreferredFocus={Platform.isTV && season === selectedSeason}
-                  onPress={() => setSelectedSeason(season)}
+                  onPress={() => { triggerLight(); setSelectedSeason(season); }}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 8,
@@ -165,6 +166,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   episodeProgress={episodeProgress}
                   tmdbEpisodeOverrides={tmdbEpisodeOverrides}
                   onPress={() => {
+                    triggerLight();
                     onSelectEpisode(episode);
                     setShowEpisodesModal(false);
                   }}

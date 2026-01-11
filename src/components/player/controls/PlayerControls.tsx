@@ -8,6 +8,7 @@ import Slider from '@react-native-community/slider';
 import { styles } from '../utils/playerStyles'; // Updated styles
 import { getTrackDisplayName } from '../utils/playerUtils';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
 
 interface PlayerControlsProps {
   showControls: boolean;
@@ -149,6 +150,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Seek with Animation */
   const handleSeekWithAnimation = (seconds: number) => {
+    triggerLight(); // Haptic feedback for skip buttons
     const isForward = seconds > 0;
 
     if (isForward) {
@@ -231,6 +233,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
   /* Handle Play/Pause with Animation */
   const handlePlayPauseWithAnimation = () => {
+    triggerMedium(); // Haptic feedback for play/pause (important action)
     Animated.sequence([
       Animated.timing(playPressAnim, {
         toValue: 1,
@@ -347,7 +350,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                 <Focusable
                   ref={airplayRef}
                   style={{ padding: 8 }}
-                  onPress={onAirPlayPress}
+                  onPress={() => {
+                    triggerLight();
+                    onAirPlayPress();
+                  }}
                   nextFocusDown={playPauseRef}
                   nextFocusLeft={closeButtonRef}
                 >
@@ -362,7 +368,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               {Platform.OS === 'android' && onSwitchToMPV && useExoPlayer && (
                 <Focusable
                   style={{ padding: 8 }}
-                  onPress={onSwitchToMPV}
+                  onPress={() => {
+                    triggerLight();
+                    onSwitchToMPV();
+                  }}
                 >
                   <Ionicons
                     name="swap-horizontal"
@@ -374,7 +383,10 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               <Focusable
                 ref={closeButtonRef}
                 style={styles.closeButton}
-                onPress={handleClose}
+                onPress={() => {
+                  triggerLight();
+                  handleClose();
+                }}
                 nextFocusDown={playPauseRef}
                 nextFocusRight={airplayRef}
               >
@@ -468,30 +480,31 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             ref={playPauseRef}
             onPress={handlePlayPauseWithAnimation}
             style={{ marginHorizontal: buttonSpacing }}
-            hasTVPreferredFocus={Platform.isTV}
             nextFocusUp={closeButtonRef}
-            nextFocusDown={speedRef}
             nextFocusLeft={backwardSeekRef}
             nextFocusRight={forwardSeekRef}
+            nextFocusDown={speedRef}
           >
             <View style={[styles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}>
               <Animated.View style={[
                 styles.playPressCircle,
                 {
                   opacity: playPressAnim,
-                  width: playButtonSize * 0.85,
-                  height: playButtonSize * 0.85,
-                  borderRadius: (playButtonSize * 0.85) / 2,
+                  width: playButtonSize * 0.5,
+                  height: playButtonSize * 0.5,
+                  borderRadius: (playButtonSize * 0.5) / 2,
                 }
               ]} />
-              <Animated.View style={{
-                transform: [{ scale: playIconScale }],
-                opacity: playIconOpacity
-              }}>
+              <Animated.View style={[
+                {
+                  transform: [{ scale: playIconScale }],
+                  opacity: playIconOpacity,
+                }
+              ]}>
                 <Ionicons
-                  name={paused ? "play" : "pause"}
-                  size={playIconSizeCalculated}
-                  color="#FFFFFF"
+                  name={paused ? 'play' : 'pause'}
+                  size={playIconSize}
+                  color="white"
                 />
               </Animated.View>
             </View>
@@ -535,133 +548,142 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                   styles.seekNumber,
                   {
                     fontSize: seekNumberSize,
+                    marginLeft: 7,
                     transform: [{ translateX: forwardSlideAnim }]
                   }
                 ]}>
                   {showForwardSign ? '+10' : '10'}
                 </Animated.Text>
               </View>
-              <Animated.View style={[
-                styles.arcContainer,
+            </Animated.View>
+            <Animated.View style={[
+              styles.arcContainer,
+              {
+                width: seekButtonSize,
+                height: seekButtonSize,
+                opacity: forwardArcOpacity,
+                transform: [{
+                  rotate: forwardArcRotation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['-90deg', '90deg']
+                  })
+                }]
+              }
+            ]}>
+              <View style={[
+                styles.arcRight,
                 {
                   width: seekButtonSize,
                   height: seekButtonSize,
-                },
-                {
-                  opacity: forwardArcOpacity,
-                  transform: [{
-                    rotate: forwardArcRotation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['-90deg', '90deg']
-                    })
-                  }]
+                  borderRadius: seekButtonSize / 2,
+                  borderWidth: arcBorderWidth,
                 }
-              ]}>
-                <View style={[
-                  styles.arcRight,
-                  {
-                    width: seekButtonSize,
-                    height: seekButtonSize,
-                    borderRadius: seekButtonSize / 2,
-                    borderWidth: arcBorderWidth,
-                  }
-                ]} />
-              </Animated.View>
+              ]} />
             </Animated.View>
           </Focusable>
         </View>
 
-
-
-
-
-        {/* Bottom Gradient */}
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.7)']}
-          style={styles.bottomGradient}
-          pointerEvents="box-none"
-        >
-          <View style={styles.bottomControls} pointerEvents="box-none">
-            {/* Center Buttons Container with rounded background - wraps all buttons */}
-            <View style={styles.centerControlsContainer} pointerEvents="box-none">
-              {/* Left Side: Aspect Ratio Button */}
-              <Focusable
-                ref={aspectRatioRef}
-                style={styles.iconButton}
-                onPress={cycleAspectRatio}
-                nextFocusUp={backwardSeekRef}
-                nextFocusRight={subtitleRef}
-              >
-                <Ionicons name="expand-outline" size={24} color="white" />
-              </Focusable>
-              <Focusable
-                ref={subtitleRef}
-                style={styles.iconButton}
-                onPress={() => setShowSubtitleModal(!isSubtitleModalOpen)}
-                nextFocusUp={backwardSeekRef}
-                nextFocusLeft={aspectRatioRef}
-                nextFocusRight={setShowSourcesModal ? sourcesRef : speedRef}
-              >
-                <Ionicons name="text" size={24} color="white" />
-              </Focusable>
-
-              {setShowSourcesModal && (
-                <Focusable
-                  ref={sourcesRef}
-                  style={styles.iconButton}
-                  onPress={() => setShowSourcesModal(true)}
-                  nextFocusUp={playPauseRef}
-                  nextFocusLeft={subtitleRef}
-                  nextFocusRight={speedRef}
-                >
-                  <Ionicons name="cloud-outline" size={24} color="white" />
-                </Focusable>
-              )}
-
-              <Focusable
-                ref={speedRef}
-                style={styles.iconButton}
-                onPress={() => setShowSpeedModal(true)}
-                nextFocusUp={playPauseRef}
-                nextFocusLeft={setShowSourcesModal ? sourcesRef : subtitleRef}
-                nextFocusRight={audioRef}
-              >
-                <Ionicons name="speedometer-outline" size={24} color="white" />
-              </Focusable>
-
-              <Focusable
-                ref={audioRef}
-                style={styles.iconButton}
-                onPress={() => setShowAudioModal(true)}
-                disabled={ksAudioTracks.length <= 1}
-                nextFocusUp={forwardSeekRef}
-                nextFocusLeft={speedRef}
-                nextFocusRight={setShowEpisodesModal ? episodesRef : undefined}
-              >
-                <Ionicons
-                  name="musical-notes-outline"
-                  size={24}
-                  color={ksAudioTracks.length <= 1 ? 'grey' : 'white'}
-                />
-              </Focusable>
-
-              {setShowEpisodesModal && (
-                <Focusable
-                  ref={episodesRef}
-                  style={styles.iconButton}
-                  onPress={() => setShowEpisodesModal(true)}
-                  nextFocusUp={forwardSeekRef}
-                  nextFocusLeft={audioRef}
-                >
-                  <Ionicons name="list" size={24} color="white" />
-                </Focusable>
-              )}
+        {/* Bottom Controls - Row 1 */}
+        <View style={styles.bottomControlsRow}>
+          {/* Aspect Ratio Button */}
+          <Focusable
+            ref={aspectRatioRef}
+            onPress={() => {
+              triggerLight();
+              cycleAspectRatio();
+            }}
+            nextFocusUp={playPauseRef}
+            nextFocusRight={subtitleRef}
+          >
+            <View style={[styles.controlButton]}>
+              <Ionicons name="scan" size={skipIconSize} color="white" />
             </View>
-          </View>
-        </LinearGradient>
+          </Focusable>
+
+          {/* Subtitle Button */}
+          <Focusable
+            ref={subtitleRef}
+            onPress={() => {
+              triggerLight();
+              setShowSubtitleModal(!isSubtitleModalOpen);
+            }}
+            nextFocusUp={playPauseRef}
+            nextFocusLeft={aspectRatioRef}
+            nextFocusRight={sourcesRef}
+          >
+            <View style={[styles.controlButton]}>
+              <Ionicons name="close-circle" size={skipIconSize} color="white" />
+            </View>
+          </Focusable>
+
+          {/* Sources Button */}
+          {setShowSourcesModal && (
+            <Focusable
+              ref={sourcesRef}
+              onPress={() => {
+                triggerLight();
+                setShowSourcesModal(true);
+              }}
+              nextFocusUp={playPauseRef}
+              nextFocusLeft={subtitleRef}
+              nextFocusRight={speedRef}
+            >
+              <View style={[styles.controlButton]}>
+                <Ionicons name="server" size={skipIconSize} color="white" />
+              </View>
+            </Focusable>
+          )}
+
+          {/* Speed Button */}
+          <Focusable
+            ref={speedRef}
+            onPress={() => {
+              triggerLight();
+              setShowSpeedModal(true);
+            }}
+            nextFocusUp={playPauseRef}
+            nextFocusLeft={sourcesRef}
+            nextFocusRight={audioRef}
+          >
+            <View style={[styles.controlButton]}>
+              <Ionicons name="speedometer" size={skipIconSize} color="white" />
+            </View>
+          </Focusable>
+
+          {/* Audio Button */}
+          <Focusable
+            ref={audioRef}
+            onPress={() => {
+              triggerLight();
+              setShowAudioModal(true);
+            }}
+            nextFocusUp={forwardSeekRef}
+            nextFocusLeft={speedRef}
+            nextFocusRight={episodesRef}
+          >
+            <View style={[styles.controlButton]}>
+              <Ionicons name="volume-medium" size={skipIconSize} color="white" />
+            </View>
+          </Focusable>
+
+          {/* Episodes Button */}
+          {setShowEpisodesModal && (
+            <Focusable
+              ref={episodesRef}
+              onPress={() => {
+                triggerLight();
+                setShowEpisodesModal(true);
+              }}
+              nextFocusUp={forwardSeekRef}
+              nextFocusLeft={audioRef}
+            >
+              <View style={[styles.controlButton]}>
+                <Ionicons name="list" size={skipIconSize} color="white" />
+              </View>
+            </Focusable>
+          )}
+        </View>
       </View>
     </Animated.View>
   );
 };
-
-export default PlayerControls;
