@@ -724,6 +724,22 @@ const LibraryScreen = () => {
     });
   }, [watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
+  // Filtered Trakt items for when viewing Trakt folder content
+  const filteredTraktItems = useMemo((): TraktDisplayItem[] => {
+    if (!showTraktContent || !selectedTraktFolder) return [];
+
+    const folderItems = getTraktFolderItems(selectedTraktFolder);
+
+    // If no search query, return all items
+    if (!debouncedSearchQuery) return folderItems;
+
+    // Filter by name (case-insensitive)
+    const searchLower = debouncedSearchQuery.toLowerCase();
+    return folderItems.filter(item =>
+      item.name.toLowerCase().includes(searchLower)
+    );
+  }, [showTraktContent, selectedTraktFolder, getTraktFolderItems, debouncedSearchQuery]);
+
   const renderTraktContent = () => {
     if (traktLoading) {
       return <TraktLoadingSpinner />;
@@ -768,9 +784,10 @@ const LibraryScreen = () => {
       );
     }
 
-    const folderItems = getTraktFolderItems(selectedTraktFolder);
+    // Get unfiltered items to check if collection is truly empty
+    const allFolderItems = getTraktFolderItems(selectedTraktFolder);
 
-    if (folderItems.length === 0) {
+    if (allFolderItems.length === 0) {
       const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
       return (
         <View style={styles.emptyContainer}>
@@ -797,7 +814,7 @@ const LibraryScreen = () => {
 
     return (
       <FlashList
-        data={folderItems}
+        data={filteredTraktItems}
         renderItem={({ item }) => renderTraktItem({ item })}
         keyExtractor={(item) => `${item.type}-${item.id}`}
         numColumns={numColumns}
@@ -938,7 +955,8 @@ const LibraryScreen = () => {
       />
 
       <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
-        {!showTraktContent && (
+        {/* Show search bar for local library OR when viewing a Trakt folder */}
+        {(!showTraktContent || selectedTraktFolder) && (
           <View style={styles.filtersContainer}>
             {/* Search Input Bar */}
             <View style={[styles.searchBarContainer]}>
@@ -960,7 +978,7 @@ const LibraryScreen = () => {
                     styles.searchInput,
                     { color: currentTheme.colors.white }
                   ]}
-                  placeholder="Search your library..."
+                  placeholder={selectedTraktFolder ? "Search this collection..." : "Search your library..."}
                   placeholderTextColor={currentTheme.colors.lightGray}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
@@ -983,12 +1001,14 @@ const LibraryScreen = () => {
               </View>
             </View>
 
-            {/* Filter Buttons */}
-            <View style={styles.filterButtonsRow}>
-              {renderFilter('trakt', 'Trakt', 'pan-tool')}
-              {renderFilter('movies', 'Movies', 'movie')}
-              {renderFilter('series', 'TV Shows', 'live-tv')}
-            </View>
+            {/* Filter Buttons - only show for local library */}
+            {!showTraktContent && (
+              <View style={styles.filterButtonsRow}>
+                {renderFilter('trakt', 'Trakt', 'pan-tool')}
+                {renderFilter('movies', 'Movies', 'movie')}
+                {renderFilter('series', 'TV Shows', 'live-tv')}
+              </View>
+            )}
           </View>
         )}
 
