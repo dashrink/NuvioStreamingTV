@@ -356,8 +356,16 @@ const LibraryScreen = () => {
   }, [searchQuery]);
 
   const filteredItems = libraryItems.filter(item => {
-    if (filter === 'movies') return item.type === 'movie';
-    if (filter === 'series') return item.type === 'series';
+    // Type filtering
+    if (filter === 'movies' && item.type !== 'movie') return false;
+    if (filter === 'series' && item.type !== 'series') return false;
+
+    // Search query filtering (case-insensitive)
+    if (debouncedSearchQuery) {
+      const searchLower = debouncedSearchQuery.toLowerCase();
+      if (!item.name.toLowerCase().includes(searchLower)) return false;
+    }
+
     return true;
   });
 
