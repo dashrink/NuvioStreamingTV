@@ -206,6 +206,89 @@ jest.mock('expo-haptics', () => ({
 }));
 
 // ============================================================================
+// useDevicePerformance Mock
+// ============================================================================
+
+jest.mock('../src/hooks/useDevicePerformance', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    performanceTier: 'high',
+    deviceMetrics: {
+      isTV: true,
+      platform: 'ios',
+    },
+    animationConfig: {
+      enableScaleAnimation: true,
+      focusScale: 1.05,
+      enableOpacityAnimation: true,
+      unfocusedOpacity: 0.9,
+      enableShadowAnimation: true,
+      enableParallax: true,
+      showFocusBorder: true,
+      focusBorderWidth: 2,
+      springDamping: 15,
+      springStiffness: 150,
+      reducedMotion: false,
+    },
+    isDetected: true,
+    setPerformanceTier: jest.fn(),
+    shouldReduceAnimations: false,
+    isLowEndDevice: false,
+  })),
+  useDevicePerformance: jest.fn(() => ({
+    performanceTier: 'high',
+    deviceMetrics: {
+      isTV: true,
+      platform: 'ios',
+    },
+    animationConfig: {
+      enableScaleAnimation: true,
+      focusScale: 1.05,
+      enableOpacityAnimation: true,
+      unfocusedOpacity: 0.9,
+      enableShadowAnimation: true,
+      enableParallax: true,
+      showFocusBorder: true,
+      focusBorderWidth: 2,
+      springDamping: 15,
+      springStiffness: 150,
+      reducedMotion: false,
+    },
+    isDetected: true,
+    setPerformanceTier: jest.fn(),
+    shouldReduceAnimations: false,
+    isLowEndDevice: false,
+  })),
+  PerformanceTier: {
+    HIGH: 'high',
+    MEDIUM: 'medium',
+    LOW: 'low',
+  },
+  getPerformanceTier: jest.fn(() => 'high'),
+  getAnimationConfig: jest.fn(() => ({
+    enableScaleAnimation: true,
+    focusScale: 1.05,
+    enableOpacityAnimation: true,
+    unfocusedOpacity: 0.9,
+    enableShadowAnimation: true,
+    enableParallax: true,
+    showFocusBorder: true,
+    focusBorderWidth: 2,
+    springDamping: 15,
+    springStiffness: 150,
+    reducedMotion: false,
+  })),
+  initializePerformanceDetection: jest.fn(() => Promise.resolve('high')),
+  subscribeToPerformanceChanges: jest.fn(() => jest.fn()),
+  setManualPerformanceTier: jest.fn(),
+  getFocusScale: jest.fn(() => 1.05),
+  getSpringConfig: jest.fn(() => ({ damping: 15, stiffness: 150 })),
+  shouldEnableScaleAnimation: jest.fn(() => true),
+  shouldEnableParallax: jest.fn(() => true),
+  shouldEnableShadowAnimation: jest.fn(() => true),
+}));
+
+// ============================================================================
 // MMKV Storage Mock
 // ============================================================================
 
