@@ -577,6 +577,66 @@ export type TraktContentCommentLegacy =
   | TraktEpisodeComment
   | TraktListComment;
 
+/**
+ * TraktService - Singleton service for Trakt.tv API integration
+ *
+ * This service handles all interactions with the Trakt.tv API, providing features like:
+ * - Watch progress scrobbling (start/pause/stop tracking)
+ * - Watchlist and collection management
+ * - User ratings (1-10 scale)
+ * - Bidirectional sync of user data
+ *
+ * ## Trakt API Patterns
+ *
+ * **Singleton Pattern**: Always use `TraktService.getInstance()` to access this service.
+ * Never instantiate directly.
+ *
+ * **IMDb ID Requirements**: All content must have an IMDb ID with the 'tt' prefix (e.g., 'tt1234567').
+ * Methods automatically normalize IDs by adding 'tt' if missing.
+ *
+ * **Content Types**: Use exact string literals:
+ * - 'movie' for movies
+ * - 'show' for TV shows (NOT 'series')
+ * - 'episode' for individual episodes (requires show IMDb ID + season/episode numbers)
+ *
+ * ## Rate Limiting
+ *
+ * The service implements automatic rate limiting to comply with Trakt API limits:
+ * - **MIN_API_INTERVAL**: 500ms minimum between API calls (optimized for real-time scrobbling)
+ * - **Request Queue**: Serializes requests to prevent rate limit violations
+ * - **Exponential Backoff**: Automatically retries on 429 errors with exponential delays
+ * - **Max Retries**: 3 retry attempts before failing
+ *
+ * ## Token Management
+ *
+ * OAuth tokens are managed automatically:
+ * - **Auto-refresh**: Tokens are refreshed transparently before expiration
+ * - **Secure Storage**: Tokens stored in react-native-mmkv encrypted storage
+ * - **Session Persistence**: Tokens persist across app restarts
+ *
+ * ## Data Flow
+ *
+ * **Write Operations** (add/remove):
+ * 1. Check authentication status
+ * 2. Normalize IMDb ID (add 'tt' prefix if needed)
+ * 3. Build payload per Trakt API spec
+ * 4. POST to appropriate /sync/* endpoint
+ * 5. Return success/failure boolean
+ *
+ * **Read Operations** (get/check):
+ * 1. Check authentication status
+ * 2. GET from /sync/* or /users/* endpoint
+ * 3. Cache results for performance (via TraktContext)
+ * 4. Return data or empty array on error
+ *
+ * **Scrobbling Flow**:
+ * 1. Start: POST to /scrobble/start when playback begins
+ * 2. Progress: Periodic updates (debounced to 5s intervals)
+ * 3. Stop: POST to /scrobble/stop when paused (<80%) or completed (≥80%)
+ * 4. Duplicate Prevention: 46-minute window to prevent duplicate scrobbles
+ *
+ * @see https://trakt.docs.apiary.io/ - Trakt API documentation
+ */
 export class TraktService {
   private static instance: TraktService;
   private accessToken: string | null = null;
@@ -880,6 +940,66 @@ export class TraktService {
 
   /**
    * Make an authenticated API request to Trakt
+   *
+   * This is the core method for all Trakt API communication. It handles:
+   * - **Rate Limiting**: Enforces 500ms minimum interval between requests
+   * - **Token Management**: Auto-refreshes expired tokens transparently
+   * - **Error Handling**: Retries on 429 (rate limit) with exponential backoff
+   * - **Duplicate Detection**: Handles 409 (conflict) for already-scrobbled content
+   *
+   * ## Rate Limiting Strategy
+   *
+   * 1. **Pre-request Delay**: Calculates time since last API call and delays if needed
+   * 2. **MIN_API_INTERVAL**: 500ms enforced between all requests (optimized for real-time)
+   * 3. **429 Handling**: On rate limit error, applies exponential backoff:
+   *    - Attempt 1: Delay = Retry-After header OR 1 second
+   *    - Attempt 2: Delay = Retry-After header OR 2 seconds
+   *    - Attempt 3: Delay = Retry-After header OR 4 seconds
+   *    - Max delay capped at 10 seconds
+   * 4. **Max Retries**: 3 attempts before throwing error
+   *
+   * ## Token Auto-Refresh
+   *
+   * Before each request, checks if token is expired (tokenExpiry < now):
+   * - If expired and refreshToken exists: calls refreshAccessToken()
+   * - If refresh fails: throws 'Not authenticated' error
+   * - If no accessToken: throws 'Not authenticated' error
+   *
+   * ## Error Responses
+   *
+   * - **401 Unauthorized**: Token invalid, user must re-authenticate
+   * - **404 Not Found**: Content not found on Trakt (invalid IMDb ID or content removed)
+   * - **409 Conflict**: Content already scrobbled (handled gracefully, returns success-like response)
+   * - **422 Unprocessable**: Invalid data format (check payload structure)
+   * - **429 Too Many Requests**: Rate limited (auto-retry with backoff)
+   * - **500/503 Server Error**: Trakt API issues (logged and thrown)
+   *
+   * ## Data Flow
+   *
+   * 1. Ensure service is initialized (load tokens from storage)
+   * 2. Apply rate limiting delay if needed
+   * 3. Check token expiry and refresh if needed
+   * 4. Build request headers (Content-Type, trakt-api-version, trakt-api-key, Authorization)
+   * 5. Execute fetch() with built options
+   * 6. Handle errors (429 retry, 409 graceful handling, etc.)
+   * 7. Parse and return response JSON
+   *
+   * @param endpoint - API endpoint (e.g., '/sync/watchlist', '/scrobble/start')
+   * @param method - HTTP method (GET, POST, PUT, DELETE)
+   * @param body - Request body (will be JSON.stringify'd)
+   * @param retryCount - Internal retry counter (incremented on 429 errors)
+   * @returns Promise<T> - Parsed JSON response matching expected type T
+   * @throws Error on authentication failure, max retries exceeded, or server errors
+   *
+   * @example
+   * // Add movie to watchlist
+   * await apiRequest('/sync/watchlist', 'POST', {
+   *   movies: [{ ids: { imdb: 'tt1234567' } }]
+   * });
+   *
+   * @example
+   * // Get user's watchlist
+   * const watchlist = await apiRequest<TraktWatchlistItem[]>('/sync/watchlist/movies');
    */
   private async apiRequest<T>(
     endpoint: string,
@@ -2749,6 +2869,43 @@ export class TraktService {
 
   /**
    * Add content to Trakt watchlist
+   *
+   * Adds a movie or show to the authenticated user's Trakt watchlist. This is a write operation
+   * that syncs immediately to Trakt servers.
+   *
+   * ## Data Flow
+   *
+   * 1. Check user authentication (returns false if not authenticated)
+   * 2. Normalize IMDb ID (automatically adds 'tt' prefix if missing)
+   * 3. Build payload per Trakt API spec:
+   *    - Movies: `{ movies: [{ ids: { imdb: 'tt1234567' } }] }`
+   *    - Shows: `{ shows: [{ ids: { imdb: 'tt1234567' } }] }`
+   * 4. POST to /sync/watchlist endpoint
+   * 5. Return success/failure boolean
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/watchlist
+   * - **Rate Limited**: Yes (500ms minimum interval via apiRequest)
+   * - **Response**: `{ added: { movies: 1 }, existing: { movies: 0 }, not_found: { movies: 0 } }`
+   * - **Idempotent**: Yes (adding same item multiple times is safe)
+   *
+   * ## Usage with TraktContext
+   *
+   * For read operations (checking if item is in watchlist), use TraktContext.isInWatchlist()
+   * which provides cached lookups. Use this method only for write operations.
+   *
+   * @param imdbId - IMDb ID with or without 'tt' prefix (e.g., 'tt1234567' or '1234567')
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @returns Promise<boolean> - true if added successfully, false on error or not authenticated
+   *
+   * @example
+   * // Add movie to watchlist
+   * const success = await traktService.addToWatchlist('tt0133093', 'movie'); // The Matrix
+   *
+   * @example
+   * // Add TV show to watchlist (note: 'show' not 'series')
+   * const success = await traktService.addToWatchlist('tt0903747', 'show'); // Breaking Bad
    */
   public async addToWatchlist(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
     try {
@@ -2774,6 +2931,31 @@ export class TraktService {
 
   /**
    * Remove content from Trakt watchlist
+   *
+   * Removes a movie or show from the authenticated user's Trakt watchlist. This is a write
+   * operation that syncs immediately to Trakt servers.
+   *
+   * ## Data Flow
+   *
+   * 1. Check user authentication (returns false if not authenticated)
+   * 2. Normalize IMDb ID (automatically adds 'tt' prefix if missing)
+   * 3. Build payload per Trakt API spec (same format as addToWatchlist)
+   * 4. POST to /sync/watchlist/remove endpoint
+   * 5. Return success/failure boolean
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/watchlist/remove
+   * - **Rate Limited**: Yes (500ms minimum interval via apiRequest)
+   * - **Response**: `{ deleted: { movies: 1 }, not_found: { movies: 0 } }`
+   * - **Idempotent**: Yes (removing non-existent item returns success)
+   *
+   * @param imdbId - IMDb ID with or without 'tt' prefix
+   * @param type - Content type: 'movie' or 'show'
+   * @returns Promise<boolean> - true if removed successfully, false on error or not authenticated
+   *
+   * @example
+   * const success = await traktService.removeFromWatchlist('tt0133093', 'movie');
    */
   public async removeFromWatchlist(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
     try {
@@ -2799,6 +2981,27 @@ export class TraktService {
 
   /**
    * Add content to Trakt collection
+   *
+   * Adds a movie or show to the authenticated user's Trakt collection. Collections represent
+   * content the user "owns" (DVD, Blu-ray, digital, etc.) vs watchlist (content to watch later).
+   *
+   * ## Data Flow
+   *
+   * Same pattern as addToWatchlist but uses /sync/collection endpoint.
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/collection
+   * - **Rate Limited**: Yes (500ms minimum interval)
+   * - **Bidirectional Sync**: Changes sync between Nuvio and Trakt.tv
+   * - **Use Case**: Mark content as "owned" in user's library
+   *
+   * @param imdbId - IMDb ID with or without 'tt' prefix
+   * @param type - Content type: 'movie' or 'show'
+   * @returns Promise<boolean> - true if added successfully, false on error
+   *
+   * @example
+   * const success = await traktService.addToCollection('tt0133093', 'movie');
    */
   public async addToCollection(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
     try {
@@ -2824,6 +3027,17 @@ export class TraktService {
 
   /**
    * Remove content from Trakt collection
+   *
+   * Removes a movie or show from the authenticated user's Trakt collection.
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/collection/remove
+   * - **Idempotent**: Yes (safe to call on non-existent items)
+   *
+   * @param imdbId - IMDb ID with or without 'tt' prefix
+   * @param type - Content type: 'movie' or 'show'
+   * @returns Promise<boolean> - true if removed successfully, false on error
    */
   public async removeFromCollection(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
     try {
@@ -2904,11 +3118,58 @@ export class TraktService {
   }
 
   /**
-   * Add a rating for content on Trakt (1-10 scale)
+   * Add or update a rating for content on Trakt
+   *
+   * Rates a movie or show on a 1-10 integer scale (Trakt's standard rating system).
+   * This method both adds new ratings and updates existing ratings.
+   *
+   * ## Rating Scale
+   *
+   * Trakt uses a 1-10 integer rating scale:
+   * - 1-2: Weak / Terrible
+   * - 3-4: Poor / Bad
+   * - 5-6: Okay / Average
+   * - 7-8: Good / Great
+   * - 9-10: Superb / Perfect
+   *
+   * ## Data Flow
+   *
+   * 1. Check user authentication (returns false if not authenticated)
+   * 2. Validate rating is an integer between 1-10 (returns false if invalid)
+   * 3. Normalize IMDb ID (add 'tt' prefix if missing)
+   * 4. Build payload with rating value:
+   *    - Movies: `{ movies: [{ ids: { imdb: 'tt1234567' }, rating: 8 }] }`
+   *    - Shows: `{ shows: [{ ids: { imdb: 'tt1234567' }, rating: 8 }] }`
+   * 5. POST to /sync/ratings endpoint
+   * 6. Return success/failure boolean
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/ratings
+   * - **Rate Limited**: Yes (500ms minimum interval)
+   * - **Idempotent**: Yes (re-rating same item updates the rating)
+   * - **Bidirectional Sync**: Ratings sync between Nuvio and Trakt.tv
+   * - **Response**: `{ added: { movies: 1 }, existing: { movies: 0 }, not_found: { movies: 0 } }`
+   *
+   * ## UI Integration
+   *
+   * In the UI, ratings are displayed as stars (5 stars = 10 points, half-star precision):
+   * - Rating 8 displays as 4 filled stars
+   * - Rating 7 displays as 3.5 stars
+   * - Use TraktRatingComponent for consistent UI
+   *
    * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
-   * @param type - Content type: 'movie' or 'show'
-   * @param rating - Rating value from 1 to 10
-   * @returns Promise<boolean> - true if rating was added successfully
+   * @param type - Content type: 'movie' or 'show' (NOT 'series')
+   * @param rating - Rating value from 1 to 10 (must be integer)
+   * @returns Promise<boolean> - true if rating was added/updated successfully, false on error
+   *
+   * @example
+   * // Rate a movie 8/10
+   * const success = await traktService.addRating('tt0133093', 'movie', 8); // The Matrix
+   *
+   * @example
+   * // Update existing rating
+   * await traktService.addRating('tt0133093', 'movie', 9); // Changes rating from 8 to 9
    */
   public async addRating(imdbId: string, type: 'movie' | 'show', rating: number): Promise<boolean> {
     try {
@@ -2940,9 +3201,31 @@ export class TraktService {
 
   /**
    * Remove a rating for content on Trakt
+   *
+   * Deletes the user's rating for a movie or show. After removal, the content will no longer
+   * have a rating associated with it on the user's Trakt profile.
+   *
+   * ## Data Flow
+   *
+   * 1. Check user authentication (returns false if not authenticated)
+   * 2. Normalize IMDb ID (add 'tt' prefix if missing)
+   * 3. Build payload (same format as addToWatchlist, without rating value)
+   * 4. POST to /sync/ratings/remove endpoint
+   * 5. Return success/failure boolean
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: POST /sync/ratings/remove
+   * - **Rate Limited**: Yes (500ms minimum interval)
+   * - **Idempotent**: Yes (removing non-existent rating returns success)
+   * - **Response**: `{ deleted: { movies: 1 }, not_found: { movies: 0 } }`
+   *
    * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
    * @param type - Content type: 'movie' or 'show'
-   * @returns Promise<boolean> - true if rating was removed successfully
+   * @returns Promise<boolean> - true if rating was removed successfully, false on error
+   *
+   * @example
+   * const success = await traktService.removeRating('tt0133093', 'movie');
    */
   public async removeRating(imdbId: string, type: 'movie' | 'show'): Promise<boolean> {
     try {
@@ -2968,9 +3251,40 @@ export class TraktService {
 
   /**
    * Get the user's rating for a specific item
+   *
+   * Retrieves the user's rating (1-10) for a specific movie or show. This is a read operation
+   * that fetches the user's ratings from Trakt and searches for the matching item.
+   *
+   * ## Data Flow
+   *
+   * 1. Check user authentication (returns null if not authenticated)
+   * 2. Normalize IMDb ID (add 'tt' prefix if missing)
+   * 3. Fetch user's ratings via getRatings() method
+   * 4. Search ratings array for matching IMDb ID
+   * 5. Return rating value (1-10) or null if not found
+   *
+   * ## API Pattern
+   *
+   * - **Endpoint**: GET /sync/ratings (called via getRatings method)
+   * - **Rate Limited**: Yes (500ms minimum interval)
+   * - **Cached**: Yes (via TraktContext for performance)
+   *
+   * ## Performance Note
+   *
+   * For read-heavy operations, prefer using TraktContext.getUserRating() which provides
+   * cached lookups. Use this method when you need fresh data from the API.
+   *
    * @param imdbId - IMDb ID of the content (with or without 'tt' prefix)
    * @param type - Content type: 'movie' or 'show'
-   * @returns Promise<number | null> - The user's rating (1-10) or null if not rated
+   * @returns Promise<number | null> - The user's rating (1-10) or null if not rated/not authenticated
+   *
+   * @example
+   * const rating = await traktService.getUserRating('tt0133093', 'movie');
+   * if (rating !== null) {
+   *   console.log(`User rated this movie ${rating}/10`);
+   * } else {
+   *   console.log('User has not rated this movie');
+   * }
    */
   public async getUserRating(imdbId: string, type: 'movie' | 'show'): Promise<number | null> {
     try {
