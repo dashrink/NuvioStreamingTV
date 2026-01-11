@@ -812,6 +812,36 @@ const LibraryScreen = () => {
       );
     }
 
+    // Check if search filtering returned no results
+    if (filteredTraktItems.length === 0 && debouncedSearchQuery) {
+      const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
+      return (
+        <View style={styles.emptyContainer}>
+          <MaterialIcons
+            name="search-off"
+            size={64}
+            color={currentTheme.colors.lightGray}
+          />
+          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+            No results found
+          </Text>
+          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
+            No items in {folderName} match "{debouncedSearchQuery}"
+          </Text>
+          <TouchableOpacity
+            style={[styles.exploreButton, {
+              backgroundColor: currentTheme.colors.primary,
+              shadowColor: currentTheme.colors.black
+            }]}
+            onPress={() => setSearchQuery('')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Clear search</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     return (
       <FlashList
         data={filteredTraktItems}
@@ -883,6 +913,44 @@ const LibraryScreen = () => {
     }
 
     if (filteredItems.length === 0) {
+      // Check if this is due to search filtering vs. empty library
+      const itemsBeforeSearch = libraryItems.filter(item => {
+        if (filter === 'movies' && item.type !== 'movie') return false;
+        if (filter === 'series' && item.type !== 'series') return false;
+        return true;
+      });
+      const isSearchEmpty = debouncedSearchQuery && itemsBeforeSearch.length > 0;
+
+      if (isSearchEmpty) {
+        // Show search-specific empty state
+        return (
+          <View style={styles.emptyContainer}>
+            <MaterialIcons
+              name="search-off"
+              size={64}
+              color={currentTheme.colors.lightGray}
+            />
+            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+              No results found
+            </Text>
+            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
+              No items match "{debouncedSearchQuery}"
+            </Text>
+            <TouchableOpacity
+              style={[styles.exploreButton, {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black
+              }]}
+              onPress={() => setSearchQuery('')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Clear search</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      }
+
+      // Show generic empty library state
       const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
       const emptySubtitle = 'Add some content to your library to see it here';
       return (
