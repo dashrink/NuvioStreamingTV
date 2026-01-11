@@ -141,12 +141,8 @@ describe('Test Setup Verification', () => {
 });
 
 describe('React Native Reanimated mock', () => {
-  // Import reanimated after setup has run
-  let Reanimated: typeof import('react-native-reanimated');
-
-  beforeAll(async () => {
-    Reanimated = await import('react-native-reanimated');
-  });
+  // Use static import
+  const Reanimated = require('react-native-reanimated');
 
   it('should mock useSharedValue', () => {
     const result = Reanimated.useSharedValue(1);

@@ -1,12 +1,22 @@
 module.exports = function (api) {
   api.cache(true);
+
+  // In test environment, only use reanimated plugin to avoid conflicts with jest-expo
+  const isTest = process.env.NODE_ENV === 'test';
+
   return {
     presets: ['babel-preset-expo'],
-    plugins: [
-      'react-native-worklets/plugin',
-      'react-native-boost/plugin',
-      'react-native-reanimated/plugin',
-    ],
+    plugins: isTest
+      ? [
+          // Only essential plugins for testing
+          'react-native-reanimated/plugin',
+        ]
+      : [
+          // All plugins for development/production
+          'react-native-worklets/plugin',
+          'react-native-boost/plugin',
+          'react-native-reanimated/plugin',
+        ],
     env: {
       production: {
         plugins: ['transform-remove-console'],

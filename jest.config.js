@@ -6,14 +6,30 @@
  */
 
 module.exports = {
-  // Use jest-expo preset for Expo/React Native compatibility
-  preset: 'jest-expo',
+  // Use react-native preset instead of jest-expo to avoid winter issues
+  preset: 'react-native',
+
+  // Setup files to run before the test framework is installed
+  setupFiles: [
+    '<rootDir>/__tests__/jest.setup.env.js',
+  ],
 
   // Setup files to run after Jest is initialized
   setupFilesAfterEnv: [
     '@testing-library/jest-native/extend-expect',
     '<rootDir>/__tests__/setup.ts',
   ],
+
+  // Test environment options
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
+
+  // Global setup - disable Expo winter in tests
+  globals: {
+    __DEV__: true,
+    'process.env.EXPO_USE_STATIC_RENDERING': 'false',
+  },
 
   // Test file patterns
   testMatch: [
@@ -49,6 +65,7 @@ module.exports = {
       '@react-native(-community)?|' +
       'expo(nent)?|' +
       '@expo(nent)?/.*|' +
+      'expo-modules-core|' +
       '@expo-google-fonts/.*|' +
       'react-navigation|' +
       '@react-navigation/.*|' +

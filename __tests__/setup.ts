@@ -28,29 +28,103 @@ const mockTVEventHandler = {
   disable: jest.fn(),
 };
 
-jest.mock('react-native/Libraries/Components/AppleTV/TVEventHandler', () => {
-  return jest.fn().mockImplementation(() => mockTVEventHandler);
-});
-
-// Also mock the direct import path used in some RN versions
+// Create a comprehensive React Native mock
 jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
+  // Create mock components
+  const mockComponent = (name: string) => {
+    const Component = (props: any) => props.children;
+    Component.displayName = name;
+    return Component;
+  };
+
   return {
-    ...RN,
+    // Platform
     Platform: {
       OS: 'ios',
       isTV: true,
       isTesting: true,
       select: jest.fn((obj: Record<string, unknown>) => obj.ios || obj.default),
+      constants: {
+        reactNativeVersion: { major: 0, minor: 81, patch: 4 },
+      },
     },
+
+    // TV Event Handler
     TVEventHandler: jest.fn().mockImplementation(() => mockTVEventHandler),
+
+    // Back Handler
     BackHandler: {
       addEventListener: jest.fn(() => ({ remove: jest.fn() })),
       removeEventListener: jest.fn(),
       exitApp: jest.fn(),
     },
+
+    // Dimensions
+    Dimensions: {
+      get: jest.fn().mockReturnValue({
+        width: 1920,
+        height: 1080,
+        scale: 1,
+        fontScale: 1,
+      }),
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
+    },
+
+    // StyleSheet
+    StyleSheet: {
+      create: (styles: any) => styles,
+      flatten: (style: any) => style,
+      compose: (style1: any, style2: any) => [style1, style2],
+      hairlineWidth: 1,
+      absoluteFill: 0,
+      absoluteFillObject: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+      },
+    },
+
+    // Animated
+    Animated: {
+      View: mockComponent('Animated.View'),
+      Text: mockComponent('Animated.Text'),
+      ScrollView: mockComponent('Animated.ScrollView'),
+      Image: mockComponent('Animated.Image'),
+      Value: jest.fn(() => ({
+        setValue: jest.fn(),
+        interpolate: jest.fn(() => ({ setValue: jest.fn() })),
+      })),
+      timing: jest.fn(() => ({ start: jest.fn() })),
+      spring: jest.fn(() => ({ start: jest.fn() })),
+      sequence: jest.fn(() => ({ start: jest.fn() })),
+      parallel: jest.fn(() => ({ start: jest.fn() })),
+      loop: jest.fn(() => ({ start: jest.fn() })),
+      event: jest.fn(),
+      createAnimatedComponent: (component: any) => component,
+    },
+
+    // Components
+    View: mockComponent('View'),
+    Text: mockComponent('Text'),
+    TextInput: mockComponent('TextInput'),
+    ScrollView: mockComponent('ScrollView'),
+    TouchableOpacity: mockComponent('TouchableOpacity'),
+    TouchableHighlight: mockComponent('TouchableHighlight'),
+    TouchableWithoutFeedback: mockComponent('TouchableWithoutFeedback'),
+    Pressable: mockComponent('Pressable'),
+    FlatList: mockComponent('FlatList'),
+    SectionList: mockComponent('SectionList'),
+    Image: mockComponent('Image'),
+    Modal: mockComponent('Modal'),
+    ActivityIndicator: mockComponent('ActivityIndicator'),
+    SafeAreaView: mockComponent('SafeAreaView'),
+    KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),
+
+    // Native Modules
     NativeModules: {
-      ...RN.NativeModules,
       DeviceInfo: {
         getConstants: () => ({
           Dimensions: {
@@ -63,17 +137,42 @@ jest.mock('react-native', () => {
         getHeight: jest.fn(),
       },
     },
-    Dimensions: {
-      get: jest.fn().mockReturnValue({
-        width: 1920,
-        height: 1080,
-        scale: 1,
-        fontScale: 1,
-      }),
+
+    // Utilities
+    findNodeHandle: jest.fn(() => 1),
+    AccessibilityInfo: {
       addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      announceForAccessibility: jest.fn(),
+      isBoldTextEnabled: jest.fn(() => Promise.resolve(false)),
+      isGrayscaleEnabled: jest.fn(() => Promise.resolve(false)),
+      isInvertColorsEnabled: jest.fn(() => Promise.resolve(false)),
+      isReduceMotionEnabled: jest.fn(() => Promise.resolve(false)),
+      isReduceTransparencyEnabled: jest.fn(() => Promise.resolve(false)),
+      isScreenReaderEnabled: jest.fn(() => Promise.resolve(false)),
+      removeEventListener: jest.fn(),
+      setAccessibilityFocus: jest.fn(),
+    },
+    Alert: {
+      alert: jest.fn(),
+    },
+    Keyboard: {
+      addListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeListener: jest.fn(),
+      dismiss: jest.fn(),
+    },
+    PixelRatio: {
+      get: jest.fn(() => 2),
+      getFontScale: jest.fn(() => 1),
+      getPixelSizeForLayoutSize: jest.fn((size: number) => size * 2),
+      roundToNearestPixel: jest.fn((size: number) => Math.round(size)),
+    },
+    Linking: {
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      canOpenURL: jest.fn(() => Promise.resolve(true)),
+      getInitialURL: jest.fn(() => Promise.resolve(null)),
+      openURL: jest.fn(() => Promise.resolve()),
       removeEventListener: jest.fn(),
     },
-    findNodeHandle: jest.fn(() => 1),
   };
 });
 
@@ -317,14 +416,9 @@ jest.mock('react-native-mmkv', () => ({
 // Timer Utilities
 // ============================================================================
 
-// Use fake timers by default for better control in tests
-beforeEach(() => {
-  jest.useFakeTimers();
-});
-
+// Timer utilities - don't use fake timers globally
+// Tests that need them can enable them individually
 afterEach(() => {
-  jest.runOnlyPendingTimers();
-  jest.useRealTimers();
   jest.clearAllMocks();
   mockStorage.clear();
 });

@@ -3,7 +3,7 @@
   "spec_id": "002-enhanced-tv-navigation-system",
   "description": "Production-grade, remote-first navigation system for Apple TV and Android TV platforms with D-pad support, focus management, long-press interactions, and spatial navigation with memory.",
   "created_at": "2026-01-09T21:14:50.914Z",
-  "updated_at": "2026-01-11T14:35:59.123Z",
+  "updated_at": "2026-01-11T14:40:20.477Z",
   "status": "in_progress",
   "planStatus": "in_progress",
   "total_subtasks": 35,
@@ -555,8 +555,8 @@
             "Shows keyboard fallback when unavailable",
             "No errors when voice button pressed without support"
           ],
-          "notes": "Voice unavailability handling was already fully implemented during subtask 2.4 (TVVoiceSearch component creation). Verified all acceptance criteria are met:\n\n1. **Detects voice availability**: useVoiceAvailability hook (src/hooks/useVoiceAvailability.ts) performs comprehensive detection:\n   - Checks Platform.isTV for TV platform detection\n   - Checks native speech modules (ExpoSpeech, RNVoice, SpeechRecognizer)\n   - Returns detailed VoiceAvailabilityStatus with 9 specific unavailability reasons\n   - Platform-specific capabilities for Apple TV and Android TV\n   - Cached results for performance\n\n2. **Shows keyboard fallback**: TVVoiceSearch.tv.tsx automatically shows keyboard input when voice unavailable:\n   - Line 483: Checks voiceStatus.isAvailable\n   - Line 492: Automatically sets showKeyboard when voice unavailable\n   - Lines 787-791: Displays informative status message (not error)\n   - Lines 795-821: Shows TextInput with keyboard fallback mode\n   - User can also manually switch between voice and keyboard modes\n\n3. **No errors when voice button pressed**: Complete graceful degradation:\n   - openVoiceSearch() called from screens (HomeScreen, SearchScreen, LibraryScreen)\n   - Modal opens normally regardless of voice availability\n   - VoiceIndicator shows disabled state with appropriate icon when unavailable\n   - No exceptions thrown, no console errors\n   - User always has a way to search (keyboard fallback)\n\nImplementation complete with proper TypeScript types, JSDoc documentation, error handling, and user-friendly messages. Exported in hooks/index.ts for easy reuse.",
-          "updated_at": "2026-01-11T14:35:59.123456+00:00"
+          "notes": "Voice search unavailability handling verified complete. All acceptance criteria met:\n\n1. Detects voice availability: useVoiceAvailability hook checks Platform.isTV and native modules\n2. Shows keyboard fallback: TVVoiceSearch.tv.tsx automatically switches to keyboard when voice unavailable\n3. No errors: Complete graceful degradation with informative messages\n\nImplementation was already complete from subtask 2.4. No code changes required.",
+          "updated_at": "2026-01-11T14:39:45.622135+00:00"
         }
       ]
     },
@@ -710,6 +710,6 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-11T00:47:04.524606+00:00",
+  "last_updated": "2026-01-11T14:39:45.622157+00:00",
   "recoveryNote": "Task recovered from stuck state at 2026-01-11T14:35:48.007Z"
 }
