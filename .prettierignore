@@ -1,0 +1,91 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build directories
+android/
+ios/
+
+# Build artifacts
+build/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+.jest-cache/
+
+# Config files (typically not formatted)
+*.config.js
+babel.config.js
+metro.config.js
+jest.config.js
+app.config.js
+
+# Backup directories
+backup_sdk54_upgrade/
+libmpv-android/
+mpv-android/
+mpvKt/
+
+# Patch files
+*.orig
+*.orig.*
+*.rej
+*.patch
+
+# Auto-generated files
+.auto-claude/
+.automaker/
+
+# Environment files
+.env
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Metro
+.metro-health-check*
+
+# Server directories
+server/
+
+# Local directories (from gitignore)
+local-scrapers-repo/
+/ota-builds
+/nuvio-providers
+/KSPlayer
+/exobase
+/TrailerServices
+
+# Lock files (should not be formatted)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated documentation
+CHANGELOG.md
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Other generated files
+*.min.js
+*.min.css
+*.bundle.js
