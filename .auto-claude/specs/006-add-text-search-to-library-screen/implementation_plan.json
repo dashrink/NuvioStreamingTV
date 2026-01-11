@@ -58,34 +58,34 @@
           "subtask_id": "2.1",
           "title": "Add debounced search query state",
           "description": "Create a debouncedSearchQuery state that updates after a delay when searchQuery changes. This prevents excessive filtering during typing.",
-          "status": "pending",
+          "status": "completed",
           "file_paths": [
             "src/screens/LibraryScreen.tsx"
           ],
           "estimated_lines": 20,
-          "notes": "Use useEffect with debounce similar to SearchScreen pattern. 300ms debounce delay is appropriate for local filtering."
+          "notes": "Added debouncedSearchQuery state and useEffect with 300ms debounce timer. Committed as d53bff2d."
         },
         {
           "subtask_id": "2.2",
           "title": "Update filteredItems to include text search",
           "description": "Modify the existing filteredItems computation (around line 343-347) to also filter by item.name matching the debounced search query. Use case-insensitive matching.",
-          "status": "pending",
+          "status": "completed",
           "file_paths": [
             "src/screens/LibraryScreen.tsx"
           ],
           "estimated_lines": 15,
-          "notes": "Current filteredItems only filters by type. Add .toLowerCase().includes(searchQuery.toLowerCase()) check."
+          "notes": "Modified filteredItems computation to include text search filtering using debouncedSearchQuery with case-insensitive matching via toLowerCase().includes(). Committed as f3aade2a."
         },
         {
           "subtask_id": "2.3",
           "title": "Apply search to Trakt content",
           "description": "If user is viewing Trakt content (showTraktContent=true), also filter the Trakt folder items by title. Create filteredTraktItems computed value.",
-          "status": "pending",
+          "status": "completed",
           "file_paths": [
             "src/screens/LibraryScreen.tsx"
           ],
           "estimated_lines": 20,
-          "notes": "getTraktFolderItems returns TraktDisplayItem[] with name field. Filter by name when search query is present."
+          "notes": "Created filteredTraktItems useMemo that filters Trakt folder items by debouncedSearchQuery with case-insensitive matching. Updated renderTraktContent to use filteredTraktItems for FlashList data. Added search bar visibility when viewing Trakt folder content with contextual placeholder text. Committed as 35525da0."
         }
       ]
     },
