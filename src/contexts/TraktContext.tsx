@@ -49,7 +49,6 @@
  * - IMDb IDs are auto-normalized (with or without 'tt' prefix)
  * - Status checks (isInWatchlist, getUserRating) use cached data (no API calls)
  * - Mutations (addToWatchlist, addRating) make API calls with rate limiting
- * - Maintenance mode will be enabled when the Trakt service is unavailable
  *
  * @see useTraktIntegration for detailed method documentation
  * @module TraktContext
@@ -62,8 +61,7 @@ import {
   TraktWatchlistItem,
   TraktCollectionItem,
   TraktRatingItem,
-  TraktPlaybackItem,
-  traktService
+  TraktPlaybackItem
 } from '../services/traktService';
 
 /**
@@ -104,9 +102,6 @@ interface TraktContextProps {
   addRating: (imdbId: string, type: 'movie' | 'show', rating: number) => Promise<boolean>;
   removeRating: (imdbId: string, type: 'movie' | 'show') => Promise<boolean>;
   getUserRating: (imdbId: string, type: 'movie' | 'show') => number | null;
-  // Maintenance mode
-  isMaintenanceMode: boolean;
-  maintenanceMessage: string;
 }
 
 const TraktContext = createContext<TraktContextProps | undefined>(undefined);
@@ -137,15 +132,8 @@ const TraktContext = createContext<TraktContextProps | undefined>(undefined);
 export function TraktProvider({ children }: { children: ReactNode }) {
   const traktIntegration = useTraktIntegration();
 
-  // Add maintenance mode values to the context
-  const contextValue: TraktContextProps = {
-    ...traktIntegration,
-    isMaintenanceMode: traktService.isMaintenanceMode(),
-    maintenanceMessage: traktService.getMaintenanceMessage(),
-  };
-
   return (
-    <TraktContext.Provider value={contextValue}>
+    <TraktContext.Provider value={traktIntegration}>
       {children}
     </TraktContext.Provider>
   );
@@ -191,4 +179,4 @@ export function useTraktContext() {
     throw new Error('useTraktContext must be used within a TraktProvider');
   }
   return context;
-}
+} 

@@ -1,0 +1,60 @@
+{
+  "discovered_files": {
+    "src/services/traktService.ts": {
+      "description": "Edge case handling implementation: (1) Offline - try/catch in all methods returns false/null on failure, (2) Token - auto-refresh at lines 728-746 and 901-908, (3) Rate limiting - 500ms interval at line 589 + exponential backoff at lines 930-946, (4) Missing IMDb - validation at lines 1709-1743 and 1782-1786 with 'tt' prefix normalization, (5) Duplicate prevention - 46-minute tracking window at lines 593-596 with 409 conflict handling at lines 949-990.",
+      "category": "edge-case-handling",
+      "discovered_at": "2026-01-10T11:26:01.855424+00:00"
+    },
+    "src/components/home/AppleTVHero.tsx": {
+      "description": "handleSaveAction function (line ~572) now properly wired to Trakt watchlist API. Uses addToWatchlist/removeFromWatchlist from TraktContext with optimistic UI updates, error rollback, and type conversion ('series' to 'show'). Toast notifications via showTraktSaved/showTraktRemoved.",
+      "category": "implementation",
+      "discovered_at": "2026-01-10T06:10:51.822391+00:00"
+    },
+    "src/components/home/ContentItem.tsx": {
+      "description": "ContentItem now displays rating badges at bottom-left for items the user has rated on Trakt. Uses getUserRating from TraktContext, shows gold star with rating number (1-10). Badge positioned at bottom:6, left:6 to avoid conflict with watchlist/collection badges at top-right.",
+      "category": "ui-component",
+      "discovered_at": "2026-01-10T11:09:16.704232+00:00"
+    },
+    "src/hooks/useTraktIntegration.ts": {
+      "description": "Added getUserRating callback at line ~367 that looks up ratings from cached ratedContent state. Uses IMDb ID normalization pattern (ensures 'tt' prefix), finds matching rating item by type (movie/show), and returns rating (1-10) or null. Exported in return object at line ~786.",
+      "category": "implementation",
+      "discovered_at": "2026-01-10T06:24:40.336834+00:00"
+    },
+    "src/contexts/TraktContext.tsx": {
+      "description": "TraktContextProps interface now includes rating management methods: addRating(imdbId, type, rating) => Promise<boolean>, removeRating(imdbId, type) => Promise<boolean>, and getUserRating(imdbId, type) => number | null. These methods are passed through from useTraktIntegration hook and available via useTraktContext() throughout the app.",
+      "category": "interface",
+      "discovered_at": "2026-01-10T06:26:19.593596+00:00"
+    },
+    "src/components/trakt/TraktRatingComponent.tsx": {
+      "description": "New TraktRatingComponent created with: 1-10 rating display (5 stars with half-star precision), tap-to-rate functionality, loading states during API calls, error states for failed operations, optimistic UI updates with rollback, responsive sizing for phone/tablet/TV. Uses useTraktContext for getUserRating, addRating, removeRating methods. Exports as default component.",
+      "category": "component",
+      "discovered_at": "2026-01-10T06:29:27.452913+00:00"
+    },
+    "src/components/trakt/TraktRatingModal.tsx": {
+      "description": "New TraktRatingModal component created for rating content on Trakt. Features: 1-10 rating selector with two rows of 5 buttons each, confirm/cancel/clear action buttons, current rating badge display, loading/error states, responsive sizing for different devices, Trakt brand colors, rating text descriptions (e.g., \"Totally Ninja!\" for 10). Uses useTraktContext for getUserRating, addRating, removeRating methods. Modal follows same pattern as TrailerModal with dark overlay, rounded container, header with close button.",
+      "category": "component",
+      "discovered_at": "2026-01-10T06:32:43.927224+00:00"
+    },
+    "src/components/trakt/index.ts": {
+      "description": "Barrel export file for Trakt components. Exports TraktRatingComponent and TraktRatingModal using the pattern `export { default as ComponentName } from './ComponentName'`. This allows clean imports like `import { TraktRatingComponent, TraktRatingModal } from '../components/trakt'` throughout the app.",
+      "category": "component-exports",
+      "discovered_at": "2026-01-10T06:34:14.565268+00:00"
+    },
+    "src/screens/MetadataScreen.tsx": {
+      "description": "MetadataScreen passes rating-related props to HeroSection via the imdbId prop. HeroSection receives imdbId and passes it to ActionButtons, which passes it to TraktRatingComponent. The TraktRatingComponent internally uses useTraktContext() to access getUserRating, addRating, and removeRating methods - these are NOT passed as direct props but accessed via context.",
+      "category": "architecture",
+      "discovered_at": "2026-01-10T11:04:17.333952+00:00"
+    },
+    ".auto-claude/specs/001-complete-trakt-integration/test-verification-7.1-watchlist.md": {
+      "description": "Test verification document for Trakt watchlist functionality. Contains 7 test cases covering: add/remove via AppleTVHero and HeroSection, type conversion ('series' to 'show'), optimistic UI updates with rollback, error handling for missing IMDb IDs, and unauthenticated user behavior. Manual verification document pattern for testing React Native components without automated test infrastructure.",
+      "category": "testing",
+      "discovered_at": "2026-01-10T11:12:34.442886+00:00"
+    },
+    ".auto-claude/specs/001-complete-trakt-integration/test-verification-7.2-ratings.md": {
+      "description": "Test verification document for Trakt rating functionality. Contains 12 test cases covering: add/update/remove ratings via TraktRatingComponent and TraktRatingModal, TV series type handling ('show' not 'series'), rating validation (1-10 integers only), IMDb prefix handling, optimistic UI with rollback on failure, authentication guards, missing IMDb ID handling, and sync timing verification. Manual verification document pattern for testing React Native components without automated test infrastructure.",
+      "category": "testing",
+      "discovered_at": "2026-01-10T11:15:49.953210+00:00"
+    }
+  },
+  "last_updated": "2026-01-10T11:26:01.855457+00:00"
+}

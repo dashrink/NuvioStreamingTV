@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { DeviceEventEmitter } from 'react-native';
-import { View, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
-import Focusable from '../common/Focusable';
+import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -14,28 +13,12 @@ import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { triggerLight } from '../../hooks/useHaptics';
-import {
-  isTV as isTVDevice,
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_CATALOG,
-} from '../../utils/tvStyles';
 
 interface ContentItemProps {
   item: StreamingContent;
   onPress: (id: string, type: string) => void;
-  index?: number;
-  onItemFocus?: (index: number) => void;
   shouldLoadImage?: boolean;
   deferMs?: number;
-  // TV spatial navigation props
-  nextFocusUp?: number | React.RefObject<any>;
-  nextFocusDown?: number | React.RefObject<any>;
-  nextFocusLeft?: number | React.RefObject<any>;
-  nextFocusRight?: number | React.RefObject<any>;
-  hasTVPreferredFocus?: boolean;
-  focusableRef?: React.RefObject<any>;
 }
 
 const { width } = Dimensions.get('window');
@@ -49,8 +32,6 @@ const BREAKPOINTS = {
 };
 
 const getDeviceType = (screenWidth: number) => {
-  // Always treat TV devices as 'tv' regardless of reported dp width
-  if (Platform.isTV) return 'tv';
   if (screenWidth >= BREAKPOINTS.tv) return 'tv';
   if (screenWidth >= BREAKPOINTS.largeTablet) return 'largeTablet';
   if (screenWidth >= BREAKPOINTS.tablet) return 'tablet';
@@ -58,35 +39,25 @@ const getDeviceType = (screenWidth: number) => {
 };
 
 // Dynamic poster calculation based on screen width - show 1/4 of next poster
-// TV-specific: Larger posters for viewing distance, more spacing for focus rings
-// Uses TV_CATALOG constants for consistent 10-foot experience
-const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
-  // For TV, use forceTV parameter since Platform.isTV is available
-  const isTVDeviceCalc = forceTV || Platform.isTV;
-  const deviceType = isTVDeviceCalc ? 'tv' : getDeviceType(screenWidth);
+const calculatePosterLayout = (screenWidth: number) => {
+  const deviceType = getDeviceType(screenWidth);
 
   // Responsive sizing based on device type
-  // TV: Uses TV_CATALOG constants for optimal viewing from couch distance (8-12 feet)
-  const MIN_POSTER_WIDTH = deviceType === 'tv' ? TV_CATALOG.posterWidth : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
-  const MAX_POSTER_WIDTH = deviceType === 'tv' ? TV_CATALOG.posterWidth + 40 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
-  const LEFT_PADDING = deviceType === 'tv' ? TV_SPACING.screenPadding : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
-  const SPACING = deviceType === 'tv' ? TV_CATALOG.posterSpacing : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
+  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 180 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
+  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 220 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
+  const LEFT_PADDING = deviceType === 'tv' ? 32 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
+  const SPACING = deviceType === 'tv' ? 12 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
 
   // Try different numbers of full posters to find the best fit
-  // TV should show 5-6 posters to fit 960dp viewport
-  const defaultPosterWidth = deviceType === 'tv' ? 140 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120;
   let bestLayout = {
-    numFullPosters: deviceType === 'tv' ? 5 : 3,
-    posterWidth: defaultPosterWidth
+    numFullPosters: 3,
+    posterWidth: deviceType === 'tv' ? 200 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120
   };
 
-  const minPosters = deviceType === 'tv' ? 5 : 3;
-  const maxPosters = deviceType === 'tv' ? 7 : 6;
-
-  for (let n = minPosters; n <= maxPosters; n++) {
+  for (let n = 3; n <= 6; n++) {
     // Calculate poster width needed for N full posters + 0.25 partial poster
     // Formula: N * posterWidth + (N-1) * spacing + 0.25 * posterWidth = availableWidth - rightPadding
     // Simplified: posterWidth * (N + 0.25) + (N-1) * spacing = availableWidth - rightPadding
@@ -110,20 +81,7 @@ const calculatePosterLayout = (screenWidth: number, forceTV = false) => {
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
-const ContentItem = ({
-  item,
-  onPress,
-  index,
-  onItemFocus,
-  shouldLoadImage: shouldLoadImageProp,
-  deferMs = 0,
-  nextFocusUp,
-  nextFocusDown,
-  nextFocusLeft,
-  nextFocusRight,
-  hasTVPreferredFocus,
-  focusableRef,
-}: ContentItemProps) => {
+const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, deferMs = 0 }: ContentItemProps) => {
   // Track inLibrary status locally to force re-render
   const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
 
@@ -153,7 +111,7 @@ const ContentItem = ({
   const [imageError, setImageError] = useState(false);
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, getUserRating } = useTraktContext();
 
   useEffect(() => {
     // Reset image error state when item changes, allowing for retry on re-render
@@ -209,24 +167,15 @@ const ContentItem = ({
   const itemRef = useRef<View>(null);
 
   const handleLongPress = useCallback(() => {
-    triggerLight(); // Haptic feedback for opening context menu
     setMenuVisible(true);
   }, []);
 
   const handlePress = useCallback(() => {
     // Validate ID before pressing to prevent errors with NaN/undefined IDs
     if (item.id && item.id !== 'NaN' && item.id !== 'undefined') {
-      triggerLight(); // Haptic feedback for navigation to details
       onPress(item.id, item.type);
     }
   }, [item.id, item.type, onPress]);
-
-  // Handle focus event for TV D-pad navigation - notify parent to scroll
-  const handleFocus = useCallback(() => {
-    if (index !== undefined && onItemFocus) {
-      onItemFocus(index);
-    }
-  }, [index, onItemFocus]);
 
   const handleOptionSelect = useCallback(async (option: string) => {
     switch (option) {
@@ -289,22 +238,26 @@ const ContentItem = ({
         break;
       }
       case 'trakt-watchlist': {
-        if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
-          await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
+        // Convert 'series' to 'show' for Trakt API compatibility
+        const watchlistType = item.type === 'movie' ? 'movie' : 'show';
+        if (isInWatchlist(item.id, watchlistType)) {
+          await removeFromWatchlist(item.id, watchlistType);
           showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
         } else {
-          await addToWatchlist(item.id, item.type as 'movie' | 'show');
+          await addToWatchlist(item.id, watchlistType);
           showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
         }
         setMenuVisible(false);
         break;
       }
       case 'trakt-collection': {
-        if (isInCollection(item.id, item.type as 'movie' | 'show')) {
-          await removeFromCollection(item.id, item.type as 'movie' | 'show');
+        // Convert 'series' to 'show' for Trakt API compatibility
+        const collectionType = item.type === 'movie' ? 'movie' : 'show';
+        if (isInCollection(item.id, collectionType)) {
+          await removeFromCollection(item.id, collectionType);
           showInfo('Removed from Collection', 'Removed from your Trakt collection');
         } else {
-          await addToCollection(item.id, item.type as 'movie' | 'show');
+          await addToCollection(item.id, collectionType);
           showSuccess('Added to Collection', 'Added to your Trakt collection');
         }
         setMenuVisible(false);
@@ -353,17 +306,12 @@ const ContentItem = ({
   return (
     <>
       <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
-        <Focusable
-          ref={focusableRef}
+        <TouchableOpacity
           style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
+          activeOpacity={0.7}
           onPress={handlePress}
           onLongPress={handleLongPress}
-          onFocus={handleFocus}
-          nextFocusUp={nextFocusUp}
-          nextFocusDown={nextFocusDown}
-          nextFocusLeft={nextFocusLeft}
-          nextFocusRight={nextFocusRight}
-          hasTVPreferredFocus={hasTVPreferredFocus}
+          delayLongPress={300}
         >
           <View ref={itemRef} style={[styles.contentItemContainer, { borderRadius }]}>
             {/* Image with FastImage for aggressive caching */}
@@ -407,56 +355,87 @@ const ContentItem = ({
                 <Feather name="bookmark" size={16} color={currentTheme.colors.white} />
               </View>
             )}
-            {isAuthenticated && isInWatchlist(item.id, item.type as 'movie' | 'show') && (
+            {isAuthenticated && isInWatchlist(item.id, item.type === 'movie' ? 'movie' : 'show') && (
               <View style={styles.traktWatchlistIcon}>
                 <MaterialIcons name="playlist-add-check" size={16} color="#E74C3C" />
               </View>
             )}
-            {isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show') && (
+            {isAuthenticated && isInCollection(item.id, item.type === 'movie' ? 'movie' : 'show') && (
               <View style={styles.traktCollectionIcon}>
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
             )}
+            {/* Rating indicator for items the user has rated on Trakt */}
+            {isAuthenticated && (() => {
+              const userRating = getUserRating(item.id, item.type === 'movie' ? 'movie' : 'show');
+              return userRating !== null ? (
+                <View style={styles.traktRatingBadge}>
+                  <MaterialIcons name="star" size={12} color="#FFD700" />
+                  <Text style={styles.traktRatingText}>{userRating}</Text>
+                </View>
+              ) : null;
+            })()}
           </View>
-        </Focusable>
-        {settings.showPosterTitle && item.name && (
-          <Text numberOfLines={1} style={[styles.posterTitle, { color: currentTheme.colors.text, marginTop: 4 }]}>
+        </TouchableOpacity>
+        {settings.showPosterTitles && (
+          <Text
+            style={[
+              styles.title,
+              {
+                color: currentTheme.colors.mediumEmphasis,
+                fontSize: getDeviceType(width) === 'tv' ? 16 : getDeviceType(width) === 'largeTablet' ? 15 : getDeviceType(width) === 'tablet' ? 14 : 13
+              }
+            ]}
+            numberOfLines={2}
+          >
             {item.name}
           </Text>
         )}
       </Animated.View>
-      {menuVisible && (
-        <DropUpMenu
-          item={item}
-          inLibrary={inLibrary}
-          isWatched={isWatched}
-          onOptionSelect={handleOptionSelect}
-          onClose={handleMenuClose}
-        />
-      )}
+
+      <DropUpMenu
+        visible={menuVisible}
+        onClose={handleMenuClose}
+        item={item}
+        onOptionSelect={handleOptionSelect}
+        isSaved={inLibrary}
+        isWatched={isWatched}
+      />
     </>
   );
 };
 
 const styles = StyleSheet.create({
   itemContainer: {
-    justifyContent: 'flex-start',
+    width: POSTER_WIDTH,
   },
   contentItem: {
+    width: POSTER_WIDTH,
+    aspectRatio: 2 / 3,
+    margin: 0,
+    borderRadius: 12,
     overflow: 'hidden',
+    position: 'relative',
+    elevation: Platform.OS === 'android' ? 1 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    marginBottom: 8,
   },
   contentItemContainer: {
-    position: 'relative',
     width: '100%',
     height: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
   },
   poster: {
     width: '100%',
     height: '100%',
-  },
-  posterTitle: {
-    fontSize: 12,
-    fontWeight: '500',
+    borderRadius: 12,
   },
   loadingOverlay: {
     position: 'absolute',
@@ -466,39 +445,62 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 8,
   },
   watchedIndicator: {
     position: 'absolute',
-    bottom: 6,
-    right: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    top: 8,
+    right: 8,
     borderRadius: 12,
     padding: 2,
   },
   libraryBadge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 4,
+    top: 8,
+    left: 8,
+    borderRadius: 8,
     padding: 4,
   },
   traktWatchlistIcon: {
     position: 'absolute',
-    top: 6,
-    left: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 4,
-    padding: 4,
+    top: 8,
+    right: 8,
+    padding: 2,
   },
   traktCollectionIcon: {
     position: 'absolute',
+    top: 8,
+    right: 32, // Positioned to the left of watchlist icon
+    padding: 2,
+  },
+  traktRatingBadge: {
+    position: 'absolute',
     bottom: 6,
     left: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 4,
-    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
   },
+  traktRatingText: {
+    color: '#FFD700',
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 2,
+  },
+  title: {
+    fontSize: 13, // Will be overridden responsively
+    fontWeight: '500',
+    marginTop: 4,
+    textAlign: 'center',
+  }
 });
 
-export default ContentItem;
+export default React.memo(ContentItem, (prev, next) => {
+  // Re-render when identity or poster changes. Caching is handled by FastImage.
+  if (prev.item.id !== next.item.id) return false;
+  if (prev.item.poster !== next.item.poster) return false;
+  return true;
+});
