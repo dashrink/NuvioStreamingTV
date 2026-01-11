@@ -44,7 +44,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ScreenHeader from '../components/common/ScreenHeader';
-import Focusable from '../components/common/Focusable';
+import { EmptyState } from '../components/common';
 
 const { width, height } = Dimensions.get('window');
 
@@ -571,19 +571,13 @@ const SearchScreen = () => {
           Recent Searches
         </Text>
         {recentSearches.map((search, index) => (
-          <Focusable
+          <TouchableOpacity
             key={index}
-            variant="listItem"
-            borderRadius={8}
-            enableScale={false}
-            enableGlow={false}
+            style={styles.recentSearchItem}
             onPress={() => {
               setQuery(search);
               Keyboard.dismiss();
             }}
-            accessibilityLabel={`Recent search: ${search}`}
-            accessibilityHint="Double tap to search for this term"
-            style={styles.recentSearchItem}
           >
             <MaterialIcons
               name="history"
@@ -594,24 +588,19 @@ const SearchScreen = () => {
             <Text style={[styles.recentSearchText, { color: currentTheme.colors.white }]}>
               {search}
             </Text>
-            <Focusable
-              variant="button"
-              borderRadius={12}
-              enableScale={false}
-              enableGlow={false}
+            <TouchableOpacity
               onPress={() => {
                 const newRecentSearches = [...recentSearches];
                 newRecentSearches.splice(index, 1);
                 setRecentSearches(newRecentSearches);
                 mmkvStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecentSearches));
               }}
-              accessibilityLabel={`Remove ${search} from recent searches`}
-              accessibilityHint="Double tap to remove this search from history"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               style={styles.recentSearchDeleteButton}
             >
               <MaterialIcons name="close" size={16} color={currentTheme.colors.lightGray} />
-            </Focusable>
-          </Focusable>
+            </TouchableOpacity>
+          </TouchableOpacity>
         ))}
       </View>
     );
@@ -663,9 +652,7 @@ const SearchScreen = () => {
     }, [item.id, item.type]);
 
     return (
-      <Focusable
-        variant="card"
-        borderRadius={16}
+      <TouchableOpacity
         style={[styles.horizontalItem, { width: itemWidth }]}
         onPress={() => {
           navigation.navigate('Metadata', { id: item.id, type: item.type });
@@ -675,13 +662,12 @@ const SearchScreen = () => {
           setMenuVisible(true);
           // Do NOT toggle refreshFlag here
         }}
+        delayLongPress={300}
         activeOpacity={0.7}
-        accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}${item.type ? `, ${item.type}` : ''}`}
-        accessibilityHint="Double tap to view details, long press for more options"
       >
         <View style={[styles.horizontalItemPosterContainer, {
           width: itemWidth,
-          height: undefined, // Let aspect ratio control height or keep fixed height with width?
+          height: undefined, // Let aspect ratio control height or keep fixed height with width? 
           // Actually, since we derived width from fixed height, we can keep height fixed or use aspect.
           // Using aspect ratio is safer if baseHeight changes.
           aspectRatio: aspectRatio,
@@ -731,7 +717,7 @@ const SearchScreen = () => {
             {item.year}
           </Text>
         )}
-      </Focusable>
+      </TouchableOpacity>
     );
   };
 
@@ -921,24 +907,14 @@ const SearchScreen = () => {
             styles.searchBarWrapper,
             { width: '100%' }
           ]}>
-            <Focusable
-              variant="button"
-              borderRadius={12}
-              enableScale={false}
-              enableGlow
-              hasTVPreferredFocus={true}
-              onPress={() => inputRef.current?.focus()}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-              accessibilityLabel="Search input"
-              accessibilityHint="Select to search for movies and shows"
-              style={[
-                styles.searchBar,
-                {
-                  backgroundColor: currentTheme.colors.elevation2,
-                }
-              ]}
-            >
+            <View style={[
+              styles.searchBar,
+              {
+                backgroundColor: currentTheme.colors.elevation2,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+              }
+            ]}>
               <MaterialIcons
                 name="search"
                 size={24}
@@ -957,28 +933,21 @@ const SearchScreen = () => {
                 returnKeyType="search"
                 keyboardAppearance="dark"
                 ref={inputRef}
-                accessibilityLabel="Search movies and shows"
-                accessibilityHint="Type to search for content"
               />
               {query.length > 0 && (
-                <Focusable
-                  variant="button"
-                  borderRadius={16}
-                  enableScale={false}
-                  enableGlow={false}
+                <TouchableOpacity
                   onPress={handleClearSearch}
                   style={styles.clearButton}
-                  accessibilityLabel="Clear search"
-                  accessibilityHint="Double tap to clear the search field"
+                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
                 >
                   <MaterialIcons
                     name="close"
                     size={20}
                     color={currentTheme.colors.lightGray}
                   />
-                </Focusable>
+                </TouchableOpacity>
               )}
-            </Focusable>
+            </View>
           </View>
         </View>
       </ScreenHeader>
@@ -993,37 +962,17 @@ const SearchScreen = () => {
             />
           </View>
         ) : query.trim().length === 1 ? (
-          <View
-            style={styles.emptyContainer}
-          >
-            <MaterialIcons
-              name="search"
-              size={64}
-              color={currentTheme.colors.lightGray}
-            />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-              Keep typing...
-            </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-              Type at least 2 characters to search
-            </Text>
-          </View>
+          <EmptyState
+            icon={{ name: 'search', size: 64, library: 'MaterialIcons' }}
+            title="Keep typing..."
+            subtitle="Type at least 2 characters to search"
+          />
         ) : searched && !hasResultsToShow ? (
-          <View
-            style={styles.emptyContainer}
-          >
-            <MaterialIcons
-              name="search-off"
-              size={64}
-              color={currentTheme.colors.lightGray}
-            />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-              No results found
-            </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-              Try different keywords or check your spelling
-            </Text>
-          </View>
+          <EmptyState
+            icon={{ name: 'search-off', size: 64, library: 'MaterialIcons' }}
+            title="No results found"
+            subtitle="Try different keywords or check your spelling"
+          />
         ) : (
           <ScrollView
             style={styles.scrollView}
@@ -1258,24 +1207,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: isTablet ? 64 : 32,
-    paddingBottom: isTablet ? 120 : 100,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
   },
   skeletonContainer: {
     flexDirection: 'row',

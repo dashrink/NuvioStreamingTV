@@ -5,13 +5,11 @@ import { mmkvStorage } from '../services/mmkvStorage';
 import { useToast } from '../contexts/ToastContext';
 import DropUpMenu from '../components/home/DropUpMenu';
 import ScreenHeader from '../components/common/ScreenHeader';
-import Focusable from '../components/common/Focusable';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   useColorScheme,
   useWindowDimensions,
   SafeAreaView,
@@ -21,7 +19,6 @@ import {
   Platform,
   ScrollView,
   BackHandler,
-  Keyboard,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -40,8 +37,8 @@ import { useTraktContext } from '../contexts/TraktContext';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
+import { EmptyState } from '../components/common';
 import { useSettings } from '../hooks/useSettings';
-import debounce from 'lodash/debounce';
 
 interface LibraryItem extends StreamingContent {
   progress?: number;
@@ -125,16 +122,13 @@ const TraktItem = React.memo(({
   }, [navigation, item.imdbId, item.type]);
 
   return (
-    <Focusable
-      variant="card"
-      borderRadius={12}
-      onPress={handlePress}
+    <TouchableOpacity
       style={[styles.itemContainer, { width }]}
-      accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
-      accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'TV show'} details`}
+      onPress={handlePress}
+      activeOpacity={0.7}
     >
       <View>
-        <View style={[styles.posterContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black }]}>
+        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
           {posterUrl ? (
             <FastImage
               source={{ uri: posterUrl }}
@@ -153,7 +147,7 @@ const TraktItem = React.memo(({
           </Text>
         )}
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 });
 
@@ -232,8 +226,6 @@ const LibraryScreen = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   const {
     isAuthenticated: traktAuthenticated,
@@ -349,35 +341,9 @@ const LibraryScreen = () => {
     };
   }, [navigation]);
 
-  // Debounce the search query to prevent excessive filtering during typing
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [searchQuery]);
-
-  // Clear search when entering/exiting Trakt view or switching Trakt folders for cleaner UX
-  // Note: Search persists when switching between Movies/TV Shows filters (handled by filter state)
-  useEffect(() => {
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
-  }, [showTraktContent, selectedTraktFolder]);
-
   const filteredItems = libraryItems.filter(item => {
-    // Type filtering
-    if (filter === 'movies' && item.type !== 'movie') return false;
-    if (filter === 'series' && item.type !== 'series') return false;
-
-    // Search query filtering (case-insensitive)
-    if (debouncedSearchQuery) {
-      const searchLower = debouncedSearchQuery.toLowerCase();
-      if (!item.name.toLowerCase().includes(searchLower)) return false;
-    }
-
+    if (filter === 'movies') return item.type === 'movie';
+    if (filter === 'series') return item.type === 'series';
     return true;
   });
 
@@ -421,20 +387,17 @@ const LibraryScreen = () => {
   }, [traktAuthenticated, watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
   const renderItem = ({ item }: { item: LibraryItem }) => (
-    <Focusable
-      variant="card"
-      borderRadius={12}
+    <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type })}
       onLongPress={() => {
         setSelectedItem(item);
         setMenuVisible(true);
       }}
-      accessibilityLabel={`${item.name}${item.watched ? ', watched' : ''}`}
-      accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'TV show'} details. Long press for options.`}
+      activeOpacity={0.7}
     >
       <View>
-        <View style={[styles.posterContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black }]}>
+        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
           <FastImage
             source={{ uri: item.poster || 'https://via.placeholder.com/300x450' }}
             style={styles.poster}
@@ -462,22 +425,19 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 
   const renderTraktCollectionFolder = ({ folder }: { folder: TraktFolder }) => (
-    <Focusable
-      variant="card"
-      borderRadius={8}
+    <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         setSelectedTraktFolder(folder.id);
         loadAllCollections();
       }}
-      accessibilityLabel={`${folder.name} folder, ${folder.itemCount} items`}
-      accessibilityHint="Open this Trakt collection"
+      activeOpacity={0.7}
     >
-      <View style={[styles.posterContainer, styles.folderContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+      <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
         <View style={styles.folderGradient}>
           <MaterialIcons
             name={folder.icon}
@@ -493,13 +453,11 @@ const LibraryScreen = () => {
           </Text>
         </View>
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 
   const renderTraktFolder = () => (
-    <Focusable
-      variant="card"
-      borderRadius={8}
+    <TouchableOpacity
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         if (!traktAuthenticated) {
@@ -510,11 +468,10 @@ const LibraryScreen = () => {
           loadAllCollections();
         }
       }}
-      accessibilityLabel={`Trakt collections${traktAuthenticated && traktFolders.length > 0 ? `, ${traktFolders.length} folders` : ''}`}
-      accessibilityHint={traktAuthenticated ? "Open Trakt collections" : "Sign in to Trakt"}
+      activeOpacity={0.7}
     >
       <View>
-        <View style={[styles.posterContainer, styles.folderContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+        <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
           <View style={styles.folderGradient}>
             <TraktIcon width={48} height={48} style={{ marginBottom: 8 }} />
             <Text style={[styles.folderTitle, { color: currentTheme.colors.white }]}>
@@ -533,7 +490,7 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 
   const renderTraktItem = useCallback(({ item }: { item: TraktDisplayItem }) => {
@@ -745,22 +702,6 @@ const LibraryScreen = () => {
     });
   }, [watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
-  // Filtered Trakt items for when viewing Trakt folder content
-  const filteredTraktItems = useMemo((): TraktDisplayItem[] => {
-    if (!showTraktContent || !selectedTraktFolder) return [];
-
-    const folderItems = getTraktFolderItems(selectedTraktFolder);
-
-    // If no search query, return all items
-    if (!debouncedSearchQuery) return folderItems;
-
-    // Filter by name (case-insensitive)
-    const searchLower = debouncedSearchQuery.toLowerCase();
-    return folderItems.filter(item =>
-      item.name.toLowerCase().includes(searchLower)
-    );
-  }, [showTraktContent, selectedTraktFolder, getTraktFolderItems, debouncedSearchQuery]);
-
   const renderTraktContent = () => {
     if (traktLoading) {
       return <TraktLoadingSpinner />;
@@ -769,30 +710,15 @@ const LibraryScreen = () => {
     if (!selectedTraktFolder) {
       if (traktFolders.length === 0) {
         return (
-          <View style={styles.emptyContainer}>
-            <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No Trakt collections</Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-              Your Trakt collections will appear here once you start using Trakt
-            </Text>
-            <Focusable
-              variant="button"
-              borderRadius={24}
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
-              onPress={() => {
-                loadAllCollections();
-              }}
-              enableScale={false}
-              enableGlow={false}
-              accessibilityLabel="Load Collections"
-              accessibilityHint="Load your Trakt collections"
-            >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
-            </Focusable>
-          </View>
+          <EmptyState
+            icon={{ name: 'folder-off-outline', size: 64, library: 'MaterialCommunityIcons' }}
+            title="No Trakt collections"
+            subtitle="Your Trakt collections will appear here once you start using Trakt"
+            primaryAction={{
+              label: 'Load Collections',
+              onPress: () => loadAllCollections()
+            }}
+          />
         );
       }
 
@@ -810,72 +736,26 @@ const LibraryScreen = () => {
       );
     }
 
-    // Get unfiltered items to check if collection is truly empty
-    const allFolderItems = getTraktFolderItems(selectedTraktFolder);
+    const folderItems = getTraktFolderItems(selectedTraktFolder);
 
-    if (allFolderItems.length === 0) {
+    if (folderItems.length === 0) {
       const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
       return (
-        <View style={styles.emptyContainer}>
-          <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No content in {folderName}</Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            This collection is empty
-          </Text>
-          <Focusable
-            variant="button"
-            borderRadius={24}
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => {
-              loadAllCollections();
-            }}
-            enableScale={false}
-            enableGlow={false}
-            accessibilityLabel="Refresh"
-            accessibilityHint="Refresh this Trakt collection"
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
-          </Focusable>
-        </View>
-      );
-    }
-
-    // Check if search filtering returned no results
-    if (filteredTraktItems.length === 0 && debouncedSearchQuery) {
-      const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
-      return (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="search-off"
-            size={64}
-            color={currentTheme.colors.lightGray}
-          />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-            No results found
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            No items in {folderName} match "{debouncedSearchQuery}"
-          </Text>
-          <TouchableOpacity
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => setSearchQuery('')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Clear search</Text>
-          </TouchableOpacity>
-        </View>
+        <EmptyState
+          icon={{ name: 'folder-open-outline', size: 64, library: 'MaterialCommunityIcons' }}
+          title={`No content in ${folderName}`}
+          subtitle="This collection is empty"
+          primaryAction={{
+            label: 'Refresh',
+            onPress: () => loadAllCollections()
+          }}
+        />
       );
     }
 
     return (
       <FlashList
-        data={filteredTraktItems}
+        data={folderItems}
         renderItem={({ item }) => renderTraktItem({ item })}
         keyExtractor={(item) => `${item.type}-${item.id}`}
         numColumns={numColumns}
@@ -892,9 +772,7 @@ const LibraryScreen = () => {
     const isActive = filter === filterType;
 
     return (
-      <Focusable
-        variant="button"
-        borderRadius={24}
+      <TouchableOpacity
         style={[
           styles.filterButton,
           isActive && { backgroundColor: currentTheme.colors.primary },
@@ -913,10 +791,7 @@ const LibraryScreen = () => {
           }
           setFilter(filterType);
         }}
-        enableScale={false}
-        enableGlow={false}
-        accessibilityLabel={`${label} filter${isActive ? ', selected' : ''}`}
-        accessibilityHint={filterType === 'trakt' ? (traktAuthenticated ? 'View Trakt collections' : 'Sign in to Trakt') : `Filter library by ${label.toLowerCase()}`}
+        activeOpacity={0.7}
       >
         {filterType === 'trakt' ? (
           <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -939,7 +814,7 @@ const LibraryScreen = () => {
         >
           {label}
         </Text>
-      </Focusable>
+      </TouchableOpacity>
     );
   };
 
@@ -949,76 +824,17 @@ const LibraryScreen = () => {
     }
 
     if (filteredItems.length === 0) {
-      // Check if this is due to search filtering vs. empty library
-      const itemsBeforeSearch = libraryItems.filter(item => {
-        if (filter === 'movies' && item.type !== 'movie') return false;
-        if (filter === 'series' && item.type !== 'series') return false;
-        return true;
-      });
-      const isSearchEmpty = debouncedSearchQuery && itemsBeforeSearch.length > 0;
-
-      if (isSearchEmpty) {
-        // Show search-specific empty state
-        return (
-          <View style={styles.emptyContainer}>
-            <MaterialIcons
-              name="search-off"
-              size={64}
-              color={currentTheme.colors.lightGray}
-            />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-              No results found
-            </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-              No items match "{debouncedSearchQuery}"
-            </Text>
-            <TouchableOpacity
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
-              onPress={() => setSearchQuery('')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Clear search</Text>
-            </TouchableOpacity>
-          </View>
-        );
-      }
-
-      // Show generic empty library state
       const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
-      const emptySubtitle = 'Add some content to your library to see it here';
       return (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="video-library"
-            size={64}
-            color={currentTheme.colors.lightGray}
-          />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-            {emptyTitle}
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
-            {emptySubtitle}
-          </Text>
-          <Focusable
-            variant="button"
-            borderRadius={24}
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
-            onPress={() => navigation.navigate('Search')}
-            enableScale={false}
-            enableGlow={false}
-            hasTVPreferredFocus
-            accessibilityLabel="Find something to watch"
-            accessibilityHint="Go to search to find content"
-          >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
-          </Focusable>
-        </View>
+        <EmptyState
+          icon={{ name: 'video-library', size: 64, library: 'MaterialIcons' }}
+          title={emptyTitle}
+          subtitle="Add some content to your library to see it here"
+          primaryAction={{
+            label: 'Find something to watch',
+            onPress: () => navigation.navigate('Search')
+          }}
+        />
       );
     }
 
@@ -1065,61 +881,11 @@ const LibraryScreen = () => {
       />
 
       <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
-        {/* Show search bar for local library OR when viewing a Trakt folder */}
-        {(!showTraktContent || selectedTraktFolder) && (
+        {!showTraktContent && (
           <View style={styles.filtersContainer}>
-            {/* Search Input Bar */}
-            <View style={[styles.searchBarContainer]}>
-              <View style={[
-                styles.searchBar,
-                {
-                  backgroundColor: currentTheme.colors.elevation2,
-                  borderColor: 'rgba(255,255,255,0.1)',
-                }
-              ]}>
-                <MaterialIcons
-                  name="search"
-                  size={24}
-                  color={currentTheme.colors.lightGray}
-                  style={styles.searchIcon}
-                />
-                <TextInput
-                  style={[
-                    styles.searchInput,
-                    { color: currentTheme.colors.white }
-                  ]}
-                  placeholder={selectedTraktFolder ? "Search this collection..." : "Search your library..."}
-                  placeholderTextColor={currentTheme.colors.lightGray}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  returnKeyType="search"
-                  keyboardAppearance="dark"
-                  onSubmitEditing={() => Keyboard.dismiss()}
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setSearchQuery('')}
-                    style={styles.clearButton}
-                    hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                  >
-                    <MaterialIcons
-                      name="close"
-                      size={20}
-                      color={currentTheme.colors.lightGray}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-
-            {/* Filter Buttons - only show for local library */}
-            {!showTraktContent && (
-              <View style={styles.filterButtonsRow}>
-                {renderFilter('trakt', 'Trakt', 'pan-tool')}
-                {renderFilter('movies', 'Movies', 'movie')}
-                {renderFilter('series', 'TV Shows', 'live-tv')}
-              </View>
-            )}
+            {renderFilter('trakt', 'Trakt', 'pan-tool')}
+            {renderFilter('movies', 'Movies', 'movie')}
+            {renderFilter('series', 'TV Shows', 'live-tv')}
           </View>
         )}
 
@@ -1198,47 +964,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filtersContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
     paddingTop: 8,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
     zIndex: 10,
-  },
-  searchBarContainer: {
-    marginBottom: 12,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 48,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    height: '100%',
-  },
-  clearButton: {
-    padding: 4,
-  },
-  filterButtonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
   },
   filterButton: {
     flexDirection: 'row',
@@ -1290,13 +1023,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
-  },
-  // Used when Focusable wrapper handles border animation
-  focusablePoster: {
-    borderWidth: 0,
-    borderColor: 'transparent',
-    elevation: 0,
-    shadowOpacity: 0,
   },
   poster: {
     width: '100%',
@@ -1366,37 +1092,6 @@ const styles = StyleSheet.create({
     height: 14,
     marginTop: 8,
     borderRadius: 4,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingBottom: 90,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  exploreButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    elevation: 3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  exploreButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   playsCount: {
     fontSize: 11,

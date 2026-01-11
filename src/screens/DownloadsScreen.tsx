@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import {
   Clipboard,
   Linking,
 } from 'react-native';
-import Focusable from '../components/common/Focusable';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -36,7 +35,7 @@ import type { DownloadItem } from '../contexts/DownloadsContext';
 import { useToast } from '../contexts/ToastContext';
 import CustomAlert from '../components/CustomAlert';
 import ScreenHeader from '../components/common/ScreenHeader';
-import { useScrollToTop } from '../contexts/ScrollToTopContext';
+import { EmptyState } from '../components/common';
 
 const { height, width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -63,40 +62,6 @@ const optimizePosterUrl = (poster: string | undefined | null): string => {
 
 // Download items come from DownloadsContext
 
-// Empty state component
-const EmptyDownloadsState: React.FC<{ navigation: NavigationProp<RootStackParamList> }> = ({ navigation }) => {
-  const { currentTheme } = useTheme();
-
-  return (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIconContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
-        <MaterialCommunityIcons
-          name="download-outline"
-          size={48}
-          color={currentTheme.colors.mediumEmphasis}
-        />
-      </View>
-      <Text style={[styles.emptyTitle, { color: currentTheme.colors.text }]}>
-        No Downloads Yet
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: currentTheme.colors.mediumEmphasis }]}>
-        Downloaded content will appear here for offline viewing
-      </Text>
-      <Focusable
-        style={[styles.exploreButton, { backgroundColor: currentTheme.colors.primary }]}
-        onPress={() => {
-          navigation.navigate('Search');
-        }}
-        hasTVPreferredFocus={Platform.isTV}
-      >
-        <Text style={[styles.exploreButtonText, { color: currentTheme.colors.background }]}>
-          Explore Content
-        </Text>
-      </Focusable>
-    </View>
-  );
-};
-
 // Download item component
 const DownloadItemComponent: React.FC<{
   item: DownloadItem;
@@ -105,10 +70,8 @@ const DownloadItemComponent: React.FC<{
   onRequestRemove: (item: DownloadItem) => void;
 }> = React.memo(({ item, onPress, onAction, onRequestRemove }) => {
   const { currentTheme } = useTheme();
-  const { settings } = useSettings();
   const { showSuccess, showInfo } = useToast();
   const [posterUrl, setPosterUrl] = useState<string | null>(item.posterUrl || null);
-  const borderRadius = settings.posterBorderRadius ?? 12;
 
   // Try to fetch poster if not available
   useEffect(() => {
@@ -209,16 +172,17 @@ const DownloadItemComponent: React.FC<{
   };
 
   return (
-    <Focusable
+    <TouchableOpacity
       style={[styles.downloadItem, { backgroundColor: currentTheme.colors.elevation2 }]}
       onPress={() => onPress(item)}
       onLongPress={handleLongPress}
+      activeOpacity={0.8}
     >
       {/* Poster */}
-      <View style={[styles.posterContainer, { borderRadius }]}>
+      <View style={styles.posterContainer}>
         <FastImage
           source={{ uri: optimizePosterUrl(posterUrl) }}
-          style={[styles.poster, { borderRadius }]}
+          style={styles.poster}
           resizeMode={FastImage.resizeMode.cover}
         />
         {/* Status indicator overlay */}
@@ -318,30 +282,32 @@ const DownloadItemComponent: React.FC<{
       {/* Action buttons */}
       <View style={styles.actionContainer}>
         {getActionIcon() && (
-          <Focusable
+          <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
             onPress={handleActionPress}
+            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name={getActionIcon() as any}
               size={20}
               color={currentTheme.colors.primary}
             />
-          </Focusable>
+          </TouchableOpacity>
         )}
 
-        <Focusable
+        <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
           onPress={() => onRequestRemove(item)}
+          activeOpacity={0.7}
         >
           <MaterialCommunityIcons
             name="delete-outline"
             size={20}
             color={currentTheme.colors.error}
           />
-        </Focusable>
+        </TouchableOpacity>
       </View>
-    </Focusable>
+    </TouchableOpacity>
   );
 });
 
@@ -357,14 +323,6 @@ const DownloadsScreen: React.FC = () => {
   const [showHelpAlert, setShowHelpAlert] = useState(false);
   const [showRemoveAlert, setShowRemoveAlert] = useState(false);
   const [pendingRemoveItem, setPendingRemoveItem] = useState<DownloadItem | null>(null);
-  const flatListRef = useRef<FlatList>(null);
-
-  // Scroll to top handler
-  const scrollToTop = useCallback(() => {
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, []);
-
-  useScrollToTop('Downloads', scrollToTop);
 
   // Filter downloads based on selected filter
   const filteredDownloads = useMemo(() => {
@@ -535,6 +493,7 @@ const DownloadsScreen: React.FC = () => {
         streamProvider: 'Downloads',
         streamName: item.providerName || 'Offline',
         headers: undefined,
+        forceVlc: Platform.OS === 'android' ? isMkv : false,
         id: item.contentId, // Use contentId (base ID) instead of compound id for progress tracking
         type: item.type,
         episodeId: episodeId, // Pass episodeId for series progress tracking
@@ -578,7 +537,7 @@ const DownloadsScreen: React.FC = () => {
   );
 
   const renderFilterButton = (filter: typeof selectedFilter, label: string, count: number) => (
-    <Focusable
+    <TouchableOpacity
       key={filter}
       style={[
         styles.filterButton,
@@ -589,6 +548,7 @@ const DownloadsScreen: React.FC = () => {
         }
       ]}
       onPress={() => handleFilterPress(filter)}
+      activeOpacity={0.8}
     >
       <Text style={[
         styles.filterButtonText,
@@ -621,7 +581,7 @@ const DownloadsScreen: React.FC = () => {
           </Text>
         </View>
       )}
-    </Focusable>
+    </TouchableOpacity>
   );
 
   return (
@@ -636,16 +596,17 @@ const DownloadsScreen: React.FC = () => {
       <ScreenHeader
         title="Downloads"
         rightActionComponent={
-          <Focusable
+          <TouchableOpacity
             style={styles.helpButton}
             onPress={showDownloadHelp}
+            activeOpacity={0.7}
           >
             <MaterialCommunityIcons
               name="help-circle-outline"
               size={24}
               color={currentTheme.colors.mediumEmphasis}
             />
-          </Focusable>
+          </TouchableOpacity>
         }
         isTablet={isTablet}
       >
@@ -661,10 +622,17 @@ const DownloadsScreen: React.FC = () => {
 
       {/* Content */}
       {downloads.length === 0 ? (
-        <EmptyDownloadsState navigation={navigation} />
+        <EmptyState
+          icon={{ name: 'download-outline', library: 'MaterialCommunityIcons' }}
+          title="No Downloads Yet"
+          subtitle="Downloaded content will appear here for offline viewing"
+          primaryAction={{
+            label: 'Explore Content',
+            onPress: () => navigation.navigate('Search'),
+          }}
+        />
       ) : (
         <FlatList
-          ref={flatListRef}
           data={filteredDownloads}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -687,19 +655,12 @@ const DownloadsScreen: React.FC = () => {
             />
           }
           ListEmptyComponent={() => (
-            <View style={styles.emptyFilterContainer}>
-              <MaterialCommunityIcons
-                name="filter-off"
-                size={48}
-                color={currentTheme.colors.mediumEmphasis}
-              />
-              <Text style={[styles.emptyFilterTitle, { color: currentTheme.colors.text }]}>
-                No {selectedFilter} downloads
-              </Text>
-              <Text style={[styles.emptyFilterSubtitle, { color: currentTheme.colors.mediumEmphasis }]}>
-                Try selecting a different filter
-              </Text>
-            </View>
+            <EmptyState
+              icon={{ name: 'filter-off', library: 'MaterialCommunityIcons', size: 48 }}
+              title={`No ${selectedFilter} downloads`}
+              subtitle="Try selecting a different filter"
+              style={styles.emptyFilterState}
+            />
           )}
         />
       )}
@@ -789,25 +750,16 @@ const styles = StyleSheet.create({
   posterContainer: {
     width: POSTER_WIDTH,
     height: POSTER_HEIGHT,
-    borderRadius: 12,
+    borderRadius: 8,
     marginRight: isTablet ? 20 : 16,
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#333',
-    // Consistent border styling matching ContentItem
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
-    // Consistent shadow/elevation
-    elevation: Platform.OS === 'android' ? 1 : 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
   },
   poster: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
   },
   statusOverlay: {
     position: 'absolute',
@@ -928,56 +880,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: isTablet ? 64 : 40,
-    paddingBottom: isTablet ? 120 : 100,
-  },
-  emptyIconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: isTablet ? 28 : 24,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: isTablet ? 18 : 16,
-    textAlign: 'center',
-    lineHeight: isTablet ? 28 : 24,
-    marginBottom: isTablet ? 40 : 32,
-  },
-  exploreButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  exploreButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  emptyFilterContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  emptyFilterState: {
+    flex: 0,
     paddingVertical: isTablet ? 80 : 60,
-  },
-  emptyFilterTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyFilterSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
+    paddingBottom: 0,
   },
 });
 

@@ -13,7 +13,6 @@ import {
   SectionList,
   Platform
 } from 'react-native';
-import Focusable from '../components/common/Focusable';
 import { InteractionManager } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -21,6 +20,7 @@ import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import { EmptyState } from '../components/common';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useLibrary } from '../hooks/useLibrary';
 import { useTraktContext } from '../contexts/TraktContext';
@@ -31,7 +31,6 @@ import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 import { useCalendarData } from '../hooks/useCalendarData';
-import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -93,7 +92,6 @@ const CalendarScreen = () => {
   }, []);
   
   const handleSeriesPress = useCallback((seriesId: string, episode?: CalendarEpisode) => {
-    triggerLight();
     navigation.navigate('Metadata', {
       id: seriesId,
       type: 'series',
@@ -109,7 +107,6 @@ const CalendarScreen = () => {
     }
     
     // For episodes with dates, go to the stream screen
-    triggerLight();
     const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
     navigation.navigate('Streams', {
       id: episode.seriesId,
@@ -133,19 +130,21 @@ const CalendarScreen = () => {
     
     return (
       <Animated.View entering={FadeIn.duration(300).delay(100)}>
-        <Focusable 
+        <TouchableOpacity 
           style={[styles.episodeItem, { borderBottomColor: currentTheme.colors.border + '20' }]}
           onPress={() => handleEpisodePress(item)}
+          activeOpacity={0.7}
         >
-          <Focusable
+          <TouchableOpacity
             onPress={() => handleSeriesPress(item.seriesId, item)}
+            activeOpacity={0.7}
           >
             <FastImage
               source={{ uri: imageUrl || '' }}
               style={styles.poster}
               resizeMode={FastImage.resizeMode.cover}
             />
-          </Focusable>
+          </TouchableOpacity>
           
           <View style={styles.episodeDetails}>
             <Text style={[styles.seriesName, { color: currentTheme.colors.text }]} numberOfLines={1}>
@@ -204,7 +203,7 @@ const CalendarScreen = () => {
               </>
             )}
           </View>
-        </Focusable>
+        </TouchableOpacity>
       </Animated.View>
     );
   };
@@ -251,7 +250,6 @@ const CalendarScreen = () => {
   
   // Handle date selection from calendar
   const handleDateSelect = useCallback((date: Date) => {
-    triggerLight();
     logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
     setSelectedDate(date);
     
@@ -268,7 +266,6 @@ const CalendarScreen = () => {
 
   // Reset date filter
   const clearDateFilter = useCallback(() => {
-    triggerLight();
     logger.log(`[Calendar] Clearing date filter`);
     setSelectedDate(null);
     setFilteredEpisodes([]);
@@ -291,16 +288,12 @@ const CalendarScreen = () => {
       <StatusBar barStyle="light-content" />
       
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-        <Focusable 
+        <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => {
-            triggerLight();
-            navigation.goBack();
-          }}
-          hasTVPreferredFocus={Platform.isTV}
+          onPress={() => navigation.goBack()}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
-        </Focusable>
+        </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Calendar</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -310,9 +303,9 @@ const CalendarScreen = () => {
           <Text style={[styles.filterInfoText, { color: currentTheme.colors.text }]}>
             Showing episodes for {format(selectedDate, 'MMMM d, yyyy')}
           </Text>
-          <Focusable onPress={clearDateFilter} style={styles.clearFilterButton}>
+          <TouchableOpacity onPress={clearDateFilter} style={styles.clearFilterButton}>
             <MaterialIcons name="close" size={18} color={currentTheme.colors.text} />
-          </Focusable>
+          </TouchableOpacity>
         </View>
       )}
       
@@ -342,21 +335,14 @@ const CalendarScreen = () => {
           }
         />
       ) : selectedDate && filteredEpisodes.length === 0 ? (
-        <View style={styles.emptyFilterContainer}>
-          <MaterialIcons name="event-busy" size={48} color={currentTheme.colors.lightGray} />
-          <Text style={[styles.emptyFilterText, { color: currentTheme.colors.text }]}>
-            No episodes for {format(selectedDate, 'MMMM d, yyyy')}
-          </Text>
-          <Focusable 
-            style={[styles.clearFilterButtonLarge, { backgroundColor: currentTheme.colors.primary }]}
-            onPress={clearDateFilter}
-            hasTVPreferredFocus={Platform.isTV}
-          >
-            <Text style={[styles.clearFilterButtonText, { color: currentTheme.colors.text }]}>
-              Show All Episodes
-            </Text>
-          </Focusable>
-        </View>
+        <EmptyState
+          icon={{ name: 'event-busy', size: 48, library: 'MaterialIcons' }}
+          title={`No episodes for ${format(selectedDate, 'MMMM d, yyyy')}`}
+          primaryAction={{
+            label: 'Show All Episodes',
+            onPress: clearDateFilter,
+          }}
+        />
       ) : calendarData.length > 0 ? (
         <SectionList
           sections={calendarData}
@@ -379,15 +365,11 @@ const CalendarScreen = () => {
           }
         />
       ) : (
-        <View style={styles.emptyContainer}>
-          <MaterialIcons name="calendar-today" size={64} color={currentTheme.colors.lightGray} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.text }]}>
-            No upcoming episodes found
-          </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
-            Add series to your library to see their upcoming episodes here
-          </Text>
-        </View>
+        <EmptyState
+          icon={{ name: 'calendar-today', library: 'MaterialIcons' }}
+          title="No upcoming episodes found"
+          subtitle="Add series to your library to see their upcoming episodes here"
+        />
       )}
     </SafeAreaView>
   );
@@ -406,82 +388,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 10,
     fontSize: 16,
-    color: '#999',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  sectionHeader: {
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterInfoContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  filterInfoText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  clearFilterButton: {
-    padding: 8,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   episodeItem: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 12,
     borderBottomWidth: 1,
   },
   poster: {
-    width: 80,
-    height: 120,
-    borderRadius: 4,
-    marginRight: 12,
+    width: 120,
+    height: 68,
+    borderRadius: 8,
   },
   episodeDetails: {
     flex: 1,
+    marginLeft: 12,
     justifyContent: 'space-between',
   },
   seriesName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   episodeTitle: {
     fontSize: 14,
-    marginBottom: 4,
+    lineHeight: 20,
   },
   overview: {
     fontSize: 12,
-    marginBottom: 8,
+    marginTop: 4,
+    lineHeight: 16,
   },
   metadataContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 8,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   date: {
-    fontSize: 12,
+    fontSize: 14,
     marginLeft: 4,
   },
   ratingContainer: {
@@ -489,62 +448,77 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rating: {
-    fontSize: 12,
-    marginLeft: 4,
-    fontWeight: '600',
-  },
-  noEpisodesText: {
     fontSize: 14,
-    marginBottom: 8,
+    marginLeft: 4,
+    fontWeight: 'bold',
   },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  filterInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
     borderBottomWidth: 1,
   },
-  sectionTitle: {
+  filterInfoText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
+  clearFilterButton: {
+    padding: 8,
   },
   emptyFilterContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    padding: 20,
   },
   emptyFilterText: {
-    fontSize: 16,
-    marginTop: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
     textAlign: 'center',
   },
   clearFilterButtonLarge: {
     marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 6,
+    padding: 16,
+    borderRadius: 8,
   },
   clearFilterButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 12 : 12,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 12,
+  },
+  emptyLibraryContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  discoverButton: {
+    padding: 16,
+    borderRadius: 8,
+  },
+  discoverButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  noEpisodesText: {
     fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    marginBottom: 4,
   },
 });
 
-export default CalendarScreen;
+export default CalendarScreen; 
