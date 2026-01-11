@@ -1,6 +1,6 @@
 # Build Progress: Add Text Search to Library Screen
 
-## Current Status: Phase 1 Complete - Moving to Phase 2
+## Current Status: Phase 2 In Progress - Subtask 2.1 Complete
 
 ## Completed Subtasks
 
@@ -26,10 +26,16 @@
 - searchInput style (lines 1080-1084)
 - clearButton style (lines 1085-1087)
 
+### Phase 2: Implement Search Filtering Logic (1/3 Complete)
+
+#### 2.1 Add debounced search query state - COMPLETED
+- Added debouncedSearchQuery state (line 231)
+- Added useEffect with 300ms debounce timer (lines 347-356)
+- Committed as d53bff2d
+
 ## Pending Work
 
-### Phase 2: Implement Search Filtering Logic (0/3 Complete)
-- 2.1 Add debounced search query state
+### Phase 2: Implement Search Filtering Logic (1/3 In Progress)
 - 2.2 Update filteredItems to include text search
 - 2.3 Apply search to Trakt content
 
@@ -46,4 +52,4 @@
 The search UI is already in place but not connected to filtering logic. The filteredItems computation (line 346-350) does not yet incorporate searchQuery - this is the main work remaining.
 
 ## Last Updated
-2026-01-11
+2026-01-11 - Subtask 2.1 completed

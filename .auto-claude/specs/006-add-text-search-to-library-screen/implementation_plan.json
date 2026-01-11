@@ -98,12 +98,12 @@
           "subtask_id": "3.1",
           "title": "Add empty search results state",
           "description": "When search returns no results, show an appropriate empty state message like 'No items match your search' instead of the generic 'No movies yet' message.",
-          "status": "pending",
+          "status": "completed",
           "file_paths": [
             "src/screens/LibraryScreen.tsx"
           ],
           "estimated_lines": 25,
-          "notes": "Differentiate between empty library and empty search results. Include search query in the message for context."
+          "notes": "Added empty search results state for both local library and Trakt folder content. When search returns no results, shows 'No results found' with 'No items match {searchQuery}' message and a 'Clear search' button. Uses 'search-off' icon to visually distinguish from generic empty library state. Committed as 6e7e14a5."
         },
         {
           "subtask_id": "3.2",

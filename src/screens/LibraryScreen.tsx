@@ -20,6 +20,7 @@ import {
   Platform,
   ScrollView,
   BackHandler,
+  Keyboard,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -1052,6 +1053,7 @@ const LibraryScreen = () => {
                   onChangeText={setSearchQuery}
                   returnKeyType="search"
                   keyboardAppearance="dark"
+                  onSubmitEditing={() => Keyboard.dismiss()}
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity
