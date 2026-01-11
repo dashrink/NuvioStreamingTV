@@ -2,9 +2,9 @@
   "feature": "Extract HeroSection.tsx into smaller focused components",
   "description": "Refactor the 2563-line HeroSection.tsx component into smaller, focused sub-components following React's composition model and Single Responsibility Principle. The component currently handles animated header, action buttons, trailer player, progress bar, blur effects, gradient overlays, Trakt integration UI, and dynamic content rendering.",
   "created_at": "2026-01-09T21:16:48.444Z",
-  "updated_at": "2026-01-10T00:00:00.000Z",
+  "updated_at": "2026-01-11T14:58:42.293Z",
   "status": "in_progress",
-  "planStatus": "approved",
+  "planStatus": "in_progress",
   "workflow_type": "development",
   "services_involved": [
     "react-native",
@@ -76,9 +76,9 @@
         {
           "id": "2.3",
           "title": "Extract HeroTitleCard component",
-          "description": "Create components/HeroTitleCard.tsx - Logo/title display with three-level fallback (TMDB logo \u2192 addon logo \u2192 text) and smooth fade animations",
+          "description": "Create components/HeroTitleCard.tsx - Logo/title display with three-level fallback (TMDB logo → addon logo → text) and smooth fade animations",
           "status": "completed",
-          "notes": "Created HeroTitleCard.tsx component with three-level logo fallback (TMDB logo \u2192 addon logo \u2192 text). Features: smooth fade animations (300ms), grace period before text fallback to prevent flickering, stable logo URI management, responsive tablet/phone sizing using shared styles, accessibility support. Component uses useAnimatedStyle for opacity/scale animations, memo for performance, and proper error handling for logo load failures. Committed as 85c3e98.",
+          "notes": "Created HeroTitleCard.tsx component with three-level logo fallback (TMDB logo → addon logo → text). Features: smooth fade animations (300ms), grace period before text fallback to prevent flickering, stable logo URI management, responsive tablet/phone sizing using shared styles, accessibility support. Component uses useAnimatedStyle for opacity/scale animations, memo for performance, and proper error handling for logo load failures. Committed as 85c3e98.",
           "updated_at": "2026-01-10T01:14:34.480272+00:00"
         },
         {
@@ -187,7 +187,7 @@
           "title": "Create useStableLogo hook",
           "description": "Create hooks/useStableLogo.ts - Logo state management with fallback logic, error handling, and grace periods to prevent flickering",
           "status": "completed",
-          "notes": "Created hooks/useStableLogo.ts with complete logo state management. Features: three-level fallback (TMDB logo \u2192 addon logo \u2192 text), grace period before text fallback (TEXT_FALLBACK_DELAY: 1000ms) to prevent flickering, stable logo URI management to prevent layout jumps, error handling with automatic fallback progression, smooth fade animations via logoLoadOpacity SharedValue, fallbackLevel tracking for debugging/conditional rendering. Also added types to types.ts (UseStableLogoProps, UseStableLogoReturn). Committed as 3f962b4.",
+          "notes": "Created hooks/useStableLogo.ts with complete logo state management. Features: three-level fallback (TMDB logo → addon logo → text), grace period before text fallback (TEXT_FALLBACK_DELAY: 1000ms) to prevent flickering, stable logo URI management to prevent layout jumps, error handling with automatic fallback progression, smooth fade animations via logoLoadOpacity SharedValue, fallbackLevel tracking for debugging/conditional rendering. Also added types to types.ts (UseStableLogoProps, UseStableLogoReturn). Committed as 3f962b4.",
           "updated_at": "2026-01-10T06:10:31.422489+00:00"
         }
       ]
@@ -241,7 +241,7 @@
           "title": "Verify Metro bundler",
           "description": "Start Metro bundler to ensure all imports resolve correctly and no circular dependencies exist",
           "status": "completed",
-          "notes": "Manual import verification performed (Metro/npx not available in environment). Verified: all 18 files exist with correct exports, no circular dependencies, clean acyclic module structure (constants \u2192 styles \u2192 components/hooks \u2192 index), all external context imports verified (Theme, Trakt, Trailer, TrailerPlayer, useSettings).",
+          "notes": "Manual import verification performed (Metro/npx not available in environment). Verified: all 18 files exist with correct exports, no circular dependencies, clean acyclic module structure (constants → styles → components/hooks → index), all external context imports verified (Theme, Trakt, Trailer, TrailerPlayer, useSettings).",
           "updated_at": "2026-01-10T06:31:03.082640+00:00"
         },
         {
@@ -249,7 +249,7 @@
           "title": "Test trailer playback functionality",
           "description": "Verify trailer preloading, playback, mute/unmute, fullscreen, and scroll-based pause/resume work correctly",
           "status": "completed",
-          "notes": "Manual verification completed for all trailer functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Trailer Preloading \u2705**\n- TrailerService.getTrailerUrl() with TMDB ID support\n- Hidden preload container (opacity: 0) for silent background loading\n- State management via trailerPreloaded, alive flag for cleanup\n\n**2. Playback Control \u2705**\n- Global state via TrailerContext (isTrailerPlaying, setTrailerPlaying)\n- Auto-start when ready with scroll position check\n- Focus/unfocus handling via useFocusEffect\n- AppState changes pause on background\n\n**3. Mute/Unmute \u2705**\n- Settings persistence via useSettings (trailerMuted)\n- UI animations (actionButtonsOpacity, genreOpacity, titleCardTranslateY)\n- TrailerControls icon toggle (sound-mute/sound)\n\n**4. Fullscreen \u2705**\n- Imperative ref via React.useImperativeHandle\n- presentFullscreenPlayer/dismissFullscreenPlayer methods\n- Auto-dismiss on trailer end\n\n**5. Scroll-based Pause/Resume \u2705**\n- useDerivedValue worklet on UI thread\n- SCROLL_THRESHOLDS: pause at 70%, resume at 40% (hysteresis)\n- runOnJS bridge for state updates\n\nAll code paths verified correct. Committed as 2e7f0c60.",
+          "notes": "Manual verification completed for all trailer functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Trailer Preloading ✅**\n- TrailerService.getTrailerUrl() with TMDB ID support\n- Hidden preload container (opacity: 0) for silent background loading\n- State management via trailerPreloaded, alive flag for cleanup\n\n**2. Playback Control ✅**\n- Global state via TrailerContext (isTrailerPlaying, setTrailerPlaying)\n- Auto-start when ready with scroll position check\n- Focus/unfocus handling via useFocusEffect\n- AppState changes pause on background\n\n**3. Mute/Unmute ✅**\n- Settings persistence via useSettings (trailerMuted)\n- UI animations (actionButtonsOpacity, genreOpacity, titleCardTranslateY)\n- TrailerControls icon toggle (sound-mute/sound)\n\n**4. Fullscreen ✅**\n- Imperative ref via React.useImperativeHandle\n- presentFullscreenPlayer/dismissFullscreenPlayer methods\n- Auto-dismiss on trailer end\n\n**5. Scroll-based Pause/Resume ✅**\n- useDerivedValue worklet on UI thread\n- SCROLL_THRESHOLDS: pause at 70%, resume at 40% (hysteresis)\n- runOnJS bridge for state updates\n\nAll code paths verified correct. Committed as 2e7f0c60.",
           "updated_at": "2026-01-10T06:33:41.354188+00:00"
         },
         {
@@ -257,7 +257,7 @@
           "title": "Test watch progress and Trakt integration",
           "description": "Verify progress bar display, Trakt sync status, completion celebrations, and manual sync button work correctly",
           "status": "completed",
-          "notes": "Manual verification completed for all watch progress and Trakt integration functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Progress Bar Display \u2705**\n- Width dynamically set via `width: \\`${progressData.progressPercent}%\\``\n- Color changes: #00ff88 (completed), #E50914 (Trakt synced), theme.primary (default)\n- Progress pulse animation for ongoing content\n- Background track with subtle visibility\n\n**2. Trakt Sync Status \u2705**\n- Prioritizes Trakt progress when authenticated\n- Sync status text: \"Using Trakt progress\", \"Synced with Trakt\"\n- MaterialIcons: 'sync' (synced) or 'sync-problem' (not synced)\n- \"Watched on Trakt\" vs \"Watched\" based on source\n\n**3. Completion Celebrations \u2705**\n- celebrationScale: withRepeat(1.05, 200ms, 2x)\n- completionGlow: withRepeat(1, 1500ms, infinite)\n- Triggered at 85% threshold (COMPLETION_CELEBRATION)\n- Green glow overlay rgba(0,255,136,0.2)\n\n**4. Manual Sync Button \u2705**\n- isSyncing state with rotation animation (1000ms full rotation)\n- handleTraktSync: forceSyncTraktProgress() from TraktContext\n- Success/failure handling with refreshTrigger re-render\n- LinearGradient button with Trakt red colors\n- Accessibility support (role, label)\n\nAll code paths verified correct. Committed as part of 7.4 verification.",
+          "notes": "Manual verification completed for all watch progress and Trakt integration functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Progress Bar Display ✅**\n- Width dynamically set via `width: \\`${progressData.progressPercent}%\\``\n- Color changes: #00ff88 (completed), #E50914 (Trakt synced), theme.primary (default)\n- Progress pulse animation for ongoing content\n- Background track with subtle visibility\n\n**2. Trakt Sync Status ✅**\n- Prioritizes Trakt progress when authenticated\n- Sync status text: \"Using Trakt progress\", \"Synced with Trakt\"\n- MaterialIcons: 'sync' (synced) or 'sync-problem' (not synced)\n- \"Watched on Trakt\" vs \"Watched\" based on source\n\n**3. Completion Celebrations ✅**\n- celebrationScale: withRepeat(1.05, 200ms, 2x)\n- completionGlow: withRepeat(1, 1500ms, infinite)\n- Triggered at 85% threshold (COMPLETION_CELEBRATION)\n- Green glow overlay rgba(0,255,136,0.2)\n\n**4. Manual Sync Button ✅**\n- isSyncing state with rotation animation (1000ms full rotation)\n- handleTraktSync: forceSyncTraktProgress() from TraktContext\n- Success/failure handling with refreshTrigger re-render\n- LinearGradient button with Trakt red colors\n- Accessibility support (role, label)\n\nAll code paths verified correct. Committed as part of 7.4 verification.",
           "updated_at": "2026-01-10T06:36:13.777398+00:00"
         },
         {
@@ -265,7 +265,7 @@
           "title": "Test action buttons functionality",
           "description": "Verify Play, Save, Trakt Collection, and Ratings buttons work correctly with proper toast notifications",
           "status": "completed",
-          "notes": "Manual verification completed for all action buttons functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Play Button \u2705**\n- Text logic: \"Watch Again\" (movie watched), \"Resume\" (has progress), \"Play SxxEyy\" (series next episode), \"Completed\" (no next), \"Play\" (default)\n- Icon logic: 'replay' (movie watched), 'play-circle-outline' (resume), 'play-arrow' (default)\n- Style logic: dark background for watched movies, white background for others\n- Handler: handleShowStreams callback from parent\n\n**2. Save Button \u2705**\n- Combines local library + Trakt watchlist toggle\n- Toast notifications by auth state:\n  - showTraktSaved() / showTraktRemoved() when authenticated\n  - showSaved() / showRemoved() when not authenticated\n- Icon: 'bookmark' / 'bookmark-outline' based on library state\n- Color: red (#E74C3C) when authenticated + in watchlist\n\n**3. Trakt Collection Button \u2705**\n- Visibility: Only when isAuthenticated\n- Toast notifications:\n  - showSuccess('Added to Collection', ...) on add\n  - showInfo('Removed from Collection', ...) on remove\n- Icon: 'video-library' with blue (#3498DB) when in collection\n\n**4. Ratings Button \u2705**\n- Visibility: Only for series (type === 'series')\n- IMDb-to-TMDB ID conversion via TMDBService.findTMDBIdByIMDB()\n- Handles formats: 'tmdb:12345', 'tt1234567' (IMDb), numeric\n- Navigation: requestAnimationFrame for smooth transition\n- Error handling with logger.error\n\nAll toast methods verified in ToastContext.tsx: showSaved, showRemoved, showTraktSaved, showTraktRemoved, showSuccess, showInfo.",
+          "notes": "Manual verification completed for all action buttons functionality. Runtime testing not available (Metro restricted), performed comprehensive code review:\n\n**1. Play Button ✅**\n- Text logic: \"Watch Again\" (movie watched), \"Resume\" (has progress), \"Play SxxEyy\" (series next episode), \"Completed\" (no next), \"Play\" (default)\n- Icon logic: 'replay' (movie watched), 'play-circle-outline' (resume), 'play-arrow' (default)\n- Style logic: dark background for watched movies, white background for others\n- Handler: handleShowStreams callback from parent\n\n**2. Save Button ✅**\n- Combines local library + Trakt watchlist toggle\n- Toast notifications by auth state:\n  - showTraktSaved() / showTraktRemoved() when authenticated\n  - showSaved() / showRemoved() when not authenticated\n- Icon: 'bookmark' / 'bookmark-outline' based on library state\n- Color: red (#E74C3C) when authenticated + in watchlist\n\n**3. Trakt Collection Button ✅**\n- Visibility: Only when isAuthenticated\n- Toast notifications:\n  - showSuccess('Added to Collection', ...) on add\n  - showInfo('Removed from Collection', ...) on remove\n- Icon: 'video-library' with blue (#3498DB) when in collection\n\n**4. Ratings Button ✅**\n- Visibility: Only for series (type === 'series')\n- IMDb-to-TMDB ID conversion via TMDBService.findTMDBIdByIMDB()\n- Handles formats: 'tmdb:12345', 'tt1234567' (IMDb), numeric\n- Navigation: requestAnimationFrame for smooth transition\n- Error handling with logger.error\n\nAll toast methods verified in ToastContext.tsx: showSaved, showRemoved, showTraktSaved, showTraktRemoved, showSuccess, showInfo.",
           "updated_at": "2026-01-10T11:01:51.827263+00:00"
         },
         {
@@ -288,7 +288,7 @@
           "title": "Remove old inline components",
           "description": "Remove the original ActionButtons and WatchProgressDisplay that were defined inline in the old HeroSection.tsx",
           "status": "completed",
-          "notes": "Verified: Original inline ActionButtons and WatchProgressDisplay definitions have already been removed during the HeroSection refactoring in subtask 6.2. The current HeroSection.tsx (313 lines) imports these components from the extracted files: components/ActionButtons.tsx (241 lines) and components/WatchProgressDisplay.tsx (400 lines). No backup files or old inline definitions remain in the codebase. Cleanup was completed as part of the 88% size reduction (2563\u2192313 lines).",
+          "notes": "Verified: Original inline ActionButtons and WatchProgressDisplay definitions have already been removed during the HeroSection refactoring in subtask 6.2. The current HeroSection.tsx (313 lines) imports these components from the extracted files: components/ActionButtons.tsx (241 lines) and components/WatchProgressDisplay.tsx (400 lines). No backup files or old inline definitions remain in the codebase. Cleanup was completed as part of the 88% size reduction (2563→313 lines).",
           "updated_at": "2026-01-10T11:07:03.982681+00:00"
         },
         {
@@ -352,5 +352,6 @@
     "issues": "",
     "tests_passed": ""
   },
-  "last_updated": "2026-01-10T11:07:03.982700+00:00"
+  "last_updated": "2026-01-10T11:07:03.982700+00:00",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-11T14:58:42.293Z"
 }
