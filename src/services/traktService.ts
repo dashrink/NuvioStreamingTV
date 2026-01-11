@@ -2023,6 +2023,35 @@ export class TraktService {
 
   /**
    * Process the request queue with proper rate limiting
+   *
+   * This method is the heart of the rate limiting system. It processes queued API requests
+   * sequentially with a guaranteed MIN_API_INTERVAL (500ms) delay between each request.
+   *
+   * ## How It Works
+   *
+   * 1. Check if already processing or queue is empty - if so, exit early
+   * 2. Set isProcessingQueue flag to prevent concurrent processing
+   * 3. While queue has requests:
+   *    a. Shift next request from queue
+   *    b. Execute the request function
+   *    c. Wait MIN_API_INTERVAL before processing next request
+   * 4. Clear isProcessingQueue flag when done
+   *
+   * ## Rate Limiting Strategy
+   *
+   * - **Sequential Processing**: Only one request runs at a time
+   * - **Inter-request Delay**: 500ms guaranteed gap between requests
+   * - **Error Isolation**: Failed requests don't block queue processing
+   * - **Non-blocking**: Queue continues even if individual requests fail
+   *
+   * ## Why This Pattern
+   *
+   * Trakt API has rate limits. By queuing all requests and processing them sequentially
+   * with delays, we prevent 429 (Too Many Requests) errors from burst operations like
+   * rapid UI interactions or batch syncs.
+   *
+   * @private
+   * @returns Promise<void> - Resolves when queue is fully processed
    */
   private async processQueue(): Promise<void> {
     if (this.isProcessingQueue || this.requestQueue.length === 0) {
@@ -2052,6 +2081,48 @@ export class TraktService {
 
   /**
    * Add request to queue for rate-limited processing
+   *
+   * This method wraps an API request function and adds it to the processing queue,
+   * ensuring it executes with proper rate limiting. Returns a Promise that resolves
+   * with the request result or rejects with any error.
+   *
+   * ## How It Works
+   *
+   * 1. Wrap the request function in a Promise
+   * 2. Add a wrapper function to requestQueue that:
+   *    - Executes the request function
+   *    - Resolves/rejects the outer Promise with the result
+   * 3. Trigger processQueue() to start processing if not already running
+   * 4. Return the Promise to the caller
+   *
+   * ## Usage Pattern
+   *
+   * All scrobble methods use this pattern:
+   * ```typescript
+   * const result = await this.queueRequest(async () => {
+   *   return await this.startWatching(contentData, progress);
+   * });
+   * ```
+   *
+   * ## Why Queue Requests
+   *
+   * - **Rate Limit Compliance**: Prevents 429 errors from burst requests
+   * - **Predictable Timing**: Guarantees MIN_API_INTERVAL between calls
+   * - **User Experience**: Multiple rapid UI actions don't cause API failures
+   * - **Scrobble Integrity**: Ensures start/progress/stop events reach API in order
+   *
+   * @private
+   * @template T - Return type of the request function
+   * @param requestFn - Async function that makes the API request
+   * @returns Promise<T> - Resolves with request result or rejects with error
+   *
+   * @example
+   * ```typescript
+   * // Queue a scrobble start request
+   * const response = await this.queueRequest(async () => {
+   *   return await this.startWatching(contentData, 5.0);
+   * });
+   * ```
    */
   private queueRequest<T>(requestFn: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -2071,6 +2142,51 @@ export class TraktService {
 
   /**
    * Generate a unique key for content being watched
+   *
+   * Creates a consistent string identifier for tracking which content is currently being
+   * watched or has been recently scrobbled. Used throughout the service for deduplication
+   * and session tracking.
+   *
+   * ## Key Format
+   *
+   * **Movies**: `movie:tt1234567`
+   * **Episodes**: `episode:tt0903747:S01E01`
+   *
+   * ## Why This Matters
+   *
+   * These keys are used in several critical data structures:
+   * - `currentlyWatching` Set - Prevents duplicate "start watching" calls
+   * - `scrobbledItems` Set - Prevents re-scrobbling completed content (46-min window)
+   * - `lastSyncTimes` Map - Tracks last progress update time for debouncing
+   * - `lastStopCalls` Map - Prevents duplicate stop/scrobble calls (1-second window)
+   *
+   * ## Episode vs Movie Keys
+   *
+   * - **Movies**: Use content IMDb ID directly
+   * - **Episodes**: Use show IMDb ID + season/episode numbers
+   *   - Example: "Breaking Bad" S01E01 = `episode:tt0903747:S01E01`
+   *   - This allows tracking individual episodes while preventing duplicate scrobbles
+   *
+   * @private
+   * @param contentData - Content metadata (type, IMDb ID, season/episode)
+   * @returns Unique string key for this content
+   *
+   * @example
+   * ```typescript
+   * // Movie key
+   * getWatchingKey({ type: 'movie', imdbId: 'tt0133093', title: 'The Matrix' })
+   * // Returns: "movie:tt0133093"
+   *
+   * // Episode key
+   * getWatchingKey({
+   *   type: 'episode',
+   *   showImdbId: 'tt0903747',
+   *   season: 1,
+   *   episode: 1,
+   *   title: 'Pilot'
+   * })
+   * // Returns: "episode:tt0903747:S01E01"
+   * ```
    */
   private getWatchingKey(contentData: TraktContentData): string {
     if (contentData.type === 'movie') {
@@ -2081,7 +2197,96 @@ export class TraktService {
   }
 
   /**
-   * Start watching content (use when playback begins)
+   * Start watching content (scrobble start)
+   *
+   * Notifies Trakt that the user has started watching content. This is the first step in
+   * the scrobbling flow and should be called when playback begins.
+   *
+   * ## Scrobble Flow
+   *
+   * ```
+   * 1. scrobbleStart(content, 5%)     ← User presses play
+   * 2. scrobblePause(content, 25%)    ← Progress updates every few seconds
+   * 3. scrobblePause(content, 50%)    ← Continues updating
+   * 4. scrobbleStop(content, 85%)     ← User finishes watching (≥80% = scrobbled)
+   * ```
+   *
+   * ## Duplicate Prevention
+   *
+   * Multiple safeguards prevent duplicate "start" calls:
+   *
+   * 1. **Recent Scrobble Check**: If content was scrobbled in last 46 minutes, skip
+   * 2. **Recent Stop Check**: If content was stopped in last 30 seconds, skip
+   * 3. **Currently Watching Check**: If content is already in watching session, skip
+   *
+   * These checks prevent issues from:
+   * - Component remounts
+   * - Navigation causing re-initialization
+   * - Rapid start/stop/start sequences
+   *
+   * ## Rate Limiting
+   *
+   * Request is queued via `queueRequest()` which ensures:
+   * - Sequential processing with other API calls
+   * - 500ms minimum interval between requests
+   * - Protection against 429 (Too Many Requests) errors
+   *
+   * ## Data Flow
+   *
+   * ```
+   * scrobbleStart()
+   *   ↓
+   * Check: recently scrobbled? → Yes: return success (skip)
+   *   ↓ No
+   * Check: recently stopped? → Yes: return success (skip)
+   *   ↓ No
+   * Check: already watching? → Yes: return success (skip)
+   *   ↓ No
+   * queueRequest(startWatching)
+   *   ↓
+   * POST /scrobble/start
+   *   ↓
+   * Add to currentlyWatching Set
+   *   ↓
+   * Return success
+   * ```
+   *
+   * ## When to Call
+   *
+   * - User presses play button
+   * - Playback resumes after app was in background
+   * - User seeks to beginning of unwatched content
+   *
+   * ## When NOT to Call
+   *
+   * - During rapid seeks (wait for playback to stabilize)
+   * - If already called for this session
+   * - If content was just completed (≥80% progress)
+   *
+   * @param contentData - Content metadata (type, IMDb ID, title, season/episode)
+   * @param progress - Playback progress percentage (0-100)
+   * @returns Promise<boolean> - true if start was recorded (or safely skipped), false on error
+   *
+   * @example
+   * ```typescript
+   * // Start watching a movie
+   * const success = await traktService.scrobbleStart({
+   *   type: 'movie',
+   *   imdbId: 'tt0133093',
+   *   title: 'The Matrix',
+   *   year: 1999
+   * }, 5.0);
+   *
+   * // Start watching an episode
+   * const success = await traktService.scrobbleStart({
+   *   type: 'episode',
+   *   showImdbId: 'tt0903747',
+   *   season: 1,
+   *   episode: 1,
+   *   title: 'Pilot',
+   *   showTitle: 'Breaking Bad'
+   * }, 2.5);
+   * ```
    */
   public async scrobbleStart(contentData: TraktContentData, progress: number): Promise<boolean> {
     try {
@@ -2131,7 +2336,97 @@ export class TraktService {
   }
 
   /**
-   * Update progress while watching (use for periodic progress updates)
+   * Update watch progress (progress updates during playback)
+   *
+   * Sends progress updates to Trakt while content is being watched. Should be called
+   * periodically (every 5-10 seconds) during playback to keep Trakt.tv in sync.
+   *
+   * ## When to Use
+   *
+   * This method is for **progress updates during active playback**, not for pausing.
+   * Despite the name "scrobblePause", it's used for:
+   * - Periodic progress updates while video plays
+   * - Saving current position when user actually pauses
+   * - Background sync during playback
+   *
+   * ## Rate Limiting & Debouncing
+   *
+   * To prevent API spam from rapid progress updates:
+   *
+   * - **100ms Minimum Interval**: Calls closer than 100ms apart are skipped (returns success)
+   * - **Force Parameter**: Set `force: true` to bypass debounce check
+   * - **Queue Processing**: Uses `queueRequest()` for sequential processing
+   *
+   * Why 100ms? Video players often fire progress events very rapidly (10-60 FPS).
+   * The 100ms debounce aggregates these into manageable API calls while feeling instant.
+   *
+   * ## Progress Tracking
+   *
+   * Each call updates `lastSyncTimes` Map with current timestamp for this content.
+   * This enables:
+   * - Debounce checking (skip if called too soon)
+   * - Progress tracking for analytics
+   * - Cleanup of stale sessions (24-hour window)
+   *
+   * ## API Endpoint
+   *
+   * Calls `pauseWatching()` which POSTs to `/scrobble/stop` with progress <80%.
+   * Trakt API doesn't have a separate "progress update" endpoint - `/scrobble/stop`
+   * with progress <80% is treated as a progress checkpoint, not a completion.
+   *
+   * ## Data Flow
+   *
+   * ```
+   * scrobblePause()
+   *   ↓
+   * Check: authenticated? → No: return false
+   *   ↓ Yes
+   * Check: last sync <100ms ago AND !force? → Yes: return true (skip)
+   *   ↓ No
+   * Update lastSyncTimes Map
+   *   ↓
+   * queueRequest(pauseWatching)
+   *   ↓
+   * POST /scrobble/stop (progress <80%)
+   *   ↓
+   * Trakt saves progress checkpoint
+   *   ↓
+   * Return success
+   * ```
+   *
+   * ## Error Handling
+   *
+   * - **429 Rate Limit**: Caught and handled gracefully (returns success to avoid error spam)
+   * - **Other Errors**: Logged but don't crash the playback experience
+   * - **Network Failure**: Returns false but doesn't stop playback
+   *
+   * ## Typical Usage Pattern
+   *
+   * ```typescript
+   * // In video player component
+   * useEffect(() => {
+   *   const interval = setInterval(() => {
+   *     const progressPercent = (currentTime / duration) * 100;
+   *     traktService.scrobblePause(contentData, progressPercent);
+   *   }, 5000); // Update every 5 seconds
+   *
+   *   return () => clearInterval(interval);
+   * }, [currentTime, duration]);
+   * ```
+   *
+   * @param contentData - Content metadata (type, IMDb ID, title, season/episode)
+   * @param progress - Current playback progress percentage (0-100)
+   * @param force - If true, bypass debounce check and send immediately (default: false)
+   * @returns Promise<boolean> - true if progress updated (or safely skipped), false on error
+   *
+   * @example
+   * ```typescript
+   * // Periodic progress update during playback
+   * await traktService.scrobblePause(contentData, 35.5); // 35.5% watched
+   *
+   * // Force immediate update (e.g., user manually paused)
+   * await traktService.scrobblePause(contentData, 42.0, true);
+   * ```
    */
   public async scrobblePause(contentData: TraktContentData, progress: number, force: boolean = false): Promise<boolean> {
     try {
@@ -2174,7 +2469,109 @@ export class TraktService {
   }
 
   /**
-   * Stop watching content (use when playback ends or stops)
+   * Stop watching content (marks as watched if ≥80% completion)
+   *
+   * Finalizes a watching session by sending a stop/scrobble request to Trakt. This is the
+   * last step in the scrobble flow and should be called when playback ends or user stops.
+   *
+   * ## Completion Threshold Logic
+   *
+   * The method automatically decides whether to "pause" or "scrobble" based on progress:
+   *
+   * - **Progress < 80%**: Calls `pauseWatching()` - saves position but doesn't mark as watched
+   * - **Progress ≥ 80%**: Calls `stopWatching()` - marks content as fully watched (scrobbled)
+   *
+   * The 80% threshold is configurable via `completionThreshold` property and follows
+   * Trakt's standard convention (most users finish credits before hitting 100%).
+   *
+   * ## Duplicate Prevention
+   *
+   * Multiple safeguards prevent duplicate scrobbles:
+   *
+   * 1. **1-Second Debounce**: If called <1s ago for same content, skip (returns success)
+   * 2. **46-Minute Scrobble Window**: If content scrobbled at ≥80%, add to `scrobbledItems`
+   *    Set with 46-minute expiry to prevent re-scrobbling on app restart/navigation
+   * 3. **Timestamp Tracking**: `lastStopCalls` Map records when each content was last stopped
+   *
+   * Why 46 minutes? Trakt API has a ~45-minute window where duplicate scrobbles are
+   * detected and rejected (409 Conflict). We use 46 minutes to safely cover this.
+   *
+   * ## State Cleanup
+   *
+   * After successful stop:
+   * - Removes content from `currentlyWatching` Set
+   * - Adds to `scrobbledItems` Set if progress ≥80% (prevents restarts)
+   * - Records timestamp in `scrobbledTimestamps` Map
+   *
+   * ## Rate Limiting
+   *
+   * Request is queued via `queueRequest()` which ensures:
+   * - Sequential processing with other API calls
+   * - 500ms minimum interval between requests
+   * - Protection against 429 errors from rapid stop calls
+   *
+   * ## Error Handling
+   *
+   * - **429 Rate Limit**: Caught and handled gracefully (returns success)
+   * - **Failed Request**: Removes from `lastStopCalls` to allow retry
+   * - **Network Failure**: Logged but doesn't crash app
+   *
+   * ## Data Flow
+   *
+   * ```
+   * scrobbleStop()
+   *   ↓
+   * Check: authenticated? → No: return false
+   *   ↓ Yes
+   * Check: called <1s ago for this content? → Yes: return true (skip)
+   *   ↓ No
+   * Record stop timestamp
+   *   ↓
+   * Decide: progress ≥80%? → Yes: stopWatching() | No: pauseWatching()
+   *   ↓
+   * queueRequest(stopWatching or pauseWatching)
+   *   ↓
+   * POST /scrobble/stop
+   *   ↓
+   * Remove from currentlyWatching
+   *   ↓
+   * If ≥80%: Add to scrobbledItems (46-min expiry)
+   *   ↓
+   * Return success
+   * ```
+   *
+   * ## When to Call
+   *
+   * - User clicks stop/back button during playback
+   * - Video reaches end (progress ~100%)
+   * - App goes to background with video paused
+   * - User navigates away from video player
+   * - Playback error occurs
+   *
+   * ## When NOT to Call
+   *
+   * - During brief pauses (use scrobblePause instead)
+   * - During seeks (unless user is truly stopping playback)
+   * - If playback will resume in <5 seconds
+   *
+   * @param contentData - Content metadata (type, IMDb ID, title, season/episode)
+   * @param progress - Final playback progress percentage (0-100)
+   * @returns Promise<boolean> - true if stop was recorded successfully, false on error
+   *
+   * @example
+   * ```typescript
+   * // User stops watching early (< 80%)
+   * await traktService.scrobbleStop(contentData, 45.0);
+   * // → Saves progress at 45%, doesn't mark as watched
+   *
+   * // User finishes watching (≥ 80%)
+   * await traktService.scrobbleStop(contentData, 92.0);
+   * // → Marks as fully watched (scrobbled), adds to watch history
+   *
+   * // Movie completed
+   * await traktService.scrobbleStop(contentData, 100.0);
+   * // → Marks as watched, prevents duplicate scrobbles for 46 minutes
+   * ```
    */
   public async scrobbleStop(contentData: TraktContentData, progress: number): Promise<boolean> {
     try {
