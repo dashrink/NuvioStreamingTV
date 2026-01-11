@@ -48,6 +48,8 @@ import Animated, {
   withSpring,
   interpolateColor,
   interpolate,
+  cancelAnimation,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useLongPress } from '../../hooks/useLongPress';
 
@@ -108,6 +110,18 @@ export interface NextFocusConfig {
 }
 
 /**
+ * Configuration for rapid input protection
+ */
+export interface RapidInputConfig {
+  /** Whether to enable rapid input protection (default: true) */
+  enabled?: boolean;
+  /** Minimum interval between focus changes in ms (default: 50) */
+  minFocusIntervalMs?: number;
+  /** Whether to cancel running animations on new focus events (default: true) */
+  cancelAnimationsOnRapidInput?: boolean;
+}
+
+/**
  * Props for the Focusable component
  */
 export interface FocusableProps {
@@ -145,6 +159,8 @@ export interface FocusableProps {
   accessibilityHint?: string;
   /** Unique focus ID for spatial navigation */
   focusId?: string;
+  /** Rapid input protection configuration */
+  rapidInputConfig?: RapidInputConfig;
 }
 
 /**
@@ -193,6 +209,13 @@ const DEFAULT_TV_PARALLAX: TVParallaxPropertiesConfig = {
   magnification: 1.0,
   pressMagnification: 1.02,
   pressDuration: 0.3,
+};
+
+/** Default rapid input protection configuration */
+const DEFAULT_RAPID_INPUT_CONFIG: Required<RapidInputConfig> = {
+  enabled: true,
+  minFocusIntervalMs: 50,
+  cancelAnimationsOnRapidInput: true,
 };
 
 // =============================================================================
@@ -269,6 +292,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       testID,
       accessibilityLabel,
       accessibilityHint,
+      rapidInputConfig = {},
     },
     ref
   ) => {
@@ -278,9 +302,19 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       ...animationConfig,
     };
 
+    // Merge rapid input protection config
+    const rapidConfig: Required<RapidInputConfig> = {
+      ...DEFAULT_RAPID_INPUT_CONFIG,
+      ...rapidInputConfig,
+    };
+
     // Refs
     const viewRef = useRef<any>(null);
     const isFocusedRef = useRef(false);
+
+    // Rapid input protection refs
+    const lastFocusChangeTimeRef = useRef<number>(0);
+    const pendingFocusCallbackRef = useRef<(() => void) | null>(null);
 
     // Shared values for animations
     const focusProgress = useSharedValue(0);
@@ -380,22 +414,63 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
     // =============================================================================
 
     /**
-     * Handle focus event
+     * Handle focus event with rapid input protection
      */
     const handleFocus = useCallback(() => {
+      const now = Date.now();
+
+      // Check if rapid input protection should throttle this event
+      if (rapidConfig.enabled) {
+        const timeSinceLastChange = now - lastFocusChangeTimeRef.current;
+
+        if (timeSinceLastChange < rapidConfig.minFocusIntervalMs) {
+          // Too fast - queue the focus callback for later
+          pendingFocusCallbackRef.current = () => {
+            isFocusedRef.current = true;
+            onFocus?.();
+          };
+          // But still update the animation immediately for visual feedback
+        }
+
+        lastFocusChangeTimeRef.current = now;
+
+        // Cancel any running animations to prevent glitches
+        if (rapidConfig.cancelAnimationsOnRapidInput) {
+          cancelAnimation(focusProgress);
+        }
+      }
+
       isFocusedRef.current = true;
       focusProgress.value = withSpring(1, SPRING_CONFIG);
+
+      // Clear any pending focus callback and call the current one
+      pendingFocusCallbackRef.current = null;
       onFocus?.();
-    }, [focusProgress, onFocus]);
+    }, [focusProgress, onFocus, rapidConfig]);
 
     /**
-     * Handle blur event
+     * Handle blur event with rapid input protection
      */
     const handleBlur = useCallback(() => {
+      const now = Date.now();
+
+      // Check if rapid input protection should throttle this event
+      if (rapidConfig.enabled) {
+        lastFocusChangeTimeRef.current = now;
+
+        // Cancel any running animations to prevent glitches
+        if (rapidConfig.cancelAnimationsOnRapidInput) {
+          cancelAnimation(focusProgress);
+        }
+      }
+
       isFocusedRef.current = false;
       focusProgress.value = withSpring(0, SPRING_CONFIG);
+
+      // Clear any pending focus callback
+      pendingFocusCallbackRef.current = null;
       onBlur?.();
-    }, [focusProgress, onBlur]);
+    }, [focusProgress, onBlur, rapidConfig]);
 
     /**
      * Handle press in (for press feedback)
@@ -523,4 +598,10 @@ const styles = StyleSheet.create({
 
 export default Focusable;
 
-export type { FocusableProps, FocusableRef, FocusAnimationConfig, TVParallaxPropertiesConfig };
+export type {
+  FocusableProps,
+  FocusableRef,
+  FocusAnimationConfig,
+  TVParallaxPropertiesConfig,
+  RapidInputConfig,
+};

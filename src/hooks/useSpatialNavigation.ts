@@ -42,7 +42,7 @@
  * ```
  */
 
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { findNodeHandle, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
@@ -110,6 +110,10 @@ export interface UseSpatialNavigationOptions {
   defaultFocusId?: string;
   /** Whether the hook is enabled (default: true on TV) */
   enabled?: boolean;
+  /** Enable focus change debouncing for rapid input protection (default: true) */
+  enableRapidInputProtection?: boolean;
+  /** Debounce interval for focus saves (default: 16ms = 1 frame) */
+  focusSaveDebounceMs?: number;
 }
 
 /**
@@ -159,6 +163,8 @@ export interface UseSpatialNavigationReturn {
   screenName: string;
   /** Map of all registered refs */
   refs: RefMap;
+  /** Whether a focus change is currently pending (debounced) */
+  isPendingFocusChange: boolean;
 }
 
 // =============================================================================
@@ -167,6 +173,12 @@ export interface UseSpatialNavigationReturn {
 
 /** Delay before focus restoration to allow layout to complete */
 const FOCUS_RESTORE_DELAY_MS = 50;
+
+/** Default debounce interval for focus saves (1 frame at 60fps) */
+const DEFAULT_FOCUS_SAVE_DEBOUNCE_MS = 16;
+
+/** Minimum interval between focus element calls to prevent rapid jumping */
+const MIN_FOCUS_ELEMENT_INTERVAL_MS = 50;
 
 // =============================================================================
 // Hook Implementation
@@ -187,6 +199,8 @@ export function useSpatialNavigation(
     autoRestoreFocus = true,
     defaultFocusId,
     enabled = Platform.isTV,
+    enableRapidInputProtection = true,
+    focusSaveDebounceMs = DEFAULT_FOCUS_SAVE_DEBOUNCE_MS,
   } = options;
 
   // Get TV navigation context (optional - will work without it)
@@ -206,6 +220,12 @@ export function useSpatialNavigation(
 
   // Local focus memory (fallback if no context)
   const localFocusMemoryRef = useRef<Record<string, string>>({});
+
+  // Rapid input protection state
+  const [isPendingFocusChange, setIsPendingFocusChange] = useState(false);
+  const focusSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingFocusSaveRef = useRef<string | null>(null);
+  const lastFocusElementTimeRef = useRef<number>(0);
 
   // =============================================================================
   // Ref Management
@@ -300,12 +320,10 @@ export function useSpatialNavigation(
   // =============================================================================
 
   /**
-   * Save the current focus ID for this screen
+   * Internal function to actually save focus (called after debounce)
    */
-  const saveFocus = useCallback(
+  const saveFocusInternal = useCallback(
     (focusId: string) => {
-      if (!focusId) return;
-
       // Update local tracking
       localFocusIdRef.current = focusId;
 
@@ -317,8 +335,47 @@ export function useSpatialNavigation(
         // Fallback to local storage
         localFocusMemoryRef.current[screenName] = focusId;
       }
+
+      setIsPendingFocusChange(false);
+      pendingFocusSaveRef.current = null;
     },
     [screenName, tvNavigation]
+  );
+
+  /**
+   * Save the current focus ID for this screen (with optional debouncing for rapid input protection)
+   */
+  const saveFocus = useCallback(
+    (focusId: string) => {
+      if (!focusId) return;
+
+      // Store the pending focus ID
+      pendingFocusSaveRef.current = focusId;
+
+      // If rapid input protection is disabled, save immediately
+      if (!enableRapidInputProtection || focusSaveDebounceMs <= 0) {
+        saveFocusInternal(focusId);
+        return;
+      }
+
+      // Set pending state
+      setIsPendingFocusChange(true);
+
+      // Clear any existing debounce timer
+      if (focusSaveTimerRef.current) {
+        clearTimeout(focusSaveTimerRef.current);
+      }
+
+      // Debounce the focus save
+      focusSaveTimerRef.current = setTimeout(() => {
+        const pendingFocusId = pendingFocusSaveRef.current;
+        if (pendingFocusId) {
+          saveFocusInternal(pendingFocusId);
+        }
+        focusSaveTimerRef.current = null;
+      }, focusSaveDebounceMs);
+    },
+    [enableRapidInputProtection, focusSaveDebounceMs, saveFocusInternal]
   );
 
   /**
@@ -445,10 +502,22 @@ export function useSpatialNavigation(
   /**
    * Programmatically focus an element by ID
    * Returns true if focus was successfully set
+   * Includes throttling to prevent rapid focus jumping
    */
   const focusElement = useCallback(
     (focusId: string): boolean => {
       if (!enabled) return false;
+
+      // Throttle rapid focus element calls to prevent focus jumping
+      if (enableRapidInputProtection) {
+        const now = Date.now();
+        const timeSinceLastFocus = now - lastFocusElementTimeRef.current;
+        if (timeSinceLastFocus < MIN_FOCUS_ELEMENT_INTERVAL_MS) {
+          // Too fast - skip this focus attempt to prevent jumping
+          return false;
+        }
+        lastFocusElementTimeRef.current = now;
+      }
 
       const ref = refsRef.current[focusId];
       if (!ref || !ref.current) return false;
@@ -471,7 +540,7 @@ export function useSpatialNavigation(
 
       return false;
     },
-    [enabled, saveFocus]
+    [enabled, enableRapidInputProtection, saveFocus]
   );
 
   // =============================================================================
@@ -508,6 +577,12 @@ export function useSpatialNavigation(
       refsRef.current = {};
       nodeHandlesRef.current = {};
       nextFocusMapRef.current = {};
+
+      // Clear any pending focus save timer
+      if (focusSaveTimerRef.current) {
+        clearTimeout(focusSaveTimerRef.current);
+        focusSaveTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -551,6 +626,7 @@ export function useSpatialNavigation(
     isTV: Platform.isTV === true,
     screenName,
     refs: refsRef.current,
+    isPendingFocusChange,
   };
 }
 

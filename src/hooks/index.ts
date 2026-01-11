@@ -9,8 +9,27 @@
  */
 
 // TV Navigation Hooks
-export { useTVEventHandler, useIsTV, useTVEventHandlerAvailable } from './useTVEventHandler';
-export type { TVEvent, TVEventCallback, UseTVEventHandlerOptions } from './useTVEventHandler';
+export {
+  useTVEventHandler,
+  useIsTV,
+  useTVEventHandlerAvailable,
+  useRapidInputProtectedTVEventHandler,
+  useThrottledCallback,
+  useFocusChangeProtection,
+  isNavigationEvent,
+  isSelectEvent,
+  isLongSelectEvent,
+  isMenuEvent,
+  isPlayPauseEvent,
+  isSwipeEvent,
+} from './useTVEventHandler';
+export type {
+  TVEventType,
+  TVRemoteEvent,
+  TVEventCallback,
+  UseTVEventHandlerOptions,
+  RapidInputProtectionOptions,
+} from './useTVEventHandler';
 
 export {
   useSpatialNavigation,
