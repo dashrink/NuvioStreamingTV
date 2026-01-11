@@ -4,7 +4,7 @@
   "description": "Complete the Trakt.tv integration for Nuvio Streaming TV by wiring up the existing service layer to the UI, implementing bidirectional sync for watch progress, ratings, and collections, and adding visual status indicators throughout the application.",
   "estimated_hours": 8,
   "created_at": "2026-01-09T21:14:47.741Z",
-  "updated_at": "2026-01-10T00:00:00Z",
+  "updated_at": "2026-01-11T15:04:01.588Z",
   "status": "in_progress",
   "phases": [
     {
@@ -202,7 +202,7 @@
           "file": "src/screens/MetadataScreen.tsx",
           "status": "completed",
           "priority": "medium",
-          "notes": "Added imdbId prop to HeroSection in MetadataScreen.tsx. This enables the complete rating prop hierarchy: MetadataScreen passes imdbId to HeroSection \u2192 ActionButtons \u2192 TraktRatingComponent. The TraktRatingComponent uses useTraktContext() to access getUserRating, addRating, and removeRating methods internally. The prop chain is now complete for rating functionality.",
+          "notes": "Added imdbId prop to HeroSection in MetadataScreen.tsx. This enables the complete rating prop hierarchy: MetadataScreen passes imdbId to HeroSection → ActionButtons → TraktRatingComponent. The TraktRatingComponent uses useTraktContext() to access getUserRating, addRating, and removeRating methods internally. The prop chain is now complete for rating functionality.",
           "updated_at": "2026-01-10T11:04:11.322887+00:00"
         }
       ]
@@ -268,7 +268,7 @@
           "file": "",
           "status": "completed",
           "priority": "high",
-          "notes": "Verified collection add/remove functionality and bidirectional sync through comprehensive code review. Tested 13 cases covering: add/remove via ContentItem menu and HeroSection button, TV series type conversion ('series' to 'show'), bidirectional sync (Trakt \u2192 Nuvio via loadAllCollections, Nuvio \u2192 Trakt via direct API), collection badge display, IMDb prefix handling, authentication guards, error handling, optimistic UI updates, and sync timing (<30s). Created test-verification-7.3-collections.md documenting all test cases. Committed as 41365e86.",
+          "notes": "Verified collection add/remove functionality and bidirectional sync through comprehensive code review. Tested 13 cases covering: add/remove via ContentItem menu and HeroSection button, TV series type conversion ('series' to 'show'), bidirectional sync (Trakt → Nuvio via loadAllCollections, Nuvio → Trakt via direct API), collection badge display, IMDb prefix handling, authentication guards, error handling, optimistic UI updates, and sync timing (<30s). Created test-verification-7.3-collections.md documenting all test cases. Committed as 41365e86.",
           "updated_at": "2026-01-10T11:19:52.152080+00:00"
         },
         {
@@ -328,9 +328,9 @@
       "IMDb ID validation tests"
     ],
     "integration_tests": [
-      "Watchlist sync flow (Nuvio \u2194 Trakt)",
-      "Rating sync flow (Nuvio \u2194 Trakt)",
-      "Collection sync flow (Nuvio \u2194 Trakt)"
+      "Watchlist sync flow (Nuvio ↔ Trakt)",
+      "Rating sync flow (Nuvio ↔ Trakt)",
+      "Collection sync flow (Nuvio ↔ Trakt)"
     ],
     "e2e_tests": [
       "New user watchlist flow",
@@ -376,5 +376,7 @@
       "Progress sync accuracy at 80% threshold"
     ]
   },
-  "last_updated": "2026-01-10T11:27:23.334974+00:00"
+  "last_updated": "2026-01-10T11:27:23.334974+00:00",
+  "planStatus": "in_progress",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-11T15:04:01.588Z"
 }

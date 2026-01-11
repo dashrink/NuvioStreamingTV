@@ -3,7 +3,7 @@
   "spec_id": "002-enhanced-tv-navigation-system",
   "description": "Production-grade, remote-first navigation system for Apple TV and Android TV platforms with D-pad support, focus management, long-press interactions, and spatial navigation with memory.",
   "created_at": "2026-01-09T21:14:50.914Z",
-  "updated_at": "2026-01-11T14:53:55.803Z",
+  "updated_at": "2026-01-11T15:13:01.213Z",
   "status": "in_progress",
   "planStatus": "in_progress",
   "total_subtasks": 35,
@@ -603,7 +603,7 @@
           "id": "7.3",
           "title": "Create useLongPress tests",
           "description": "Unit tests for long-press detection on both platforms",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "__tests__/hooks/useLongPress.test.ts"
           ],
@@ -611,13 +611,15 @@
             "Distinguishes short press from long press",
             "Platform-specific behavior verified",
             "Timer cleanup verified"
-          ]
+          ],
+          "notes": "Created comprehensive unit tests for useLongPress hook with 55 passing tests covering:\n\n1. **Short vs Long Press Detection**: Distinguishes between short press (<300ms) and long press (>=300ms) with configurable threshold\n2. **Platform-Specific Behavior**: \n   - Apple TV: Timer-based detection (300ms threshold)\n   - Android TV: Native longSelect event handling\n3. **Timer Cleanup**: Proper cleanup on unmount, press out, and reset\n4. **Animation-Aware Queuing**: Actions queued during animations are executed after completion with duplicate prevention\n5. **State Management**: Tests for isPressed, isLongPressed, isActionQueued states\n6. **Focus State Handling**: TV events only processed when element is focused\n7. **Lifecycle Callbacks**: onPressStart, onPressEnd, onShortPress, onLongPress called correctly\n8. **Edge Cases**: Rapid input sequences, press without release, rerender with different callbacks, error handling\n\nAll acceptance criteria met:\n✅ Distinguishes short press from long press\n✅ Platform-specific behavior verified (Apple TV timer-based, Android TV native)\n✅ Timer cleanup verified on unmount and press end\n\nCommitted as 1c63efd5.",
+          "updated_at": "2026-01-11T15:01:40.225313+00:00"
         },
         {
           "id": "7.4",
           "title": "Create useSpatialNavigation tests",
           "description": "Unit tests for focus memory storage and retrieval",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "__tests__/hooks/useSpatialNavigation.test.ts"
           ],
@@ -625,7 +627,9 @@
             "Focus IDs stored correctly",
             "Last focused item retrieved correctly",
             "Missing refs handled gracefully"
-          ]
+          ],
+          "notes": "Created comprehensive unit tests for useSpatialNavigation hook with 70 passing tests covering:\n\n1. **Focus Memory Storage and Retrieval**:\n   - saveFocus() stores focus IDs correctly\n   - getSavedFocus() retrieves last focused item correctly\n   - clearSavedFocus() clears saved focus\n   - Focus memory persists per screen\n\n2. **Focus Restoration**:\n   - restoreFocus() restores focus to saved element using setNativeProps\n   - Falls back to focus() method if setNativeProps not available\n   - Uses defaultFocusId when no saved focus exists\n   - Returns false for missing refs (handled gracefully)\n\n3. **Ref Management**:\n   - registerRef() and unregisterRef() work correctly\n   - getRef() retrieves registered refs\n   - Handles empty focusId and null refs gracefully\n   - Cleans up all refs on unmount\n\n4. **Node Handle Management**:\n   - getNodeHandle() returns node handles for registered refs\n   - Returns null for missing refs (handled gracefully)\n   - Caches node handles for performance\n   - refreshNodeHandles() updates all handles\n\n5. **Next Focus Configuration**:\n   - setNextFocus() and getNextFocusProps() work correctly\n   - Handles missing refs in next focus configuration\n   - Merges configurations correctly\n\n6. **Programmatic Focus Control**:\n   - focusElement() focuses elements by ID\n   - Throttles rapid focus element calls for stability\n   - Returns false for non-existent elements\n\n7. **Rapid Input Protection**:\n   - Debounces focus saves to prevent rapid state updates\n   - isPendingFocusChange state tracks pending changes\n   - Saves last focus ID when multiple rapid saves occur\n\n8. **Utility Hooks**:\n   - useFocusableRef creates and registers refs\n   - useFocusHandlers provides onFocus/onBlur handlers\n   - useGridNavigation sets up grid layouts\n   - useEmptyListFocusFallback handles empty content\n   - useFocusableFallbackRefs manages fallback refs\n   - useLoadingStateFocus handles loading states\n\n9. **Edge Cases**:\n   - Handles errors in setNativeProps gracefully\n   - Supports very long focus IDs\n   - Handles special characters in focus IDs\n   - Supports re-registering after unregistering\n   - Handles concurrent hooks on different screens\n\nAll acceptance criteria met:\n✅ Focus IDs stored correctly\n✅ Last focused item retrieved correctly\n✅ Missing refs handled gracefully\n\nCommitted as e4172a93.",
+          "updated_at": "2026-01-11T15:12:17.537581+00:00"
         },
         {
           "id": "7.5",
@@ -714,6 +718,6 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-11T14:53:04.541745+00:00",
+  "last_updated": "2026-01-11T15:01:40.225330+00:00",
   "recoveryNote": "Task recovered from stuck state at 2026-01-11T14:35:48.007Z"
 }
