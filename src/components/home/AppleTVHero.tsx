@@ -45,6 +45,7 @@ import { useTraktContext } from '../../contexts/TraktContext';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
 import { streamCacheService } from '../../services/streamCacheService';
+import Focusable from '../common/Focusable';
 
 interface AppleTVHeroProps {
   featuredContent: StreamingContent | null;
@@ -68,8 +69,9 @@ const PaginationDot: React.FC<{
   isNext: boolean;
   dragProgress: SharedValue<number>;
   onPress: () => void;
+  index: number;
 }> = React.memo(
-  ({ isActive, isNext, dragProgress, onPress }) => {
+  ({ isActive, isNext, dragProgress, onPress, index }) => {
     const animatedStyle = useAnimatedStyle(() => {
       // Base values
       const activeWidth = 32;
@@ -126,13 +128,18 @@ const PaginationDot: React.FC<{
     });
 
     return (
-      <TouchableOpacity
+      <Focusable
+        variant="button"
+        borderRadius={4}
+        enableScale={false}
+        enableGlow={false}
         onPress={onPress}
         activeOpacity={0.7}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityLabel={`Go to slide ${index + 1}`}
+        accessibilityHint={isActive ? "Currently active slide" : "Double tap to go to this slide"}
       >
         <Animated.View style={[styles.paginationDot, animatedStyle]} />
-      </TouchableOpacity>
+      </Focusable>
     );
   }
 );
@@ -1165,48 +1172,50 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             gap: 8,
           }}>
             {/* Fullscreen button */}
-            <TouchableOpacity
+            <Focusable
+              variant="button"
+              borderRadius={20}
+              enableScale={false}
+              enableGlow={false}
               onPress={(e) => {
-                e?.stopPropagation();
+                e?.stopPropagation?.();
                 handleFullscreenToggle();
               }}
               activeOpacity={0.7}
-              onPressIn={(e) => e?.stopPropagation()}
-              onPressOut={(e) => e?.stopPropagation()}
-              style={{
-                padding: 8,
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                borderRadius: 20,
-              }}
+              accessibilityLabel="Fullscreen trailer"
+              accessibilityHint="Double tap to view trailer in fullscreen"
             >
-              <MaterialIcons
-                name="fullscreen"
-                size={24}
-                color="white"
-              />
-            </TouchableOpacity>
+              <View style={styles.trailerControlButton}>
+                <MaterialIcons
+                  name="fullscreen"
+                  size={24}
+                  color="white"
+                />
+              </View>
+            </Focusable>
 
             {/* Unmute button */}
-            <TouchableOpacity
+            <Focusable
+              variant="button"
+              borderRadius={20}
+              enableScale={false}
+              enableGlow={false}
               onPress={(e) => {
-                e?.stopPropagation();
+                e?.stopPropagation?.();
                 handleMuteToggle();
               }}
               activeOpacity={0.7}
-              onPressIn={(e) => e?.stopPropagation()}
-              onPressOut={(e) => e?.stopPropagation()}
-              style={{
-                padding: 8,
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                borderRadius: 20,
-              }}
+              accessibilityLabel={trailerMuted ? "Unmute trailer" : "Mute trailer"}
+              accessibilityHint="Double tap to toggle trailer sound"
             >
-              <Entypo
-                name={trailerMuted ? 'sound-mute' : 'sound'}
-                size={24}
-                color="white"
-              />
-            </TouchableOpacity>
+              <View style={styles.trailerControlButton}>
+                <Entypo
+                  name={trailerMuted ? 'sound-mute' : 'sound'}
+                  size={24}
+                  color="white"
+                />
+              </View>
+            </Focusable>
           </Animated.View>
         )}
 
@@ -1293,31 +1302,44 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           {/* Action Buttons - Play and Save buttons */}
           <View style={styles.buttonsContainer}>
             {/* Play Button */}
-            <TouchableOpacity
-              style={[styles.playButton]}
+            <Focusable
+              variant="hero"
+              borderRadius={40}
+              enableScale={false}
               onPress={handlePlayAction}
               activeOpacity={0.85}
+              hasTVPreferredFocus={true}
+              accessibilityLabel={`${playButtonText} ${currentItem.name}`}
+              accessibilityHint="Double tap to start playing"
             >
-              <MaterialIcons
-                name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
-                size={24}
-                color="#000"
-              />
-              <Text style={styles.playButtonText}>{playButtonText}</Text>
-            </TouchableOpacity>
+              <View style={styles.playButton}>
+                <MaterialIcons
+                  name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+                  size={24}
+                  color="#000"
+                />
+                <Text style={styles.playButtonText}>{playButtonText}</Text>
+              </View>
+            </Focusable>
 
             {/* Save Button */}
-            <TouchableOpacity
-              style={styles.saveButton}
+            <Focusable
+              variant="button"
+              borderRadius={30}
+              enableScale={false}
               onPress={handleSaveAction}
               activeOpacity={0.85}
+              accessibilityLabel={inLibrary ? `Remove ${currentItem.name} from library` : `Save ${currentItem.name} to library`}
+              accessibilityHint="Double tap to toggle save status"
             >
-              <MaterialIcons
-                name={inLibrary ? "bookmark" : "bookmark-outline"}
-                size={24}
-                color="white"
-              />
-            </TouchableOpacity>
+              <View style={styles.saveButton}>
+                <MaterialIcons
+                  name={inLibrary ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color="white"
+                />
+              </View>
+            </Focusable>
           </View>
 
           {/* Pagination Dots */}
@@ -1326,6 +1348,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               {items.map((_, index) => (
                 <PaginationDot
                   key={index}
+                  index={index}
                   isActive={index === currentIndex}
                   isNext={index === nextIndex && nextIndex !== currentIndex}
                   dragProgress={dragProgress}
@@ -1473,6 +1496,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.3)',
+  },
+  trailerControlButton: {
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   paginationContainer: {
     flexDirection: 'row',

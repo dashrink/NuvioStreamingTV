@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable, Platform } from 'react-native';
-import Focusable from '../common/Focusable';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
+import Focusable from '../common/Focusable';
 import { Episode } from '../../types/metadata';
 import { tmdbService, IMDbRatings } from '../../services/tmdbService';
 import { storageService } from '../../services/storageService';
@@ -490,18 +490,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     };
   }, []);
 
-  // Track previous season to only scroll when it actually changes
-  const previousSeasonRef = React.useRef<number | null>(null);
-
-  // Add effect to scroll to selected season (only when season changes, not on every groupedEpisodes update)
+  // Add effect to scroll to selected season
   useEffect(() => {
     if (selectedSeason && seasonScrollViewRef.current && Object.keys(groupedEpisodes).length > 0) {
-      // Only scroll if the season actually changed (not just groupedEpisodes update)
-      if (previousSeasonRef.current === selectedSeason) {
-        return; // Season didn't change, don't scroll
-      }
-      previousSeasonRef.current = selectedSeason;
-
       // Find the index of the selected season
       const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => a - b);
       const selectedIndex = seasons.findIndex(season => season === selectedSeason);
@@ -755,41 +746,6 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     );
   }
 
-  // Handle season focus on TV - auto-select season and scroll to it
-  const handleSeasonFocus = useCallback((season: number, index: number) => {
-    if (Platform.isTV) {
-      // Auto-select the season when focused via D-pad navigation
-      onSeasonChange(season);
-      // Scroll to make the focused season visible
-      if (seasonScrollViewRef.current) {
-        try {
-          (seasonScrollViewRef.current as any).scrollToIndex({
-            index,
-            animated: true,
-            viewPosition: 0.15,
-          });
-        } catch (e) {
-          // Fallback to scrollToOffset
-          const itemSize = seasonPosterWidth + seasonButtonSpacing;
-          (seasonScrollViewRef.current as any).scrollToOffset({
-            offset: itemSize * index,
-            animated: true,
-          });
-        }
-      }
-    }
-  }, [onSeasonChange, seasonPosterWidth, seasonButtonSpacing]);
-
-  // Handle scroll to index failures gracefully
-  const onSeasonScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
-    if (seasonScrollViewRef.current) {
-      (seasonScrollViewRef.current as any).scrollToOffset({
-        offset: info.averageItemLength * info.index,
-        animated: true,
-      });
-    }
-  }, []);
-
   const renderSeasonSelector = () => {
     // Show selector if we have grouped episodes data or can derive from episodes
     if (!groupedEpisodes || Object.keys(groupedEpisodes).length <= 1) {
@@ -825,6 +781,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
           {/* Dropdown Toggle Button */}
           <Focusable
+            variant="button"
+            borderRadius={isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6}
+            enableScale={false}
+            enableGlow={false}
             style={[
               styles.seasonViewToggle,
               {
@@ -844,6 +804,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               updateViewMode(newMode);
               if (__DEV__) console.log('[SeriesContent] View mode changed to:', newMode, 'Current ref value:', seasonViewMode);
             }}
+            activeOpacity={0.7}
+            accessibilityLabel={`Season view mode: ${seasonViewMode}`}
+            accessibilityHint="Double tap to toggle between poster and text view"
           >
             <Text style={[
               styles.seasonViewToggleText,
@@ -874,13 +837,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           initialNumToRender={5}
           maxToRenderPerBatch={5}
           windowSize={3}
-          getItemLayout={(data, index) => ({
-            length: seasonPosterWidth + seasonButtonSpacing,
-            offset: (seasonPosterWidth + seasonButtonSpacing) * index,
-            index,
-          })}
-          onScrollToIndexFailed={onSeasonScrollToIndexFailed}
-          renderItem={({ item: season, index }) => {
+          renderItem={({ item: season }) => {
             const seasonEpisodes = groupedEpisodes[season] || [];
 
             // Get season poster URL (needed for both views)
@@ -901,6 +858,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   style={{ opacity: textViewVisible ? 1 : 0 }}
                 >
                   <Focusable
+                    variant="button"
+                    borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12}
+                    enableScale={true}
+                    enableGlow={false}
+                    hasTVPreferredFocus={selectedSeason === season}
                     style={[
                       styles.seasonTextButton,
                       {
@@ -908,14 +870,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                         width: isTV ? 150 : isLargeTablet ? 140 : isTablet ? 130 : 110,
                         paddingVertical: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
                         paddingHorizontal: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-                        borderWidth: 2,
-                        borderColor: 'transparent',
+                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
                       },
                       selectedSeason === season && styles.selectedSeasonTextButton
                     ]}
                     onPress={() => onSeasonChange(season)}
-                    onFocus={() => handleSeasonFocus(season, index)}
+                    accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
+                    accessibilityHint="Double tap to view episodes"
                   >
                     <Text style={[
                       styles.seasonTextButtonText,
@@ -942,18 +903,22 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 style={{ opacity: posterViewVisible ? 1 : 0 }}
               >
                 <Focusable
+                  variant="card"
+                  borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8}
+                  enableScale={true}
+                  enableGlow={true}
+                  hasTVPreferredFocus={selectedSeason === season}
                   style={[
                     styles.seasonButton,
                     {
                       marginRight: seasonButtonSpacing,
-                      width: seasonPosterWidth,
-                      borderWidth: 2,
-                      borderColor: 'transparent'
+                      width: seasonPosterWidth
                     },
                     selectedSeason === season && [styles.selectedSeasonButton, { borderColor: currentTheme.colors.primary }]
                   ]}
-                  onFocus={() => handleSeasonFocus(season, index)}
                   onPress={() => onSeasonChange(season)}
+                  accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
+                  accessibilityHint="Double tap to view episodes"
                 >
                   <View style={[
                     styles.seasonPosterContainer,
@@ -1082,6 +1047,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <Focusable
         key={episode.id}
+        variant="listItem"
+        borderRadius={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+        enableScale={true}
+        enableGlow={true}
         style={[
           styles.episodeCardVertical,
           {
@@ -1093,6 +1062,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
+        activeOpacity={0.7}
+        accessibilityLabel={`${episodeString} ${episode.name}`}
+        accessibilityHint="Double tap to play episode, long press for more options"
       >
         <View style={[
           styles.episodeImageContainer,
@@ -1355,6 +1327,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <Focusable
         key={episode.id}
+        variant="card"
+        borderRadius={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+        enableScale={true}
+        enableGlow={true}
         style={[
           styles.episodeCardHorizontal,
           {
@@ -1374,6 +1350,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
+        activeOpacity={0.85}
+        accessibilityLabel={`${episodeString} ${episode.name}`}
+        accessibilityHint="Double tap to play episode, long press for more options"
       >
         {/* Solid outline replaces gradient border */}
 
@@ -1768,7 +1747,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               {/* Mark as Watched / Unwatched */}
               {selectedEpisodeForAction && (
                 isEpisodeWatched(selectedEpisodeForAction) ? (
-                  <Focusable
+                  <TouchableOpacity
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -1793,9 +1772,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     }}>
                       {markingAsWatched ? 'Removing...' : 'Mark as Unwatched'}
                     </Text>
-                  </Focusable>
+                  </TouchableOpacity>
                 ) : (
-                  <Focusable
+                  <TouchableOpacity
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -1820,13 +1799,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     }}>
                       {markingAsWatched ? 'Marking...' : 'Mark as Watched'}
                     </Text>
-                  </Focusable>
+                  </TouchableOpacity>
                 )
               )}
 
               {/* Mark Season as Watched / Unwatched */}
               {isSeasonWatched() ? (
-                <Focusable
+                <TouchableOpacity
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -1852,9 +1831,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   }} numberOfLines={1}>
                     {markingAsWatched ? 'Removing...' : `Unmark Season ${selectedSeason}`}
                   </Text>
-                </Focusable>
+                </TouchableOpacity>
               ) : (
-                <Focusable
+                <TouchableOpacity
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -1880,11 +1859,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   }} numberOfLines={1}>
                     {markingAsWatched ? 'Marking...' : `Mark Season ${selectedSeason}`}
                   </Text>
-                </Focusable>
+                </TouchableOpacity>
               )}
 
               {/* Cancel */}
-              <Focusable
+              <TouchableOpacity
                 style={{
                   alignItems: 'center',
                   padding: isTV ? 14 : 12,
@@ -1899,7 +1878,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 }}>
                   Cancel
                 </Text>
-              </Focusable>
+              </TouchableOpacity>
             </View>
           </Pressable>
         </Pressable>

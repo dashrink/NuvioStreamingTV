@@ -1,228 +1,401 @@
+import React, { forwardRef, ReactNode, useMemo } from 'react';
+import {
+  View,
+  ViewStyle,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  Pressable,
+  PressableProps,
+  GestureResponderEvent,
+} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  interpolateColor,
+  SharedValue,
+} from 'react-native-reanimated';
+
+import { useTVFocus, UseTVFocusOptions, TVParallaxProperties } from '../../hooks/useTVFocus';
+import {
+  FocusVariant,
+  getFocusStyleConfig,
+  focusBorder,
+  focusColors,
+  focusScaleValues,
+  focusShadow,
+} from '../../styles/focusStyles';
+
 /**
- * Focusable.tsx
- *
- * Non-TV fallback for the Focusable component.
- * Provides basic press handling without TV-specific features.
- *
- * On TV platforms, Metro will automatically load Focusable.tv.tsx instead
- * when APP_VARIANT=tv is set.
+ * Props for the Focusable wrapper component
+ */
+export interface FocusableProps extends UseTVFocusOptions {
+  /** Children to wrap with focus indicator */
+  children: ReactNode;
+  /** Focus style variant determining border, scale, and shadow styles */
+  variant?: FocusVariant;
+  /** Custom border radius override */
+  borderRadius?: number;
+  /** Enable/disable scale animation on focus */
+  enableScale?: boolean;
+  /** Enable/disable glow/shadow effect on focus */
+  enableGlow?: boolean;
+  /** Enable/disable border animation on focus */
+  enableBorder?: boolean;
+  /** Container style applied to the outer animated view */
+  style?: ViewStyle;
+  /** Additional style applied when focused */
+  focusedStyle?: ViewStyle;
+  /** Test ID for testing */
+  testID?: string;
+  /** Touch events - onPress callback */
+  onPress?: (event: GestureResponderEvent) => void;
+  /** Touch events - onLongPress callback */
+  onLongPress?: (event: GestureResponderEvent) => void;
+  /** Touch events - onPressIn callback */
+  onPressIn?: (event: GestureResponderEvent) => void;
+  /** Touch events - onPressOut callback */
+  onPressOut?: (event: GestureResponderEvent) => void;
+  /** Make the focusable element active opacity for touch feedback */
+  activeOpacity?: number;
+  /** Disable all touch and focus interactions */
+  disabled?: boolean;
+  /** Use Pressable instead of TouchableOpacity for children wrapper */
+  usePressable?: boolean;
+  /** Accessibility label for screen readers */
+  accessibilityLabel?: string;
+  /** Accessibility hint for screen readers */
+  accessibilityHint?: string;
+  /**
+   * Android TV: Native ID for D-pad navigation references
+   * Other Focusable components can use this ID in nextFocusDown/Up/Left/Right
+   */
+  nativeID?: string;
+  /**
+   * tvOS: Parallax properties for Siri Remote navigation effect
+   * Creates a subtle 3D tilt effect when navigating with Siri Remote
+   */
+  tvParallaxProperties?: TVParallaxProperties;
+}
+
+/**
+ * Animated wrapper components for smooth focus transitions
+ */
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/**
+ * A reusable wrapper component that provides consistent focus indicators
+ * for TV remote navigation. Wraps any interactive element with animated
+ * border, scale, and glow effects.
  *
  * @example
  * ```tsx
- * import Focusable from '@/components/common/Focusable';
+ * // Basic card usage
+ * <Focusable variant="card" onPress={() => navigate('Details')}>
+ *   <View style={styles.posterCard}>
+ *     <Image source={{ uri: poster }} />
+ *     <Text>{title}</Text>
+ *   </View>
+ * </Focusable>
  *
- * function MyComponent() {
- *   return (
- *     <Focusable
- *       onPress={() => console.log('Pressed!')}
- *       onLongPress={() => console.log('Long press!')}
- *     >
- *       <Text>Press Me</Text>
- *     </Focusable>
- *   );
- * }
+ * // Button with custom styling
+ * <Focusable
+ *   variant="button"
+ *   borderRadius={20}
+ *   enableGlow={false}
+ *   onPress={handleSubmit}
+ * >
+ *   <Text style={styles.buttonText}>Submit</Text>
+ * </Focusable>
+ *
+ * // List item without scale effect
+ * <Focusable variant="listItem" enableScale={false}>
+ *   <SettingsRow title="Notifications" />
+ * </Focusable>
  * ```
  */
-
-import React, { forwardRef, useRef, useImperativeHandle, useState, useCallback } from 'react';
-import {
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-  Animated,
-} from 'react-native';
-
-// =============================================================================
-// Types & Interfaces
-// =============================================================================
-
-/**
- * Configuration for focus animation behavior (stub for non-TV)
- */
-export interface FocusAnimationConfig {
-  focusScale?: number;
-  unfocusedOpacity?: number;
-  showFocusBorder?: boolean;
-  focusBorderColor?: string;
-  focusBorderWidth?: number;
-  animateShadow?: boolean;
-}
-
-/**
- * Apple TV specific parallax properties (stub for non-TV)
- */
-export interface TVParallaxPropertiesConfig {
-  enabled?: boolean;
-  shiftDistanceX?: number;
-  shiftDistanceY?: number;
-  tiltAngle?: number;
-  magnification?: number;
-  pressMagnification?: number;
-  pressDuration?: number;
-}
-
-/**
- * Next focus navigation configuration (stub for non-TV)
- */
-export interface NextFocusConfig {
-  nextFocusUp?: number | React.RefObject<any>;
-  nextFocusDown?: number | React.RefObject<any>;
-  nextFocusLeft?: number | React.RefObject<any>;
-  nextFocusRight?: number | React.RefObject<any>;
-}
-
-/**
- * Props for the Focusable component
- */
-export interface FocusableProps {
-  children: React.ReactNode;
-  onPress?: () => void;
-  onLongPress?: () => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  hasTVPreferredFocus?: boolean;
-  isTVSelectable?: boolean;
-  disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
-  focusStyle?: StyleProp<ViewStyle>;
-  animationConfig?: FocusAnimationConfig;
-  tvParallaxProperties?: TVParallaxPropertiesConfig;
-  nextFocus?: NextFocusConfig;
-  testID?: string;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
-  focusId?: string;
-}
-
-/**
- * Ref methods exposed by Focusable component
- */
-export interface FocusableRef {
-  focus: () => void;
-  blur: () => void;
-  getRef: () => React.RefObject<View>;
-  isFocused: () => boolean;
-  setNativeProps: (props: object) => void;
-}
-
-// =============================================================================
-// Component Implementation
-// =============================================================================
-
-/**
- * Non-TV Focusable component
- *
- * Simple wrapper around TouchableOpacity for non-TV platforms.
- * TV-specific features are only available in Focusable.tv.tsx.
- */
-const Focusable = forwardRef<FocusableRef, FocusableProps>(
+const Focusable = forwardRef<View, FocusableProps>(
   (
     {
       children,
+      variant = 'card',
+      borderRadius: customBorderRadius,
+      enableScale = true,
+      enableGlow = true,
+      enableBorder = true,
+      style,
+      focusedStyle,
+      testID,
       onPress,
       onLongPress,
-      onFocus,
-      onBlur,
-      hasTVPreferredFocus: _hasTVPreferredFocus,
-      isTVSelectable: _isTVSelectable,
+      onPressIn,
+      onPressOut,
+      activeOpacity = 0.8,
       disabled = false,
-      style,
-      focusStyle: _focusStyle,
-      animationConfig: _animationConfig,
-      tvParallaxProperties: _tvParallaxProperties,
-      nextFocus: _nextFocus,
-      testID,
+      usePressable = false,
       accessibilityLabel,
       accessibilityHint,
+      nativeID,
+      // Focus hook options
+      onFocus,
+      onBlur,
+      hasTVPreferredFocus,
+      focusable = true,
+      animationDuration,
+      // Android TV D-pad navigation options
+      nextFocusDown,
+      nextFocusUp,
+      nextFocusLeft,
+      nextFocusRight,
+      nextFocusForward,
+      // tvOS parallax options
+      tvParallaxProperties,
     },
     ref
   ) => {
-    const viewRef = useRef<any>(null);
-    const [isFocused, setIsFocused] = useState(false);
+    // Get focus state and animation from hook
+    const {
+      isFocused,
+      focusAnim,
+      focusProps,
+      isTV,
+      isTVFocusEnabled,
+    } = useTVFocus({
+      onFocus,
+      onBlur,
+      hasTVPreferredFocus,
+      focusable: focusable && !disabled,
+      animationDuration,
+      disabled,
+      // Android TV D-pad navigation options
+      nextFocusDown,
+      nextFocusUp,
+      nextFocusLeft,
+      nextFocusRight,
+      nextFocusForward,
+      // tvOS parallax options
+      tvParallaxProperties,
+    });
 
-    // Simple press animation
-    const scaleValue = useRef(new Animated.Value(1)).current;
+    // Get style configuration for the variant
+    const styleConfig = useMemo(() => getFocusStyleConfig(variant), [variant]);
 
-    const handlePressIn = useCallback(() => {
-      Animated.spring(scaleValue, {
-        toValue: 0.98,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 100,
-      }).start();
-    }, [scaleValue]);
+    // Use custom border radius or variant default
+    const borderRadius = customBorderRadius ?? styleConfig.borderRadius;
 
-    const handlePressOut = useCallback(() => {
-      Animated.spring(scaleValue, {
-        toValue: 1,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 100,
-      }).start();
-    }, [scaleValue]);
+    // Get scale values based on variant
+    const scaleValues = useMemo(() => {
+      switch (variant) {
+        case 'card':
+          return focusScaleValues.card;
+        case 'button':
+          return focusScaleValues.button;
+        case 'listItem':
+          return focusScaleValues.listItem;
+        case 'hero':
+          return focusScaleValues.hero;
+        default:
+          return focusScaleValues.default;
+      }
+    }, [variant]);
 
-    // Imperative handle for ref methods
-    useImperativeHandle(ref, () => ({
-      focus: () => {
-        setIsFocused(true);
-        onFocus?.();
-      },
-      blur: () => {
-        setIsFocused(false);
-        onBlur?.();
-      },
-      getRef: () => viewRef,
-      isFocused: () => isFocused,
-      setNativeProps: (props: object) => {
-        if (viewRef.current?.setNativeProps) {
-          viewRef.current.setNativeProps(props);
-        }
-      },
-    }));
+    // Animated style for focus effects
+    const animatedFocusStyle = useAnimatedStyle(() => {
+      // Scale transform
+      const scale = enableScale
+        ? interpolate(focusAnim.value, [0, 1], scaleValues)
+        : 1;
 
-    return (
-      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-        <TouchableOpacity
-          ref={viewRef}
-          style={[styles.container, style]}
-          onPress={disabled ? undefined : onPress}
-          onLongPress={disabled ? undefined : onLongPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={disabled}
-          activeOpacity={0.8}
-          testID={testID}
-          accessibilityLabel={accessibilityLabel}
-          accessibilityHint={accessibilityHint}
-          accessibilityRole="button"
-          accessibilityState={{ disabled }}
+      // Border color animation
+      const borderColor = enableBorder
+        ? interpolateColor(focusAnim.value, [0, 1], [focusBorder.colorUnfocused, focusBorder.color])
+        : 'transparent';
+
+      // Shadow/glow animation
+      const shadowOpacity = enableGlow
+        ? interpolate(focusAnim.value, [0, 1], [0, focusShadow.opacity])
+        : 0;
+      const shadowRadius = enableGlow
+        ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.shadowRadius || focusShadow.radius])
+        : 0;
+      const elevation = enableGlow
+        ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.elevation || 8])
+        : 0;
+
+      return {
+        transform: [{ scale }],
+        borderColor,
+        borderWidth: enableBorder ? styleConfig.borderWidth : 0,
+        borderRadius,
+        // Shadow properties
+        shadowColor: enableGlow ? focusShadow.color : 'transparent',
+        shadowOffset: enableGlow ? focusShadow.offset : { width: 0, height: 0 },
+        shadowOpacity,
+        shadowRadius,
+        elevation,
+      };
+    }, [
+      focusAnim,
+      enableScale,
+      enableBorder,
+      enableGlow,
+      scaleValues,
+      styleConfig,
+      borderRadius,
+    ]);
+
+    // Combined styles
+    const containerStyle = useMemo(
+      () => [
+        styles.container,
+        { borderRadius },
+        style,
+        isFocused && focusedStyle,
+      ],
+      [borderRadius, style, isFocused, focusedStyle]
+    );
+
+    // Props common to both Touchable and Pressable
+    const commonProps = {
+      ref,
+      testID,
+      disabled,
+      accessibilityLabel,
+      accessibilityHint,
+      accessibilityRole: 'button' as const,
+      accessibilityState: { disabled, selected: isFocused },
+      onPress,
+      onLongPress,
+      onPressIn,
+      onPressOut,
+      // Android TV: nativeID for D-pad navigation references
+      ...(nativeID && { nativeID }),
+      ...focusProps,
+    };
+
+    // Render with Pressable
+    if (usePressable) {
+      return (
+        <AnimatedPressable
+          {...(commonProps as PressableProps)}
+          style={[containerStyle, animatedFocusStyle]}
         >
           {children}
-        </TouchableOpacity>
-      </Animated.View>
+        </AnimatedPressable>
+      );
+    }
+
+    // Render with TouchableOpacity (default)
+    return (
+      <AnimatedTouchableOpacity
+        {...(commonProps as TouchableOpacityProps)}
+        activeOpacity={activeOpacity}
+        style={[containerStyle, animatedFocusStyle]}
+      >
+        {children}
+      </AnimatedTouchableOpacity>
     );
   }
 );
 
 Focusable.displayName = 'Focusable';
 
-// =============================================================================
-// Styles
-// =============================================================================
-
+/**
+ * Styles for the Focusable component
+ */
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 8,
+    // Default overflow hidden to clip content within border radius
     overflow: 'hidden',
   },
 });
 
-// =============================================================================
-// Exports
-// =============================================================================
+/**
+ * Helper hook to create animated styles for focus indicators
+ * Use this when you need more control over the focus animation
+ *
+ * @example
+ * ```tsx
+ * const { focusAnim } = useTVFocus();
+ * const animatedStyle = useFocusAnimatedStyle(focusAnim, 'card');
+ *
+ * return (
+ *   <Animated.View style={[styles.card, animatedStyle]}>
+ *     {content}
+ *   </Animated.View>
+ * );
+ * ```
+ */
+export const useFocusAnimatedStyle = (
+  focusAnim: SharedValue<number>,
+  variant: FocusVariant = 'card',
+  options: {
+    enableScale?: boolean;
+    enableBorder?: boolean;
+    enableGlow?: boolean;
+    borderRadius?: number;
+  } = {}
+) => {
+  const {
+    enableScale = true,
+    enableBorder = true,
+    enableGlow = true,
+    borderRadius,
+  } = options;
+
+  const styleConfig = getFocusStyleConfig(variant);
+  const finalBorderRadius = borderRadius ?? styleConfig.borderRadius;
+
+  // Get scale values based on variant
+  const scaleValues = (() => {
+    switch (variant) {
+      case 'card':
+        return focusScaleValues.card;
+      case 'button':
+        return focusScaleValues.button;
+      case 'listItem':
+        return focusScaleValues.listItem;
+      case 'hero':
+        return focusScaleValues.hero;
+      default:
+        return focusScaleValues.default;
+    }
+  })();
+
+  return useAnimatedStyle(() => {
+    const scale = enableScale
+      ? interpolate(focusAnim.value, [0, 1], scaleValues)
+      : 1;
+
+    const borderColor = enableBorder
+      ? interpolateColor(focusAnim.value, [0, 1], [focusBorder.colorUnfocused, focusBorder.color])
+      : 'transparent';
+
+    const shadowOpacity = enableGlow
+      ? interpolate(focusAnim.value, [0, 1], [0, focusShadow.opacity])
+      : 0;
+
+    const shadowRadius = enableGlow
+      ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.shadowRadius || focusShadow.radius])
+      : 0;
+
+    const elevation = enableGlow
+      ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.elevation || 8])
+      : 0;
+
+    return {
+      transform: [{ scale }],
+      borderColor,
+      borderWidth: enableBorder ? styleConfig.borderWidth : 0,
+      borderRadius: finalBorderRadius,
+      shadowColor: enableGlow ? focusShadow.color : 'transparent',
+      shadowOffset: enableGlow ? focusShadow.offset : { width: 0, height: 0 },
+      shadowOpacity,
+      shadowRadius,
+      elevation,
+    };
+  });
+};
 
 export default Focusable;
-
-export type { FocusableProps, FocusableRef };

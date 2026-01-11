@@ -5,16 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import FastImage from '@d11/react-native-fast-image';
 import { Pagination } from 'react-native-reanimated-carousel';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import Focusable from '../common/Focusable';
-import {
-  isTV,
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_TOUCH_TARGETS,
-  TV_HERO,
-  TV_ANIMATIONS,
-} from '../../utils/tvStyles';
+import { Ionicons } from '@expo/vector-icons';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for HeroCarousel
 let GlassViewComp: any = null;
@@ -37,7 +28,7 @@ import { StreamingContent } from '../../services/catalogService';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettings } from '../../hooks/useSettings';
-import { triggerLight } from '../../hooks/useHaptics';
+import Focusable from '../common/Focusable';
 
 interface HeroCarouselProps {
   items: StreamingContent[];
@@ -53,11 +44,6 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-
-  // TV navigation refs for focus management
-  const leftArrowRef = useRef<any>(null);
-  const rightArrowRef = useRef<any>(null);
-  const cardFocusRef = useRef<any>(null);
 
   // Responsive sizing computed per-render so rotation updates layout
   const isTablet = useMemo(
@@ -243,27 +229,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
 
   const contentPadding = useMemo(() => ({ paddingHorizontal: (windowWidth - cardWidth) / 2 }), [windowWidth, cardWidth]);
 
-  const handleNavigateToMetadata = useCallback((id: string, type: any, addonId?: string) => {
-    navigation.navigate('Metadata', { id, type, addonId });
+  const handleNavigateToMetadata = useCallback((id: string, type: any) => {
+    navigation.navigate('Metadata', { id, type });
   }, [navigation]);
-
-  // TV navigation: go to previous card
-  const handlePreviousCard = useCallback(() => {
-    if (activeIndex > 0) {
-      scrollToLogicalIndex(activeIndex - 1, true);
-    } else if (loopingEnabled) {
-      scrollToLogicalIndex(data.length - 1, true);
-    }
-  }, [activeIndex, data.length, loopingEnabled, scrollToLogicalIndex]);
-
-  // TV navigation: go to next card
-  const handleNextCard = useCallback(() => {
-    if (activeIndex < data.length - 1) {
-      scrollToLogicalIndex(activeIndex + 1, true);
-    } else if (loopingEnabled) {
-      scrollToLogicalIndex(0, true);
-    }
-  }, [activeIndex, data.length, loopingEnabled, scrollToLogicalIndex]);
 
   // Container animation based on scroll - must be before early returns
   // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
@@ -434,18 +402,197 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ items, loading = false }) =
               onLogoError={() => setFailedLogoIds((prev) => new Set(prev).add(item.id))}
               onPressInfo={() => handleNavigateToMetadata(item.id, item.type)}
               scrollX={scrollX}
+              index={index}
+              flipped={!!flippedMap[item.id]}
+              onToggleFlip={() => toggleFlipById(item.id)}
               interval={interval}
               cardWidth={cardWidth}
               cardHeight={cardHeight}
-              isFlipped={flippedMap[item.id] || false}
-              onFlipToggle={() => toggleFlipById(item.id)}
+              isTablet={isTablet}
             />
           ))}
         </Animated.ScrollView>
       </Animated.View>
+      {/* Pagination below the card row (library-based, worklet-driven) */}
+      <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 6, position: 'relative', zIndex: 1 }} pointerEvents="auto">
+        <Pagination.Basic
+          progress={paginationProgress}
+          data={data}
+          size={10}
+          dotStyle={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            backgroundColor: currentTheme.colors.elevation3,
+          }}
+          activeDotStyle={{
+            width: 10,
+            height: 10,
+            borderRadius: 999,
+            backgroundColor: currentTheme.colors.white,
+          }}
+          containerStyle={{ gap: 8 }}
+          horizontal
+          onPress={(index: number) => {
+            scrollToLogicalIndex(index, true);
+          }}
+        />
+      </View>
     </View>
   );
 };
+
+// MINIMAL ANIMATED CARD FOR PERFORMANCE TESTING
+interface AnimatedCardWrapperProps {
+  item: StreamingContent;
+  index: number;
+  scrollX: SharedValue<number>;
+  interval: number;
+  cardWidth: number;
+  cardHeight: number;
+  colors: any;
+  isTablet: boolean;
+}
+
+const AnimatedCardWrapper: React.FC<AnimatedCardWrapperProps> = memo(({
+  item, index, scrollX, interval, cardWidth, cardHeight, colors, isTablet
+}) => {
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    const translateX = scrollX.value;
+    const cardOffset = index * interval;
+    const distance = Math.abs(translateX - cardOffset);
+
+    if (distance > interval * 1.5) {
+      return {
+        transform: [{ scale: isTablet ? 0.95 : 0.9 }],
+        opacity: isTablet ? 0.85 : 0.7
+      };
+    }
+
+    const maxDistance = interval;
+    const scale = 1 - (distance / maxDistance) * 0.1;
+    const clampedScale = Math.max(isTablet ? 0.95 : 0.9, Math.min(1, scale));
+    const opacity = 1 - (distance / maxDistance) * 0.3;
+    const clampedOpacity = Math.max(isTablet ? 0.85 : 0.7, Math.min(1, opacity));
+
+    return {
+      transform: [{ scale: clampedScale }],
+      opacity: clampedOpacity,
+    };
+  });
+
+  const logoOpacity = useSharedValue(0);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const isFlipped = useSharedValue(0);
+
+  useEffect(() => {
+    if (logoLoaded) {
+      logoOpacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.ease) });
+    }
+  }, [logoLoaded]);
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+  }));
+
+  // TEST 4: FLIP STYLES
+  const frontFlipStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(isFlipped.value, [0, 1], [0, 180]);
+    return {
+      transform: [
+        { perspective: 1000 },
+        { rotateY: `${rotate}deg` },
+      ],
+    } as any;
+  });
+
+  const backFlipStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(isFlipped.value, [0, 1], [-180, 0]);
+    return {
+      transform: [
+        { perspective: 1000 },
+        { rotateY: `${rotate}deg` },
+      ],
+    } as any;
+  });
+
+  // TEST 4: OVERLAY ANIMATED STYLE (genres opacity on scroll)
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    const translateX = scrollX.value;
+    const cardOffset = index * interval;
+    const distance = Math.abs(translateX - cardOffset);
+
+    if (distance > interval * 1.2) {
+      return { opacity: 0 };
+    }
+
+    const maxDistance = interval * 0.5;
+    const progress = Math.min(distance / maxDistance, 1);
+    const opacity = 1 - progress;
+    const clampedOpacity = Math.max(0, Math.min(1, opacity));
+
+    return {
+      opacity: clampedOpacity,
+    };
+  });
+
+  return (
+    <View style={{ width: cardWidth + 16 }}>
+      <Animated.View style={[
+        {
+          width: cardWidth,
+          height: cardHeight,
+          backgroundColor: colors.elevation1,
+          borderRadius: 16,
+          overflow: 'hidden',
+        },
+        cardAnimatedStyle
+      ]}>
+        <FastImage
+          source={{
+            uri: item.banner || item.poster,
+            priority: FastImage.priority.normal,
+            cache: FastImage.cacheControl.immutable
+          }}
+          style={{ width: '100%', height: '100%', position: 'absolute' }}
+          resizeMode={FastImage.resizeMode.cover}
+        />
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.6)"]}
+          locations={[0.4, 0.7, 1]}
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}
+        />
+        {item.logo && (
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 40, alignItems: 'center' }}>
+            <Animated.View style={logoAnimatedStyle}>
+              <FastImage
+                source={{
+                  uri: item.logo,
+                  priority: FastImage.priority.high,
+                  cache: FastImage.cacheControl.immutable
+                }}
+                style={{ width: Math.round(cardWidth * 0.72), height: 64 }}
+                resizeMode={FastImage.resizeMode.contain}
+                onLoad={() => setLogoLoaded(true)}
+              />
+            </Animated.View>
+          </View>
+        )}
+        {/* TEST 4: GENRES with overlayAnimatedStyle */}
+        {item.genres && (
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 12, alignItems: 'center' }}>
+            <Animated.Text
+              style={[{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center' }, overlayAnimatedStyle]}
+              numberOfLines={1}
+            >
+              {item.genres.slice(0, 3).join(' • ')}
+            </Animated.Text>
+          </View>
+        )}
+      </Animated.View>
+    </View>
+  );
+});
 
 interface CarouselCardProps {
   item: StreamingContent;
@@ -453,211 +600,634 @@ interface CarouselCardProps {
   logoFailed: boolean;
   onLogoError: () => void;
   onPressInfo: () => void;
-  scrollX: Animated.Animated.SharedValue<number>;
+  scrollX: SharedValue<number>;
+  index: number;
+  flipped: boolean;
+  onToggleFlip: () => void;
   interval: number;
   cardWidth: number;
   cardHeight: number;
-  isFlipped: boolean;
-  onFlipToggle: () => void;
+  isTablet: boolean;
 }
 
-const CarouselCard: React.FC<CarouselCardProps> = memo(({
-  item,
-  colors,
-  logoFailed,
-  onLogoError,
-  onPressInfo,
-  scrollX,
-  interval,
-  cardWidth,
-  cardHeight,
-  isFlipped,
-  onFlipToggle,
-}) => {
-  const animatedStyle = useAnimatedStyle(() => {
-    const offset = scrollX.value;
-    const cardOffset = item.id ? Math.abs(offset - (index * interval)) : 0;
-    
-    // Subtle rotation and scale based on distance from center
-    const distance = cardOffset / cardWidth;
-    const rotation = Math.min(distance * 5, 5);
-    const scale = 1 - Math.min(distance * 0.05, 0.1);
+const CarouselCard: React.FC<CarouselCardProps> = memo(({ item, colors, logoFailed, onLogoError, onPressInfo, scrollX, index, flipped, onToggleFlip, interval, cardWidth, cardHeight, isTablet }) => {
+  const [bannerLoaded, setBannerLoaded] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
-    return {
-      transform: [
-        { perspective:1000 },
-        { rotateY: `${rotation}deg` },
-        { scale: Math.max(scale, 0.9) },
-      ],
-    };
-  }, [scrollX.value, interval, cardWidth]);
+  const bannerOpacity = useSharedValue(0);
+  const logoOpacity = useSharedValue(0);
+  const genresOpacity = useSharedValue(0);
+  const actionsOpacity = useSharedValue(0);
+  const isFlipped = useSharedValue(flipped ? 1 : 0);
 
-  // Calculate the index within the loopData/data
-  const index = useMemo(() => {
-    // This needs to match how the item is positioned in the rendered array
-    return 0; // Placeholder - actual implementation would track real index
-  }, []);
+  // Reset animations when component mounts/remounts to prevent glitching
+  useEffect(() => {
+    bannerOpacity.value = 0;
+    logoOpacity.value = 0;
+    genresOpacity.value = 0;
+    actionsOpacity.value = 0;
+    // Force re-render states to ensure clean state
+    setBannerLoaded(false);
+    setLogoLoaded(false);
+  }, [item.id]);
 
-  const flipAnimValue = useSharedValue(0);
-  const flipAnim = useAnimatedStyle(() => {
-    const rotation = flipAnimValue.value * 180;
+  const inputRange = [
+    (index - 1) * interval,
+    index * interval,
+    (index + 1) * interval,
+  ];
+
+  const bannerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: bannerOpacity.value,
+  }));
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+  }));
+
+  // Flip styles
+  const frontFlipStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(isFlipped.value, [0, 1], [0, 180]);
     return {
       transform: [
         { perspective: 1000 },
-        { rotateY: `${rotation}deg` },
+        { rotateY: `${rotate}deg` },
       ],
+    } as any;
+  });
+
+  const backFlipStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(isFlipped.value, [0, 1], [-180, 0]);
+    return {
+      transform: [
+        { perspective: 1000 },
+        { rotateY: `${rotate}deg` },
+      ],
+    } as any;
+  });
+
+  // Sync animation with prop changes
+  useEffect(() => {
+    isFlipped.value = withTiming(flipped ? 1 : 0, { duration: 300, easing: Easing.out(Easing.cubic) });
+  }, [flipped]);
+
+  // ULTRA-OPTIMIZED: Only animate the center card and ±1 neighbors
+  // Use a simple distance-based approach instead of reading scrollX.value during render
+  const shouldAnimate = useMemo(() => {
+    // For now, animate all cards but with early exit in worklets
+    // This avoids reading scrollX.value during render
+    return true;
+  }, [index]);
+
+  // Combined animation for genres and actions (same calculation)
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    const translateX = scrollX.value;
+    const cardOffset = index * interval;
+    const distance = Math.abs(translateX - cardOffset);
+
+    // AGGRESSIVE early exit for cards far from center
+    if (distance > interval * 1.2) {
+      return { opacity: 0 };
+    }
+
+    const maxDistance = interval * 0.5;
+    const progress = Math.min(distance / maxDistance, 1);
+    const opacity = 1 - progress;
+    const clampedOpacity = Math.max(0, Math.min(1, opacity));
+
+    return {
+      opacity: clampedOpacity,
     };
   });
 
-  const handleFlip = useCallback(() => {
-    triggerLight();
-    onFlipToggle();
-    flipAnimValue.value = withTiming(isFlipped ? 0 : 1, {
-      duration: 500,
-      easing: Easing.inOut(Easing.ease),
-    });
-  }, [isFlipped, onFlipToggle, flipAnimValue]);
+  // ULTRA-OPTIMIZED: Only animate center card and ±1 neighbors
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    const translateX = scrollX.value;
+    const cardOffset = index * interval;
+    const distance = Math.abs(translateX - cardOffset);
+
+    // AGGRESSIVE early exit for cards far from center
+    if (distance > interval * 1.5) {
+      return {
+        transform: [{ scale: isTablet ? 0.95 : 0.9 }],
+        opacity: isTablet ? 0.85 : 0.7
+      };
+    }
+
+    const maxDistance = interval;
+
+    // Scale animation based on distance from center
+    const scale = 1 - (distance / maxDistance) * 0.1;
+    const clampedScale = Math.max(isTablet ? 0.95 : 0.9, Math.min(1, scale));
+
+    // Opacity animation for cards that are far from center
+    const opacity = 1 - (distance / maxDistance) * 0.3;
+    const clampedOpacity = Math.max(isTablet ? 0.85 : 0.7, Math.min(1, opacity));
+
+    return {
+      transform: [{ scale: clampedScale }],
+      opacity: clampedOpacity,
+    };
+  });
+
+  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+  // const bannerParallaxStyle = useAnimatedStyle(() => {
+  //   const translateX = scrollX.value;
+  //   const cardOffset = index * (CARD_WIDTH + 16);
+  //   const distance = translateX - cardOffset;
+  //   
+  //   // Reduced parallax effect to prevent displacement
+  //   const parallaxOffset = distance * 0.05;
+  //   
+  //   return {
+  //     transform: [{ translateX: parallaxOffset }],
+  //   };
+  // });
+
+  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+  // const infoParallaxStyle = useAnimatedStyle(() => {
+  //   const translateX = scrollX.value;
+  //   const cardOffset = index * (CARD_WIDTH + 16);
+  //   const distance = Math.abs(translateX - cardOffset);
+  //   const maxDistance = CARD_WIDTH + 16;
+  //   
+  //   // Hide info section when scrolling (not centered)
+  //   const progress = distance / maxDistance;
+  //   const opacity = 1 - progress * 2; // Fade out faster when scrolling
+  //   const clampedOpacity = Math.max(0, Math.min(1, opacity));
+  //   
+  //   // Minimal parallax for info section to prevent displacement
+  //   const parallaxOffset = -(translateX - cardOffset) * 0.02;
+  //   
+  //   return {
+  //     transform: [{ translateY: parallaxOffset }],
+  //     opacity: clampedOpacity,
+  //   };
+  // });
+
+  useEffect(() => {
+    if (bannerLoaded) {
+      bannerOpacity.value = withTiming(1, {
+        duration: 250,
+        easing: Easing.out(Easing.ease)
+      });
+    }
+  }, [bannerLoaded]);
+
+  useEffect(() => {
+    if (logoLoaded) {
+      logoOpacity.value = withTiming(1, {
+        duration: 300,
+        easing: Easing.out(Easing.ease)
+      });
+    }
+  }, [logoLoaded]);
 
   return (
-    <View style={{ width: cardWidth + 16, marginRight: 0 }}>
-      <Animated.View style={[animatedStyle]}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={[
-            styles.card,
-            {
-              width: cardWidth,
-              height: cardHeight,
-              backgroundColor: colors.elevation1,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.1)',
-              overflow: 'hidden',
-            } as StyleProp<ViewStyle>
-          ]}
-          onPress={onPressInfo}
-        >
-          <Animated.View style={[flipAnim, { flex: 1 }]}>
-            {/* Banner Section */}
-            <View style={{ flex: 0.55, width: '100%', overflow: 'hidden', borderRadius: 12 }}>
-              {item.banner || item.poster ? (
-                <FastImage
-                  source={{ uri: item.banner || item.poster }}
-                  style={{ flex: 1 }}
-                  resizeMode={FastImage.resizeMode.cover}
-                />
-              ) : null}
-            </View>
-
-            {/* Content Section */}
-            <View style={{ flex: 0.45, padding: 12, justifyContent: 'space-between' }}>
-              {/* Logo and Title */}
-              <View>
-                {!logoFailed && item.logo ? (
+    <View style={{ width: cardWidth + 16 }}>
+      <View style={{ width: cardWidth, height: cardHeight }}>
+        <Animated.View style={[
+          styles.card,
+          cardAnimatedStyle,
+          {
+            backgroundColor: colors.elevation1,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.18)',
+            width: cardWidth,
+            height: cardHeight,
+          }
+        ] as StyleProp<ViewStyle>}>
+          {isTablet ? (
+            <>
+              <View style={styles.bannerContainer as ViewStyle}>
+                {!bannerLoaded && (
+                  <View style={styles.skeletonBannerFull as ViewStyle} />
+                )}
+                <Animated.View style={[bannerAnimatedStyle, { flex: 1 }]}>
                   <FastImage
-                    source={{ uri: item.logo }}
-                    style={{ width: '70%', height: 40, marginBottom: 8 }}
+                    source={{
+                      uri: item.banner || item.poster,
+                      priority: FastImage.priority.normal,
+                      cache: FastImage.cacheControl.immutable
+                    }}
+                    style={styles.banner as any}
+                    resizeMode={FastImage.resizeMode.cover}
+                    onLoad={() => setBannerLoaded(true)}
+                  />
+                </Animated.View>
+                {/* Overlay removed for performance - readability via text shadows */}
+              </View>
+              <View style={styles.backContent as ViewStyle}>
+                {item.logo && !logoFailed ? (
+                  <FastImage
+                    source={{ uri: item.logo, priority: FastImage.priority.normal, cache: FastImage.cacheControl.immutable }}
+                    style={[styles.logo as any, { width: Math.round(cardWidth * 0.72) }]}
                     resizeMode={FastImage.resizeMode.contain}
-                    onError={onLogoError}
                   />
                 ) : (
-                  <Text
-                    style={[
-                      styles.title,
-                      { color: colors.text, marginBottom: 8 }
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {item.title}
+                  <Text style={[styles.backTitle as TextStyle, { color: colors.highEmphasis }]} numberOfLines={1}>
+                    {item.name}
                   </Text>
                 )}
+                {item.year && (
+                  <View style={styles.infoRow as ViewStyle}>
+                    <View style={styles.infoItem as ViewStyle}>
+                      <Ionicons name="calendar-outline" size={14} color={colors.mediumEmphasis} />
+                      <Text style={[styles.infoText as TextStyle, { color: colors.mediumEmphasis }]}>{item.year}</Text>
+                    </View>
+                  </View>
+                )}
+                <ScrollView style={{ maxHeight: 120, width: Math.round(cardWidth * 0.85), alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
+                  <Text style={[
+                    styles.backDescription as TextStyle,
+                    {
+                      color: colors.highEmphasis,
+                      textAlign: 'center',
+                      textShadowColor: 'rgba(0,0,0,0.6)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }
+                  ]}>
+                    {item.description || 'No description available'}
+                  </Text>
+                </ScrollView>
               </View>
+              <Focusable
+                variant="card"
+                borderRadius={0}
+                enableScale={false}
+                enableGlow={false}
+                onPress={onPressInfo}
+                activeOpacity={0.9}
+                accessibilityLabel={`View details for ${item.name}`}
+                accessibilityHint="Double tap to view content details"
+                style={StyleSheet.absoluteFillObject as any}
+              />
+            </>
+          ) : (
+            <>
+              {/* FRONT FACE */}
+              <Animated.View style={[styles.flipFace as any, styles.frontFace as any, frontFlipStyle]} pointerEvents={flipped ? 'none' : 'auto'}>
+                <TouchableOpacity activeOpacity={0.9} onPress={onPressInfo} style={StyleSheet.absoluteFillObject as any}>
+                  <View style={styles.bannerContainer as ViewStyle}>
+                    {!bannerLoaded && (
+                      <View style={styles.skeletonBannerFull as ViewStyle} />
+                    )}
+                    <Animated.View style={[bannerAnimatedStyle, { flex: 1 }]}>
+                      <FastImage
+                        source={{
+                          uri: item.banner || item.poster,
+                          priority: FastImage.priority.normal,
+                          cache: FastImage.cacheControl.immutable
+                        }}
+                        style={styles.banner as any}
+                        resizeMode={FastImage.resizeMode.cover}
+                        onLoad={() => setBannerLoaded(true)}
+                      />
+                    </Animated.View>
+                    {/* Overlay removed for performance - readability via text shadows */}
+                  </View>
+                  {item.logo && !logoFailed ? (
+                    <View style={styles.logoOverlay as ViewStyle} pointerEvents="none">
+                      <Animated.View style={logoAnimatedStyle}>
+                        <FastImage
+                          source={{
+                            uri: item.logo,
+                            priority: FastImage.priority.high,
+                            cache: FastImage.cacheControl.immutable
+                          }}
+                          style={[styles.logo as any, { width: Math.round(cardWidth * 0.72) }]}
+                          resizeMode={FastImage.resizeMode.contain}
+                          onLoad={() => setLogoLoaded(true)}
+                          onError={onLogoError}
+                        />
+                      </Animated.View>
+                    </View>
+                  ) : (
+                    <View style={styles.titleOverlay as ViewStyle} pointerEvents="none">
+                      <View>
+                        <Text style={[styles.title as TextStyle, { color: colors.highEmphasis, textAlign: 'center' }]} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  {item.genres && (
+                    <View style={styles.genresOverlay as ViewStyle} pointerEvents="none">
+                      <View>
+                        <Animated.Text
+                          style={[styles.genres as TextStyle, { color: colors.mediumEmphasis, textAlign: 'center' }, overlayAnimatedStyle]}
+                          numberOfLines={1}
+                        >
+                          {item.genres.slice(0, 3).join(' • ')}
+                        </Animated.Text>
+                      </View>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </Animated.View>
 
-              {/* Bottom Info */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <TouchableOpacity
-                  style={styles.infoButton}
-                  onPress={onPressInfo}
+              {/* BACK FACE */}
+              <Animated.View style={[styles.flipFace as any, styles.backFace as any, backFlipStyle]} pointerEvents={flipped ? 'auto' : 'none'}>
+                <View style={styles.bannerContainer as ViewStyle}>
+                  <FastImage
+                    source={{ uri: item.banner || item.poster, priority: FastImage.priority.low, cache: FastImage.cacheControl.immutable }}
+                    style={styles.banner as any}
+                    resizeMode={FastImage.resizeMode.cover}
+                  />
+                  {/* Overlay removed for performance - readability via text shadows */}
+                </View>
+                <View style={styles.backContent as ViewStyle}>
+                  {item.logo && !logoFailed ? (
+                    <FastImage
+                      source={{ uri: item.logo, priority: FastImage.priority.normal, cache: FastImage.cacheControl.immutable }}
+                      style={[styles.logo as any, { width: Math.round(cardWidth * 0.72) }]}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  ) : (
+                    <Text style={[styles.backTitle as TextStyle, { color: colors.highEmphasis }]} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                  )}
+                  {item.year && (
+                    <View style={styles.infoRow as ViewStyle}>
+                      <View style={styles.infoItem as ViewStyle}>
+                        <Ionicons name="calendar-outline" size={14} color={colors.mediumEmphasis} />
+                        <Text style={[styles.infoText as TextStyle, { color: colors.mediumEmphasis }]}>{item.year}</Text>
+                      </View>
+                    </View>
+                  )}
+                  <ScrollView style={{ maxHeight: 120 }} showsVerticalScrollIndicator={false}>
+                    <Text style={[
+                      styles.backDescription as TextStyle,
+                      {
+                        color: colors.highEmphasis,
+                        textShadowColor: 'rgba(0,0,0,0.6)',
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 2,
+                      }
+                    ]}>
+                      {item.description || 'No description available'}
+                    </Text>
+                  </ScrollView>
+                </View>
+              </Animated.View>
+
+              {/* FLIP BUTTON */}
+              <View style={styles.flipButtonContainer as ViewStyle} pointerEvents="box-none">
+                <Focusable
+                  variant="button"
+                  borderRadius={16}
+                  enableScale={false}
+                  enableGlow={false}
+                  onPress={onToggleFlip}
+                  activeOpacity={0.8}
+                  accessibilityLabel={flipped ? "Close details" : "Show details"}
+                  accessibilityHint={flipped ? "Double tap to close card details" : "Double tap to flip card and see details"}
                 >
-                  <Ionicons name="information-circle" size={24} color={colors.primary} />
-                  <Text style={[styles.infoButtonText, { color: colors.primary }]}>Info</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.flipButton}
-                  onPress={handleFlip}
-                >
-                  <MaterialIcons name="flip" size={20} color={colors.text} />
-                </TouchableOpacity>
+                  <View style={styles.flipButton as ViewStyle}>
+                    <Ionicons name={flipped ? 'close' : 'information-outline'} size={18} color={colors.white} />
+                  </View>
+                </Focusable>
               </View>
-            </View>
-          </Animated.View>
-        </TouchableOpacity>
-      </Animated.View>
+            </>
+          )}
+        </Animated.View>
+      </View>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  skeletonBannerFull: {
-    width: '100%',
-    height: '55%',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 12,
+    paddingVertical: 12,
   },
   backgroundContainer: {
     position: 'absolute',
-    top: 0,
     left: 0,
     right: 0,
-    height: '100%',
+    top: 0,
+    bottom: 0,
   },
   backgroundImage: {
-    flex: 1,
-    width: '100%',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
   backgroundOverlay: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-    height: '100%',
+    top: 0,
+    bottom: 0,
   },
   bottomBlend: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-    height: 200,
+    bottom: 0,
+    height: 160,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
+  card: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
-  infoButton: {
+  flipFace: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backfaceVisibility: 'hidden',
+  },
+  frontFace: {
+    // front specific adjustments if needed
+  },
+  backFace: {
+    // back specific adjustments if needed
+    backfaceVisibility: 'hidden',
+  },
+  skeletonCard: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  skeletonBannerFull: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.06)'
+  },
+  bannerOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  skeletonInfo: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  skeletonLine: {
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255,255,255,0.08)'
+  },
+  skeletonActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 10,
+    marginTop: 12,
   },
-  infoButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
+  skeletonPill: {
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)'
+  },
+  bannerContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  banner: {
+    width: '100%',
+    height: '100%',
+  },
+  bannerGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    top: 0,
+  },
+  flipButtonContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
   },
   flipButton: {
-    padding: 4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)'
+  },
+
+  info: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 12,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  genres: {
+    marginTop: 2,
+    fontSize: 13,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 12,
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 64,
+    marginBottom: 6,
+  },
+  logoOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 40, // Position above genres
+  },
+  backContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 8,
+  },
+  backTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  backDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 6,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoText: {
+    fontSize: 13,
+  },
+  titleOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 50, // Position above genres
+  },
+  genresOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 12, // Position at bottom
   },
 });
 
-export default HeroCarousel;
+export default React.memo(HeroCarousel);
+
+

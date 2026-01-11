@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, useWindowDimensions, StyleSheet, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, useWindowDimensions, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -13,7 +13,6 @@ import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
 import { logger } from '../../../utils/logger';
 import Focusable from '../../common/Focusable';
-import { triggerLight } from '../../../hooks/useHaptics';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -45,7 +44,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
       text: '#FFFFFF',
       textMuted: 'rgba(255,255,255,0.6)',
       mediumEmphasis: 'rgba(255,255,255,0.7)',
-      primary: 'rgba(255,255,255,0.9)',
+      primary: '#3B82F6',
       white: '#FFFFFF',
       elevation2: 'rgba(255,255,255,0.05)'
     }
@@ -57,23 +56,21 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
       if (showEpisodesModal && metadata?.id) {
         setIsLoadingProgress(true);
         try {
-          // Get all watch progress and filter for this show's episodes
           const allProgress = await storageService.getAllWatchProgress();
-          const showPrefix = `series:${metadata.id}:`;
           const progress: { [key: string]: any } = {};
 
-          for (const [key, value] of Object.entries(allProgress)) {
-            if (key.startsWith(showPrefix)) {
-              // Extract episode id from key (format: series:showId:episodeId)
-              const episodeId = key.replace(showPrefix, '');
-              progress[episodeId] = value;
+          // Filter progress for current show's episodes
+          Object.entries(allProgress).forEach(([key, value]) => {
+            if (key.includes(metadata.id!)) {
+              progress[key] = value;
             }
-          }
+          });
 
           setEpisodeProgress(progress);
 
           // Trakt sync logic preserved
-          if (await TraktService.getInstance().isAuthenticated()) {
+          const traktService = TraktService.getInstance();
+          if (await traktService.isAuthenticated()) {
             // Optional: background sync logic
           }
         } catch (err) {
@@ -99,9 +96,9 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <Focusable style={StyleSheet.absoluteFill} onPress={() => { triggerLight(); setShowEpisodesModal(false); }}>
+      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setShowEpisodesModal(false)}>
         <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      </Focusable>
+      </TouchableOpacity>
 
       <Animated.View
         entering={SlideInRight.duration(300)}
@@ -117,43 +114,47 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
           borderColor: 'rgba(255,255,255,0.1)',
         }}
       >
-        <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 20, paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 15, paddingHorizontal: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '700' }}>Episodes</Text>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 15, gap: 8 }}>
-            {[...seasons]
-              .sort((a, b) => {
-                if (a === 0) return 1;
-                if (b === 0) return -1;
-                return a - b;
-              }).map((season) => (
+            {seasons.map((season, index) => {
+              const isActive = selectedSeason === season;
+              return (
                 <Focusable
                   key={season}
-                  hasTVPreferredFocus={Platform.isTV && season === selectedSeason}
-                  onPress={() => { triggerLight(); setSelectedSeason(season); }}
+                  variant="button"
+                  borderRadius={20}
+                  enableScale={false}
+                  enableGlow={false}
+                  onPress={() => setSelectedSeason(season)}
+                  hasTVPreferredFocus={index === 0}
+                  accessibilityLabel={`Season ${season}`}
+                  accessibilityHint={isActive ? 'Currently selected season' : 'Double tap to select this season'}
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 8,
                     borderRadius: 20,
-                    backgroundColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.06)',
+                    backgroundColor: isActive ? 'white' : 'rgba(255,255,255,0.06)',
                     borderWidth: 1,
-                    borderColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.1)',
+                    borderColor: isActive ? 'white' : 'rgba(255,255,255,0.1)',
                   }}
                 >
                   <Text style={{
-                    color: selectedSeason === season ? 'black' : 'white',
-                    fontWeight: selectedSeason === season ? '700' : '500'
+                    color: isActive ? 'black' : 'white',
+                    fontWeight: isActive ? '700' : '500'
                   }}>
-                    {season === 0 ? 'Specials' : `Season ${season}`}
+                    Season {season}
                   </Text>
                 </Focusable>
-              ))}
+              );
+            })}
           </ScrollView>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 18, paddingBottom: 40 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15, paddingBottom: 40 }}>
           {isLoadingProgress ? (
             <ActivityIndicator color="white" style={{ marginTop: 20 }} />
           ) : (
@@ -166,7 +167,6 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   episodeProgress={episodeProgress}
                   tmdbEpisodeOverrides={tmdbEpisodeOverrides}
                   onPress={() => {
-                    triggerLight();
                     onSelectEpisode(episode);
                     setShowEpisodesModal(false);
                   }}
@@ -181,5 +181,3 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
     </View>
   );
 };
-
-export default EpisodesModal;

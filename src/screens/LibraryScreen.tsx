@@ -5,6 +5,7 @@ import { mmkvStorage } from '../services/mmkvStorage';
 import { useToast } from '../contexts/ToastContext';
 import DropUpMenu from '../components/home/DropUpMenu';
 import ScreenHeader from '../components/common/ScreenHeader';
+import Focusable from '../components/common/Focusable';
 import {
   View,
   Text,
@@ -124,13 +125,16 @@ const TraktItem = React.memo(({
   }, [navigation, item.imdbId, item.type]);
 
   return (
-    <TouchableOpacity
-      style={[styles.itemContainer, { width }]}
+    <Focusable
+      variant="card"
+      borderRadius={12}
       onPress={handlePress}
-      activeOpacity={0.7}
+      style={[styles.itemContainer, { width }]}
+      accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
+      accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'TV show'} details`}
     >
       <View>
-        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
+        <View style={[styles.posterContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black }]}>
           {posterUrl ? (
             <FastImage
               source={{ uri: posterUrl }}
@@ -149,7 +153,7 @@ const TraktItem = React.memo(({
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 });
 
@@ -417,17 +421,20 @@ const LibraryScreen = () => {
   }, [traktAuthenticated, watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
 
   const renderItem = ({ item }: { item: LibraryItem }) => (
-    <TouchableOpacity
+    <Focusable
+      variant="card"
+      borderRadius={12}
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => navigation.navigate('Metadata', { id: item.id, type: item.type })}
       onLongPress={() => {
         setSelectedItem(item);
         setMenuVisible(true);
       }}
-      activeOpacity={0.7}
+      accessibilityLabel={`${item.name}${item.watched ? ', watched' : ''}`}
+      accessibilityHint={`Open ${item.type === 'movie' ? 'movie' : 'TV show'} details. Long press for options.`}
     >
       <View>
-        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
+        <View style={[styles.posterContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black }]}>
           <FastImage
             source={{ uri: item.poster || 'https://via.placeholder.com/300x450' }}
             style={styles.poster}
@@ -455,19 +462,22 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktCollectionFolder = ({ folder }: { folder: TraktFolder }) => (
-    <TouchableOpacity
+    <Focusable
+      variant="card"
+      borderRadius={8}
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         setSelectedTraktFolder(folder.id);
         loadAllCollections();
       }}
-      activeOpacity={0.7}
+      accessibilityLabel={`${folder.name} folder, ${folder.itemCount} items`}
+      accessibilityHint="Open this Trakt collection"
     >
-      <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+      <View style={[styles.posterContainer, styles.folderContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
         <View style={styles.folderGradient}>
           <MaterialIcons
             name={folder.icon}
@@ -483,11 +493,13 @@ const LibraryScreen = () => {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktFolder = () => (
-    <TouchableOpacity
+    <Focusable
+      variant="card"
+      borderRadius={8}
       style={[styles.itemContainer, { width: itemWidth }]}
       onPress={() => {
         if (!traktAuthenticated) {
@@ -498,10 +510,11 @@ const LibraryScreen = () => {
           loadAllCollections();
         }
       }}
-      activeOpacity={0.7}
+      accessibilityLabel={`Trakt collections${traktAuthenticated && traktFolders.length > 0 ? `, ${traktFolders.length} folders` : ''}`}
+      accessibilityHint={traktAuthenticated ? "Open Trakt collections" : "Sign in to Trakt"}
     >
       <View>
-        <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+        <View style={[styles.posterContainer, styles.folderContainer, styles.focusablePoster, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
           <View style={styles.folderGradient}>
             <TraktIcon width={48} height={48} style={{ marginBottom: 8 }} />
             <Text style={[styles.folderTitle, { color: currentTheme.colors.white }]}>
@@ -520,7 +533,7 @@ const LibraryScreen = () => {
           </Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Focusable>
   );
 
   const renderTraktItem = useCallback(({ item }: { item: TraktDisplayItem }) => {
@@ -762,7 +775,9 @@ const LibraryScreen = () => {
             <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
               Your Trakt collections will appear here once you start using Trakt
             </Text>
-            <TouchableOpacity
+            <Focusable
+              variant="button"
+              borderRadius={24}
               style={[styles.exploreButton, {
                 backgroundColor: currentTheme.colors.primary,
                 shadowColor: currentTheme.colors.black
@@ -770,10 +785,13 @@ const LibraryScreen = () => {
               onPress={() => {
                 loadAllCollections();
               }}
-              activeOpacity={0.7}
+              enableScale={false}
+              enableGlow={false}
+              accessibilityLabel="Load Collections"
+              accessibilityHint="Load your Trakt collections"
             >
               <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
-            </TouchableOpacity>
+            </Focusable>
           </View>
         );
       }
@@ -804,7 +822,9 @@ const LibraryScreen = () => {
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             This collection is empty
           </Text>
-          <TouchableOpacity
+          <Focusable
+            variant="button"
+            borderRadius={24}
             style={[styles.exploreButton, {
               backgroundColor: currentTheme.colors.primary,
               shadowColor: currentTheme.colors.black
@@ -812,10 +832,13 @@ const LibraryScreen = () => {
             onPress={() => {
               loadAllCollections();
             }}
-            activeOpacity={0.7}
+            enableScale={false}
+            enableGlow={false}
+            accessibilityLabel="Refresh"
+            accessibilityHint="Refresh this Trakt collection"
           >
             <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       );
     }
@@ -869,7 +892,9 @@ const LibraryScreen = () => {
     const isActive = filter === filterType;
 
     return (
-      <TouchableOpacity
+      <Focusable
+        variant="button"
+        borderRadius={24}
         style={[
           styles.filterButton,
           isActive && { backgroundColor: currentTheme.colors.primary },
@@ -888,7 +913,10 @@ const LibraryScreen = () => {
           }
           setFilter(filterType);
         }}
-        activeOpacity={0.7}
+        enableScale={false}
+        enableGlow={false}
+        accessibilityLabel={`${label} filter${isActive ? ', selected' : ''}`}
+        accessibilityHint={filterType === 'trakt' ? (traktAuthenticated ? 'View Trakt collections' : 'Sign in to Trakt') : `Filter library by ${label.toLowerCase()}`}
       >
         {filterType === 'trakt' ? (
           <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -911,7 +939,7 @@ const LibraryScreen = () => {
         >
           {label}
         </Text>
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -974,16 +1002,22 @@ const LibraryScreen = () => {
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             {emptySubtitle}
           </Text>
-          <TouchableOpacity
+          <Focusable
+            variant="button"
+            borderRadius={24}
             style={[styles.exploreButton, {
               backgroundColor: currentTheme.colors.primary,
               shadowColor: currentTheme.colors.black
             }]}
             onPress={() => navigation.navigate('Search')}
-            activeOpacity={0.7}
+            enableScale={false}
+            enableGlow={false}
+            hasTVPreferredFocus
+            accessibilityLabel="Find something to watch"
+            accessibilityHint="Go to search to find content"
           >
             <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       );
     }
@@ -1256,6 +1290,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
+  },
+  // Used when Focusable wrapper handles border animation
+  focusablePoster: {
+    borderWidth: 0,
+    borderColor: 'transparent',
+    elevation: 0,
+    shadowOpacity: 0,
   },
   poster: {
     width: '100%',

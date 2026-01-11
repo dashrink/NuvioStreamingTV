@@ -29,6 +29,7 @@ import { RatingsSection } from '../components/metadata/RatingsSection';
 import { CommentsSection, CommentBottomSheet } from '../components/metadata/CommentsSection';
 import TrailersSection from '../components/metadata/TrailersSection';
 import CollectionSection from '../components/metadata/CollectionSection';
+import Focusable from '../components/common/Focusable';
 import { RouteParams, Episode } from '../types/metadata';
 import Animated, {
   useAnimatedStyle,
@@ -873,19 +874,32 @@ const MetadataScreen: React.FC = () => {
               {metadataError}
             </Text>
           )}
-          <TouchableOpacity
+          <Focusable
+            variant="button"
+            borderRadius={8}
+            enableScale={true}
+            enableGlow={true}
+            hasTVPreferredFocus={true}
             style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
             onPress={loadMetadata}
+            accessibilityLabel="Try again"
+            accessibilityHint="Double tap to retry loading content"
           >
             <MaterialIcons name="refresh" size={20} color={currentTheme.colors.white} style={{ marginRight: 8 }} />
             <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Focusable>
+          <Focusable
+            variant="button"
+            borderRadius={8}
+            enableScale={true}
+            enableGlow={true}
             style={[styles.backButton, { borderColor: currentTheme.colors.primary }]}
             onPress={handleBack}
+            accessibilityLabel="Go back"
+            accessibilityHint="Double tap to return to previous screen"
           >
             <Text style={[styles.backButtonText, { color: currentTheme.colors.primary }]}>Go Back</Text>
-          </TouchableOpacity>
+          </Focusable>
         </View>
       </SafeAreaView>
     );
@@ -1247,17 +1261,23 @@ const MetadataScreen: React.FC = () => {
                 {/* Backdrop Gallery section - shown after movie details for movies when TMDB ID is available and enrichment is enabled */}
                 {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length === 0 && metadata?.tmdbId && settings.enrichMetadataWithTMDB && (
                   <View style={styles.backdropGalleryContainer}>
-                    <TouchableOpacity
+                    <Focusable
+                      variant="listItem"
+                      borderRadius={12}
+                      enableScale={true}
+                      enableGlow={true}
                       style={styles.backdropGalleryButton}
                       onPress={() => navigation.navigate('BackdropGallery' as any, {
                         tmdbId: metadata.tmdbId,
                         type: 'movie',
                         title: metadata.name || 'Gallery'
                       })}
+                      accessibilityLabel="Backdrop Gallery"
+                      accessibilityHint="Double tap to view backdrop images"
                     >
                       <Text style={[styles.backdropGalleryText, { color: currentTheme.colors.highEmphasis }]}>Backdrop Gallery</Text>
                       <MaterialIcons name="chevron-right" size={24} color={currentTheme.colors.highEmphasis} />
-                    </TouchableOpacity>
+                    </Focusable>
                   </View>
                 )}
 
@@ -1387,17 +1407,23 @@ const MetadataScreen: React.FC = () => {
                 {/* Backdrop Gallery section - shown after show details for TV shows when TMDB ID is available and enrichment is enabled */}
                 {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.tmdbId && settings.enrichMetadataWithTMDB && (
                   <View style={styles.backdropGalleryContainer}>
-                    <TouchableOpacity
+                    <Focusable
+                      variant="listItem"
+                      borderRadius={12}
+                      enableScale={true}
+                      enableGlow={true}
                       style={styles.backdropGalleryButton}
                       onPress={() => navigation.navigate('BackdropGallery' as any, {
                         tmdbId: metadata.tmdbId,
                         type: 'tv',
                         title: metadata.name || 'Gallery'
                       })}
+                      accessibilityLabel="Backdrop Gallery"
+                      accessibilityHint="Double tap to view backdrop images"
                     >
                       <Text style={[styles.backdropGalleryText, { color: currentTheme.colors.highEmphasis }]}>Backdrop Gallery</Text>
                       <MaterialIcons name="chevron-right" size={24} color={currentTheme.colors.highEmphasis} />
-                    </TouchableOpacity>
+                    </Focusable>
                   </View>
                 )}
 
