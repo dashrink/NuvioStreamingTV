@@ -111,6 +111,24 @@ const ThemedApp = () => {
     setHasActiveProfile(activeProfile !== null);
   }, [activeProfile]);
 
+  // Navigate to MainTabs after profile selection
+  useEffect(() => {
+    // Only navigate if app is ready, onboarding is complete, and a profile was just selected
+    if (isAppReady && hasCompletedOnboarding && activeProfile && navigationRef.current) {
+      // Check if we can navigate (navigator is ready)
+      const navState = navigationRef.current.getRootState();
+      if (navState) {
+        // Get current route name
+        const currentRoute = navState.routes[navState.index];
+        // Only navigate if we're on ProfileSelector and profile was just selected
+        if (currentRoute?.name === 'ProfileSelector') {
+          console.log('[App] Profile selected, navigating to MainTabs');
+          navigationRef.current.navigate('MainTabs');
+        }
+      }
+    }
+  }, [activeProfile, isAppReady, hasCompletedOnboarding]);
+
   // Update popup functionality
   const {
     showUpdatePopup,
