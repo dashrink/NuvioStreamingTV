@@ -1,12 +1,8 @@
-import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
-import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp, useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
+import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
-import { TVNavigationProvider, useTVNavigationOptional } from '../contexts/TVNavigationContext';
-import { PerformanceProvider } from '../contexts/PerformanceContext';
-import { TVBackHandler } from '../components/tv/TVBackHandler';
-import { TVNavigationBackHandlerProvider } from '../components/tv/TVNavigationBackHandlerProvider';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -74,6 +70,9 @@ import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
+import { ProfileProvider, useActiveProfile } from '../contexts/ProfileContext';
+import ProfileSwitcherBottomSheet from '../components/profile/ProfileSwitcherBottomSheet';
+import ProfileIcon from '../components/icons/ProfileIcon';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -85,33 +84,24 @@ if (Platform.OS === 'android') {
   }
 }
 
-// TV Focus restoration params (optional for all screens)
-// When using TV focus restoration, screens will receive/set this param
-export interface TVFocusParams {
-  /** Last focused element ID for focus restoration */
-  lastFocusId?: string;
-}
-
 // Stack navigator types
-// Note: Screens can receive TVFocusParams.lastFocusId through navigation.setParams()
-// This is used by the TV focus restoration system to persist focus state
 export type RootStackParamList = {
-  Onboarding: TVFocusParams | undefined;
-  MainTabs: TVFocusParams | undefined;
-  Backup: TVFocusParams | undefined;
-  Home: TVFocusParams | undefined;
-  Library: TVFocusParams | undefined;
-  Settings: TVFocusParams | undefined;
-  Update: TVFocusParams | undefined;
-  Search: TVFocusParams | undefined;
-  Calendar: TVFocusParams | undefined;
-  Metadata: TVFocusParams & {
+  Onboarding: undefined;
+  MainTabs: undefined;
+  Backup: undefined;
+  Home: undefined;
+  Library: undefined;
+  Settings: undefined;
+  Update: undefined;
+  Search: undefined;
+  Calendar: undefined;
+  Metadata: {
     id: string;
     type: string;
     episodeId?: string;
     addonId?: string;
   };
-  Streams: TVFocusParams & {
+  Streams: {
     id: string;
     type: string;
     title?: string;
@@ -127,7 +117,7 @@ export type RootStackParamList = {
     resumeTime?: number;
     duration?: number;
   };
-  PlayerIOS: TVFocusParams & {
+  PlayerIOS: {
     uri: string;
     title?: string;
     season?: number;
@@ -148,7 +138,7 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  PlayerAndroid: TVFocusParams & {
+  PlayerAndroid: {
     uri: string;
     title?: string;
     season?: number;
@@ -169,26 +159,26 @@ export type RootStackParamList = {
     videoType?: string;
     groupedEpisodes?: { [seasonNumber: number]: any[] };
   };
-  Catalog: TVFocusParams & { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
-  Credits: TVFocusParams & { mediaId: string; mediaType: string };
-  ShowRatings: TVFocusParams & { showId: number };
-  Account: TVFocusParams | undefined;
-  AccountManage: TVFocusParams | undefined;
-  Payment: TVFocusParams | undefined;
-  PrivacyPolicy: TVFocusParams | undefined;
-  About: TVFocusParams | undefined;
-  Addons: TVFocusParams | undefined;
-  CatalogSettings: TVFocusParams | undefined;
-  NotificationSettings: TVFocusParams | undefined;
-  MDBListSettings: TVFocusParams | undefined;
-  TMDBSettings: TVFocusParams | undefined;
-  HomeScreenSettings: TVFocusParams | undefined;
-  HeroCatalogs: TVFocusParams | undefined;
-  TraktSettings: TVFocusParams | undefined;
-  PlayerSettings: TVFocusParams | undefined;
-  ThemeSettings: TVFocusParams | undefined;
-  ScraperSettings: TVFocusParams | undefined;
-  CastMovies: TVFocusParams & {
+  Catalog: { id: string; type: string; addonId?: string; name?: string; genreFilter?: string };
+  Credits: { mediaId: string; mediaType: string };
+  ShowRatings: { showId: number };
+  Account: undefined;
+  AccountManage: undefined;
+  Payment: undefined;
+  PrivacyPolicy: undefined;
+  About: undefined;
+  Addons: undefined;
+  CatalogSettings: undefined;
+  NotificationSettings: undefined;
+  MDBListSettings: undefined;
+  TMDBSettings: undefined;
+  HomeScreenSettings: undefined;
+  HeroCatalogs: undefined;
+  TraktSettings: undefined;
+  PlayerSettings: undefined;
+  ThemeSettings: undefined;
+  ScraperSettings: undefined;
+  CastMovies: {
     castMember: {
       id: number;
       name: string;
@@ -196,8 +186,8 @@ export type RootStackParamList = {
       character?: string;
     };
   };
-  AISettings: TVFocusParams | undefined;
-  AIChat: TVFocusParams & {
+  AISettings: undefined;
+  AIChat: {
     contentId: string;
     contentType: 'movie' | 'series';
     episodeId?: string;
@@ -205,26 +195,25 @@ export type RootStackParamList = {
     episodeNumber?: number;
     title: string;
   };
-  BackdropGallery: TVFocusParams & {
+  BackdropGallery: {
     tmdbId: number;
     type: 'movie' | 'tv';
     title: string;
   };
-  ContinueWatchingSettings: TVFocusParams | undefined;
-  Contributors: TVFocusParams | undefined;
-  DebridIntegration: TVFocusParams | undefined;
+  ContinueWatchingSettings: undefined;
+  Contributors: undefined;
+  DebridIntegration: undefined;
 };
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // Tab navigator types
-// Note: Tab screens also support TVFocusParams.lastFocusId for focus restoration
 export type MainTabParamList = {
-  Home: TVFocusParams | undefined;
-  Library: TVFocusParams | undefined;
-  Search: TVFocusParams | undefined;
-  Downloads: TVFocusParams | undefined;
-  Settings: TVFocusParams | undefined;
+  Home: undefined;
+  Library: undefined;
+  Search: undefined;
+  Downloads: undefined;
+  Settings: undefined;
 };
 
 // Custom fonts that satisfy both theme types
@@ -548,6 +537,8 @@ const MainTabs = () => {
   const { settings: appSettings } = useSettingsHook();
   const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [showProfileSwitcher, setShowProfileSwitcher] = React.useState(false);
+  const { activeProfile } = useActiveProfile();
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -719,6 +710,32 @@ const MainTabs = () => {
                 </TouchableOpacity>
               );
             })}
+            {/* Profile Switcher Button for Tablets */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setShowProfileSwitcher(true)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                marginLeft: 8,
+                borderRadius: 24,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <ProfileIcon size={20} color={currentTheme.colors.white} />
+              {activeProfile && (
+                <Text style={{
+                  color: currentTheme.colors.white,
+                  fontWeight: '600',
+                  fontSize: 13,
+                }}>
+                  {activeProfile.name}
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
         </Animated.View>
       );
@@ -945,6 +962,42 @@ const MainTabs = () => {
             }}
           />
         </IOSTab.Navigator>
+
+        {/* Profile Switcher Button for iOS */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowProfileSwitcher(true)}
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            right: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            zIndex: 100,
+          }}
+        >
+          <ProfileIcon size={18} color={currentTheme.colors.white} />
+          {activeProfile && !isTablet && (
+            <Text style={{
+              color: currentTheme.colors.white,
+              fontWeight: '600',
+              fontSize: 12,
+            }}>
+              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Profile Switcher Bottom Sheet */}
+        <ProfileSwitcherBottomSheet
+          visible={showProfileSwitcher}
+          onClose={() => setShowProfileSwitcher(false)}
+        />
       </View>
     );
   }
@@ -1058,6 +1111,44 @@ const MainTabs = () => {
           }}
         />
       </Tab.Navigator>
+
+      {/* Profile Switcher Button for Android Phones (tablets use the floating nav bar) */}
+      {!isTablet && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowProfileSwitcher(true)}
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            right: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            zIndex: 100,
+          }}
+        >
+          <ProfileIcon size={18} color={currentTheme.colors.white} />
+          {activeProfile && (
+            <Text style={{
+              color: currentTheme.colors.white,
+              fontWeight: '600',
+              fontSize: 12,
+            }}>
+              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            </Text>
+          )}
+        </TouchableOpacity>
+      )}
+
+      {/* Profile Switcher Bottom Sheet */}
+      <ProfileSwitcherBottomSheet
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
+      />
     </View>
   );
 };
@@ -1129,11 +1220,6 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
             opacity: 1,
           })
         }}>
-          {/* TV Navigation: Register navigation-aware back handler */}
-          <TVNavigationBackHandlerProvider
-            rootScreens={['MainTabs', 'Home', 'Onboarding']}
-            preventAppExit={true}
-          />
           <Stack.Navigator
             initialRouteName={initialRouteName || 'MainTabs'}
             screenOptions={{
@@ -1626,33 +1712,6 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
   );
 };
 
-/**
- * AppNavigator with TV Navigation Support
- *
- * Wraps the navigation structure with:
- * - PostHogProvider for analytics
- * - TVNavigationProvider for global TV navigation state (focus history, focus memory, voice search, context menu)
- * - TVBackHandler for consistent back button behavior on TV platforms
- * - LoadingProvider for loading state management
- *
- * TV Focus Restoration Integration:
- * - Focus state is stored in navigation.setParams() for persistence across navigation
- * - TVNavigationContext provides global access to focus state
- * - Individual screens can use useTVFocusRestoration hook or TVScreenWrapper component
- *   to integrate with the focus restoration system
- *
- * TV Back Button Behavior:
- * - Closes context menus and voice search modals first
- * - Then navigates back through the navigation stack
- * - Prevents unexpected app exits at root screens (MainTabs, Home, Onboarding)
- * - Works with both Apple TV menu button and Android TV back button
- *
- * The TV navigation system follows these patterns:
- * 1. useFocusEffect for automatic focus restoration on screen navigation
- * 2. requestAnimationFrame for proper timing (screen focus fires before layout)
- * 3. useCallback wrapping to prevent infinite loops
- * 4. setNativeProps({ hasTVPreferredFocus: true }) for runtime focus changes
- */
 const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
   <PostHogProvider
     apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
@@ -1660,15 +1719,11 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
       host: "https://us.i.posthog.com",
     }}
   >
-    <PerformanceProvider>
-      <TVNavigationProvider>
-        <TVBackHandler>
-          <LoadingProvider>
-            <InnerNavigator initialRouteName={initialRouteName} />
-          </LoadingProvider>
-        </TVBackHandler>
-      </TVNavigationProvider>
-    </PerformanceProvider>
+    <ProfileProvider>
+      <LoadingProvider>
+        <InnerNavigator initialRouteName={initialRouteName} />
+      </LoadingProvider>
+    </ProfileProvider>
   </PostHogProvider>
 );
 

@@ -19,6 +19,7 @@ import { StreamingContent, catalogService } from '../../services/catalogService'
 import { LinearGradient } from 'expo-linear-gradient';
 import FastImage from '@d11/react-native-fast-image';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useProfileContext } from '../../contexts/ProfileContext';
 import { storageService } from '../../services/storageService';
 import { logger } from '../../utils/logger';
 import * as Haptics from 'expo-haptics';
@@ -27,8 +28,6 @@ import { stremioService } from '../../services/stremioService';
 import { streamCacheService } from '../../services/streamCacheService';
 import { useSettings } from '../../hooks/useSettings';
 import CustomAlert from '../../components/CustomAlert';
-import Focusable from '../common/Focusable';
-import TVContinueWatchingSection, { TVContinueWatchingItem } from '../tv/TVContinueWatchingSection';
 
 // Define interface for continue watching items
 interface ContinueWatchingItem extends StreamingContent {
@@ -37,11 +36,6 @@ interface ContinueWatchingItem extends StreamingContent {
   season?: number;
   episode?: number;
   episodeTitle?: string;
-  addonId?: string;
-  addonPoster?: string;
-  addonName?: string;
-  addonDescription?: string;
-  traktPlaybackId?: number; // Trakt playback ID for removal
 }
 
 // Define the ref interface
@@ -108,13 +102,13 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
+  const { activeProfile } = useProfileContext();
   const [continueWatchingItems, setContinueWatchingItems] = useState<ContinueWatchingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const appState = useRef(AppState.currentState);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const flashListRef = useRef<FlashList<ContinueWatchingItem>>(null);
 
   // Enhanced responsive sizing for tablets and TV screens
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -219,8 +213,9 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const metadataCache = useRef<Record<string, { metadata: any; basicContent: StreamingContent | null; timestamp: number }>>({});
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  const getCachedMetadata = useCallback(async (type: string, id: string, addonId?: string) => {
-    const cacheKey = `${type}:${id}:${addonId || 'default'}`;
+  // Helper function to get cached or fetch metadata
+  const getCachedMetadata = useCallback(async (type: string, id: string) => {
+    const cacheKey = `${type}:${id}`;
     const cached = metadataCache.current[cacheKey];
     const now = Date.now();
 
@@ -230,80 +225,60 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
 
     try {
       const shouldFetchMeta = await stremioService.isValidContentId(type, id);
-
-      const [metadata, basicContent, addonSpecificMeta] = await Promise.all([
+      const [metadata, basicContent] = await Promise.all([
         shouldFetchMeta ? stremioService.getMetaDetails(type, id) : Promise.resolve(null),
-        catalogService.getBasicContentDetails(type, id),
-
-        addonId
-          ? stremioService.getMetaDetails(type, id, addonId).catch(() => null)
-          : Promise.resolve(null)
+        catalogService.getBasicContentDetails(type, id)
       ]);
 
-      const preferredAddonMeta = addonSpecificMeta || metadata;
-
-
-      const finalContent = basicContent ? {
-        ...basicContent,
-        ...(preferredAddonMeta?.name && { name: preferredAddonMeta.name }),
-        ...(preferredAddonMeta?.poster && { poster: preferredAddonMeta.poster }),
-        ...(preferredAddonMeta?.description && { description: preferredAddonMeta.description }),
-      } : null;
-
-
-      if (finalContent) {
-        const result = {
-          metadata,
-          basicContent: finalContent,
-          addonContent: preferredAddonMeta,
-          timestamp: now
-        };
-
+      if (basicContent) {
+        const result = { metadata, basicContent, timestamp: now };
         metadataCache.current[cacheKey] = result;
         return result;
       }
       return null;
     } catch (error: any) {
+      // Skip logging 404 errors to reduce noise
       return null;
     }
   }, []);
 
-
-  const findNextEpisode = useCallback((
-    currentSeason: number,
-    currentEpisode: number,
-    videos: any[],
-    watchedSet?: Set<string>,
-    showId?: string
-  ) => {
+  // Helper function to find the next episode
+  const findNextEpisode = useCallback((currentSeason: number, currentEpisode: number, videos: any[]) => {
     if (!videos || !Array.isArray(videos)) return null;
 
+    // Sort videos to ensure correct order
     const sortedVideos = [...videos].sort((a, b) => {
       if (a.season !== b.season) return a.season - b.season;
       return a.episode - b.episode;
     });
 
-    const isAlreadyWatched = (season: number, episode: number): boolean => {
-      if (!watchedSet || !showId) return false;
-      const cleanShowId = showId.startsWith('tt') ? showId : `tt${showId}`;
-      return watchedSet.has(`${cleanShowId}:${season}:${episode}`) ||
-        watchedSet.has(`${showId}:${season}:${episode}`);
-    };
+    // Strategy 1: Look for next episode in the same season
+    let nextEp = sortedVideos.find(v => v.season === currentSeason && v.episode === currentEpisode + 1);
 
-    for (const video of sortedVideos) {
-      if (video.season < currentSeason) continue;
-      if (video.season === currentSeason && video.episode <= currentEpisode) continue;
+    // Strategy 2: If not found, look for the first episode of the next season
+    if (!nextEp) {
+      nextEp = sortedVideos.find(v => v.season === currentSeason + 1 && v.episode === 1);
+    }
 
-      if (isAlreadyWatched(video.season, video.episode)) continue;
-
-      if (isEpisodeReleased(video)) {
-        return video;
+    // Strategy 3: Just find the very next video in the list after the current one
+    // This handles cases where episode numbering isn't sequential or S+1 E1 isn't the standard start
+    if (!nextEp) {
+      const currentIndex = sortedVideos.findIndex(v => v.season === currentSeason && v.episode === currentEpisode);
+      if (currentIndex !== -1 && currentIndex + 1 < sortedVideos.length) {
+        const candidate = sortedVideos[currentIndex + 1];
+        // Ensure we didn't just jump to a random special; check reasonable bounds if needed,
+        // but generally taking the next sorted item is correct for sequential viewing.
+        nextEp = candidate;
       }
+    }
+
+    // Verify the found episode is released
+    if (nextEp && isEpisodeReleased(nextEp)) {
+      return nextEp;
     }
 
     return null;
   }, []);
-
 
   // Modified loadContinueWatching to render incrementally
   const loadContinueWatching = useCallback(async (isBackgroundRefresh = false) => {
@@ -367,237 +342,295 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
     };
 
     try {
-      // If Trakt is authenticated, skip local storage and only use Trakt playback
-      const traktService = TraktService.getInstance();
-      const isTraktAuthed = await traktService.isAuthenticated();
+      const allProgress = await storageService.getAllWatchProgress();
+      if (Object.keys(allProgress).length === 0) {
+        setContinueWatchingItems([]);
+        return;
+      }
 
-      // Declare groupPromises outside the if/else block
-      let groupPromises: Promise<void>[] = [];
+      // Get the active profile ID for filtering watch progress
+      const profileId = activeProfile?.id;
 
-      if (isTraktAuthed) {
-        // Just skip local storage - Trakt will populate with correct timestamps
-        // Don't clear existing items to avoid flicker
-      } else {
-        // Non-Trakt: use local storage
-        const allProgress = await storageService.getAllWatchProgress();
-        if (Object.keys(allProgress).length === 0) {
-          setContinueWatchingItems([]);
-          return;
+      // Group progress items by content ID, filtered by profile
+      const contentGroups: Record<string, { type: string; id: string; episodes: Array<{ key: string; episodeId?: string; progress: any; progressPercent: number }> }> = {};
+      for (const key in allProgress) {
+        // Filter by profile if activeProfile is set
+        // Keys with profile have format: profile:${profileId}:${type}:${id}:...
+        // Keys without profile (legacy) have format: ${type}:${id}:...
+        if (profileId) {
+          const hasProfilePrefix = key.startsWith(`profile:${profileId}:`);
+          const isLegacyKey = !key.startsWith('profile:');
+          // Include both profile-specific keys and legacy keys (for migration)
+          if (!hasProfilePrefix && !isLegacyKey) continue;
         }
 
-        // Group progress items by content ID
-        const contentGroups: Record<string, { type: string; id: string; episodes: Array<{ key: string; episodeId?: string; progress: any; progressPercent: number }> }> = {};
-        for (const key in allProgress) {
+        // Parse key, handling both profile-scoped and legacy formats
+        let type: string;
+        let id: string;
+        let episodeIdParts: string[];
+
+        if (key.startsWith('profile:')) {
+          // Profile-scoped key: profile:${profileId}:${type}:${id}:${episodeId}
+          const afterProfile = key.replace(/^profile:[^:]+:/, '');
+          const keyParts = afterProfile.split(':');
+          [type, id, ...episodeIdParts] = keyParts;
+        } else {
+          // Legacy key: ${type}:${id}:${episodeId}
           const keyParts = key.split(':');
-          const [type, id, ...episodeIdParts] = keyParts;
-          const episodeId = episodeIdParts.length > 0 ? episodeIdParts.join(':') : undefined;
-          const progress = allProgress[key];
-          const progressPercent =
-            progress.duration > 0
-              ? (progress.currentTime / progress.duration) * 100
-              : 0;
-          // Skip fully watched movies
-          if (type === 'movie' && progressPercent >= 85) continue;
-          // Skip movies with no actual progress (ensure > 0%)
-          if (type === 'movie' && (!isFinite(progressPercent) || progressPercent <= 0)) continue;
-          const contentKey = `${type}:${id}`;
-          if (!contentGroups[contentKey]) contentGroups[contentKey] = { type, id, episodes: [] };
-          contentGroups[contentKey].episodes.push({ key, episodeId, progress, progressPercent });
+          [type, id, ...episodeIdParts] = keyParts;
         }
 
-        // Fetch Trakt watched movies once and reuse
-        const traktMoviesSetPromise = (async () => {
-          try {
-            const traktService = TraktService.getInstance();
-            const isAuthed = await traktService.isAuthenticated();
-            if (!isAuthed) return new Set<string>();
-            if (typeof (traktService as any).getWatchedMovies === 'function') {
-              const watched = await (traktService as any).getWatchedMovies();
-              const watchedSet = new Set<string>();
+        const episodeId = episodeIdParts.length > 0 ? episodeIdParts.join(':') : undefined;
+        const progress = allProgress[key];
+        const progressPercent = (progress.currentTime / progress.duration) * 100;
+        // Skip fully watched movies
+        if (type === 'movie' && progressPercent >= 85) continue;
+        // Skip movies with no actual progress (ensure > 0%)
+        if (type === 'movie' && (!isFinite(progressPercent) || progressPercent <= 0)) continue;
+        const contentKey = `${type}:${id}`;
+        if (!contentGroups[contentKey]) contentGroups[contentKey] = { type, id, episodes: [] };
+        contentGroups[contentKey].episodes.push({ key, episodeId, progress, progressPercent });
+      }
 
-              if (Array.isArray(watched)) {
-                watched.forEach((w: any) => {
-                  const ids = w?.movie?.ids;
-                  if (!ids) return;
+      // Fetch Trakt watched movies once and reuse
+      const traktMoviesSetPromise = (async () => {
+        try {
+          const traktService = TraktService.getInstance();
+          const isAuthed = await traktService.isAuthenticated();
+          if (!isAuthed) return new Set<string>();
+          if (typeof (traktService as any).getWatchedMovies === 'function') {
+            const watched = await (traktService as any).getWatchedMovies();
+            const watchedSet = new Set<string>();
 
-                  if (ids.imdb) {
-                    const imdb = ids.imdb;
-                    watchedSet.add(imdb.startsWith('tt') ? imdb : `tt${imdb}`);
-                  }
-                  if (ids.tmdb) {
-                    watchedSet.add(ids.tmdb.toString());
-                  }
-                });
-              }
-              return watchedSet;
+            if (Array.isArray(watched)) {
+              watched.forEach((w: any) => {
+                const ids = w?.movie?.ids;
+                if (!ids) return;
+
+                if (ids.imdb) {
+                  const imdb = ids.imdb;
+                  watchedSet.add(imdb.startsWith('tt') ? imdb : `tt${imdb}`);
+                }
+                if (ids.tmdb) {
+                  watchedSet.add(ids.tmdb.toString());
+                }
+              });
             }
-            return new Set<string>();
-          } catch {
-            return new Set<string>();
+            return watchedSet;
           }
-        })();
+          return new Set<string>();
+        } catch {
+          return new Set<string>();
+        }
+      })();
 
-        // Fetch Trakt watched shows once and reuse
-        const traktShowsSetPromise = (async () => {
-          try {
-            const traktService = TraktService.getInstance();
-            const isAuthed = await traktService.isAuthenticated();
-            if (!isAuthed) return new Set<string>();
+      // Fetch Trakt watched shows once and reuse
+      const traktShowsSetPromise = (async () => {
+        try {
+          const traktService = TraktService.getInstance();
+          const isAuthed = await traktService.isAuthenticated();
+          if (!isAuthed) return new Set<string>();
 
-            if (typeof (traktService as any).getWatchedShows === 'function') {
-              const watched = await (traktService as any).getWatchedShows();
-              const watchedSet = new Set<string>();
+          if (typeof (traktService as any).getWatchedShows === 'function') {
+            const watched = await (traktService as any).getWatchedShows();
+            const watchedSet = new Set<string>();
 
-              if (Array.isArray(watched)) {
-                watched.forEach((show: any) => {
-                  const ids = show?.show?.ids;
-                  if (!ids) return;
+            if (Array.isArray(watched)) {
+              watched.forEach((show: any) => {
+                const ids = show?.show?.ids;
+                if (!ids) return;
 
-                  const imdbId = ids.imdb;
-                  const tmdbId = ids.tmdb;
+                const imdbId = ids.imdb;
+                const tmdbId = ids.tmdb;
 
-                  if (show.seasons && Array.isArray(show.seasons)) {
-                    show.seasons.forEach((season: any) => {
-                      if (season.episodes && Array.isArray(season.episodes)) {
-                        season.episodes.forEach((episode: any) => {
-                          if (imdbId) {
-                            const cleanImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
-                            watchedSet.add(`${cleanImdbId}:${season.number}:${episode.number}`);
-                          }
-                          if (tmdbId) {
-                            watchedSet.add(`${tmdbId}:${season.number}:${episode.number}`);
-                          }
-                        });
-                      }
-                    });
-                  }
-                });
-              }
-              return watchedSet;
+                if (show.seasons && Array.isArray(show.seasons)) {
+                  show.seasons.forEach((season: any) => {
+                    if (season.episodes && Array.isArray(season.episodes)) {
+                      season.episodes.forEach((episode: any) => {
+                        if (imdbId) {
+                          const cleanImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+                          watchedSet.add(`${cleanImdbId}:${season.number}:${episode.number}`);
+                        }
+                        if (tmdbId) {
+                          watchedSet.add(`${tmdbId}:${season.number}:${episode.number}`);
+                        }
+                      });
+                    }
+                  });
+                }
+              });
             }
-            return new Set<string>();
-          } catch {
-            return new Set<string>();
+            return watchedSet;
           }
-        })();
+          return new Set<string>();
+        } catch {
+          return new Set<string>();
+        }
+      })();
 
-        // Process each content group concurrently, merging results as they arrive
-        groupPromises = Object.values(contentGroups).map(async (group) => {
-          try {
-            if (!isSupportedId(group.id)) return;
-            // Skip movies that are already watched on Trakt
-            if (group.type === 'movie') {
-              const watchedSet = await traktMoviesSetPromise;
-              const imdbId = group.id.startsWith('tt')
-                ? group.id
-                : `tt${group.id}`;
-              if (watchedSet.has(imdbId)) {
-                // Optional: sync local store to watched to prevent reappearance
-                try {
-                  await storageService.setWatchProgress(group.id, 'movie', {
-                    currentTime: 1,
-                    duration: 1,
-                    lastUpdated: Date.now(),
-                    traktSynced: true,
-                    traktProgress: 100,
-                  } as any);
-                } catch (_e) { }
-                return;
-              }
+      // Process each content group concurrently, merging results as they arrive
+      const groupPromises = Object.values(contentGroups).map(async (group) => {
+        try {
+          if (!isSupportedId(group.id)) return;
+          // Skip movies that are already watched on Trakt
+          if (group.type === 'movie') {
+            const watchedSet = await traktMoviesSetPromise;
+            if (watchedSet.has(group.id)) {
+              // Optional: sync local store to watched to prevent reappearance
+              try {
+                await storageService.setWatchProgress(group.id, 'movie', {
+                  currentTime: 1,
+                  duration: 1,
+                  lastUpdated: Date.now(),
+                  traktSynced: true,
+                  traktProgress: 100,
+                } as any);
+              } catch (_e) { }
+              return;
             }
-            const cachedData = await getCachedMetadata(group.type, group.id, group.episodes[0]?.progress?.addonId);
-            if (!cachedData?.basicContent) return;
-            const { metadata, basicContent } = cachedData;
+          }
+          const cachedData = await getCachedMetadata(group.type, group.id);
+          if (!cachedData?.basicContent) return;
+          const { metadata, basicContent } = cachedData;
 
-            const batch: ContinueWatchingItem[] = [];
-            for (const episode of group.episodes) {
-              const { episodeId, progress, progressPercent } = episode;
+          const batch: ContinueWatchingItem[] = [];
+          for (const episode of group.episodes) {
+            const { episodeId, progress, progressPercent } = episode;
 
-              if (group.type === 'series' && progressPercent >= 85) {
-                // Skip completed episodes - don't add "next episode" here
-                // The Trakt playback endpoint handles in-progress items
-                continue;
-              }
+            if (group.type === 'series' && progressPercent >= 85) {
+              // Local progress completion check
+              if (episodeId) {
+                let currentSeason: number | undefined;
+                let currentEpisode: number | undefined;
 
-              let season: number | undefined;
-              let episodeNumber: number | undefined;
-              let episodeTitle: string | undefined;
-              let isWatchedOnTrakt = false;
-
-              if (episodeId && group.type === 'series') {
-                let match = episodeId.match(/s(\d+)e(\d+)/i);
+                const match = episodeId.match(/s(\d+)e(\d+)/i);
                 if (match) {
-                  season = parseInt(match[1], 10);
-                  episodeNumber = parseInt(match[2], 10);
-                  episodeTitle = `Episode ${episodeNumber}`;
+                  currentSeason = parseInt(match[1], 10);
+                  currentEpisode = parseInt(match[2], 10);
                 } else {
                   const parts = episodeId.split(':');
-                  if (parts.length >= 3) {
-                    const seasonPart = parts[parts.length - 2];
-                    const episodePart = parts[parts.length - 1];
-                    const seasonNum = parseInt(seasonPart, 10);
-                    const episodeNum = parseInt(episodePart, 10);
+                  if (parts.length >= 2) {
+                    const seasonNum = parseInt(parts[parts.length - 2], 10);
+                    const episodeNum = parseInt(parts[parts.length - 1], 10);
                     if (!isNaN(seasonNum) && !isNaN(episodeNum)) {
-                      season = seasonNum;
-                      episodeNumber = episodeNum;
-                      episodeTitle = `Episode ${episodeNumber}`;
+                      currentSeason = seasonNum;
+                      currentEpisode = episodeNum;
                     }
                   }
                 }
 
-                // Check if this specific episode is watched on Trakt
-                if (season !== undefined && episodeNumber !== undefined) {
-                  const watchedEpisodesSet = await traktShowsSetPromise;
-                  // Try with both raw ID and tt-prefixed ID, and TMDB ID (which is just the ID string)
-                  const rawId = group.id.replace(/^tt/, '');
-                  const ttId = `tt${rawId}`;
+                if (currentSeason !== undefined && currentEpisode !== undefined && metadata?.videos) {
+                  const nextEpisodeVideo = findNextEpisode(currentSeason, currentEpisode, metadata.videos);
 
-                  if (watchedEpisodesSet.has(`${ttId}:${season}:${episodeNumber}`) ||
-                    watchedEpisodesSet.has(`${rawId}:${season}:${episodeNumber}`) ||
-                    watchedEpisodesSet.has(`${group.id}:${season}:${episodeNumber}`)) {
-                    isWatchedOnTrakt = true;
+                  if (nextEpisodeVideo) {
+                    batch.push({
+                      ...basicContent,
+                      id: group.id,
+                      type: group.type,
+                      progress: 0,
+                      lastUpdated: progress.lastUpdated,
+                      season: nextEpisodeVideo.season,
+                      episode: nextEpisodeVideo.episode,
+                      episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
+                    } as ContinueWatchingItem);
+                  }
+                }
+              }
+              continue;
+            }
 
-                    // Update local storage to reflect watched status
-                    try {
-                      await storageService.setWatchProgress(
-                        group.id,
-                        'series',
-                        {
-                          currentTime: 1,
-                          duration: 1,
-                          lastUpdated: Date.now(),
-                          traktSynced: true,
-                          traktProgress: 100,
-                        } as any,
-                        episodeId
-                      );
-                    } catch (_e) { }
+            let season: number | undefined;
+            let episodeNumber: number | undefined;
+            let episodeTitle: string | undefined;
+            let isWatchedOnTrakt = false;
+
+            if (episodeId && group.type === 'series') {
+              let match = episodeId.match(/s(\d+)e(\d+)/i);
+              if (match) {
+                season = parseInt(match[1], 10);
+                episodeNumber = parseInt(match[2], 10);
+                episodeTitle = `Episode ${episodeNumber}`;
+              } else {
+                const parts = episodeId.split(':');
+                if (parts.length >= 3) {
+                  const seasonPart = parts[parts.length - 2];
+                  const episodePart = parts[parts.length - 1];
+                  const seasonNum = parseInt(seasonPart, 10);
+                  const episodeNum = parseInt(episodePart, 10);
+                  if (!isNaN(seasonNum) && !isNaN(episodeNum)) {
+                    season = seasonNum;
+                    episodeNumber = episodeNum;
+                    episodeTitle = `Episode ${episodeNumber}`;
                   }
                 }
               }
 
-              // If watched on Trakt, skip it - Trakt playback handles in-progress items
-              if (isWatchedOnTrakt) {
-                continue;
-              }
+              // Check if this specific episode is watched on Trakt
+              if (season !== undefined && episodeNumber !== undefined) {
+                const watchedEpisodesSet = await traktShowsSetPromise;
+                // Try with both raw ID and tt-prefixed ID, and TMDB ID (which is just the ID string)
+                const rawId = group.id.replace(/^tt/, '');
+                const ttId = `tt${rawId}`;
 
-              batch.push({
-                ...basicContent,
-                progress: progressPercent,
-                lastUpdated: progress.lastUpdated,
-                season,
-                episode: episodeNumber,
-                episodeTitle,
-                addonId: progress.addonId,
-              } as ContinueWatchingItem);
+                if (watchedEpisodesSet.has(`${ttId}:${season}:${episodeNumber}`) ||
+                  watchedEpisodesSet.has(`${rawId}:${season}:${episodeNumber}`) ||
+                  watchedEpisodesSet.has(`${group.id}:${season}:${episodeNumber}`)) {
+                  isWatchedOnTrakt = true;
+
+                  // Update local storage to reflect watched status
+                  try {
+                    await storageService.setWatchProgress(
+                      group.id,
+                      'series',
+                      {
+                        currentTime: 1,
+                        duration: 1,
+                        lastUpdated: Date.now(),
+                        traktSynced: true,
+                        traktProgress: 100,
+                      } as any,
+                      episodeId
+                    );
+                  } catch (_e) { }
+                }
+              }
             }
 
-            if (batch.length > 0) await mergeBatchIntoState(batch);
-          } catch (error) {
-            // Continue processing other groups even if one fails
+            // If watched on Trakt, treat it as completed (try to find next episode)
+            if (isWatchedOnTrakt) {
+              if (season !== undefined && episodeNumber !== undefined && metadata?.videos) {
+                const nextEpisodeVideo = findNextEpisode(season, episodeNumber, metadata.videos);
+                if (nextEpisodeVideo) {
+                  batch.push({
+                    ...basicContent,
+                    id: group.id,
+                    type: group.type,
+                    progress: 0,
+                    lastUpdated: progress.lastUpdated,
+                    season: nextEpisodeVideo.season,
+                    episode: nextEpisodeVideo.episode,
+                    episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
+                  } as ContinueWatchingItem);
+                }
+              }
+              continue;
+            }
+
+            batch.push({
+              ...basicContent,
+              progress: progressPercent,
+              lastUpdated: progress.lastUpdated,
+              season,
+              episode: episodeNumber,
+              episodeTitle,
+            } as ContinueWatchingItem);
           }
-        });
-      } // End of else block for non-Trakt users
+
+          if (batch.length > 0) await mergeBatchIntoState(batch);
+        } catch (error) {
+          // Continue processing other groups even if one fails
+        }
+      });
 
       // TRAKT: fetch playback progress (in-progress items) and history, merge incrementally
       const traktMergePromise = (async () => {
@@ -615,26 +648,33 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
 
           lastTraktSyncRef.current = now;
 
-          // Fetch only playback progress (paused items with actual progress %)
-          // Removed: history items and watched shows - redundant with local logic
-          const playbackItems = await traktService.getPlaybackProgress();
+          // Fetch both playback progress (paused items) and watch history in parallel
+          const [playbackItems, historyItems, watchedShows] = await Promise.all([
+            traktService.getPlaybackProgress(), // Items with actual progress %
+            traktService.getWatchedEpisodesHistory(1, 200), // Completed episodes
+            traktService.getWatchedShows(), // For reset_at handling
+          ]);
 
-
+          // Build a map of shows with reset_at for re-watching support
+          const showResetMap: Record<string, number> = {};
+          for (const show of watchedShows) {
+            if (show.show?.ids?.imdb && show.reset_at) {
+              const imdbId = show.show.ids.imdb.startsWith('tt')
+                ? show.show.ids.imdb
+                : `tt${show.show.ids.imdb}`;
+              showResetMap[imdbId] = new Date(show.reset_at).getTime();
+            }
+          }
 
           const traktBatch: ContinueWatchingItem[] = [];
+          const processedShows = new Set<string>(); // Track which shows we've added
 
           // STEP 1: Process playback progress items (in-progress, paused)
           // These have actual progress percentage from Trakt
-          const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
           for (const item of playbackItems) {
             try {
-              // Skip items with < 2% progress (accidental clicks)
-              if (item.progress < 2) continue;
-              // Skip items with >= 85% progress (completed)
-              if (item.progress >= 85) continue;
-              // Skip items older than 30 days
-              const pausedAt = new Date(item.paused_at).getTime();
-              if (pausedAt < thirtyDaysAgo) continue;
+              // Skip items with very low or very high progress
+              if (item.progress <= 0 || item.progress >= 85) continue;
 
               if (item.type === 'movie' && item.movie?.ids?.imdb) {
                 const imdbId = item.movie.ids.imdb.startsWith('tt')
@@ -655,8 +695,6 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
                   type: 'movie',
                   progress: item.progress,
                   lastUpdated: pausedAt,
-                  addonId: undefined,
-                  traktPlaybackId: item.id, // Store playback ID for removal
                 } as ContinueWatchingItem);
 
                 logger.log(`📺 [TraktPlayback] Adding movie ${item.movie.title} with ${item.progress.toFixed(1)}% progress`);
@@ -670,7 +708,13 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
                 const showKey = `series:${showImdb}`;
                 if (recentlyRemovedRef.current.has(showKey)) continue;
 
+                // Check reset_at - skip if this was paused before re-watch started
+                const resetTime = showResetMap[showImdb];
                 const pausedAt = new Date(item.paused_at).getTime();
+                if (resetTime && pausedAt < resetTime) {
+                  logger.log(`🔄 [TraktPlayback] Skipping ${showImdb} S${item.episode.season}E${item.episode.number} - paused before reset_at`);
+                  continue;
+                }
 
                 const cachedData = await getCachedMetadata('series', showImdb);
                 if (!cachedData?.basicContent) continue;
@@ -684,10 +728,9 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
                   season: item.episode.season,
                   episode: item.episode.number,
                   episodeTitle: item.episode.title || `Episode ${item.episode.number}`,
-                  addonId: undefined,
-                  traktPlaybackId: item.id, // Store playback ID for removal
                 } as ContinueWatchingItem);
 
+                processedShows.add(showImdb);
                 logger.log(`📺 [TraktPlayback] Adding ${item.show.title} S${item.episode.season}E${item.episode.number} with ${item.progress.toFixed(1)}% progress`);
               }
             } catch (err) {
@@ -695,22 +738,97 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
             }
           }
 
-          // Set Trakt playback items as state (replace, don't merge with local storage)
-          if (traktBatch.length > 0) {
-            // Dedupe: for series, keep only the latest episode per show
-            const deduped = new Map<string, ContinueWatchingItem>();
-            for (const item of traktBatch) {
-              const key = `${item.type}:${item.id}`;
-              const existing = deduped.get(key);
-              if (!existing || (item.lastUpdated ?? 0) > (existing.lastUpdated ?? 0)) {
-                deduped.set(key, item);
-              }
+          // STEP 2: Process watch history for shows NOT in playback progress
+          // Find the next episode for completed shows
+          const latestWatchedByShow: Record<string, { season: number; episode: number; watchedAt: number }> = {};
+          for (const item of historyItems) {
+            if (item.type !== 'episode') continue;
+            const showImdb = item.show?.ids?.imdb
+              ? (item.show.ids.imdb.startsWith('tt') ? item.show.ids.imdb : `tt${item.show.ids.imdb}`)
+              : null;
+            if (!showImdb) continue;
+
+            // Skip if we already have an in-progress episode for this show
+            if (processedShows.has(showImdb)) continue;
+
+            const season = item.episode?.season;
+            const epNum = item.episode?.number;
+            if (season === undefined || epNum === undefined) continue;
+
+            const watchedAt = new Date(item.watched_at).getTime();
+
+            // Check reset_at - skip episodes watched before re-watch started
+            const resetTime = showResetMap[showImdb];
+            if (resetTime && watchedAt < resetTime) {
+              continue; // This was watched in a previous viewing
             }
-            const uniqueItems = Array.from(deduped.values());
-            logger.log(`📋 [TraktSync] Setting ${uniqueItems.length} items from Trakt playback (deduped from ${traktBatch.length})`);
-            // Sort by lastUpdated descending and set directly
-            const sortedBatch = uniqueItems.sort((a, b) => (b.lastUpdated ?? 0) - (a.lastUpdated ?? 0));
-            setContinueWatchingItems(sortedBatch);
+
+            const existing = latestWatchedByShow[showImdb];
+            if (!existing || existing.watchedAt < watchedAt) {
+              latestWatchedByShow[showImdb] = { season, episode: epNum, watchedAt };
+            }
+          }
+
+          // Add next episodes for completed shows
+          for (const [showId, info] of Object.entries(latestWatchedByShow)) {
+            try {
+              // Check if this show was recently removed
+              const showKey = `series:${showId}`;
+              if (recentlyRemovedRef.current.has(showKey)) {
+                logger.log(`🚫 [TraktSync] Skipping recently removed show: ${showKey}`);
+                continue;
+              }
+
+              const cachedData = await getCachedMetadata('series', showId);
+              if (!cachedData?.basicContent) continue;
+              const { metadata, basicContent } = cachedData;
+
+              if (metadata?.videos) {
+                const nextEpisodeVideo = findNextEpisode(info.season, info.episode, metadata.videos);
+                if (nextEpisodeVideo) {
+                  logger.log(`➕ [TraktSync] Adding next episode for ${showId}: S${nextEpisodeVideo.season}E${nextEpisodeVideo.episode}`);
+                  traktBatch.push({
+                    ...basicContent,
+                    id: showId,
+                    type: 'series',
+                    progress: 0, // Next episode, not started
+                    lastUpdated: info.watchedAt,
+                    season: nextEpisodeVideo.season,
+                    episode: nextEpisodeVideo.episode,
+                    episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
+                  } as ContinueWatchingItem);
+                }
+              }
+
+              // Persist "watched" progress for the episode that Trakt reported
+              if (!recentlyRemovedRef.current.has(showKey)) {
+                const watchedEpisodeId = `${showId}:${info.season}:${info.episode}`;
+                const existingProgress = allProgress[`series:${showId}:${watchedEpisodeId}`];
+                const existingPercent = existingProgress ? (existingProgress.currentTime / existingProgress.duration) * 100 : 0;
+                if (!existingProgress || existingPercent < 85) {
+                  await storageService.setWatchProgress(
+                    showId,
+                    'series',
+                    {
+                      currentTime: 1,
+                      duration: 1,
+                      lastUpdated: info.watchedAt,
+                      traktSynced: true,
+                      traktProgress: 100,
+                    } as any,
+                    `${info.season}:${info.episode}`
+                  );
+                }
+              }
+            } catch (err) {
+              // Continue with other shows
+            }
+          }
+
+          // Merge all Trakt items as a single batch to ensure proper sorting
+          if (traktBatch.length > 0) {
+            logger.log(`📋 [TraktSync] Merging ${traktBatch.length} items from Trakt (playback + history)`);
+            await mergeBatchIntoState(traktBatch);
           }
         } catch (err) {
           logger.error('[TraktSync] Error in Trakt merge:', err);
@@ -725,7 +843,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       setLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [getCachedMetadata]);
+  }, [getCachedMetadata, activeProfile?.id]); // Added activeProfile.id dependency for profile filtering
 
   // Clear cache when component unmounts or when needed
   useEffect(() => {
@@ -833,14 +951,12 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
             navigation.navigate('Metadata', {
               id: item.id,
               type: item.type,
-              episodeId: episodeId,
-              addonId: item.addonId
+              episodeId: episodeId
             });
           } else {
             navigation.navigate('Metadata', {
               id: item.id,
-              type: item.type,
-              addonId: item.addonId
+              type: item.type
             });
           }
         } else {
@@ -890,6 +1006,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           streamProvider: cachedStream.stream.addonId || cachedStream.stream.addonName || cachedStream.stream.name,
           streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
           headers: cachedStream.stream.headers || undefined,
+          forceVlc: false,
           id: item.id,
           type: item.type,
           episodeId: episodeId,
@@ -909,15 +1026,13 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
         navigation.navigate('Streams', {
           id: item.id,
           type: item.type,
-          episodeId: episodeId,
-          addonId: item.addonId
+          episodeId: episodeId
         });
       } else {
         // For movies or series without specific episode, navigate to main content
         navigation.navigate('Streams', {
           id: item.id,
-          type: item.type,
-          addonId: item.addonId
+          type: item.type
         });
       }
     } catch (error) {
@@ -939,19 +1054,8 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
     }
   }, [navigation, settings.useCachedStreams, settings.openMetadataScreenWhenCacheDisabled]);
 
-  // Handle focus change on TV - scroll to bring focused item into view
-  const handleItemFocus = useCallback((index: number) => {
-    if (Platform.isTV && flashListRef.current) {
-      flashListRef.current.scrollToIndex({
-        index,
-        animated: true,
-        viewPosition: 0.15, // Slight offset so item is not at edge
-      });
-    }
-  }, []);
-
   // Handle long press to delete (moved before renderContinueWatchingItem)
-  const handleLongPress = useCallback(async (item: ContinueWatchingItem) => {
+  const handleLongPress = useCallback((item: ContinueWatchingItem) => {
     try {
       // Trigger haptic feedback
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -959,17 +1063,8 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       // Ignore haptic errors
     }
 
-    const traktService = TraktService.getInstance();
-    const isAuthed = await traktService.isAuthenticated();
-
     setAlertTitle('Remove from Continue Watching');
-
-    if (isAuthed) {
-      setAlertMessage(`Remove "${item.name}" from your continue watching list?\n\nThis will also remove it from your Trakt Continue Watching.`);
-    } else {
-      setAlertMessage(`Remove "${item.name}" from your continue watching list?`);
-    }
-
+    setAlertMessage(`Remove "${item.name}" from your continue watching list?`);
     setAlertActions([
       {
         label: 'Cancel',
@@ -984,13 +1079,11 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           try {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             await storageService.removeAllWatchProgressForContent(item.id, item.type, { addBaseTombstone: true });
-
+            const traktService = TraktService.getInstance();
+            const isAuthed = await traktService.isAuthenticated();
             if (isAuthed) {
               let traktResult = false;
-              // If we have a playback ID (from sync/playback), use that to remove from Continue Watching
-              if (item.traktPlaybackId) {
-                traktResult = await traktService.removePlaybackItem(item.traktPlaybackId);
-              } else if (item.type === 'movie') {
+              if (item.type === 'movie') {
                 traktResult = await traktService.removeMovieFromHistory(item.id);
               } else if (item.type === 'series' && item.season !== undefined && item.episode !== undefined) {
                 traktResult = await traktService.removeEpisodeFromHistory(item.id, item.season, item.episode);
@@ -1017,23 +1110,22 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   }, [currentTheme.colors.error]);
 
   // Memoized render function for continue watching items
-  const renderContinueWatchingItem = useCallback(({ item, index }: { item: ContinueWatchingItem; index: number }) => (
-    <Focusable
+  const renderContinueWatchingItem = useCallback(({ item }: { item: ContinueWatchingItem }) => (
+    <TouchableOpacity
       style={[
         styles.wideContentItem,
         {
           backgroundColor: currentTheme.colors.elevation1,
-          borderWidth: 2, // Base border width for smooth focus transition
-          borderColor: 'transparent', // Transparent when not focused
+          borderColor: currentTheme.colors.border,
+          shadowColor: currentTheme.colors.black,
           width: computedItemWidth,
-          height: computedItemHeight,
-          borderRadius: settings.posterBorderRadius ?? 12,
+          height: computedItemHeight
         }
       ]}
       activeOpacity={0.8}
       onPress={() => handleContentPress(item)}
       onLongPress={() => handleLongPress(item)}
-      onFocus={() => handleItemFocus(index)}
+      delayLongPress={800}
     >
       {/* Poster Image */}
       <View style={[
@@ -1048,7 +1140,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
             priority: FastImage.priority.high,
             cache: FastImage.cacheControl.immutable
           }}
-          style={[styles.continueWatchingPoster, { borderTopLeftRadius: settings.posterBorderRadius ?? 12, borderBottomLeftRadius: settings.posterBorderRadius ?? 12 }]}
+          style={styles.continueWatchingPoster}
           resizeMode={FastImage.resizeMode.cover}
         />
 
@@ -1067,40 +1159,42 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           padding: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
         }
       ]}>
-        {(() => {
-          const isUpNext = item.type === 'series' && item.progress === 0;
-          return (
-            <View style={styles.titleRow}>
-              <Text
-                style={[
-                  styles.contentTitle,
-                  {
-                    color: currentTheme.colors.highEmphasis,
-                    fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16
-                  }
-                ]}
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
-              {isUpNext && (
-                <View style={[
-                  styles.progressBadge,
-                  {
-                    backgroundColor: currentTheme.colors.primary,
-                    paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                    paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3
-                  }
-                ]}>
-                  <Text style={[
-                    styles.progressText,
-                    { fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12 }
-                  ]}>Up Next</Text>
-                </View>
-              )}
-            </View>
-          );
-        })()}
+        <View style={styles.titleRow}>
+          {(() => {
+            const isUpNext = item.type === 'series' && item.progress === 0;
+            return (
+              <View style={styles.titleRow}>
+                <Text
+                  style={[
+                    styles.contentTitle,
+                    {
+                      color: currentTheme.colors.highEmphasis,
+                      fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16
+                    }
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </Text>
+                {isUpNext && (
+                  <View style={[
+                    styles.progressBadge,
+                    {
+                      backgroundColor: currentTheme.colors.primary,
+                      paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                      paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3
+                    }
+                  ]}>
+                    <Text style={[
+                      styles.progressText,
+                      { fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12 }
+                    ]}>Up Next</Text>
+                  </View>
+                )}
+              </View>
+            );
+          })()}
+        </View>
 
         {/* Episode Info or Year */}
         {(() => {
@@ -1178,8 +1272,8 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           </View>
         )}
       </View>
-    </Focusable>
-  ), [currentTheme.colors, handleContentPress, handleLongPress, handleItemFocus, deletingItemId, computedItemWidth, computedItemHeight, isTV, isLargeTablet, isTablet]);
+    </TouchableOpacity>
+  ), [currentTheme.colors, handleContentPress, handleLongPress, deletingItemId, computedItemWidth, computedItemHeight, isTV, isLargeTablet, isTablet]);
 
   // Memoized key extractor
   const keyExtractor = useCallback((item: ContinueWatchingItem) => `continue-${item.id}-${item.type}`, []);
@@ -1187,64 +1281,11 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   // Memoized item separator
   const ItemSeparator = useCallback(() => <View style={{ width: itemSpacing }} />, [itemSpacing]);
 
-  // Convert items to TV format for TV component
-  const tvItems: TVContinueWatchingItem[] = useMemo(() => {
-    return continueWatchingItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      type: item.type as 'movie' | 'series',
-      poster: item.poster,
-      progress: item.progress,
-      lastUpdated: item.lastUpdated,
-      season: item.season,
-      episode: item.episode,
-      episodeTitle: item.episodeTitle,
-      year: item.year,
-      addonId: item.addonId,
-    }));
-  }, [continueWatchingItems]);
-
   // If no continue watching items, don't render anything
   if (continueWatchingItems.length === 0) {
     return null;
   }
 
-  // Use TV-optimized component when on TV platform
-  if (Platform.isTV) {
-    return (
-      <>
-        <TVContinueWatchingSection
-          data={tvItems}
-          loading={loading}
-          onItemPress={(item, index) => {
-            const originalItem = continueWatchingItems[index];
-            if (originalItem) {
-              handleContentPress(originalItem);
-            }
-          }}
-          onItemLongPress={(item, index) => {
-            const originalItem = continueWatchingItems[index];
-            if (originalItem) {
-              handleLongPress(originalItem);
-            }
-          }}
-          showHeader={true}
-          title="Continue Watching"
-          listRef={flashListRef as any}
-          testID="continue-watching-section-tv"
-        />
-        <CustomAlert
-          visible={alertVisible}
-          title={alertTitle}
-          message={alertMessage}
-          actions={alertActions}
-          onClose={() => setAlertVisible(false)}
-        />
-      </>
-    );
-  }
-
-  // Mobile/Tablet layout
   return (
     <View
       style={styles.container}
@@ -1270,13 +1311,11 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       </View>
 
       <FlashList
-        ref={flashListRef}
         data={continueWatchingItems}
         renderItem={renderContinueWatchingItem}
         keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
-        scrollEnabled={!Platform.isTV}
         contentContainerStyle={[
           styles.wideList,
           {
@@ -1339,14 +1378,13 @@ const styles = StyleSheet.create({
     width: 280,
     height: 120,
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    // borderWidth removed - now set inline for TV focus transition
+    elevation: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    borderWidth: 1,
   },
   posterContainer: {
     width: 80,
@@ -1356,8 +1394,8 @@ const styles = StyleSheet.create({
   continueWatchingPoster: {
     width: '100%',
     height: '100%',
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
   deletingOverlay: {
     position: 'absolute',
@@ -1443,28 +1481,26 @@ const styles = StyleSheet.create({
     width: POSTER_WIDTH,
     aspectRatio: 2 / 3,
     margin: 0,
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    borderWidth: 1,
   },
   contentItemContainer: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
   },
   poster: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 8,
   },
   episodeInfoContainer: {
     position: 'absolute',

@@ -1,0 +1,69 @@
+{
+  "task_description": "# Enhanced Multi-Profile Support\n\nImprove user profiles with individual watch histories, preferences, and recommendations. Support profile switching on TV without re-authentication.\n\n## Rationale\nUser profiles exist but can be enhanced to support family use. This addresses the household sharing use case and prepares for parental controls. Competitors like Plex and Netflix have robust profile systems.\n\n## User Stories\n- As a family member, I want my own profile so that my watch history doesn't mix with others\n- As a parent, I want a PIN on my profile so that kids can't access my viewing history\n- As a TV user, I want to quickly switch profiles so that family members can easily change who's watching\n\n## Acceptance Criteria\n- [ ] Each profile has separate watch history and continue watching\n- [ ] Profile-specific recommendations based on individual viewing\n- [ ] Quick profile switcher accessible from all screens\n- [ ] Profile avatars and customization options\n- [ ] PIN protection option for individual profiles\n- [ ] TV interface supports easy profile switching with remote\n",
+  "scoped_services": ["main"],
+  "files_to_modify": [
+    "src/services/watchedService.ts",
+    "src/services/storageService.ts",
+    "src/hooks/useWatchProgress.ts",
+    "src/components/home/ContinueWatchingSection.tsx",
+    "src/hooks/useFeaturedContent.ts",
+    "src/hooks/useHomeCatalogs.ts",
+    "src/screens/HomeScreen.tsx",
+    "src/navigation/AppNavigator.tsx",
+    "src/screens/SettingsScreen.tsx",
+    "src/components/profile/ProfileCard.tsx"
+  ],
+  "files_to_reference": [
+    "src/types/profile.ts",
+    "src/contexts/ProfileContext.tsx",
+    "src/services/ProfileService.ts",
+    "src/services/PinService.ts",
+    "src/components/profile/ProfileCard.tsx",
+    "src/components/profile/ProfileEditModal.tsx",
+    "src/components/profile/AvatarSelector.tsx",
+    "src/components/home/DropUpMenu.tsx",
+    "src/hooks/useTVMode.ts",
+    "src/hooks/useFocusGroup.ts",
+    "src/hooks/useSpatialNavigation.ts",
+    "src/components/common/FocusableList.tsx",
+    "src/utils/tvStyles.ts",
+    "src/utils/tvStyles/focus.ts"
+  ],
+  "patterns": {
+    "profile_data_model": "Complete profile system exists in src/types/profile.ts with PIN, avatars, age ratings, and preferences",
+    "profile_state_management": "ProfileContext provides global state with CRUD operations and PIN management",
+    "storage_pattern": "Uses MMKV local storage (mmkvStorage) for all profile and watch history data, NOT Supabase",
+    "pin_security": "PinService handles PIN hashing and lockout - PINs never stored plaintext",
+    "avatar_system": "MaterialIcons used for avatars with predefined color sets in AVATAR_OPTIONS",
+    "tv_navigation": "useTVMode, useTVEventHandler, useFocusGroup, useSpatialNavigation hooks for TV support",
+    "bottom_sheet_pattern": "@gorhom/bottom-sheet used for modals - see DropUpMenu.tsx example",
+    "tv_focus_styling": "src/utils/tvStyles/focus.ts provides focus indicator patterns"
+  },
+  "existing_implementations": {
+    "description": "Profile system already exists with comprehensive features but needs enhancement for watch history isolation and quick switching",
+    "relevant_files": [
+      "src/types/profile.ts",
+      "src/contexts/ProfileContext.tsx",
+      "src/services/ProfileService.ts",
+      "src/services/PinService.ts",
+      "src/screens/ProfilesScreen.tsx",
+      "src/screens/ProfileSelectorScreen.tsx",
+      "src/components/profile/ProfileCard.tsx",
+      "src/components/profile/ProfileEditModal.tsx",
+      "src/components/profile/AvatarSelector.tsx"
+    ],
+    "watch_history": {
+      "service": "src/services/watchedService.ts",
+      "hook": "src/hooks/useWatchProgress.ts",
+      "ui": "src/components/home/ContinueWatchingSection.tsx",
+      "status": "Exists but NOT profile-scoped - needs profile_id filtering"
+    },
+    "tv_support": {
+      "hooks": ["src/hooks/useTVMode.ts", "src/hooks/useTVEventHandler.ts", "src/hooks/useFocusGroup.ts"],
+      "components": ["src/components/common/FocusableList.tsx", "src/components/common/TVModalWrapper.tsx"],
+      "utils": ["src/utils/tvStyles.ts", "src/utils/tvStyles/focus.ts"],
+      "status": "Well-established patterns exist"
+    }
+  },
+  "created_at": "2026-01-10T01:19:06.677903"
+}

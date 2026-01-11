@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTraktContext } from '../contexts/TraktContext';
+import { useProfileContext } from '../contexts/ProfileContext';
 import { logger } from '../utils/logger';
 import { storageService } from '../services/storageService';
 
@@ -21,6 +22,7 @@ export const useWatchProgress = (
 ) => {
   const [watchProgress, setWatchProgress] = useState<WatchProgressData | null>(null);
   const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
+  const { activeProfile } = useProfileContext();
 
   // Use ref for episodes to avoid infinite loops - episodes array changes on every render
   const episodesRef = useRef(episodes);
@@ -61,10 +63,13 @@ export const useWatchProgress = (
     return null;
   }, []); // Removed episodes dependency - using ref instead
 
-  // Enhanced load watch progress with Trakt integration
+  // Enhanced load watch progress with Trakt integration and profile filtering
   const loadWatchProgress = useCallback(async () => {
     try {
       if (id && type) {
+        // Get the active profile ID for filtering watch progress
+        const profileId = activeProfile?.id;
+
         if (type === 'series') {
           const allProgress = await storageService.getAllWatchProgress();
 
@@ -81,12 +86,40 @@ export const useWatchProgress = (
           };
 
           // Get all episodes for this series with progress
+          // Filter by profile if activeProfile is set
           const seriesProgresses = Object.entries(allProgress)
-            .filter(([key]) => key.includes(`${type}:${id}:`))
-            .map(([key, value]) => ({
-              episodeId: key.split(`${type}:${id}:`)[1],
-              progress: value
-            }))
+            .filter(([key]) => {
+              // Check if key belongs to this series
+              const belongsToSeries = key.includes(`${type}:${id}:`);
+              if (!belongsToSeries) return false;
+
+              // If activeProfile is set, filter by profile
+              // Keys with profile have format: profile:${profileId}:${type}:${id}:...
+              // Keys without profile have format: ${type}:${id}:...
+              if (profileId) {
+                const hasProfilePrefix = key.startsWith(`profile:${profileId}:`);
+                const isLegacyKey = !key.startsWith('profile:');
+                // Include both profile-specific keys and legacy keys (for migration)
+                return hasProfilePrefix || isLegacyKey;
+              }
+              return true;
+            })
+            .map(([key, value]) => {
+              // Extract episodeId, handling both profile-scoped and legacy keys
+              let episodeIdFromKey: string;
+              if (key.startsWith('profile:')) {
+                // Profile-scoped key: profile:${profileId}:${type}:${id}:${episodeId}
+                const afterProfile = key.replace(/^profile:[^:]+:/, '');
+                episodeIdFromKey = afterProfile.split(`${type}:${id}:`)[1] || '';
+              } else {
+                // Legacy key: ${type}:${id}:${episodeId}
+                episodeIdFromKey = key.split(`${type}:${id}:`)[1] || '';
+              }
+              return {
+                episodeId: episodeIdFromKey,
+                progress: value
+              };
+            })
             .filter(({ episodeId, progress }) => {
               const progressPercent = (progress.currentTime / progress.duration) * 100;
               return progressPercent > 0;
@@ -94,7 +127,7 @@ export const useWatchProgress = (
 
           // If we have a specific episodeId in route params
           if (episodeId) {
-            const progress = await storageService.getWatchProgress(id, type, episodeId);
+            const progress = await storageService.getWatchProgress(id, type, episodeId, profileId);
             if (progress) {
               // Always show the current episode progress when viewing it specifically
               // This allows HeroSection to properly display watched state
@@ -163,8 +196,8 @@ export const useWatchProgress = (
         }
         
         } else {
-          // For movies
-          const progress = await storageService.getWatchProgress(id, type, episodeId);
+          // For movies - filter by active profile
+          const progress = await storageService.getWatchProgress(id, type, episodeId, profileId);
           if (progress && progress.currentTime > 0) {
             // Always show progress data, even if watched (≥95%)
             // The HeroSection will handle the "watched" state display
@@ -183,7 +216,7 @@ export const useWatchProgress = (
       logger.error('[useWatchProgress] Error loading watch progress:', error);
       setWatchProgress(null);
     }
-  }, [id, type, episodeId]); // Removed episodes dependency - using ref instead
+  }, [id, type, episodeId, activeProfile?.id]); // Added activeProfile.id dependency for profile filtering
 
   // Enhanced function to get play button text with Trakt awareness
   const getPlayButtonText = useCallback(() => {
@@ -224,11 +257,11 @@ export const useWatchProgress = (
     };
   }, [loadWatchProgress]);
 
-  // Initial load - only once on mount
+  // Initial load - runs on mount and when profile changes
   useEffect(() => {
     loadWatchProgress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, type, episodeId]); // Only re-run when core IDs change, not when loadWatchProgress ref changes
+  }, [id, type, episodeId, activeProfile?.id]); // Re-run when core IDs or active profile changes
 
   // Refresh when screen comes into focus
   useFocusEffect(

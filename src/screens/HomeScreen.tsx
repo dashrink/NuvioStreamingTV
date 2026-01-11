@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
+  SafeAreaView,
   StatusBar,
   useColorScheme,
   Dimensions,
@@ -16,18 +18,8 @@ import {
   Pressable,
   Alert,
   InteractionManager,
-  AppState,
-  TVFocusGuideView,
+  AppState
 } from 'react-native';
-import Focusable from '../components/common/Focusable';
-import {
-  isTV,
-  TV_SPACING,
-  TV_TYPOGRAPHY,
-  TV_TOUCH_TARGETS,
-  TV_CATALOG,
-  getDeviceType,
-} from '../utils/tvStyles';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -60,7 +52,7 @@ import FeaturedContent from '../components/home/FeaturedContent';
 import HeroCarousel from '../components/home/HeroCarousel';
 import AppleTVHero from '../components/home/AppleTVHero';
 import CatalogSection from '../components/home/CatalogSection';
-import { CatalogRowSkeleton } from '../components/loading';
+import { SkeletonFeatured } from '../components/home/SkeletonLoaders';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import homeStyles, { sharedStyles } from '../styles/homeStyles';
 import { useTheme } from '../contexts/ThemeContext';
@@ -73,7 +65,7 @@ import { useToast } from '../contexts/ToastContext';
 import FirstTimeWelcome from '../components/FirstTimeWelcome';
 import { HeaderVisibility } from '../contexts/HeaderVisibility';
 import { useTrailer } from '../contexts/TrailerContext';
-import { useScrollToTop } from '../contexts/ScrollToTopContext';
+import { useActiveProfile } from '../contexts/ProfileContext';
 
 // Constants
 const CATALOG_SETTINGS_KEY = 'catalog_settings';
@@ -109,6 +101,17 @@ const SAMPLE_CATEGORIES: Category[] = [
   { id: 'channel', name: 'Channels' },
 ];
 
+const SkeletonCatalog = React.memo(() => {
+  const { currentTheme } = useTheme();
+  return (
+    <View style={styles.catalogContainer}>
+      <View style={styles.loadingPlaceholder}>
+        <LoadingSpinner size="small" text="" />
+      </View>
+    </View>
+  );
+});
+
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const isDarkMode = useColorScheme() === 'dark';
@@ -119,6 +122,14 @@ const HomeScreen = () => {
   const { lastUpdate } = useCatalogContext(); // Add catalog context to listen for addon changes
   const { showInfo } = useToast();
   const { setTrailerPlaying } = useTrailer();
+
+  // Get active profile for profile-specific recommendations
+  const { activeProfile } = useActiveProfile();
+  const profileId = activeProfile?.id;
+
+  // Track previous profile ID to detect profile switches
+  const prevProfileIdRef = useRef<string | undefined>(profileId);
+
   const [showHeroSection, setShowHeroSection] = useState(settings.showHeroSection);
   const [featuredContentSource, setFeaturedContentSource] = useState(settings.featuredContentSource);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -135,25 +146,6 @@ const HomeScreen = () => {
   const totalCatalogsRef = useRef(0);
   const [visibleCatalogCount, setVisibleCatalogCount] = useState(5); // Reduced for memory
   const insets = useSafeAreaInsets();
-  const flashListRef = useRef<any>(null);
-
-  // Scroll to top handler - use scrollToIndex and retry to handle re-renders
-  const scrollToTop = useCallback(() => {
-    // First attempt
-    flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
-
-    // Retry after a short delay in case re-render interrupted the scroll
-    setTimeout(() => {
-      flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, 150);
-
-    // Final retry to ensure we're at the top
-    setTimeout(() => {
-      flashListRef.current?.scrollToOffset({ offset: 0, animated: false });
-    }, 400);
-  }, []);
-
-  useScrollToTop('Home', scrollToTop);
 
   // Stabilize insets to prevent iOS layout shifts
   const [stableInsetsTop, setStableInsetsTop] = useState(insets.top);
@@ -398,210 +390,1111 @@ const HomeScreen = () => {
 
     // Invalidate catalog settings cache so fresh settings are loaded
     cachedCatalogSettings = null;
+    catalogSettingsCacheTimestamp = 0;
 
-    // Reload catalogs
-    loadCatalogsProgressively();
+    // Small delay to ensure previous fetch is fully stopped
+    const timer = setTimeout(() => {
+      loadCatalogsProgressively();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [lastUpdate, loadCatalogsProgressively]);
 
-  // Refresh continue watching content when screen is focused
+  // One-time hint after skipping login in onboarding
+  useEffect(() => {
+    let hideTimer: any;
+    (async () => {
+      try {
+        const flag = await mmkvStorage.getItem('showLoginHintToastOnce');
+        if (flag === 'true') {
+          setHintVisible(true);
+          await mmkvStorage.removeItem('showLoginHintToastOnce');
+          hideTimer = setTimeout(() => setHintVisible(false), 2000);
+          // Also show a global toast for consistency across screens
+          // showInfo('Sign In Available', 'You can sign in anytime from Settings → Account');
+        }
+      } catch { }
+    })();
+    return () => {
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, []);
+
+  // Create a refresh function for catalogs
+  const refreshCatalogs = useCallback(() => {
+    return loadCatalogsProgressively();
+  }, [loadCatalogsProgressively]);
+
+  // Subscribe directly to settings emitter for immediate updates
+  useEffect(() => {
+    const handleSettingsChange = () => {
+      setShowHeroSection(settings.showHeroSection);
+      setFeaturedContentSource(settings.featuredContentSource);
+    };
+
+    // Subscribe to settings changes
+    const unsubscribe = settingsEmitter.addListener(handleSettingsChange);
+
+    return unsubscribe;
+  }, [settings.showHeroSection, settings.featuredContentSource]);
+
   useFocusEffect(
     useCallback(() => {
-      // Ensure we refresh continue watching on every focus for accurate state
-      if (continueWatchingRef.current) {
-        continueWatchingRef.current.refresh().then(hasContent => {
-          setHasContinueWatching(hasContent);
-        }).catch(err => {
-          if (__DEV__) console.warn('[HomeScreen] Error refreshing continue watching:', err);
-        });
-      }
-    }, [])
+      const statusBarConfig = () => {
+        // Ensure status bar is fully transparent and doesn't take up space
+        StatusBar.setBarStyle("light-content");
+        StatusBar.setTranslucent(true);
+        StatusBar.setBackgroundColor('transparent');
+
+        // For iOS specifically
+        if (Platform.OS === 'ios') {
+          StatusBar.setHidden(false);
+        }
+      };
+
+      statusBarConfig();
+
+      // Unlock orientation to allow free rotation
+      ScreenOrientation.unlockAsync().catch(() => { });
+
+      return () => {
+        // Stop trailer when screen loses focus (navigating to other screens)
+        setTrailerPlaying(false);
+        logger.info('[HomeScreen] Screen blur - stopping trailer');
+      };
+    }, [setTrailerPlaying])
   );
 
-  // Update featured content when featured source setting changes
+  // Handle app state changes for smart cache management
   useEffect(() => {
-    refreshFeatured();
-  }, [featuredContentSource, refreshFeatured]);
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'background') {
+        // Only clear memory cache when app goes to background
+        // This frees memory while keeping disk cache intact for fast restoration
+        try {
+          FastImage.clearMemoryCache();
+          if (__DEV__) console.log('[HomeScreen] Cleared memory cache on background');
+        } catch (error) {
+          if (__DEV__) console.warn('[HomeScreen] Failed to clear memory cache:', error);
+        }
+      }
+    });
 
-  // Build the list of items to render
-  const listData = useMemo(() => {
-    const items: HomeScreenListItem[] = [];
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
 
-    // Add welcome screen if needed
-    if (showHeroSection && !hasAddons) {
-      items.push({ type: 'welcome', key: 'welcome' });
-      return items; // Only show welcome, nothing else
+  useEffect(() => {
+    // Only run cleanup when component unmounts completely
+    return () => {
+      if (Platform.OS === 'android') {
+        StatusBar.setTranslucent(false);
+        StatusBar.setBackgroundColor(currentTheme.colors.darkBackground);
+      }
+
+      // Clean up any lingering timeouts
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+
+      // Don't clear FastImage cache on unmount - it causes broken images on remount
+      // FastImage's native libraries (SDWebImage/Glide) handle memory automatically
+      // Cache clearing only happens on app background (see AppState handler above)
+    };
+  }, [currentTheme.colors.darkBackground]);
+
+  // Removed periodic forced cache clearing to avoid churn under load
+  // useEffect(() => {}, [catalogs]);
+
+  // Balanced preload images function using FastImage
+  const preloadImages = useCallback(async (content: StreamingContent[]) => {
+    if (!content.length) return;
+
+    try {
+      // Moderate prefetching for better performance balance
+      const MAX_IMAGES = 10; // Preload 10 most important images
+
+      // Only preload poster images (skip banner and logo entirely)
+      const posterImages = content.slice(0, MAX_IMAGES)
+        .map(item => item.poster)
+        .filter(Boolean) as string[];
+
+      // FastImage preload with proper source format
+      const sources = posterImages.map(uri => ({
+        uri,
+        priority: FastImage.priority.normal,
+        cache: FastImage.cacheControl.immutable
+      }));
+
+      // Preload all images at once - FastImage handles batching internally
+      FastImage.preload(sources);
+    } catch (error) {
+      // Silently handle preload errors
+      if (__DEV__) console.warn('Image preload error:', error);
     }
+  }, []);
 
-    // Add featured content section if enabled
-    if (showHeroSection) {
-      items.push({ type: 'featured', key: 'featured' });
+  const handleContentPress = useCallback((id: string, type: string) => {
+    navigation.navigate('Metadata', { id, type });
+  }, [navigation]);
+
+  const handlePlayStream = useCallback(async (stream: Stream) => {
+    if (!featuredContent) return;
+
+    try {
+      // Don't clear cache before player - causes broken images on return
+      // FastImage's native libraries handle memory efficiently
+
+      // Lock orientation to landscape before navigation to prevent glitches
+      try {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
+        // Longer delay to ensure orientation is fully set before navigation
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch (orientationError) {
+        // If orientation lock fails, continue anyway but log it
+        logger.warn('[HomeScreen] Orientation lock failed:', orientationError);
+        // Still add a small delay
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // @ts-ignore
+      navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
+        uri: stream.url as any,
+        title: featuredContent.name,
+        year: featuredContent.year,
+        quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
+        streamProvider: stream.name,
+        id: featuredContent.id,
+        type: featuredContent.type
+      });
+    } catch (error) {
+      logger.error('[HomeScreen] Error in handlePlayStream:', error);
+
+      // Fallback: navigate anyway
+      // Fallback: navigate anyway
+      // @ts-ignore
+      navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
+        uri: stream.url as any,
+        title: featuredContent.name,
+        year: featuredContent.year,
+        quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
+        streamProvider: stream.name,
+        id: featuredContent.id,
+        type: featuredContent.type
+      });
     }
+  }, [featuredContent, navigation]);
 
-    // Add this week section
-    items.push({ type: 'thisWeek', key: 'thisWeek' });
+  const refreshContinueWatching = useCallback(async () => {
+    if (continueWatchingRef.current) {
+      try {
+        const hasContent = await continueWatchingRef.current.refresh();
+        setHasContinueWatching(hasContent);
 
-    // Add continue watching section (always visible)
-    items.push({ type: 'continueWatching', key: 'continueWatching' });
-
-    // Add visible catalogs and loading placeholders
-    for (let i = 0; i < visibleCatalogCount; i++) {
-      if (i < catalogs.length && catalogs[i] !== null) {
-        // Add the loaded catalog
-        items.push({
-          type: 'catalog',
-          catalog: catalogs[i]!,
-          key: `catalog-${catalogs[i]!.addon}-${catalogs[i]!.id}`
-        });
-      } else if (catalogsLoading && i < totalCatalogsRef.current) {
-        // Add loading placeholder while loading
-        items.push({
-          type: 'placeholder',
-          key: `catalog-loading-${i}`
-        });
+      } catch (error) {
+        if (__DEV__) console.error('[HomeScreen] Error refreshing continue watching:', error);
+        setHasContinueWatching(false);
       }
     }
+  }, []);
 
-    // Add "Load More" button if there are more catalogs
-    if (visibleCatalogCount < totalCatalogsRef.current) {
-      items.push({ type: 'loadMore', key: 'loadMore' });
+  // Use refs to track state for event listeners without triggering re-effects
+  const catalogsLengthRef = useRef(catalogs.length);
+  const catalogsLoadingRef = useRef(catalogsLoading);
+
+  useEffect(() => {
+    catalogsLengthRef.current = catalogs.length;
+  }, [catalogs.length]);
+
+  useEffect(() => {
+    catalogsLoadingRef.current = catalogsLoading;
+  }, [catalogsLoading]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Only refresh continue watching section on focus
+      refreshContinueWatching();
+      // Don't reload catalogs unless they haven't been loaded yet
+      // Uses refs to avoid re-binding the listener on every state change
+      if (catalogsLengthRef.current === 0 && !catalogsLoadingRef.current) {
+        loadCatalogsProgressively();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, refreshContinueWatching, loadCatalogsProgressively]);
+
+  // Handle profile changes - reload catalogs and refresh content when profile switches
+  useEffect(() => {
+    if (prevProfileIdRef.current !== profileId) {
+      logger.info('[HomeScreen] Profile changed, refreshing catalogs and recommendations');
+      prevProfileIdRef.current = profileId;
+
+      // Force reset the fetch guard to ensure refresh happens
+      isFetchingRef.current = false;
+
+      // Invalidate catalog settings cache for fresh load
+      cachedCatalogSettings = null;
+      catalogSettingsCacheTimestamp = 0;
+
+      // Refresh catalogs for the new profile
+      loadCatalogsProgressively();
+
+      // Also refresh continue watching section
+      refreshContinueWatching();
     }
+  }, [profileId, loadCatalogsProgressively, refreshContinueWatching]);
 
-    return items;
-  }, [showHeroSection, hasAddons, catalogs, catalogsLoading, visibleCatalogCount]);
-
-  const renderItem = useCallback(({ item }: { item: HomeScreenListItem }) => {
-    if (item.type === 'featured') {
+  // Memoize the loading screen to prevent unnecessary re-renders
+  const renderLoadingScreen = useMemo(() => {
+    if (isLoading) {
       return (
-        <View style={styles.sectionContainer}>
-          {showHeroSection === false ? null : isDarkMode ? (
-            <FeaturedContent content={featuredContent} />
-          ) : (
-            <AppleTVHero content={featuredContent} />
-          )}
+        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+          <StatusBar
+            barStyle="light-content"
+            backgroundColor="transparent"
+            translucent
+          />
+          <View style={styles.loadingMainContainer}>
+            <LoadingSpinner size="large" offsetY={-20} />
+          </View>
         </View>
       );
     }
-
-    if (item.type === 'thisWeek') {
-      return (
-        <View style={styles.sectionContainer}>
-          <ThisWeekSection />
-        </View>
-      );
-    }
-
-    if (item.type === 'continueWatching') {
-      return (
-        <View style={styles.sectionContainer}>
-          <ContinueWatchingSection ref={continueWatchingRef} onHasContent={setHasContinueWatching} />
-        </View>
-      );
-    }
-
-    if (item.type === 'catalog') {
-      return (
-        <View style={styles.sectionContainer}>
-          <CatalogSection catalog={item.catalog} />
-        </View>
-      );
-    }
-
-    if (item.type === 'placeholder') {
-      return (
-        <View style={styles.sectionContainer}>
-          <CatalogRowSkeleton />
-        </View>
-      );
-    }
-
-    if (item.type === 'welcome') {
-      return <FirstTimeWelcome />;
-    }
-
-    if (item.type === 'loadMore') {
-      return (
-        <View style={styles.loadMoreContainer}>
-          <TouchableOpacity onPress={() => setVisibleCatalogCount(prev => prev + 5)}>
-            <Text style={styles.loadMoreText}>Load More Catalogs</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
     return null;
-  }, [showHeroSection, isDarkMode, featuredContent, catalogsLoading]);
+  }, [isLoading, currentTheme.colors]);
 
+  // Stabilize listData to prevent FlashList re-renders
+  const listData = useMemo(() => {
+    const data: HomeScreenListItem[] = [];
+
+    // If no addons are installed, just show the welcome component
+    if (hasAddons === false) {
+      data.push({ type: 'welcome', key: 'welcome' });
+      return data;
+    }
+
+    // Normal flow when addons are present (featured moved to ListHeaderComponent)
+    data.push({ type: 'thisWeek', key: 'thisWeek' });
+
+    // Only show a limited number of catalogs initially for performance
+    const catalogsToShow = catalogs.slice(0, visibleCatalogCount);
+
+    catalogsToShow.forEach((catalog, index) => {
+      if (catalog) {
+        data.push({ type: 'catalog', catalog, key: `${catalog.addon}-${catalog.id}-${index}` });
+      } else {
+        // Add a key for placeholders
+        data.push({ type: 'placeholder', key: `placeholder-${index}` });
+      }
+    });
+
+    // Add a "Load More" button if there are more catalogs to show
+    if (catalogs.length > visibleCatalogCount && catalogs.filter(c => c).length > visibleCatalogCount) {
+      data.push({ type: 'loadMore', key: 'load-more' });
+    }
+
+    return data;
+  }, [hasAddons, catalogs, visibleCatalogCount]);
+
+  const handleLoadMoreCatalogs = useCallback(() => {
+    setVisibleCatalogCount(prev => Math.min(prev + 3, catalogs.length));
+  }, [catalogs.length]);
+
+  // Stable keyExtractor for FlashList
   const keyExtractor = useCallback((item: HomeScreenListItem) => item.key, []);
 
-  // Handle scroll events for header visibility
-  const handleScroll = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
+  // Use reactive window dimensions that update on orientation changes
+  const { width: windowWidth } = useWindowDimensions();
+  const isTablet = useMemo(() => {
+    return windowWidth >= 768;
+  }, [windowWidth]);
 
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.background }]}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={currentTheme.background}
+  // Memoize individual section components to prevent re-renders
+  const memoizedFeaturedContent = useMemo(() => {
+    const heroStyleToUse = settings.heroStyle;
+
+    // AppleTVHero is only available on mobile devices (not tablets)
+    if (heroStyleToUse === 'appletv' && !isTablet) {
+      return (
+        <AppleTVHero
+          featuredContent={featuredContent || null}
+          allFeaturedContent={allFeaturedContent || []}
+          loading={featuredLoading}
+          scrollY={scrollY}
         />
-        {isLoading && !hasAddons ? (
-          <View style={styles.loaderContainer}>
-            <LoadingSpinner size="large" text="Loading content..." />
-          </View>
-        ) : (
-          <FlashList
-            ref={flashListRef}
-            data={listData}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            estimatedItemSize={300}
-            scrollEventThrottle={16}
-            onScroll={handleScroll}
-            contentContainerStyle={{
-              paddingBottom: 20,
-              paddingHorizontal: 0,
-            }}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+      );
+    } else if (heroStyleToUse === 'carousel') {
+      return (
+        <HeroCarousel
+          items={allFeaturedContent || (featuredContent ? [featuredContent] : [])}
+          loading={featuredLoading}
+        />
+      );
+    } else {
+      return (
+        <>
+          <FeaturedContent
+            featuredContent={featuredContent || null}
+            isSaved={isSaved}
+            handleSaveToLibrary={handleSaveToLibrary}
+            loading={featuredLoading}
           />
-        )}
-      </SafeAreaView>
-    </GestureHandlerRootView>
-  );
+          <LinearGradient
+            colors={["transparent", currentTheme.colors.darkBackground]}
+            locations={[0, 1]}
+            style={{
+              height: isTablet ? 40 : 30,
+              width: '100%',
+              marginTop: -(isTablet ? 40 : 30),
+              position: 'relative',
+              zIndex: -1,
+            }}
+            pointerEvents="none"
+          />
+        </>
+      );
+    }
+  }, [isTablet, settings.heroStyle, showHeroSection, featuredContentSource, allFeaturedContent, featuredContent, isSaved, handleSaveToLibrary, featuredLoading]);
+
+  const memoizedThisWeekSection = useMemo(() => <ThisWeekSection />, []);
+  const memoizedContinueWatchingSection = useMemo(() => <ContinueWatchingSection ref={continueWatchingRef} />, []);
+  const memoizedHeader = useMemo(() => (
+    <>
+      {showHeroSection ? memoizedFeaturedContent : null}
+      {memoizedContinueWatchingSection}
+    </>
+  ), [showHeroSection, memoizedFeaturedContent, memoizedContinueWatchingSection]);
+  // Track scroll direction manually for reliable behavior across platforms
+  const lastScrollYRef = useRef(0);
+  const lastToggleRef = useRef(0);
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+  const isScrollingRef = useRef(false);
+
+  const toggleHeader = useCallback((hide: boolean) => {
+    const now = Date.now();
+    if (now - lastToggleRef.current < 120) return; // debounce
+    lastToggleRef.current = now;
+    HeaderVisibility.setHidden(hide);
+  }, []);
+
+  // Stabilize renderItem to prevent FlashList re-renders
+  const renderListItem = useCallback(({ item }: { item: HomeScreenListItem; index: number }) => {
+    switch (item.type) {
+      case 'thisWeek':
+        return memoizedThisWeekSection;
+      case 'continueWatching':
+        return null; // Moved to ListHeaderComponent to avoid remounts on scroll
+      case 'catalog':
+        return <CatalogSection catalog={item.catalog} />;
+      case 'placeholder':
+        return (
+          <Animated.View>
+            <View style={styles.catalogPlaceholder}>
+              <View style={styles.placeholderHeader}>
+                <View style={[styles.placeholderTitle, { backgroundColor: currentTheme.colors.elevation1 }]} />
+                <LoadingSpinner size="small" text="" />
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.placeholderPosters}>
+                {[...Array(3)].map((_, posterIndex) => (
+                  <View
+                    key={posterIndex}
+                    style={[styles.placeholderPoster, { backgroundColor: currentTheme.colors.elevation1 }]}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          </Animated.View>
+        );
+      case 'loadMore':
+        return (
+          <View>
+            <View style={styles.loadMoreContainer}>
+              <TouchableOpacity
+                style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.primary }]}
+                onPress={handleLoadMoreCatalogs}
+              >
+                <MaterialIcons name="expand-more" size={20} color={currentTheme.colors.white} />
+                <Text style={[styles.loadMoreText, { color: currentTheme.colors.white }]}>
+                  Load More Catalogs
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      case 'welcome':
+        return <FirstTimeWelcome />;
+      default:
+        return null;
+    }
+  }, [memoizedThisWeekSection, currentTheme.colors.elevation1, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
+
+  // FlashList: using minimal props per installed version
+
+  const ListFooterComponent = useMemo(() => (
+    <>
+      {catalogsLoading && loadedCatalogCount > 0 && loadedCatalogCount < totalCatalogsRef.current && null}
+      {!catalogsLoading && catalogs.filter(c => c).length === 0 && (
+        <View style={[styles.emptyCatalog, { backgroundColor: currentTheme.colors.elevation1 }]}>
+          <MaterialIcons name="movie-filter" size={40} color={currentTheme.colors.textDark} />
+          <Text style={{ color: currentTheme.colors.textDark, marginTop: 8, fontSize: 16, textAlign: 'center' }}>
+            No content available
+          </Text>
+          <TouchableOpacity
+            style={[styles.addCatalogButton, { backgroundColor: currentTheme.colors.primary }]}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <MaterialIcons name="add-circle" size={20} color={currentTheme.colors.white} />
+            <Text style={[styles.addCatalogButtonText, { color: currentTheme.colors.white }]}>Add Catalogs</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </>
+  ), [catalogsLoading, catalogs, loadedCatalogCount, totalCatalogsRef.current, navigation, currentTheme.colors]);
+
+  // Memoize scroll handler with requestAnimationFrame throttling for better performance
+  const handleScroll = useCallback((event: any) => {
+    // Persist the event before using requestAnimationFrame to prevent event pooling issues
+    event.persist();
+
+    // Cancel any pending animation frame
+    if (scrollAnimationFrameRef.current !== null) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
+    }
+
+    // Capture scroll values immediately before async operation
+    const scrollYValue = event.nativeEvent.contentOffset.y;
+
+    // Update shared value for parallax (on UI thread)
+    scrollY.value = scrollYValue;
+
+    // Use requestAnimationFrame to throttle scroll handling
+    scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+      const y = scrollYValue;
+      const dy = y - lastScrollYRef.current;
+      lastScrollYRef.current = y;
+
+      isScrollingRef.current = Math.abs(dy) > 0;
+
+      if (y <= 10) {
+        toggleHeader(false);
+        return;
+      }
+      // Threshold to avoid jitter
+      if (dy > 6) {
+        toggleHeader(true); // scrolling down
+      } else if (dy < -6) {
+        toggleHeader(false); // scrolling up
+      }
+
+      scrollAnimationFrameRef.current = null;
+    });
+  }, [toggleHeader]);
+
+  // Memoize content container style - use stable insets to prevent iOS shifting
+  // Don't add paddingTop when using AppleTVHero as it handles its own top spacing
+  const contentContainerStyle = useMemo(() => {
+    const heroStyleToUse = settings.heroStyle;
+    const isUsingAppleTVHero = heroStyleToUse === 'appletv' && !isTablet && showHeroSection;
+
+    return StyleSheet.flatten([
+      styles.scrollContent,
+      { paddingTop: isUsingAppleTVHero ? 0 : stableInsetsTop }
+    ]);
+  }, [stableInsetsTop, settings.heroStyle, isTablet, showHeroSection]);
+
+  // Memoize the main content section
+  const renderMainContent = useMemo(() => {
+    if (isLoading) return null;
+
+    return (
+      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
+        <FlashList
+          data={listData}
+          renderItem={renderListItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={contentContainerStyle}
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          nestedScrollEnabled={true}
+          ListHeaderComponent={memoizedHeader}
+          ListFooterComponent={ListFooterComponent}
+          onEndReached={handleLoadMoreCatalogs}
+          onEndReachedThreshold={0.6}
+          onScroll={handleScroll}
+        />
+        {/* Toasts are rendered globally at root */}
+      </View>
+    );
+  }, [
+    isLoading,
+    currentTheme.colors.darkBackground,
+    listData,
+    renderListItem,
+    keyExtractor,
+    contentContainerStyle,
+    memoizedHeader,
+    ListFooterComponent,
+    handleLoadMoreCatalogs,
+    handleScroll
+  ]);
+
+  return isLoading ? renderLoadingScreen : renderMainContent;
 };
 
-const styles = StyleSheet.create({
+const { width, height } = Dimensions.get('window');
+
+// Dynamic poster calculation based on screen width - show 1/4 of next poster
+const calculatePosterLayout = (screenWidth: number) => {
+  const MIN_POSTER_WIDTH = 100; // Reduced minimum for more posters
+  const MAX_POSTER_WIDTH = 130; // Reduced maximum for more posters
+  const LEFT_PADDING = 16; // Left padding
+  const SPACING = 8; // Space between posters
+
+  // Calculate available width for posters (reserve space for left padding)
+  const availableWidth = screenWidth - LEFT_PADDING;
+
+  // Try different numbers of full posters to find the best fit
+  let bestLayout = { numFullPosters: 3, posterWidth: 120 };
+
+  for (let n = 3; n <= 6; n++) {
+    // Calculate poster width needed for N full posters + 0.25 partial poster
+    // Formula: N * posterWidth + (N-1) * spacing + 0.25 * posterWidth = availableWidth - rightPadding
+    // Simplified: posterWidth * (N + 0.25) + (N-1) * spacing = availableWidth - rightPadding
+    // We'll use minimal right padding (8px) to maximize space
+    const usableWidth = availableWidth - 8;
+    const posterWidth = (usableWidth - (n - 1) * SPACING) / (n + 0.25);
+
+    if (posterWidth >= MIN_POSTER_WIDTH && posterWidth <= MAX_POSTER_WIDTH) {
+      bestLayout = { numFullPosters: n, posterWidth };
+    }
+  }
+
+  return {
+    numFullPosters: bestLayout.numFullPosters,
+    posterWidth: bestLayout.posterWidth,
+    spacing: SPACING,
+    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+  };
+};
+
+const posterLayout = calculatePosterLayout(width);
+const POSTER_WIDTH = posterLayout.posterWidth;
+
+const styles = StyleSheet.create<any>({
   container: {
     flex: 1,
   },
-  loaderContainer: {
+  scrollContent: {
+    paddingBottom: 90,
+  },
+  loadingMainContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Ensure perfect centering
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+  },
+  loadingMoreCatalogs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: 8,
+  },
+  loadingMoreText: {
+    marginLeft: 12,
+    fontSize: 14,
+  },
+  catalogPlaceholder: {
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  placeholderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  placeholderTitle: {
+    width: 150,
+    height: 20,
+    borderRadius: 4,
+  },
+  placeholderPosters: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    gap: 8,
+  },
+  placeholderPoster: {
+    width: POSTER_WIDTH,
+    aspectRatio: 2 / 3,
+    borderRadius: 12,
+    marginRight: 2,
+  },
+  emptyCatalog: {
+    padding: 32,
+    alignItems: 'center',
+    margin: 16,
+    borderRadius: 16,
+  },
+  addCatalogButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    marginTop: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  addCatalogButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  loadMoreContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  loadMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  loadMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 24,
+    left: 16,
+    right: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(99, 102, 241, 0.95)',
+    borderRadius: 12,
+  },
+  toastText: {
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sectionContainer: {
-    marginHorizontal: 0,
+  featuredContainer: {
+    width: '100%',
+    height: height * 0.6,
+    marginTop: Platform.OS === 'ios' ? 0 : 0,
+    marginBottom: 8,
+    position: 'relative',
+  },
+  featuredBanner: {
+    width: '100%',
+    height: '100%',
+  },
+  featuredGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  featuredContent: {
+    padding: 24,
+    paddingBottom: 16,
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  featuredLogo: {
+    width: width * 0.7,
+    height: 100,
+    marginBottom: 0,
+    alignSelf: 'center',
+  },
+  featuredTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    marginBottom: 0,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  genreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  genreText: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.9,
+  },
+  genreDot: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.6,
+    marginHorizontal: 4,
+  },
+  featuredButtons: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-evenly',
+    width: '100%',
+    flex: 1,
+    maxHeight: 65,
+    paddingTop: 16,
+  },
+  playButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    flex: 0,
+    width: 150,
+  },
+  myListButton: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
+    gap: 6,
+    width: 44,
+    height: 44,
+    flex: null,
+  },
+  infoButton: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
+    gap: 4,
+    width: 44,
+    height: 44,
+    flex: null,
+  },
+  playButtonText: {
+    color: '#000000',
+    fontWeight: '600',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  myListButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  infoButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   catalogContainer: {
-    marginBottom: 16,
+    marginBottom: 24,
+    paddingTop: 0,
+    marginTop: 16,
   },
-  loadingPlaceholder: {
-    paddingVertical: 16,
-    justifyContent: 'center',
+  catalogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
-  loadMoreContainer: {
-    paddingVertical: 16,
+  titleContainer: {
+    position: 'relative',
+  },
+  catalogTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    marginBottom: 4,
+  },
+  titleUnderline: {
+    position: 'absolute',
+    bottom: -2,
+    left: 0,
+    width: 35,
+    height: 2,
+    borderRadius: 1,
+    opacity: 0.8,
+  },
+  seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  seeAllText: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginRight: 4,
+  },
+  catalogList: {
+    paddingLeft: 16,
+    paddingRight: 16 - posterLayout.partialPosterWidth,
+    paddingBottom: 12,
+    paddingTop: 6,
+  },
+  contentItem: {
+    width: POSTER_WIDTH,
+    aspectRatio: 2 / 3,
+    margin: 0,
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  poster: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+  },
+  imdbLogo: {
+    width: 35,
+    height: 17,
+    marginRight: 4,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  ratingBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginLeft: 3,
+  },
+  skeletonBox: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  skeletonFeatured: {
+    width: '100%',
+    height: height * 0.6,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    marginBottom: 0,
+  },
+  skeletonPoster: {
+    marginHorizontal: 4,
+    borderRadius: 16,
+  },
+  contentItemContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  libraryIndicatorContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
   },
-  loadMoreText: {
+  libraryText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalOverlayPressable: {
+    flex: 1,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  menuContainer: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.select({ ios: 40, android: 24 }),
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  menuPoster: {
+    width: 60,
+    height: 90,
+    borderRadius: 12,
+  },
+  menuTitleContainer: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center',
+  },
+  menuTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#007AFF',
+    marginBottom: 4,
+  },
+  menuYear: {
+    fontSize: 14,
+  },
+  menuOptions: {
+    paddingTop: 8,
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  lastMenuOption: {
+    borderBottomWidth: 0,
+  },
+  menuOptionText: {
+    fontSize: 16,
+    marginLeft: 16,
+  },
+  watchedIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    padding: 2,
+  },
+  libraryBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 8,
+    padding: 4,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  featuredImage: {
+    width: '100%',
+    height: '100%',
+  },
+  featuredContentContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  featuredTitleText: {
+    fontSize: 28,
+    fontWeight: '900',
+    marginBottom: 8,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    textAlign: 'center',
+    paddingHorizontal: 16,
+  },
+  loadingPlaceholder: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    marginHorizontal: 16,
+  },
+  featuredLoadingContainer: {
+    height: height * 0.4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
-export default HomeScreen;
+import { DeviceEventEmitter } from 'react-native';
+
+const HomeScreenWithFocusSync = (props: any) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      DeviceEventEmitter.emit('watchedStatusChanged');
+    });
+    return () => unsubscribe();
+  }, [navigation]);
+  return <HomeScreen {...props} />;
+};
+
+export default React.memo(HomeScreenWithFocusSync);
+

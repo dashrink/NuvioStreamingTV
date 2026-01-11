@@ -1,0 +1,45 @@
+{
+  "discovered_files": {
+    "src/services/watchedService.ts": {
+      "description": "Watch history tracking now supports profile-scoped storage via optional profile_id parameter. When profile_id is provided, storage keys use format @user:${scope}:profile:${profile_id}:@watch_progress:... to isolate watch history per profile.",
+      "category": "profile-scoping",
+      "discovered_at": "2026-01-10T11:03:41.058777+00:00"
+    },
+    "src/contexts/ProfileContext.tsx": {
+      "description": "Created ProfileContext that provides activeProfile state, loadProfiles, setActiveProfile, and getActiveProfileId. Uses same 'user_profiles' MMKV key as ProfilesScreen. Polls for profile updates every 2 seconds to sync with ProfilesScreen changes.",
+      "category": "state_management",
+      "discovered_at": "2026-01-10T11:07:37.496832+00:00"
+    },
+    "src/components/home/ContinueWatchingSection.tsx": {
+      "description": "ContinueWatchingSection now filters watch progress by active profile using useProfileContext. It supports both profile-scoped keys (profile:${profileId}:type:id:...) and legacy keys for backward compatibility. The component automatically refreshes when activeProfile.id changes.",
+      "category": "profile-filtering",
+      "discovered_at": "2026-01-10T11:10:38.295106+00:00"
+    },
+    "src/hooks/useFeaturedContent.ts": {
+      "description": "useFeaturedContent now uses profile-scoped caching with profileStoreMap (Map keyed by profileId) and profile-specific MMKV storage keys (featured_content_cache_v2:profile:${profileId}). Content automatically reloads when activeProfile changes via prevProfileIdRef tracking.",
+      "category": "profile-filtering",
+      "discovered_at": "2026-01-10T11:14:47.467792+00:00"
+    },
+    "src/hooks/useHomeCatalogs.ts": {
+      "description": "useHomeCatalogs now imports useActiveProfile from ProfileContext and tracks profile changes via prevProfileIdRef. Catalogs automatically refresh when profile changes.",
+      "category": "profile-filtering",
+      "discovered_at": "2026-01-10T11:14:47.500830+00:00"
+    },
+    "src/screens/HomeScreen.tsx": {
+      "description": "HomeScreen now uses useActiveProfile to detect profile changes and triggers catalog refresh when profile switches. It follows the same pattern as useFeaturedContent and useHomeCatalogs hooks with prevProfileIdRef tracking.",
+      "category": "profile-integration",
+      "discovered_at": "2026-01-10T11:17:55.859965+00:00"
+    },
+    "src/components/profile/ProfileSwitcherBottomSheet.tsx": {
+      "description": "ProfileSwitcherBottomSheet is an animated bottom sheet component for switching between profiles. Uses reanimated for animations, gesture-handler for swipe-to-dismiss. Supports PIN-protected profiles with a modal PIN entry. PIN hashes are stored in MMKV with key 'profile_pin_hash_{profileId}'. Component uses ProfileContext for profile data and ThemeContext for theming.",
+      "category": "component",
+      "discovered_at": "2026-01-10T11:21:23.117307+00:00"
+    },
+    "src/navigation/AppNavigator.tsx": {
+      "description": "Profile switcher button added to navigation header. Uses ProfileIcon component and ProfileSwitcherBottomSheet. Button is positioned: (1) In tablet floating nav bar for tablets, (2) Absolute positioned top-right for iOS, (3) Absolute positioned top-right for Android phones. ProfileProvider is wrapped around InnerNavigator in AppNavigator export.",
+      "category": "navigation",
+      "discovered_at": "2026-01-10T11:26:54.351966+00:00"
+    }
+  },
+  "last_updated": "2026-01-10T11:26:54.351988+00:00"
+}
