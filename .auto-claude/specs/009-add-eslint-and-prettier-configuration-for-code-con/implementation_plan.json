@@ -2,11 +2,15 @@
   "feature": "Add ESLint and Prettier configuration for code consistency",
   "description": "Configure ESLint and Prettier for an Expo React Native TypeScript project to enforce code style, catch common errors (unused variables, missing dependencies in hooks, accessibility issues), and improve code quality through automated linting.",
   "created_at": "2026-01-09T21:16:50.568Z",
-  "updated_at": "2026-01-10T00:00:00.000Z",
-  "status": "in_progress",
-  "planStatus": "approved",
+  "updated_at": "2026-01-11T15:05:40.349Z",
+  "status": "backlog",
+  "planStatus": "pending",
   "workflow_type": "development",
-  "services_involved": ["eslint", "prettier", "typescript"],
+  "services_involved": [
+    "eslint",
+    "prettier",
+    "typescript"
+  ],
   "spec_file": "spec.md",
   "estimated_total_hours": 3,
   "phases": [
@@ -23,7 +27,9 @@
           "estimated_minutes": 10,
           "status": "completed",
           "dependencies": [],
-          "files_to_modify": ["package.json"],
+          "files_to_modify": [
+            "package.json"
+          ],
           "acceptance_criteria": [
             "eslint package installed",
             "@typescript-eslint/parser installed",
@@ -36,8 +42,12 @@
           "description": "Install ESLint plugins for React, React Hooks, and React Native best practices",
           "estimated_minutes": 10,
           "status": "completed",
-          "dependencies": ["1.1"],
-          "files_to_modify": ["package.json"],
+          "dependencies": [
+            "1.1"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
           "acceptance_criteria": [
             "eslint-plugin-react installed",
             "eslint-plugin-react-hooks installed",
@@ -51,8 +61,12 @@
           "description": "Install Prettier and packages to integrate it with ESLint to avoid conflicts",
           "estimated_minutes": 10,
           "status": "completed",
-          "dependencies": ["1.1"],
-          "files_to_modify": ["package.json"],
+          "dependencies": [
+            "1.1"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
           "acceptance_criteria": [
             "prettier installed",
             "eslint-config-prettier installed",
@@ -66,8 +80,12 @@
           "description": "Install import sorting and other useful ESLint plugins for better code organization",
           "estimated_minutes": 10,
           "status": "completed",
-          "dependencies": ["1.1"],
-          "files_to_modify": ["package.json"],
+          "dependencies": [
+            "1.1"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
           "acceptance_criteria": [
             "eslint-plugin-import installed",
             "@typescript-eslint/parser and plugins properly configured for import resolution"
@@ -88,8 +106,15 @@
           "description": "Create .eslintrc.js with TypeScript, React, React Native rules and appropriate configuration for Expo projects",
           "estimated_minutes": 20,
           "status": "pending",
-          "dependencies": ["1.1", "1.2", "1.3", "1.4"],
-          "files_to_modify": [".eslintrc.js"],
+          "dependencies": [
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4"
+          ],
+          "files_to_modify": [
+            ".eslintrc.js"
+          ],
           "acceptance_criteria": [
             "ESLint config extends TypeScript and React recommended configs",
             "React Native specific rules configured",
@@ -105,8 +130,12 @@
           "description": "Create .eslintignore to exclude build artifacts, node_modules, and generated files",
           "estimated_minutes": 10,
           "status": "pending",
-          "dependencies": ["2.1"],
-          "files_to_modify": [".eslintignore"],
+          "dependencies": [
+            "2.1"
+          ],
+          "files_to_modify": [
+            ".eslintignore"
+          ],
           "acceptance_criteria": [
             "node_modules excluded",
             "Build directories excluded (android/, ios/, build/)",
@@ -120,8 +149,12 @@
           "description": "Create .prettierrc with consistent code formatting rules suitable for React Native/TypeScript",
           "estimated_minutes": 15,
           "status": "pending",
-          "dependencies": ["1.3"],
-          "files_to_modify": [".prettierrc"],
+          "dependencies": [
+            "1.3"
+          ],
+          "files_to_modify": [
+            ".prettierrc"
+          ],
           "acceptance_criteria": [
             "Sensible defaults for React Native project",
             "Single quotes configured",
@@ -136,8 +169,12 @@
           "description": "Create .prettierignore to exclude files that should not be formatted",
           "estimated_minutes": 10,
           "status": "pending",
-          "dependencies": ["2.3"],
-          "files_to_modify": [".prettierignore"],
+          "dependencies": [
+            "2.3"
+          ],
+          "files_to_modify": [
+            ".prettierignore"
+          ],
           "acceptance_criteria": [
             "node_modules excluded",
             "Build directories excluded",
@@ -160,8 +197,13 @@
           "description": "Add npm scripts for lint, lint:fix, format, and format:check commands",
           "estimated_minutes": 15,
           "status": "pending",
-          "dependencies": ["2.1", "2.3"],
-          "files_to_modify": ["package.json"],
+          "dependencies": [
+            "2.1",
+            "2.3"
+          ],
+          "files_to_modify": [
+            "package.json"
+          ],
           "acceptance_criteria": [
             "npm run lint command runs ESLint on src/ and root TypeScript files",
             "npm run lint:fix command auto-fixes ESLint issues",
@@ -183,8 +225,13 @@
           "description": "Configure .vscode/settings.json to run ESLint fix and Prettier format on file save",
           "estimated_minutes": 15,
           "status": "pending",
-          "dependencies": ["2.1", "2.3"],
-          "files_to_modify": [".vscode/settings.json"],
+          "dependencies": [
+            "2.1",
+            "2.3"
+          ],
+          "files_to_modify": [
+            ".vscode/settings.json"
+          ],
           "acceptance_criteria": [
             "editor.formatOnSave enabled",
             "editor.defaultFormatter set to Prettier for JS/TS/TSX files",
@@ -199,7 +246,9 @@
           "estimated_minutes": 10,
           "status": "pending",
           "dependencies": [],
-          "files_to_modify": [".vscode/extensions.json"],
+          "files_to_modify": [
+            ".vscode/extensions.json"
+          ],
           "acceptance_criteria": [
             "ESLint extension recommended",
             "Prettier extension recommended"
@@ -219,7 +268,9 @@
           "description": "Execute npm run lint to verify ESLint is configured correctly and identify any issues",
           "estimated_minutes": 15,
           "status": "pending",
-          "dependencies": ["3.1"],
+          "dependencies": [
+            "3.1"
+          ],
           "files_to_modify": [],
           "acceptance_criteria": [
             "ESLint runs without configuration errors",
@@ -233,7 +284,9 @@
           "description": "Execute npm run format:check to verify Prettier configuration works correctly",
           "estimated_minutes": 10,
           "status": "pending",
-          "dependencies": ["3.1"],
+          "dependencies": [
+            "3.1"
+          ],
           "files_to_modify": [],
           "acceptance_criteria": [
             "Prettier runs without configuration errors",
@@ -246,8 +299,13 @@
           "description": "Update build-progress.txt with summary of implemented linting configuration",
           "estimated_minutes": 10,
           "status": "pending",
-          "dependencies": ["5.1", "5.2"],
-          "files_to_modify": [".auto-claude/specs/009-add-eslint-and-prettier-configuration-for-code-con/build-progress.txt"],
+          "dependencies": [
+            "5.1",
+            "5.2"
+          ],
+          "files_to_modify": [
+            ".auto-claude/specs/009-add-eslint-and-prettier-configuration-for-code-con/build-progress.txt"
+          ],
           "acceptance_criteria": [
             "Build progress documented",
             "Configuration choices explained",
