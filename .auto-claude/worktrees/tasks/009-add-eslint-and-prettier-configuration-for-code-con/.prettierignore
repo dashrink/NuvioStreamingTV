@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Native platform directories
+android/
+ios/
+
+# Build outputs
+build/
+dist/
+.expo/
+.expo-shared/
+web-build/
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.log
+*.log.*
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Auto-generated or managed directories
+.auto-claude/
+.automaker/
+.vscode/
+.idea/
+
+# Backup and patch files
+*.orig
+*.rej
+*.patch
+*.bak
+
+# Config files that should not be formatted
+*.config.js
+*.config.ts
+
+# Git files
+.git/
+.gitignore
+
+# Project-specific directories (if they exist)
+server/
+local-scrapers-repo/
+
+# Temporary files
+tmp/
+temp/
+.cache/
