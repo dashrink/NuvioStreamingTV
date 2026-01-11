@@ -228,6 +228,7 @@ const LibraryScreen = () => {
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   const {
     isAuthenticated: traktAuthenticated,
@@ -342,6 +343,17 @@ const LibraryScreen = () => {
       focusSub();
     };
   }, [navigation]);
+
+  // Debounce the search query to prevent excessive filtering during typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   const filteredItems = libraryItems.filter(item => {
     if (filter === 'movies') return item.type === 'movie';
