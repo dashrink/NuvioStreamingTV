@@ -46,3 +46,9 @@ export type {
   UseTVBackHandlerOptions,
   UseTVBackHandlerReturn,
 } from './useTVBackHandler';
+
+export { useTVPlayerControls, isTV as isTVPlatform, createDefaultVolumeHandler } from './useTVPlayerControls';
+export type {
+  TVPlayerControlsConfig,
+  TVPlayerControlsResult,
+} from './useTVPlayerControls';
