@@ -728,6 +728,299 @@ export function isTV(): boolean {
 }
 
 // =============================================================================
+// Utility Hook: useEmptyListFocusFallback
+// =============================================================================
+
+/**
+ * Configuration for empty list focus fallback
+ */
+export interface EmptyListFallbackConfig {
+  /** Whether the list is currently empty */
+  isEmpty: boolean;
+  /** Whether the list is currently loading */
+  isLoading?: boolean;
+  /** Fallback focus IDs to try (in order of priority) */
+  fallbackFocusIds: string[];
+  /** Callback when no fallback focus is available */
+  onNoFallbackAvailable?: () => void;
+  /** Delay before attempting focus fallback (ms) */
+  fallbackDelay?: number;
+}
+
+/**
+ * Handle focus fallback when a list becomes empty
+ *
+ * This hook monitors when a content list becomes empty (e.g., after filtering,
+ * loading, or removing items) and automatically moves focus to the next
+ * available focusable element.
+ *
+ * @param spatialNav - The spatial navigation hook instance
+ * @param config - Configuration for fallback behavior
+ *
+ * @example
+ * ```tsx
+ * function MyListScreen() {
+ *   const spatialNav = useSpatialNavigation('MyListScreen');
+ *   const [items, setItems] = useState([]);
+ *   const [isLoading, setIsLoading] = useState(true);
+ *
+ *   // Register fallback elements
+ *   const searchRef = useFocusableRef(spatialNav, 'search-bar');
+ *   const tabsRef = useFocusableRef(spatialNav, 'nav-tabs');
+ *
+ *   useEmptyListFocusFallback(spatialNav, {
+ *     isEmpty: items.length === 0,
+ *     isLoading,
+ *     fallbackFocusIds: ['search-bar', 'nav-tabs'],
+ *   });
+ *
+ *   return (
+ *     <View>
+ *       <SearchBar ref={searchRef} />
+ *       <TabBar ref={tabsRef} />
+ *       {items.length > 0 ? <ItemList items={items} /> : <EmptyState />}
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
+export function useEmptyListFocusFallback(
+  spatialNav: UseSpatialNavigationReturn,
+  config: EmptyListFallbackConfig
+): void {
+  const {
+    isEmpty,
+    isLoading = false,
+    fallbackFocusIds,
+    onNoFallbackAvailable,
+    fallbackDelay = 100,
+  } = config;
+
+  const hasAttemptedFallback = useRef(false);
+  const previousIsEmpty = useRef(isEmpty);
+
+  useEffect(() => {
+    // Only trigger when transitioning to empty state (not when loading)
+    // or when loading completes and list is empty
+    const shouldTriggerFallback =
+      (isEmpty && !isLoading && !hasAttemptedFallback.current) ||
+      (previousIsEmpty.current !== isEmpty && isEmpty && !isLoading);
+
+    if (!shouldTriggerFallback) {
+      // Reset the flag when list becomes non-empty
+      if (!isEmpty) {
+        hasAttemptedFallback.current = false;
+      }
+      previousIsEmpty.current = isEmpty;
+      return;
+    }
+
+    if (!spatialNav.isTV) {
+      previousIsEmpty.current = isEmpty;
+      return;
+    }
+
+    // Delay focus fallback to ensure layout is complete
+    const timeoutId = setTimeout(() => {
+      requestAnimationFrame(() => {
+        // Try each fallback focus ID in order
+        for (const fallbackId of fallbackFocusIds) {
+          if (spatialNav.focusElement(fallbackId)) {
+            hasAttemptedFallback.current = true;
+            previousIsEmpty.current = isEmpty;
+            return;
+          }
+        }
+
+        // No fallback available
+        hasAttemptedFallback.current = true;
+        previousIsEmpty.current = isEmpty;
+        onNoFallbackAvailable?.();
+      });
+    }, fallbackDelay);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    isEmpty,
+    isLoading,
+    fallbackFocusIds,
+    fallbackDelay,
+    onNoFallbackAvailable,
+    spatialNav,
+  ]);
+}
+
+// =============================================================================
+// Utility Hook: useFocusableFallbackRefs
+// =============================================================================
+
+/**
+ * Register multiple fallback refs and return a function to focus the first available
+ *
+ * @param spatialNav - The spatial navigation hook instance
+ * @param fallbackIds - Array of focus IDs to register as fallbacks
+ * @returns Object with refs map and focusFirstAvailable function
+ *
+ * @example
+ * ```tsx
+ * function MyScreen() {
+ *   const spatialNav = useSpatialNavigation('MyScreen');
+ *   const { refsMap, focusFirstAvailable } = useFocusableFallbackRefs(
+ *     spatialNav,
+ *     ['search', 'filter', 'back-button']
+ *   );
+ *
+ *   // When list becomes empty:
+ *   const handleListEmpty = () => {
+ *     focusFirstAvailable();
+ *   };
+ *
+ *   return (
+ *     <View>
+ *       <SearchBar ref={refsMap['search']} />
+ *       <FilterButton ref={refsMap['filter']} />
+ *     </View>
+ *   );
+ * }
+ * ```
+ */
+export function useFocusableFallbackRefs(
+  spatialNav: UseSpatialNavigationReturn,
+  fallbackIds: string[]
+): {
+  refsMap: Record<string, React.RefObject<any>>;
+  focusFirstAvailable: () => boolean;
+} {
+  const refsMap = useRef<Record<string, React.RefObject<any>>>({});
+
+  // Create refs for each fallback ID if they don't exist
+  useEffect(() => {
+    for (const id of fallbackIds) {
+      if (!refsMap.current[id]) {
+        refsMap.current[id] = { current: null };
+        spatialNav.registerRef(id, refsMap.current[id]);
+      }
+    }
+
+    return () => {
+      for (const id of fallbackIds) {
+        spatialNav.unregisterRef(id);
+      }
+    };
+  }, [spatialNav, fallbackIds]);
+
+  const focusFirstAvailable = useCallback((): boolean => {
+    for (const id of fallbackIds) {
+      if (spatialNav.focusElement(id)) {
+        return true;
+      }
+    }
+    return false;
+  }, [spatialNav, fallbackIds]);
+
+  return {
+    refsMap: refsMap.current,
+    focusFirstAvailable,
+  };
+}
+
+// =============================================================================
+// Utility Hook: useLoadingStateFocus
+// =============================================================================
+
+/**
+ * Configuration for loading state focus handling
+ */
+export interface LoadingStateFocusConfig {
+  /** Whether content is currently loading */
+  isLoading: boolean;
+  /** Focus ID for the loading indicator (optional) */
+  loadingIndicatorFocusId?: string;
+  /** Focus ID to restore after loading completes */
+  contentFocusId?: string;
+  /** Fallback focus IDs if content focus fails */
+  fallbackFocusIds?: string[];
+}
+
+/**
+ * Handle focus during loading states
+ *
+ * When content is loading, this hook ensures focus doesn't get stuck.
+ * It can optionally focus a loading indicator, and restores focus to
+ * content when loading completes.
+ *
+ * @param spatialNav - The spatial navigation hook instance
+ * @param config - Configuration for loading state focus
+ *
+ * @example
+ * ```tsx
+ * function MyListScreen() {
+ *   const [isLoading, setIsLoading] = useState(true);
+ *   const [items, setItems] = useState([]);
+ *   const spatialNav = useSpatialNavigation('MyListScreen');
+ *
+ *   useLoadingStateFocus(spatialNav, {
+ *     isLoading,
+ *     contentFocusId: items.length > 0 ? 'item-0' : undefined,
+ *     fallbackFocusIds: ['search-bar', 'nav-tabs'],
+ *   });
+ *
+ *   return isLoading ? <LoadingSpinner /> : <ItemList items={items} />;
+ * }
+ * ```
+ */
+export function useLoadingStateFocus(
+  spatialNav: UseSpatialNavigationReturn,
+  config: LoadingStateFocusConfig
+): void {
+  const { isLoading, loadingIndicatorFocusId, contentFocusId, fallbackFocusIds = [] } = config;
+
+  const wasLoading = useRef(isLoading);
+
+  useEffect(() => {
+    if (!spatialNav.isTV) return;
+
+    // When loading starts
+    if (isLoading && !wasLoading.current && loadingIndicatorFocusId) {
+      // Optional: focus the loading indicator
+      spatialNav.focusElement(loadingIndicatorFocusId);
+    }
+
+    // When loading completes
+    if (!isLoading && wasLoading.current) {
+      const timeoutId = setTimeout(() => {
+        requestAnimationFrame(() => {
+          // Try to focus the content
+          if (contentFocusId && spatialNav.focusElement(contentFocusId)) {
+            wasLoading.current = isLoading;
+            return;
+          }
+
+          // Try saved focus for this screen
+          if (spatialNav.restoreFocus()) {
+            wasLoading.current = isLoading;
+            return;
+          }
+
+          // Try fallbacks
+          for (const fallbackId of fallbackFocusIds) {
+            if (spatialNav.focusElement(fallbackId)) {
+              wasLoading.current = isLoading;
+              return;
+            }
+          }
+        });
+      }, 100);
+
+      wasLoading.current = isLoading;
+      return () => clearTimeout(timeoutId);
+    }
+
+    wasLoading.current = isLoading;
+  }, [isLoading, loadingIndicatorFocusId, contentFocusId, fallbackFocusIds, spatialNav]);
+}
+
+// =============================================================================
 // Export Default
 // =============================================================================
 

@@ -12,7 +12,16 @@
 export { useTVEventHandler, useIsTV, useTVEventHandlerAvailable } from './useTVEventHandler';
 export type { TVEvent, TVEventCallback, UseTVEventHandlerOptions } from './useTVEventHandler';
 
-export { useSpatialNavigation, useFocusableRef, useFocusHandlers, useGridNavigation, isTV } from './useSpatialNavigation';
+export {
+  useSpatialNavigation,
+  useFocusableRef,
+  useFocusHandlers,
+  useGridNavigation,
+  useEmptyListFocusFallback,
+  useFocusableFallbackRefs,
+  useLoadingStateFocus,
+  isTV,
+} from './useSpatialNavigation';
 export type {
   FocusableRef,
   FocusDirection,
@@ -24,6 +33,8 @@ export type {
   UseSpatialNavigationOptions,
   UseSpatialNavigationReturn,
   GridNavigationConfig,
+  EmptyListFallbackConfig,
+  LoadingStateFocusConfig,
 } from './useSpatialNavigation';
 
 export { useLongPress, useLongPressWithTVEvents, LONG_PRESS_THRESHOLD_MS, supportsNativeLongPress, requiresTimerBasedLongPress } from './useLongPress';
