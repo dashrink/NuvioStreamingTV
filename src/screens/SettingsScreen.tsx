@@ -12,8 +12,7 @@ import {
   Dimensions,
   Button,
   Linking,
-  Clipboard,
-  Modal
+  Clipboard
 } from 'react-native';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
@@ -41,21 +40,13 @@ import PluginIcon from '../components/icons/PluginIcon';
 import TraktIcon from '../components/icons/TraktIcon';
 import TMDBIcon from '../components/icons/TMDBIcon';
 import MDBListIcon from '../components/icons/MDBListIcon';
+import { ProfileSwitcherBottomSheet } from '../components/profile/ProfileSwitcherBottomSheet';
+import { useProfileContext } from '../contexts/ProfileContext';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
-
-const PROFILE_STORAGE_KEY = 'user_profiles';
-
-interface Profile {
-  id: string;
-  name: string;
-  avatar?: string;
-  isActive: boolean;
-  createdAt: number;
-}
 
 // Settings categories for tablet sidebar
 const SETTINGS_CATEGORIES = [
@@ -313,46 +304,6 @@ const SettingsScreen: React.FC = () => {
     setAlertVisible(true);
   };
 
-  // Load profiles from storage
-  const loadProfiles = useCallback(async () => {
-    try {
-      const storedProfiles = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
-      if (storedProfiles) {
-        const parsedProfiles: Profile[] = JSON.parse(storedProfiles);
-        setProfiles(parsedProfiles);
-        const active = parsedProfiles.find(p => p.isActive);
-        setActiveProfile(active || null);
-      }
-    } catch (error) {
-      if (__DEV__) console.error('Error loading profiles:', error);
-    }
-  }, []);
-
-  // Save profiles to storage
-  const saveProfiles = useCallback(async (updatedProfiles: Profile[]) => {
-    try {
-      await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
-    } catch (error) {
-      if (__DEV__) console.error('Error saving profiles:', error);
-    }
-  }, []);
-
-  // Handle profile selection
-  const handleSelectProfile = useCallback((id: string) => {
-    triggerMedium();
-
-    const updatedProfiles = profiles.map(profile => ({
-      ...profile,
-      isActive: profile.id === id
-    }));
-
-    setProfiles(updatedProfiles);
-    saveProfiles(updatedProfiles);
-    const active = updatedProfiles.find(p => p.isActive);
-    setActiveProfile(active || null);
-    setShowProfileSwitcher(false);
-  }, [profiles, saveProfiles]);
-
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     let mounted = true;
@@ -369,9 +320,13 @@ const SettingsScreen: React.FC = () => {
   const { isAuthenticated, userProfile, refreshAuthStatus } = useTraktContext();
   const { currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { activeProfile, profiles } = useProfileContext();
 
   // Tablet-specific state
   const [selectedCategory, setSelectedCategory] = useState('account');
+
+  // Profile switcher state
+  const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
 
   // States for dynamic content
   const [addonCount, setAddonCount] = useState<number>(0);
@@ -382,11 +337,6 @@ const SettingsScreen: React.FC = () => {
   const [totalDownloads, setTotalDownloads] = useState<number | null>(null);
   const [displayDownloads, setDisplayDownloads] = useState<number | null>(null);
   const [isCountingUp, setIsCountingUp] = useState<boolean>(false);
-
-  // Profile switcher state
-  const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
 
   // Add a useEffect to check Trakt authentication status on focus
   useEffect(() => {
@@ -464,11 +414,10 @@ const SettingsScreen: React.FC = () => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadData();
-      loadProfiles();
     });
 
     return unsubscribe;
-  }, [navigation, loadData, loadProfiles]);
+  }, [navigation, loadData]);
 
   // Poll GitHub downloads every 10 seconds when on the About section
   useEffect(() => {
@@ -603,19 +552,14 @@ const SettingsScreen: React.FC = () => {
       case 'account':
         return (
           <SettingsCard title="ACCOUNT" isTablet={isTablet}>
-            {isAuthenticated && profiles.length > 0 && (
-              <SettingItem
-                title="Profile"
-                description={activeProfile?.name || 'No profile selected'}
-                icon="user"
-                renderControl={ChevronRight}
-                onPress={() => {
-                  triggerLight();
-                  setShowProfileSwitcher(true);
-                }}
-                isTablet={isTablet}
-              />
-            )}
+            <SettingItem
+              title="Profiles"
+              description={activeProfile ? activeProfile.name : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''}`}
+              icon="user"
+              renderControl={ChevronRight}
+              onPress={() => setShowProfileSwitcher(true)}
+              isTablet={isTablet}
+            />
             <SettingItem
               title="Trakt"
               description={isAuthenticated ? `@${userProfile?.username || 'User'}` : "Sign in to sync"}
@@ -1108,87 +1052,20 @@ const SettingsScreen: React.FC = () => {
             </ScrollView>
           </View>
         </View>
-
-        {/* Profile Switcher Modal */}
-        <Modal
-          visible={showProfileSwitcher}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowProfileSwitcher(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => {
-              triggerLight();
-              setShowProfileSwitcher(false);
-            }}
-          >
-            <View style={[styles.modalContent, { backgroundColor: currentTheme.colors.elevation1 }]}>
-              <View style={[styles.modalHeader, { borderBottomColor: currentTheme.colors.elevation2 }]}>
-                <Text style={[styles.modalTitle, { color: currentTheme.colors.highEmphasis }]}>
-                  Switch Profile
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    triggerLight();
-                    setShowProfileSwitcher(false);
-                  }}
-                  style={styles.modalCloseButton}
-                >
-                  <Feather name="x" size={24} color={currentTheme.colors.mediumEmphasis} />
-                </TouchableOpacity>
-              </View>
-              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-                {profiles.map((profile, index) => (
-                  <TouchableOpacity
-                    key={profile.id}
-                    style={[
-                      styles.profileOption,
-                      profile.isActive && { backgroundColor: `${currentTheme.colors.primary}15` },
-                      index !== profiles.length - 1 && { borderBottomColor: currentTheme.colors.elevation2, borderBottomWidth: StyleSheet.hairlineWidth }
-                    ]}
-                    onPress={() => handleSelectProfile(profile.id)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[
-                      styles.profileAvatar,
-                      { backgroundColor: currentTheme.colors.primary + '30' }
-                    ]}>
-                      <Feather
-                        name="user"
-                        size={20}
-                        color={currentTheme.colors.primary}
-                      />
-                    </View>
-                    <Text style={[
-                      styles.profileOptionText,
-                      { color: currentTheme.colors.highEmphasis },
-                      profile.isActive && { fontWeight: '600' }
-                    ]}>
-                      {profile.name}
-                    </Text>
-                    {profile.isActive && (
-                      <Feather
-                        name="check"
-                        size={20}
-                        color={currentTheme.colors.primary}
-                        style={styles.profileCheckIcon}
-                      />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
         <CustomAlert
           visible={alertVisible}
           title={alertTitle}
           message={alertMessage}
           actions={alertActions}
           onClose={() => setAlertVisible(false)}
+        />
+        <ProfileSwitcherBottomSheet
+          visible={showProfileSwitcher}
+          onClose={() => setShowProfileSwitcher(false)}
+          onProfileSwitch={() => {
+            // Profile switched, optionally reload data if needed
+            loadData();
+          }}
         />
       </View>
     );
@@ -1316,87 +1193,20 @@ const SettingsScreen: React.FC = () => {
           </ScrollView>
         </View>
       </View>
-
-      {/* Profile Switcher Modal */}
-      <Modal
-        visible={showProfileSwitcher}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowProfileSwitcher(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => {
-            triggerLight();
-            setShowProfileSwitcher(false);
-          }}
-        >
-          <View style={[styles.modalContent, { backgroundColor: currentTheme.colors.elevation1 }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: currentTheme.colors.elevation2 }]}>
-              <Text style={[styles.modalTitle, { color: currentTheme.colors.highEmphasis }]}>
-                Switch Profile
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  triggerLight();
-                  setShowProfileSwitcher(false);
-                }}
-                style={styles.modalCloseButton}
-              >
-                <Feather name="x" size={24} color={currentTheme.colors.mediumEmphasis} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              {profiles.map((profile, index) => (
-                <TouchableOpacity
-                  key={profile.id}
-                  style={[
-                    styles.profileOption,
-                    profile.isActive && { backgroundColor: `${currentTheme.colors.primary}15` },
-                    index !== profiles.length - 1 && { borderBottomColor: currentTheme.colors.elevation2, borderBottomWidth: StyleSheet.hairlineWidth }
-                  ]}
-                  onPress={() => handleSelectProfile(profile.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[
-                    styles.profileAvatar,
-                    { backgroundColor: currentTheme.colors.primary + '30' }
-                  ]}>
-                    <Feather
-                      name="user"
-                      size={20}
-                      color={currentTheme.colors.primary}
-                    />
-                  </View>
-                  <Text style={[
-                    styles.profileOptionText,
-                    { color: currentTheme.colors.highEmphasis },
-                    profile.isActive && { fontWeight: '600' }
-                  ]}>
-                    {profile.name}
-                  </Text>
-                  {profile.isActive && (
-                    <Feather
-                      name="check"
-                      size={20}
-                      color={currentTheme.colors.primary}
-                      style={styles.profileCheckIcon}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
         actions={alertActions}
         onClose={() => setAlertVisible(false)}
+      />
+      <ProfileSwitcherBottomSheet
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
+        onProfileSwitch={() => {
+          // Profile switched, optionally reload data if needed
+          loadData();
+        }}
       />
     </View>
   );
@@ -1694,60 +1504,6 @@ const styles = StyleSheet.create({
   monkeyAnimation: {
     width: 180,
     height: 180,
-  },
-  // Profile switcher modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '70%',
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    letterSpacing: -0.3,
-  },
-  modalCloseButton: {
-    padding: 4,
-  },
-  modalBody: {
-    paddingTop: 8,
-  },
-  profileOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  profileAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  profileOptionText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: -0.2,
-  },
-  profileCheckIcon: {
-    marginLeft: 8,
   },
 });
 
