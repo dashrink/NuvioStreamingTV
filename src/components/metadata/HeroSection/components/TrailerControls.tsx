@@ -114,8 +114,8 @@ const TrailerControls = memo(function TrailerControls({
    * Prevents touch event propagation to parent elements.
    * Ensures button presses don't trigger underlying touch handlers.
    */
-  const handlePressIn = (e: any) => e.stopPropagation();
-  const handlePressOut = (e: any) => e.stopPropagation();
+  const handlePressIn = (e: React.BaseSyntheticEvent) => e.stopPropagation();
+  const handlePressOut = (e: React.BaseSyntheticEvent) => e.stopPropagation();
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>

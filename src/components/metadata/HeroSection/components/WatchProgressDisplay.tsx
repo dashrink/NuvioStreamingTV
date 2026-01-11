@@ -48,42 +48,11 @@ import { logger } from '../../../../utils/logger';
 import type { WatchProgressDisplayProps, ProgressData } from '../types';
 import { isTablet, screenWidth } from '../styles';
 import { PROGRESS_TIMING, PROGRESS_THRESHOLDS, INITIAL_VALUES } from '../constants';
+import { isLiquidGlassAvailable, getGlassViewComponent } from './GlassBlurBackground';
 
-// =============================================================================
-// iOS Glass Effect Support
-// =============================================================================
-
-/**
- * GlassView component from expo-glass-effect (optional, iOS only)
- * Dynamically required to prevent crashes if package is not installed
- */
-let GlassViewComp: React.ComponentType<{
-  style?: ViewStyle;
-  glassEffectStyle?: 'regular' | 'subtle' | 'prominent';
-}> | null = null;
-
-/**
- * Flag indicating whether liquid glass effect is available on the device
- * (iOS 26+ with supported hardware)
- */
-let liquidGlassAvailable = false;
-
-// Only attempt to load expo-glass-effect on iOS
-if (Platform.OS === 'ios') {
-  try {
-    // Dynamically require so app still runs if the package isn't installed
-    const glass = require('expo-glass-effect');
-    GlassViewComp = glass.GlassView;
-    liquidGlassAvailable =
-      typeof glass.isLiquidGlassAvailable === 'function'
-        ? glass.isLiquidGlassAvailable()
-        : false;
-  } catch {
-    // Package not available, use fallback
-    GlassViewComp = null;
-    liquidGlassAvailable = false;
-  }
-}
+// Get GlassView component from shared utility
+const GlassViewComp = getGlassViewComponent();
+const liquidGlassAvailable = isLiquidGlassAvailable();
 
 // =============================================================================
 // Component

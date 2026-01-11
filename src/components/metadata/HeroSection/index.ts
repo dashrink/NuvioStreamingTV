@@ -103,6 +103,7 @@ export {
   default as GlassBlurBackground,
   isLiquidGlassAvailable,
   isBlurAvailable,
+  getGlassViewComponent,
 } from './components/GlassBlurBackground';
 export { default as HeroBackdrop } from './components/HeroBackdrop';
 

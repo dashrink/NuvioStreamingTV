@@ -3,7 +3,7 @@
  * Extracted from the original HeroSection.tsx to enable composition and reuse.
  */
 
-import type { SharedValue } from 'react-native-reanimated';
+import type { SharedValue, AnimatedStyleProp } from 'react-native-reanimated';
 import type { ViewStyle } from 'react-native';
 
 /**
@@ -81,7 +81,7 @@ export interface ActionButtonsProps {
   id: string;
   navigation: any;
   playButtonText: string;
-  animatedStyle: any;
+  animatedStyle: AnimatedStyleProp<ViewStyle>;
   isWatched: boolean;
   watchProgress: WatchProgress | null;
   groupedEpisodes?: { [seasonNumber: number]: any[] };
@@ -102,7 +102,7 @@ export interface WatchProgressDisplayProps {
   watchProgress: WatchProgress | null;
   type: ContentType;
   getEpisodeDetails: (episodeId: string) => EpisodeDetails | null;
-  animatedStyle: any;
+  animatedStyle: AnimatedStyleProp<ViewStyle>;
   isWatched: boolean;
   isTrailerPlaying: boolean;
   trailerMuted: boolean;
@@ -127,7 +127,7 @@ export interface ProgressData {
  */
 export interface HeroBackButtonProps {
   onPress: () => void;
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
 }
 
 /**
@@ -137,7 +137,7 @@ export interface HeroGradientOverlayProps {
   /** Optional dynamic background color extracted from the content. Falls back to theme darkBackground. */
   dynamicBackgroundColor?: string;
   /** Optional animated style for scroll-based animations */
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
   /** Content to render inside the gradient overlay (title card, genres, action buttons, etc.) */
   children?: React.ReactNode;
 }
@@ -158,7 +158,7 @@ export interface HeroTitleCardProps {
  */
 export interface HeroGenresProps {
   genres: string[];
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
 }
 
 /**
@@ -178,7 +178,7 @@ export interface TrailerControlsProps {
   onToggleMute: () => void;
   onFullscreen: () => void;
   onAIChat?: () => void;
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
 }
 
 /**
@@ -188,7 +188,7 @@ export interface HeroBackdropProps {
   bannerImage: string | null;
   loadingBanner: boolean;
   scrollY: SharedValue<number>;
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
 }
 
 /**
@@ -212,7 +212,7 @@ export interface HeroTrailerLayerProps {
   /** Callback when trailer encounters an error */
   onError?: () => void;
   /** Animated style from parent (typically opacity transitions) */
-  animatedStyle?: any;
+  animatedStyle?: AnimatedStyleProp<ViewStyle>;
   /** Whether to auto-play the trailer when visible */
   autoPlay?: boolean;
   /** Callback for playback status updates */

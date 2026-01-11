@@ -173,4 +173,13 @@ export const isLiquidGlassAvailable = (): boolean => liquidGlassAvailable;
  */
 export const isBlurAvailable = (): boolean => true;
 
+/**
+ * Export the GlassView component for direct use in other components.
+ * This allows components like ActionButtons and WatchProgressDisplay to
+ * use the GlassView directly without duplicating the setup code.
+ *
+ * @returns GlassView component if available, null otherwise
+ */
+export const getGlassViewComponent = () => GlassViewComp;
+
 export default GlassBlurBackground;
