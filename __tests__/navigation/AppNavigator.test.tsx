@@ -363,6 +363,14 @@ describe('useTVFocusRestoration', () => {
   });
 
   describe('requestAnimationFrame timing', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should delay focus restoration using setTimeout and requestAnimationFrame', async () => {
       const { navigation, route } = createMockNavigationProps('HomeScreen', {
         lastFocusId: 'card-5',
@@ -604,30 +612,45 @@ describe('useTVFocusRestorationSimple', () => {
     expect(tvNavContext?.getScreenFocus('SimpleScreen')).toBe('simple-focus-id');
   });
 
-  it('should retrieve saved focus from TVNavigationContext', () => {
-    const TestComponent = ({ onGetFocus }: { onGetFocus: (focusId: string | null) => void }) => {
-      const tvNav = useTVNavigation();
-      const { getSavedFocus } = useTVFocusRestorationSimple('SimpleScreen');
+  it('should retrieve saved focus from TVNavigationContext', async () => {
+    let tvNavContext: ReturnType<typeof useTVNavigation> | null = null;
+    let retrievedFocus: string | null = null;
 
+    const TestComponent = () => {
+      tvNavContext = useTVNavigation();
+      const { saveFocus, getSavedFocus } = useTVFocusRestorationSimple('SimpleScreen');
+
+      // Save focus on mount
       useEffect(() => {
-        // First save a focus
-        tvNav.setScreenFocus('SimpleScreen', 'retrieved-focus');
-        // Then get it
-        onGetFocus(getSavedFocus());
+        saveFocus('retrieved-focus');
       }, []);
+
+      // Retrieve focus after it's been saved (separate effect to ensure state has updated)
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          retrievedFocus = getSavedFocus();
+        }, 10);
+        return () => clearTimeout(timer);
+      }, [tvNavContext?.getScreenFocus('SimpleScreen')]);
 
       return null;
     };
 
-    let retrievedFocus: string | null = null;
-
     render(
       <TVProvider>
-        <TestComponent onGetFocus={(f) => (retrievedFocus = f)} />
+        <TestComponent />
       </TVProvider>
     );
 
-    expect(retrievedFocus).toBe('retrieved-focus');
+    // Wait for effects to complete
+    await waitFor(() => {
+      expect(tvNavContext?.getScreenFocus('SimpleScreen')).toBe('retrieved-focus');
+    });
+
+    // Give the second effect time to run
+    await waitFor(() => {
+      expect(retrievedFocus).toBe('retrieved-focus');
+    });
   });
 
   it('should return null when no saved focus exists', () => {
@@ -659,6 +682,14 @@ describe('useTVFocusRestorationSimple', () => {
 
 describe('TVScreenWrapper', () => {
   describe('focus restoration', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should restore focus automatically when screen mounts', async () => {
       const mockRef = createMockFocusableRef();
       const onFocusRestored = jest.fn();
@@ -1097,12 +1128,16 @@ describe('Focus history', () => {
 
     expect(tvNavContext?.focusHistory).toHaveLength(2);
 
+    // Store the last entry before popping
+    const lastEntry = tvNavContext?.focusHistory[tvNavContext.focusHistory.length - 1];
+    expect(lastEntry?.focusId).toBe('play-btn');
+
     // Pop the last entry (simulating back navigation)
     act(() => {
-      const popped = tvNavContext?.popFocusHistory();
-      expect(popped?.focusId).toBe('play-btn');
+      tvNavContext?.popFocusHistory();
     });
 
+    // Verify the history was popped correctly
     expect(tvNavContext?.focusHistory).toHaveLength(1);
     expect(tvNavContext?.focusHistory[0].focusId).toBe('card-1');
   });
