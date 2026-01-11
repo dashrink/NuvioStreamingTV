@@ -103,3 +103,19 @@ export type {
   PerformanceAnimationConfig,
   UseDevicePerformanceReturn,
 } from './useDevicePerformance';
+
+// Voice Availability Detection
+export {
+  useVoiceAvailability,
+  clearVoiceAvailabilityCache,
+  getCachedVoiceAvailability,
+  isVoiceAvailableSync,
+  getPlatformVoiceCapabilities,
+  hasRemoteVoiceButton,
+} from './useVoiceAvailability';
+export type {
+  VoiceUnavailableReason,
+  VoiceAvailabilityStatus,
+  VoiceCapabilities,
+  UseVoiceAvailabilityOptions,
+} from './useVoiceAvailability';

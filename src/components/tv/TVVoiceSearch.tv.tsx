@@ -78,6 +78,10 @@ import {
   TVRemoteEvent,
 } from '../../hooks/useTVEventHandler';
 import Focusable, { FocusableRef } from '../common/Focusable';
+import useVoiceAvailability, {
+  VoiceUnavailableReason,
+  hasRemoteVoiceButton,
+} from '../../hooks/useVoiceAvailability';
 
 // =============================================================================
 // Types & Interfaces
@@ -144,13 +148,30 @@ const PULSE_DURATION = 1500;
 // =============================================================================
 
 /**
- * Check if voice input is likely available on this platform
- * Note: Actual voice availability should be checked at runtime via native modules
+ * Get human-readable message for voice unavailability reason
  */
-function checkVoiceAvailability(): boolean {
-  // Voice input is generally available on TV platforms
-  // but may require checking native permissions/capabilities
-  return Platform.isTV;
+function getVoiceUnavailabilityMessage(reason: VoiceUnavailableReason | null): string {
+  switch (reason) {
+    case 'not_tv_platform':
+      return 'Voice search is only available on TV';
+    case 'no_native_module':
+      return 'Voice search is not configured';
+    case 'permission_denied':
+      return 'Microphone access is required';
+    case 'feature_disabled':
+      return 'Voice search has been disabled';
+    case 'hardware_unavailable':
+      return 'Voice input not available on this device';
+    case 'language_unsupported':
+      return 'Language not supported for voice';
+    case 'network_unavailable':
+      return 'Internet connection required for voice';
+    case 'api_unavailable':
+      return 'Voice search not supported';
+    case 'unknown':
+    default:
+      return 'Voice search is unavailable';
+  }
 }
 
 // =============================================================================
@@ -160,6 +181,8 @@ function checkVoiceAvailability(): boolean {
 interface VoiceIndicatorProps {
   isListening: boolean;
   isAvailable: boolean;
+  unavailableReason?: VoiceUnavailableReason | null;
+  isChecking?: boolean;
 }
 
 /**
@@ -168,6 +191,8 @@ interface VoiceIndicatorProps {
 const VoiceIndicator: React.FC<VoiceIndicatorProps> = ({
   isListening,
   isAvailable,
+  unavailableReason = null,
+  isChecking = false,
 }) => {
   // Animated values for the pulsing effect
   const pulseScale = useSharedValue(1);
@@ -251,12 +276,21 @@ const VoiceIndicator: React.FC<VoiceIndicatorProps> = ({
 
       {/* Status text */}
       <Text style={styles.voiceStatusText}>
-        {!isAvailable
-          ? 'Voice not available'
+        {isChecking
+          ? 'Checking voice availability...'
+          : !isAvailable
+          ? getVoiceUnavailabilityMessage(unavailableReason)
           : isListening
           ? 'Listening...'
           : 'Press to speak'}
       </Text>
+
+      {/* Additional hint when unavailable */}
+      {!isAvailable && !isChecking && (
+        <Text style={styles.voiceHintText}>
+          Use keyboard to search instead
+        </Text>
+      )}
     </View>
   );
 };
@@ -367,12 +401,22 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
   // Get context - may be null if not within provider
   const tvNav = useTVNavigationOptional();
 
+  // Use the voice availability hook for proper platform detection
+  const voiceStatus = useVoiceAvailability({
+    checkOnMount: true,
+    onAvailabilityChange: (status) => {
+      // Update context when availability changes
+      tvNav?.setVoiceAvailable?.(status.isAvailable);
+    },
+  });
+
   // Local state
   const [isVisible, setIsVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1); // -1 = input focused
   const [inputValue, setInputValue] = useState('');
   const [showKeyboard, setShowKeyboard] = useState(false);
-  const [voiceAvailable, setVoiceAvailable] = useState(checkVoiceAvailability());
+  // Use the hook's availability status
+  const voiceAvailable = voiceStatus.isAvailable;
 
   // Refs
   const inputRef = useRef<TextInput>(null);
@@ -435,15 +479,18 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
 
   useEffect(() => {
     if (voiceSearch?.isOpen) {
-      // Check voice availability
-      const available = checkVoiceAvailability();
-      setVoiceAvailable(available);
+      // Use the hook's availability status - gracefully handle unavailable voice
+      const available = voiceStatus.isAvailable && !voiceStatus.isChecking;
       setVoiceAvailableCtx?.(available);
 
       // Reset state
       setInputValue(voiceSearch.query || '');
       setSelectedIndex(-1);
-      setShowKeyboard(!available);
+
+      // Automatically show keyboard fallback if voice is not available
+      // This ensures users always have a way to search
+      const shouldShowKeyboardFallback = !available || voiceStatus.shouldShowKeyboardFallback;
+      setShowKeyboard(shouldShowKeyboardFallback);
 
       // Show modal with animation
       setIsVisible(true);
@@ -451,11 +498,14 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
         animateIn();
       });
 
-      // Auto-start listening if voice is available
-      if (available && !showKeyboard) {
+      // Auto-start listening only if voice is truly available and not showing keyboard
+      if (available && !shouldShowKeyboardFallback) {
         setTimeout(() => {
           startListening();
         }, 500);
+      } else if (!available && voiceStatus.reason) {
+        // If voice is not available, don't set an error - just use keyboard gracefully
+        // The UI will already show the keyboard fallback
       }
     } else if (!voiceSearch?.isOpen && isVisible) {
       // Stop listening if active
@@ -471,7 +521,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
         setShowKeyboard(false);
       });
     }
-  }, [voiceSearch?.isOpen]);
+  }, [voiceSearch?.isOpen, voiceStatus.isAvailable, voiceStatus.isChecking]);
 
   // Sync input value with context query
   useEffect(() => {
@@ -726,9 +776,18 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Voice Search</Text>
+            <Text style={styles.title}>
+              {voiceAvailable ? 'Voice Search' : 'Search'}
+            </Text>
+            {/* Show error from context if present */}
             {voiceSearch?.error && (
               <Text style={styles.errorText}>{voiceSearch.error}</Text>
+            )}
+            {/* Show availability status message when voice is unavailable (but not as error) */}
+            {!voiceAvailable && !voiceStatus.isChecking && !voiceSearch?.error && (
+              <Text style={styles.infoText}>
+                {getVoiceUnavailabilityMessage(voiceStatus.reason)}
+              </Text>
             )}
           </View>
 
@@ -765,6 +824,8 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
               <VoiceIndicator
                 isListening={voiceSearch?.isListening || false}
                 isAvailable={voiceAvailable}
+                unavailableReason={voiceStatus.reason}
+                isChecking={voiceStatus.isChecking}
               />
               <Focusable
                 ref={keyboardButtonRef}
@@ -886,6 +947,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
+  infoText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 8,
+    textAlign: 'center',
+  },
 
   // Voice indicator styles
   voiceContainer: {
@@ -938,6 +1005,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.7)',
     marginTop: 16,
+  },
+  voiceHintText: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   keyboardButton: {
     paddingVertical: 8,

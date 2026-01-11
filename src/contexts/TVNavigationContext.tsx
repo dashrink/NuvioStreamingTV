@@ -18,6 +18,21 @@ export interface FocusHistoryEntry {
 }
 
 /**
+ * Reason why voice input is unavailable
+ */
+export type VoiceUnavailableReason =
+  | 'not_tv_platform'
+  | 'no_native_module'
+  | 'permission_denied'
+  | 'feature_disabled'
+  | 'hardware_unavailable'
+  | 'language_unsupported'
+  | 'network_unavailable'
+  | 'api_unavailable'
+  | 'unknown'
+  | null;
+
+/**
  * Voice search state
  */
 export interface VoiceSearchState {
@@ -29,6 +44,8 @@ export interface VoiceSearchState {
   query: string;
   /** Whether voice input is available on this platform/device */
   isAvailable: boolean;
+  /** Reason why voice input is unavailable (if applicable) */
+  unavailableReason: VoiceUnavailableReason;
   /** Error message if voice search failed */
   error: string | null;
 }
@@ -113,6 +130,8 @@ interface TVNavigationContextValue {
   setVoiceError: (error: string | null) => void;
   /** Set voice availability */
   setVoiceAvailable: (isAvailable: boolean) => void;
+  /** Set the reason why voice is unavailable */
+  setVoiceUnavailableReason: (reason: VoiceUnavailableReason) => void;
 
   // Context Menu
   /** Current context menu state */
@@ -147,6 +166,7 @@ const defaultVoiceSearchState: VoiceSearchState = {
   isListening: false,
   query: '',
   isAvailable: Platform.isTV, // Assume available on TV platforms by default
+  unavailableReason: Platform.isTV ? null : 'not_tv_platform',
   error: null,
 };
 
@@ -289,6 +309,17 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
     setVoiceSearch((prev) => ({
       ...prev,
       isAvailable,
+      // Clear the reason if voice becomes available
+      unavailableReason: isAvailable ? null : prev.unavailableReason,
+    }));
+  }, []);
+
+  const setVoiceUnavailableReason = useCallback((reason: VoiceUnavailableReason) => {
+    setVoiceSearch((prev) => ({
+      ...prev,
+      unavailableReason: reason,
+      // If setting a reason, voice is not available
+      isAvailable: reason === null,
     }));
   }, []);
 
@@ -351,6 +382,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
     setVoiceQuery,
     setVoiceError,
     setVoiceAvailable,
+    setVoiceUnavailableReason,
 
     // Context Menu
     contextMenu,
