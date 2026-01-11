@@ -219,8 +219,8 @@ const ThemedApp = () => {
   };
 
   // Don't render anything until we know the onboarding status
-  const shouldShowApp = isAppReady && hasCompletedOnboarding !== null;
-  const initialRouteName = hasCompletedOnboarding ? 'MainTabs' : 'Onboarding';
+  const shouldShowApp = isAppReady && hasCompletedOnboarding !== null && hasActiveProfile !== null;
+  const initialRouteName = !hasCompletedOnboarding ? 'Onboarding' : (!hasActiveProfile ? 'ProfileSelector' : 'MainTabs');
 
   return (
     <AccountProvider>
