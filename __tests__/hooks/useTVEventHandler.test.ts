@@ -36,6 +36,7 @@ const mockTVEventHandler = getTVEventHandlerMock();
 describe('useTVEventHandler', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.clearAllTimers();
   });
 
   describe('lifecycle management', () => {
@@ -178,6 +179,14 @@ describe('useTVEventHandler', () => {
   });
 
   describe('throttling', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should throttle navigation events when throttleNavigationMs is set', async () => {
       const callback = jest.fn();
 
@@ -196,7 +205,8 @@ describe('useTVEventHandler', () => {
 
       // Advance time past throttle window
       await act(async () => {
-        await advanceTimersAndFlush(100);
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
       });
 
       // Third event should go through
@@ -221,6 +231,14 @@ describe('useTVEventHandler', () => {
   });
 
   describe('debouncing', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('should debounce events when debounceMs is set', async () => {
       const callback = jest.fn();
 
@@ -239,7 +257,8 @@ describe('useTVEventHandler', () => {
 
       // Advance time past debounce window
       await act(async () => {
-        await advanceTimersAndFlush(50);
+        jest.advanceTimersByTime(50);
+        await Promise.resolve();
       });
 
       // Only last event should have been processed
@@ -262,7 +281,8 @@ describe('useTVEventHandler', () => {
 
       // Advance time
       await act(async () => {
-        await advanceTimersAndFlush(50);
+        jest.advanceTimersByTime(50);
+        await Promise.resolve();
       });
 
       // Callback should not be called (timer was cleared)
@@ -327,6 +347,11 @@ describe('event type guards', () => {
 describe('useRapidInputProtectedTVEventHandler', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('should throttle rapid navigation events per direction', async () => {
@@ -343,7 +368,8 @@ describe('useRapidInputProtectedTVEventHandler', () => {
     internalCallback(null, { eventType: 'up' });
 
     await act(async () => {
-      await advanceTimersAndFlush(16); // requestAnimationFrame
+      jest.advanceTimersByTime(16); // requestAnimationFrame
+      await Promise.resolve();
     });
 
     expect(callback).toHaveBeenCalledTimes(1);
@@ -355,7 +381,8 @@ describe('useRapidInputProtectedTVEventHandler', () => {
     internalCallback(null, { eventType: 'down' });
 
     await act(async () => {
-      await advanceTimersAndFlush(50); // Wait for throttle
+      jest.advanceTimersByTime(50); // Wait for throttle
+      await Promise.resolve();
     });
   });
 
@@ -398,7 +425,8 @@ describe('useRapidInputProtectedTVEventHandler', () => {
 
     // Process queue
     await act(async () => {
-      await advanceTimersAndFlush(200);
+      jest.advanceTimersByTime(200);
+      await Promise.resolve();
     });
 
     // Only first event + 2 queued should have been processed (max 3)
@@ -421,6 +449,14 @@ describe('useRapidInputProtectedTVEventHandler', () => {
 });
 
 describe('useThrottledCallback', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should throttle callback execution', async () => {
     const callback = jest.fn();
 
@@ -436,7 +472,8 @@ describe('useThrottledCallback', () => {
 
     // Advance time
     await act(async () => {
-      await advanceTimersAndFlush(100);
+      jest.advanceTimersByTime(100);
+      await Promise.resolve();
     });
 
     // Third call should go through
@@ -456,6 +493,14 @@ describe('useThrottledCallback', () => {
 });
 
 describe('useFocusChangeProtection', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should track current focus with debouncing', async () => {
     const onFocusChange = jest.fn();
 
@@ -471,7 +516,8 @@ describe('useFocusChangeProtection', () => {
 
     // Advance time past debounce
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     expect(result.current.currentFocusId).toBe('element-1');
@@ -493,7 +539,8 @@ describe('useFocusChangeProtection', () => {
 
     // Advance time past debounce
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     // Only last focus should be tracked
@@ -513,7 +560,8 @@ describe('useFocusChangeProtection', () => {
     });
 
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     expect(result.current.currentFocusId).toBe('element-1');
@@ -524,7 +572,8 @@ describe('useFocusChangeProtection', () => {
     });
 
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     expect(result.current.currentFocusId).toBe(null);
@@ -542,7 +591,8 @@ describe('useFocusChangeProtection', () => {
     });
 
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     // Blur element-2 (different element)
@@ -551,7 +601,8 @@ describe('useFocusChangeProtection', () => {
     });
 
     await act(async () => {
-      await advanceTimersAndFlush(16);
+      jest.advanceTimersByTime(16);
+      await Promise.resolve();
     });
 
     // Focus should still be on element-1
