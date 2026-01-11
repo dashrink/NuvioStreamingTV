@@ -356,6 +356,13 @@ const LibraryScreen = () => {
     };
   }, [searchQuery]);
 
+  // Clear search when entering/exiting Trakt view or switching Trakt folders for cleaner UX
+  // Note: Search persists when switching between Movies/TV Shows filters (handled by filter state)
+  useEffect(() => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+  }, [showTraktContent, selectedTraktFolder]);
+
   const filteredItems = libraryItems.filter(item => {
     // Type filtering
     if (filter === 'movies' && item.type !== 'movie') return false;
