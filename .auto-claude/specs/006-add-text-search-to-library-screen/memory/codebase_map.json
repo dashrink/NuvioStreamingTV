@@ -1,0 +1,10 @@
+{
+  "discovered_files": {
+    "src/screens/LibraryScreen.tsx": {
+      "description": "Added empty search results state handling in both renderContent() (lines 915-951) and renderTraktContent() (lines 815-843). Differentiates between empty library and empty search results using the debouncedSearchQuery state. Shows 'search-off' icon, 'No results found' title, and includes the search query in the message. Includes a 'Clear search' button to reset the search.",
+      "category": "feature",
+      "discovered_at": "2026-01-11T05:26:34.132639+00:00"
+    }
+  },
+  "last_updated": "2026-01-11T05:26:34.132649+00:00"
+}

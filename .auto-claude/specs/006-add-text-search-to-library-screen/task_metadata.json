@@ -1,0 +1,13 @@
+{
+  "sourceType": "ideation",
+  "ideationType": "code_improvements",
+  "ideaId": "ci-001",
+  "rationale": "SearchScreen has a complete search implementation with debounced input, recent searches, and skeleton loaders (src/components/search/). LibraryScreen already has type filtering (filter state on line 224) and a filteredItems computed value. The search pattern from SearchScreen can be directly applied to filter libraryItems by title.",
+  "category": "feature",
+  "estimatedEffort": "small",
+  "complexity": "small",
+  "affectedFiles": [
+    "src/screens/LibraryScreen.tsx",
+    "src/components/search/searchUtils.ts"
+  ]
+}
