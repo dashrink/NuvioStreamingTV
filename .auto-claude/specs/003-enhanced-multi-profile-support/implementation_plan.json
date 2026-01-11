@@ -249,7 +249,9 @@
             "type": "manual",
             "instructions": "Test on Apple TV simulator - profile cards should have clear focus indicators"
           },
-          "status": "pending"
+          "status": "completed",
+          "notes": "Successfully added TV-specific styling and layout to ProfileCard. Imported TV_FOCUS_CONFIG from tvStyles/focus and replaced all hardcoded values with standardized configuration constants. Focus scale changed from 1.08 to 1.05, animation duration from 200ms to 150ms, and border widths now use TV_FOCUS_CONFIG.focusBorderWidth (2px). All changes follow the established TV styling patterns.",
+          "updated_at": "2026-01-11T14:57:51.340576+00:00"
         },
         {
           "id": "subtask-4-3",
@@ -505,5 +507,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-10T11:26:54.287067+00:00"
+  "last_updated": "2026-01-11T14:57:51.340614+00:00",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "updated_at": "2026-01-11T15:05:52.492Z",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-11T15:05:44.043Z"
 }

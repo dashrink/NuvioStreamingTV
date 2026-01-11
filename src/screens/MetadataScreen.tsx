@@ -103,7 +103,7 @@ const MetadataScreen: React.FC = () => {
   const { pauseTrailer } = useTrailer();
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, getUserRating } = useTraktContext();
 
   // Enhanced responsive sizing for tablets and TV screens
   const deviceWidth = Dimensions.get('window').width;
@@ -196,6 +196,12 @@ const MetadataScreen: React.FC = () => {
     loadingCollection,
   } = useMetadata({ id, type, addonId });
 
+  // Get user rating for rating button display
+  const userRating = useMemo(() => {
+    if (!isAuthenticated || !imdbId) return null;
+    const type = Object.keys(groupedEpisodes).length > 0 ? 'show' : 'movie';
+    return getUserRating(imdbId, type);
+  }, [isAuthenticated, imdbId, groupedEpisodes, getUserRating]);
 
   // Log useMetadata hook state changes for debugging
   React.useEffect(() => {
@@ -960,6 +966,26 @@ const MetadataScreen: React.FC = () => {
               stableLogoUri={stableLogoUri}
             />
 
+            {/* Rating Button */}
+            {isAuthenticated && imdbId && (
+              <TouchableOpacity
+                style={[styles.headerRatingButton, { top: safeAreaTop + 10 }]}
+                onPress={() => setShowRatingModal(true)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Rate this content"
+                accessibilityHint="Open rating modal to rate from 1 to 10"
+              >
+                <MaterialIcons
+                  name={userRating ? "star" : "star-border"}
+                  size={24}
+                  color={userRating ? "#FFD700" : "#FFFFFF"}
+                />
+                {userRating && (
+                  <Text style={styles.ratingText}>{userRating}/10</Text>
+                )}
+              </TouchableOpacity>
+            )}
+
             <Animated.ScrollView
               style={styles.scrollView}
               showsVerticalScrollIndicator={false}
@@ -1682,6 +1708,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     opacity: 0.9,
+  },
+  headerRatingButton: {
+    position: 'absolute',
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    zIndex: 1000,
+  },
+  ratingText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
 });
 
