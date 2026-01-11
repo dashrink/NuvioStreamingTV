@@ -3,45 +3,57 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
   TextInput,
   SafeAreaView,
   StatusBar,
   Platform,
-  ActivityIndicator,
   Linking,
   ScrollView,
   Keyboard,
   Clipboard,
+  Switch,
 } from 'react-native';
-import CustomSwitch from '../components/common/CustomSwitch';
-import Focusable from '../components/common/Focusable';
+import { UnifiedSpinner } from '../components/loading';
 import CustomAlert from '../components/CustomAlert';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useTheme } from '../contexts/ThemeContext';
-import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
-// Import from shared constants to avoid circular dependency
-import {
-  RATING_PROVIDERS,
-  MDBLIST_API_KEY_STORAGE_KEY,
-  RATING_PROVIDERS_STORAGE_KEY,
-  MDBLIST_ENABLED_STORAGE_KEY,
-  isMDBListEnabled,
-  getMDBListAPIKey
-} from '../constants/mdblistConstants';
+import { RATING_PROVIDERS } from '../components/metadata/RatingsSection';
 
-// Re-export for backward compatibility with any code that imports from this file
-export {
-  MDBLIST_API_KEY_STORAGE_KEY,
-  RATING_PROVIDERS_STORAGE_KEY,
-  MDBLIST_ENABLED_STORAGE_KEY,
-  isMDBListEnabled,
-  getMDBListAPIKey
+export const MDBLIST_API_KEY_STORAGE_KEY = 'mdblist_api_key';
+export const RATING_PROVIDERS_STORAGE_KEY = 'rating_providers_config';
+export const MDBLIST_ENABLED_STORAGE_KEY = 'mdblist_enabled';
+const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
+
+// Function to check if MDBList is enabled
+export const isMDBListEnabled = async (): Promise<boolean> => {
+  try {
+    const enabledSetting = await mmkvStorage.getItem(MDBLIST_ENABLED_STORAGE_KEY);
+    return enabledSetting === 'true';
+  } catch (error) {
+    logger.error('[MDBList] Error checking if MDBList is enabled:', error);
+    return false; // Default to disabled if there's an error
+  }
 };
 
-const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
+// Function to get MDBList API key if enabled
+export const getMDBListAPIKey = async (): Promise<string | null> => {
+  try {
+    const isEnabled = await isMDBListEnabled();
+    if (!isEnabled) {
+      logger.log('[MDBList] MDBList is disabled, not retrieving API key');
+      return null;
+    }
+    
+    return await mmkvStorage.getItem(MDBLIST_API_KEY_STORAGE_KEY);
+  } catch (error) {
+    logger.error('[MDBList] Error retrieving API key:', error);
+    return null;
+  }
+};
 
 // Create a styles creator function that accepts the theme colors
 const createStyles = (colors: any) => StyleSheet.create({
@@ -185,7 +197,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 12,
-    gap: 10,
+    gap: 10, 
   },
   buttonIcon: {
     marginRight: 6,
@@ -200,7 +212,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   saveButtonDisabled: {
-    backgroundColor: colors.elevation2,
+    backgroundColor: colors.elevation2, 
     opacity: 0.8,
   },
   saveButtonText: {
@@ -243,7 +255,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   infoSteps: {
     marginBottom: 12,
-    gap: 6,
+    gap: 6, 
   },
   infoStep: {
     flexDirection: 'row',
@@ -348,7 +360,7 @@ const MDBListSettingsScreen = () => {
   const { currentTheme } = useTheme();
   const colors = currentTheme.colors;
   const styles = createStyles(colors);
-
+  
   // Custom alert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -394,7 +406,6 @@ const MDBListSettingsScreen = () => {
 
   const toggleMdbListEnabled = async () => {
     logger.log('[MDBListSettingsScreen] Toggling MDBList enabled setting');
-    triggerLight();
     try {
       const newValue = !isMdbListEnabled;
       setIsMdbListEnabled(newValue);
@@ -445,7 +456,6 @@ const MDBListSettingsScreen = () => {
   };
 
   const toggleProvider = async (providerId: string) => {
-    triggerLight();
     try {
       const newSettings = {
         ...enabledProviders,
@@ -460,9 +470,8 @@ const MDBListSettingsScreen = () => {
 
   const saveApiKey = async () => {
     logger.log('[MDBListSettingsScreen] Starting API key save');
-    triggerMedium();
     Keyboard.dismiss();
-
+    
     try {
       const trimmedKey = apiKey.trim();
       if (!trimmedKey) {
@@ -476,7 +485,7 @@ const MDBListSettingsScreen = () => {
       setIsKeySet(true);
       setTestResult({ success: true, message: 'API key saved successfully.' });
       logger.log('[MDBListSettingsScreen] API key saved successfully');
-
+      
     } catch (error) {
       logger.error('[MDBListSettingsScreen] Error saving API key:', error);
       setTestResult({
@@ -488,7 +497,6 @@ const MDBListSettingsScreen = () => {
 
   const clearApiKey = async () => {
     logger.log('[MDBListSettingsScreen] Clear API key requested');
-    triggerLight();
     setAlertTitle('Clear API Key');
     setAlertMessage('Are you sure you want to remove the saved API key?');
     setAlertActions([
@@ -497,7 +505,6 @@ const MDBListSettingsScreen = () => {
         label: 'Clear',
         onPress: async () => {
           logger.log('[MDBListSettingsScreen] Proceeding with API key clear');
-          triggerHeavy();
           try {
             await mmkvStorage.removeItem(MDBLIST_API_KEY_STORAGE_KEY);
             setApiKey('');
@@ -520,7 +527,6 @@ const MDBListSettingsScreen = () => {
 
   const pasteFromClipboard = async () => {
     logger.log('[MDBListSettingsScreen] Attempting to paste from clipboard');
-    triggerLight();
     try {
       const clipboardContent = await Clipboard.getString();
       if (clipboardContent) {
@@ -537,7 +543,6 @@ const MDBListSettingsScreen = () => {
 
   const openMDBListWebsite = () => {
     logger.log('[MDBListSettingsScreen] Opening MDBList website');
-    triggerLight();
     Linking.openURL('https://mdblist.com/preferences').catch(error => {
       logger.error('[MDBListSettingsScreen] Error opening website:', error);
     });
@@ -548,8 +553,7 @@ const MDBListSettingsScreen = () => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading Settings...</Text>
+          <UnifiedSpinner size="large" text="Loading Settings..." />
         </View>
       </SafeAreaView>
     );
@@ -559,299 +563,277 @@ const MDBListSettingsScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
-        <Focusable
-          onPress={() => navigation.goBack()}
+        <TouchableOpacity
           style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-          <MaterialIcons name="arrow-back-ios" size={24} color={colors.primary} />
-          <Text style={styles.backText}>Back</Text>
-        </Focusable>
+          <MaterialIcons name="chevron-left" size={28} color={colors.primary} /> 
+          <Text style={styles.backText}>Settings</Text>
+        </TouchableOpacity>
       </View>
+      <Text style={styles.headerTitle}>Rating Sources</Text>
 
-      <Text style={styles.headerTitle}>MDBList Settings</Text>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.statusCard}>
+          <MaterialIcons 
+            name={isKeySet && isMdbListEnabled ? "check-circle" : "error-outline"} 
+            size={28}
+            color={isKeySet && isMdbListEnabled ? colors.success : colors.warning} 
+            style={styles.statusIcon}
+          />
+          <View style={styles.statusTextContainer}>
+            <Text style={styles.statusTitle}>
+              {!isMdbListEnabled 
+                ? "MDBList Disabled" 
+                : isKeySet 
+                  ? "API Key Active" 
+                  : "API Key Required"}
+            </Text>
+            <Text style={styles.statusDescription}>
+              {!isMdbListEnabled
+                ? "MDBList functionality is currently disabled."
+                : isKeySet 
+                  ? "Ratings from MDBList are enabled."
+                  : "Add your key below to enable ratings."}
+            </Text>
+          </View>
+        </View>
 
-      <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {/* MDBList Enable/Disable Status Card */}
-          <View style={[styles.statusCard, isMdbListEnabled ? {} : styles.disabledCard]}>
-            <MaterialIcons
-              name={isMdbListEnabled ? 'check-circle' : 'cancel'}
-              size={24}
-              color={isMdbListEnabled ? colors.success : colors.error}
-              style={styles.statusIcon}
-            />
-            <View style={styles.statusTextContainer}>
-              <Text style={styles.statusTitle}>
-                {isMdbListEnabled ? 'Enabled' : 'Disabled'}
-              </Text>
-              <Text style={styles.statusDescription}>
-                {isMdbListEnabled
-                  ? 'MDBList is currently enabled for ratings.'
-                  : 'MDBList is currently disabled.'}
+        <View style={styles.card}>
+          <View style={styles.masterToggleContainer}>
+            <View style={styles.masterToggleInfo}>
+              <Text style={styles.masterToggleTitle}>Enable MDBList</Text>
+              <Text style={styles.masterToggleDescription}>
+                Turn on/off all MDBList functionality
               </Text>
             </View>
-            <CustomSwitch
+            <Switch
               value={isMdbListEnabled}
               onValueChange={toggleMdbListEnabled}
+              trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
+              thumbColor={isMdbListEnabled ? colors.primary : colors.mediumGray}
             />
           </View>
+        </View>
 
-          {/* Main Settings Card */}
-          {isMdbListEnabled && (
-            <>
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>API Key</Text>
-
-                {/* API Key Input */}
-                <View style={[styles.inputWrapper, isInputFocused && styles.inputFocused]}>
-                  <TextInput
-                    ref={apiKeyInputRef}
-                    style={styles.input}
-                    placeholder="Paste your MDBList API Key"
-                    placeholderTextColor={colors.darkGray}
-                    value={apiKey}
-                    onChangeText={setApiKey}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
-                    editable={!isLoading}
-                    secureTextEntry={true}
-                  />
-                  <Focusable
-                    style={styles.pasteButton}
-                    onPress={pasteFromClipboard}
-                  >
-                    <MaterialIcons
-                      name="paste"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </Focusable>
-                </View>
-
-                {/* Test Result Display */}
-                {testResult && (
-                  <View
-                    style={[
-                      styles.testResultContainer,
-                      testResult.success
-                        ? styles.testResultSuccess
-                        : styles.testResultError,
-                    ]}
-                  >
-                    <MaterialIcons
-                      name={testResult.success ? 'check-circle' : 'error'}
-                      size={18}
-                      color={testResult.success ? colors.success : colors.error}
-                    />
-                    <Text
-                      style={[
-                        styles.testResultText,
-                        {
-                          color: testResult.success
-                            ? colors.success
-                            : colors.error,
-                        },
-                      ]}
-                    >
-                      {testResult.message}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Action Buttons */}
-                <View style={styles.buttonContainer}>
-                  <Focusable
-                    style={[
-                      styles.saveButton,
-                      !apiKey.trim() && styles.saveButtonDisabled,
-                    ]}
-                    onPress={saveApiKey}
-                    disabled={!apiKey.trim()}
-                  >
-                    <MaterialIcons
-                      name="save"
-                      size={20}
-                      color={colors.white}
-                      style={styles.buttonIcon}
-                    />
-                    <Text style={styles.saveButtonText}>Save API Key</Text>
-                  </Focusable>
-
-                  {isKeySet && (
-                    <Focusable
-                      style={styles.clearButton}
-                      onPress={clearApiKey}
-                    >
-                      <MaterialIcons
-                        name="delete"
-                        size={20}
-                        color={colors.error}
-                        style={styles.buttonIcon}
-                      />
-                      <Text style={styles.clearButtonText}>Clear API Key</Text>
-                    </Focusable>
-                  )}
-                </View>
-              </View>
-
-              {/* Rating Providers Section */}
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Rating Providers</Text>
-                <Text style={styles.sectionDescription}>
-                  Select which rating providers to include in the metadata.
-                </Text>
-
-                <View style={styles.card}>
-                  {Object.entries(RATING_PROVIDERS).map(([providerId, provider]: [string, any]) => (
-                    <View key={providerId} style={styles.providerItem}>
-                      <View style={styles.providerInfo}>
-                        <Text style={styles.providerName}>{provider.name}</Text>
-                      </View>
-                      <CustomSwitch
-                        value={enabledProviders[providerId] ?? true}
-                        onValueChange={() => toggleProvider(providerId)}
-                      />
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </>
-          )}
-
-          {/* Info Card */}
-          <View style={[styles.infoCard, !isMdbListEnabled && styles.disabledCard]}>
-            <View style={styles.infoHeader}>
-              <MaterialIcons
-                name="info"
-                size={20}
-                color={isMdbListEnabled ? colors.primary : colors.darkGray}
-              />
-              <Text
-                style={[
-                  styles.infoHeaderText,
-                  !isMdbListEnabled && styles.disabledText,
-                ]}
-              >
-                How to get started
-              </Text>
-            </View>
-
-            <View style={styles.infoSteps}>
-              <View style={styles.infoStep}>
-                <Text
-                  style={[
-                    styles.infoStepNumber,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  1.
-                </Text>
-                <Text
-                  style={[
-                    styles.infoStepText,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  Go to{' '}
-                  <Text
-                    style={[
-                      styles.boldText,
-                      !isMdbListEnabled && styles.disabledBoldText,
-                    ]}
-                  >
-                    https://mdblist.com/preferences
-                  </Text>{' '}
-                  and log in to your account.
-                </Text>
-              </View>
-
-              <View style={styles.infoStep}>
-                <Text
-                  style={[
-                    styles.infoStepNumber,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  2.
-                </Text>
-                <Text
-                  style={[
-                    styles.infoStepText,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  Find your API Key under the <Text
-                    style={[
-                      styles.boldText,
-                      !isMdbListEnabled && styles.disabledBoldText,
-                    ]}
-                  >
-                    API
-                  </Text>{' '}
-                  section.
-                </Text>
-              </View>
-
-              <View style={styles.infoStep}>
-                <Text
-                  style={[
-                    styles.infoStepNumber,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  3.
-                </Text>
-                <Text
-                  style={[
-                    styles.infoStepText,
-                    !isMdbListEnabled && styles.disabledText,
-                  ]}
-                >
-                  Copy your API Key and paste it above.
-                </Text>
-              </View>
-            </View>
-
-            <Focusable
+        <View style={[styles.card, !isMdbListEnabled && styles.disabledCard]}>
+          <Text style={styles.sectionTitle}>API Key</Text>
+          <View style={[styles.inputWrapper, !isMdbListEnabled && styles.disabledInput]}>
+            <TextInput
+              ref={apiKeyInputRef}
               style={[
-                styles.websiteButton,
-                !isMdbListEnabled && styles.websiteButtonDisabled,
+                styles.input, 
+                isInputFocused && styles.inputFocused,
+                !isMdbListEnabled && styles.disabledText
               ]}
-              onPress={openMDBListWebsite}
+              value={apiKey}
+              onChangeText={(text) => {
+                setApiKey(text);
+                if (testResult) setTestResult(null);
+              }}
+              placeholder="Paste your MDBList API key"
+              placeholderTextColor={!isMdbListEnabled ? colors.darkGray : colors.mediumGray}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              editable={isMdbListEnabled}
+            />
+            <TouchableOpacity 
+              style={styles.pasteButton} 
+              onPress={pasteFromClipboard}
               disabled={!isMdbListEnabled}
             >
-              <MaterialIcons
-                name="open-in-new"
-                size={18}
-                color={isMdbListEnabled ? colors.primary : colors.darkGray}
-                style={styles.buttonIcon}
-              />
-              <Text
-                style={[
-                  styles.websiteButtonText,
-                  !isMdbListEnabled && styles.websiteButtonTextDisabled,
-                ]}
-              >
-                Go to MDBList
-              </Text>
-            </Focusable>
+               <MaterialIcons 
+                 name="content-paste" 
+                 size={20} 
+                 color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
+               />
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-      </View>
+          
+          {testResult && (
+            <View style={[
+              styles.testResultContainer,
+              testResult.success ? styles.testResultSuccess : styles.testResultError
+            ]}>
+              <MaterialIcons 
+                name={testResult.success ? "check" : "warning"} 
+                size={18}
+                color={testResult.success ? colors.success : colors.error} 
+              />
+              <Text style={styles.testResultText}>
+                {testResult.message}
+              </Text>
+            </View>
+          )}
+          
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.saveButton, 
+                (!apiKey.trim() || !isMdbListEnabled) && styles.saveButtonDisabled
+              ]}
+              onPress={saveApiKey}
+              disabled={!apiKey.trim() || !isMdbListEnabled}
+            >
+              <MaterialIcons name="save" size={18} color={colors.white} style={styles.buttonIcon} />
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+            
+            {isKeySet && (
+              <TouchableOpacity
+                style={[styles.clearButton, !isMdbListEnabled && styles.clearButtonDisabled]}
+                onPress={clearApiKey}
+                disabled={!isMdbListEnabled}
+              >
+                <MaterialIcons 
+                  name="delete-outline" 
+                  size={18} 
+                  color={!isMdbListEnabled ? colors.darkGray : colors.error} 
+                  style={styles.buttonIcon} 
+                />
+                <Text style={[
+                  styles.clearButtonText, 
+                  !isMdbListEnabled && styles.clearButtonTextDisabled
+                ]}>
+                  Clear Key
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        actions={alertActions}
-        onDismiss={() => setAlertVisible(false)}
-      />
-    </SafeAreaView>
+        <View style={[styles.card, !isMdbListEnabled && styles.disabledCard]}>
+          <Text style={styles.sectionTitle}>Rating Providers</Text>
+          <Text style={styles.sectionDescription}>
+            Choose which ratings to display in the app
+          </Text>
+          {Object.entries(RATING_PROVIDERS).map(([id, provider]) => (
+            <View key={id} style={styles.providerItem}>
+              <View style={styles.providerInfo}>
+                <Text style={[
+                  styles.providerName,
+                  !isMdbListEnabled && styles.disabledText
+                ]}>
+                  {provider.name}
+                </Text>
+              </View>
+              <Switch
+                value={enabledProviders[id] ?? true}
+                onValueChange={() => toggleProvider(id)}
+                trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
+                thumbColor={enabledProviders[id] ? colors.primary : colors.mediumGray}
+                disabled={!isMdbListEnabled}
+              />
+            </View>
+          ))}
+        </View>
+
+        <View style={[styles.infoCard, !isMdbListEnabled && styles.disabledCard]}>
+          <View style={styles.infoHeader}>
+            <MaterialIcons 
+              name="help-outline" 
+              size={20} 
+              color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
+            />
+            <Text style={[
+              styles.infoHeaderText, 
+              !isMdbListEnabled && styles.disabledText
+            ]}>
+              How to get an API key
+            </Text>
+          </View>
+          <View style={styles.infoSteps}>
+            <View style={styles.infoStep}>
+              <Text style={[
+                styles.infoStepNumber, 
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                1.
+              </Text>
+              <Text style={[
+                styles.infoStepText,
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                Log in on the <Text style={[
+                  styles.boldText,
+                  !isMdbListEnabled && styles.disabledBoldText
+                ]}>MDBList website</Text>.
+              </Text>
+            </View>            
+            <View style={styles.infoStep}>
+              <Text style={[
+                styles.infoStepNumber,
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                2.
+              </Text>
+              <Text style={[
+                styles.infoStepText,
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                Go to <Text style={[
+                  styles.boldText,
+                  !isMdbListEnabled && styles.disabledBoldText
+                ]}>Settings</Text> {'>'} <Text style={[
+                  styles.boldText,
+                  !isMdbListEnabled && styles.disabledBoldText
+                ]}>API</Text> section.
+              </Text>
+            </View>            
+            <View style={styles.infoStep}>
+              <Text style={[
+                styles.infoStepNumber,
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                3.
+              </Text>
+              <Text style={[
+                styles.infoStepText,
+                !isMdbListEnabled && styles.disabledText
+              ]}>
+                Generate a new key and copy it.
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.websiteButton,
+              !isMdbListEnabled && styles.websiteButtonDisabled
+            ]}
+            onPress={openMDBListWebsite}
+            disabled={!isMdbListEnabled}
+          >
+            <MaterialIcons 
+              name="open-in-new" 
+              size={18} 
+              color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
+              style={styles.buttonIcon} 
+            />
+            <Text style={[
+              styles.websiteButtonText,
+              !isMdbListEnabled && styles.websiteButtonTextDisabled
+            ]}>
+              Go to MDBList
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    <CustomAlert
+      visible={alertVisible}
+      title={alertTitle}
+      message={alertMessage}
+      onClose={() => setAlertVisible(false)}
+      actions={alertActions}
+    />
+  </SafeAreaView>
   );
 };
 
-export default MDBListSettingsScreen;
+export default MDBListSettingsScreen; 

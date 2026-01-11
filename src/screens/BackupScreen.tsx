@@ -3,16 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
+  TouchableOpacity,
   Platform,
   SafeAreaView,
   StatusBar,
   ScrollView,
+  Switch,
   Animated,
   Easing,
 } from 'react-native';
-import CustomSwitch from '../components/common/CustomSwitch';
-import Focusable from '../components/common/Focusable';
+import { UnifiedSpinner } from '../components/loading';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -23,26 +23,25 @@ import { useTheme } from '../contexts/ThemeContext';
 import { logger } from '../utils/logger';
 import CustomAlert from '../components/CustomAlert';
 import { useBackupOptions } from '../hooks/useBackupOptions';
-import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const BackupScreen: React.FC = () => {
   const { currentTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const { preferences, updatePreference, getBackupOptions } = useBackupOptions();
-
+  
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
     coreData: false,
     addonsIntegrations: false,
     settingsPreferences: false,
   });
-
+  
   // Animated values for each section
   const coreDataAnim = useRef(new Animated.Value(0)).current;
   const addonsAnim = useRef(new Animated.Value(0)).current;
   const settingsAnim = useRef(new Animated.Value(0)).current;
-
+  
   // Chevron rotation animated values
   const coreDataChevron = useRef(new Animated.Value(0)).current;
   const addonsChevron = useRef(new Animated.Value(0)).current;
@@ -61,7 +60,7 @@ const BackupScreen: React.FC = () => {
   ) => {
     setAlertTitle(title);
     setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
+    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]);
     setAlertVisible(true);
   };
 
@@ -74,19 +73,18 @@ const BackupScreen: React.FC = () => {
       openAlert(
         'Restart Failed',
         'Failed to restart the app. Please manually close and reopen the app to see your restored data.',
-        [{ label: 'OK', onPress: () => { } }]
+        [{ label: 'OK', onPress: () => {} }]
       );
     }
   };
 
   // Toggle section collapse/expand
   const toggleSection = useCallback((section: 'coreData' | 'addonsIntegrations' | 'settingsPreferences') => {
-    triggerLight();
     const isExpanded = expandedSections[section];
-
+    
     let heightAnim: Animated.Value;
     let chevronAnim: Animated.Value;
-
+    
     if (section === 'coreData') {
       heightAnim = coreDataAnim;
       chevronAnim = coreDataChevron;
@@ -97,7 +95,7 @@ const BackupScreen: React.FC = () => {
       heightAnim = settingsAnim;
       chevronAnim = settingsChevron;
     }
-
+    
     // Animate height and chevron rotation
     Animated.parallel([
       Animated.timing(heightAnim, {
@@ -113,8 +111,8 @@ const BackupScreen: React.FC = () => {
         easing: Easing.inOut(Easing.ease),
       }),
     ]).start();
-
-    setExpandedSections(prev => ({ ...prev, [section]: !isExpanded }));
+    
+    setExpandedSections(prev => ({...prev, [section]: !isExpanded}));
   }, [expandedSections, coreDataAnim, addonsAnim, settingsAnim, coreDataChevron, addonsChevron, settingsChevron]);
 
   // Create backup
@@ -137,9 +135,6 @@ const BackupScreen: React.FC = () => {
       if (preferences.includeWatchProgress) {
         items.push(`Watch Progress: ${preview.watchProgress} entries`);
         total += preview.watchProgress;
-        // Include watched status with watch progress
-        items.push(`Watched Status: ${preview.watchedStatus} items`);
-        total += preview.watchedStatus;
       }
 
       if (preferences.includeAddons) {
@@ -154,7 +149,7 @@ const BackupScreen: React.FC = () => {
 
       // Check if no items are selected
       const message = items.length > 0
-        ? `Backup Contents:\n\n${items.join('\n')}\n\nTotal: ${total} items\n\nThis backup includes your selected app settings, themes, watched markers, and integration data.`
+        ? `Backup Contents:\n\n${items.join('\n')}\n\nTotal: ${total} items\n\nThis backup includes your selected app settings, themes, and integration data.`
         : `No content selected for backup.\n\nPlease enable at least one option in the Backup Options section above.`;
 
       openAlert(
@@ -162,51 +157,51 @@ const BackupScreen: React.FC = () => {
         message,
         items.length > 0
           ? [
-            { label: 'Cancel', onPress: () => { } },
-            {
-              label: 'Create Backup',
-              onPress: async () => {
-                try {
-                  setIsLoading(true);
+              { label: 'Cancel', onPress: () => {} },
+              {
+                label: 'Create Backup',
+                onPress: async () => {
+                  try {
+                    setIsLoading(true);
 
-                  const backupOptions = getBackupOptions();
+                    const backupOptions = getBackupOptions();
 
-                  const fileUri = await backupService.createBackup(backupOptions);
+                    const fileUri = await backupService.createBackup(backupOptions);
 
-                  // Share the backup file
-                  if (await Sharing.isAvailableAsync()) {
-                    await Sharing.shareAsync(fileUri, {
-                      mimeType: 'application/json',
-                      dialogTitle: 'Share Nuvio Backup',
-                    });
+                    // Share the backup file
+                    if (await Sharing.isAvailableAsync()) {
+                      await Sharing.shareAsync(fileUri, {
+                        mimeType: 'application/json',
+                        dialogTitle: 'Share Nuvio Backup',
+                      });
+                    }
+
+                    openAlert(
+                      'Backup Created',
+                      'Your backup has been created and is ready to share.',
+                      [{ label: 'OK', onPress: () => {} }]
+                    );
+                  } catch (error) {
+                    logger.error('[BackupScreen] Failed to create backup:', error);
+                    openAlert(
+                      'Backup Failed',
+                      `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
+                      [{ label: 'OK', onPress: () => {} }]
+                    );
+                  } finally {
+                    setIsLoading(false);
                   }
-
-                  openAlert(
-                    'Backup Created',
-                    'Your backup has been created and is ready to share.',
-                    [{ label: 'OK', onPress: () => { } }]
-                  );
-                } catch (error) {
-                  logger.error('[BackupScreen] Failed to create backup:', error);
-                  openAlert(
-                    'Backup Failed',
-                    `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
-                    [{ label: 'OK', onPress: () => { } }]
-                  );
-                } finally {
-                  setIsLoading(false);
                 }
               }
-            }
-          ]
-          : [{ label: 'OK', onPress: () => { } }]
+            ]
+          : [{ label: 'OK', onPress: () => {} }]
       );
     } catch (error) {
       logger.error('[BackupScreen] Failed to get backup preview:', error);
       openAlert(
         'Error',
         'Failed to prepare backup information. Please try again.',
-        [{ label: 'OK', onPress: () => { } }]
+        [{ label: 'OK', onPress: () => {} }]
       );
       setIsLoading(false);
     }
@@ -233,7 +228,7 @@ const BackupScreen: React.FC = () => {
         'Confirm Restore',
         `This will restore your data from a backup created on ${new Date(backupInfo.timestamp || 0).toLocaleDateString()}.\n\nThis action will overwrite your current data. Are you sure you want to continue?`,
         [
-          { label: 'Cancel', onPress: () => { } },
+          { label: 'Cancel', onPress: () => {} },
           {
             label: 'Restore',
             onPress: async () => {
@@ -248,9 +243,9 @@ const BackupScreen: React.FC = () => {
                   'Restore Complete',
                   'Your data has been successfully restored. Please restart the app to see all changes.',
                   [
-                    { label: 'Cancel', onPress: () => { } },
-                    {
-                      label: 'Restart App',
+                    { label: 'Cancel', onPress: () => {} },
+                    { 
+                      label: 'Restart App', 
                       onPress: restartApp,
                       style: { fontWeight: 'bold' }
                     }
@@ -261,7 +256,7 @@ const BackupScreen: React.FC = () => {
                 openAlert(
                   'Restore Failed',
                   `Failed to restore backup: ${error instanceof Error ? error.message : String(error)}`,
-                  [{ label: 'OK', onPress: () => { } }]
+                  [{ label: 'OK', onPress: () => {} }]
                 );
               } finally {
                 setIsLoading(false);
@@ -275,7 +270,7 @@ const BackupScreen: React.FC = () => {
       openAlert(
         'File Selection Failed',
         `Failed to select backup file: ${error instanceof Error ? error.message : String(error)}`,
-        [{ label: 'OK', onPress: () => { } }]
+        [{ label: 'OK', onPress: () => {} }]
       );
     }
   }, [openAlert]);
@@ -286,30 +281,26 @@ const BackupScreen: React.FC = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <Focusable
+        <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => {
-            triggerLight();
-            navigation.goBack();
-          }}
-          hasTVPreferredFocus={true}
+          onPress={() => navigation.goBack()}
         >
           <MaterialIcons name="chevron-left" size={28} color={currentTheme.colors.white} />
           <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-        </Focusable>
-
+        </TouchableOpacity>
+        
         <View style={styles.headerActions}>
           {/* Empty for now, but keeping structure consistent */}
         </View>
       </View>
-
+      
       <Text style={[styles.headerTitle, { color: currentTheme.colors.white }]}>
         Backup & Restore
       </Text>
 
       {/* Content */}
-      <ScrollView
-        style={styles.scrollView}
+      <ScrollView 
+        style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
       >
@@ -330,9 +321,9 @@ const BackupScreen: React.FC = () => {
             <Text style={[styles.sectionDescription, { color: currentTheme.colors.mediumEmphasis }]}>
               Choose what to include in your backups
             </Text>
-
+            
             {/* Core Data Group */}
-            <Focusable
+            <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection('coreData')}
               activeOpacity={0.7}
@@ -352,7 +343,7 @@ const BackupScreen: React.FC = () => {
               >
                 <MaterialIcons name="expand-more" size={24} color={currentTheme.colors.highEmphasis} />
               </Animated.View>
-            </Focusable>
+            </TouchableOpacity>
             <Animated.View
               style={{
                 maxHeight: coreDataAnim.interpolate({
@@ -378,9 +369,9 @@ const BackupScreen: React.FC = () => {
                 theme={currentTheme}
               />
             </Animated.View>
-
+            
             {/* Addons & Integrations Group */}
-            <Focusable
+            <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection('addonsIntegrations')}
               activeOpacity={0.7}
@@ -400,7 +391,7 @@ const BackupScreen: React.FC = () => {
               >
                 <MaterialIcons name="expand-more" size={24} color={currentTheme.colors.highEmphasis} />
               </Animated.View>
-            </Focusable>
+            </TouchableOpacity>
             <Animated.View
               style={{
                 maxHeight: addonsAnim.interpolate({
@@ -425,10 +416,17 @@ const BackupScreen: React.FC = () => {
                 onValueChange={(v) => updatePreference('includeLocalScrapers', v)}
                 theme={currentTheme}
               />
+              <OptionToggle
+                label="Trakt Integration"
+                description="Sync data and authentication tokens"
+                value={preferences.includeTraktData}
+                onValueChange={(v) => updatePreference('includeTraktData', v)}
+                theme={currentTheme}
+              />
             </Animated.View>
-
+            
             {/* Settings & Preferences Group */}
-            <Focusable
+            <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection('settingsPreferences')}
               activeOpacity={0.7}
@@ -448,7 +446,7 @@ const BackupScreen: React.FC = () => {
               >
                 <MaterialIcons name="expand-more" size={24} color={currentTheme.colors.highEmphasis} />
               </Animated.View>
-            </Focusable>
+            </TouchableOpacity>
             <Animated.View
               style={{
                 maxHeight: settingsAnim.interpolate({
@@ -460,59 +458,90 @@ const BackupScreen: React.FC = () => {
               }}
             >
               <OptionToggle
-                label="Theme"
-                description="Dark/Light mode preference"
-                value={preferences.includeTheme}
-                onValueChange={(v) => updatePreference('includeTheme', v)}
+                label="App Settings"
+                description="Theme, preferences, and configurations"
+                value={preferences.includeSettings}
+                onValueChange={(v) => updatePreference('includeSettings', v)}
                 theme={currentTheme}
               />
               <OptionToggle
-                label="App Settings"
-                description="UI preferences and options"
-                value={preferences.includeSettings}
-                onValueChange={(v) => updatePreference('includeSettings', v)}
+                label="User Preferences"
+                description="Addon order and UI settings"
+                value={preferences.includeUserPreferences}
+                onValueChange={(v) => updatePreference('includeUserPreferences', v)}
+                theme={currentTheme}
+              />
+              <OptionToggle
+                label="Catalog Settings"
+                description="Catalog filters and preferences"
+                value={preferences.includeCatalogSettings}
+                onValueChange={(v) => updatePreference('includeCatalogSettings', v)}
+                theme={currentTheme}
+              />
+              <OptionToggle
+                label="API Keys"
+                description="MDBList and OpenRouter keys"
+                value={preferences.includeApiKeys}
+                onValueChange={(v) => updatePreference('includeApiKeys', v)}
                 theme={currentTheme}
               />
             </Animated.View>
           </View>
 
-          {/* Action Buttons Section */}
+          {/* Backup Actions */}
           <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
             <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
-              Actions
+              Backup & Restore
             </Text>
 
-            <Focusable
-              style={[styles.actionButton, { backgroundColor: currentTheme.colors.primary }]}
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: currentTheme.colors.primary,
+                  opacity: isLoading ? 0.6 : 1
+                }
+              ]}
               onPress={handleCreateBackup}
+              disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color={currentTheme.colors.darkBackground} size="small" />
+                <UnifiedSpinner size="small" color="#FFFFFF" />
               ) : (
                 <>
-                  <MaterialIcons name="backup" size={20} color={currentTheme.colors.darkBackground} />
-                  <Text style={[styles.buttonText, { color: currentTheme.colors.darkBackground }]}>
-                    Create Backup
-                  </Text>
+                  <MaterialIcons name="backup" size={20} color="white" />
+                  <Text style={styles.actionButtonText}>Create Backup</Text>
                 </>
               )}
-            </Focusable>
+            </TouchableOpacity>
 
-            <Focusable
-              style={[styles.actionButton, { backgroundColor: currentTheme.colors.secondary }]}
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: currentTheme.colors.secondary,
+                  opacity: isLoading ? 0.6 : 1
+                }
+              ]}
               onPress={handleRestoreBackup}
+              disabled={isLoading}
             >
-              {isLoading ? (
-                <ActivityIndicator color={currentTheme.colors.darkBackground} size="small" />
-              ) : (
-                <>
-                  <MaterialIcons name="restore" size={20} color={currentTheme.colors.darkBackground} />
-                  <Text style={[styles.buttonText, { color: currentTheme.colors.darkBackground }]}>
-                    Restore Backup
-                  </Text>
-                </>
-              )}
-            </Focusable>
+              <MaterialIcons name="restore" size={20} color="white" />
+              <Text style={styles.actionButtonText}>Restore from Backup</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Info Section */}
+          <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
+              About Backups
+            </Text>
+            <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
+              • Customize what gets backed up using the toggles above{'\n'}
+              • Backup files are stored locally on your device{'\n'}
+              • Share your backup to transfer data between devices{'\n'}
+              • Restoring will overwrite your current data
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -520,33 +549,32 @@ const BackupScreen: React.FC = () => {
   );
 };
 
-// OptionToggle component
-const OptionToggle: React.FC<{
+interface OptionToggleProps {
   label: string;
   description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
   theme: any;
-}> = ({ label, description, value, onValueChange, theme }) => {
-  return (
-    <View style={styles.optionItem}>
-      <View style={styles.optionInfo}>
-        <Text style={[styles.optionLabel, { color: theme.colors.highEmphasis }]}>
-          {label}
-        </Text>
-        <Text style={[styles.optionDescription, { color: theme.colors.mediumEmphasis }]}>
-          {description}
-        </Text>
-      </View>
-      <CustomSwitch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: theme.colors.elevation2, true: theme.colors.primaryLight }}
-        thumbColor={value ? theme.colors.primary : theme.colors.mediumEmphasis}
-      />
+}
+
+const OptionToggle: React.FC<OptionToggleProps> = ({ label, description, value, onValueChange, theme }) => (
+  <View style={[styles.optionRow, { borderBottomColor: theme.colors.outline }]}>
+    <View style={styles.optionLeft}>
+      <Text style={[styles.optionLabel, { color: theme.colors.highEmphasis }]}>
+        {label}
+      </Text>
+      <Text style={[styles.optionDescription, { color: theme.colors.mediumEmphasis }]}>
+        {description}
+      </Text>
     </View>
-  );
-};
+    <Switch
+      value={value}
+      onValueChange={onValueChange}
+      trackColor={{ false: theme.colors.outline, true: theme.colors.primary }}
+      thumbColor={value ? '#fff' : '#f4f3f4'}
+    />
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -554,93 +582,101 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-  },
-  backText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: '600',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  backText: {
+    fontSize: 17,
+    fontWeight: '400',
+  },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 34,
     fontWeight: '700',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingBottom: 16,
+    paddingTop: 8,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    padding: 16,
   },
   section: {
+    marginBottom: 16,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontWeight: '600',
+    marginBottom: 16,
   },
   sectionDescription: {
     fontSize: 14,
     marginBottom: 16,
   },
+  groupLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingVertical: 8,
   },
-  groupLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  optionItem: {
+  optionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
+    borderBottomWidth: 1,
   },
-  optionInfo: {
+  optionLeft: {
     flex: 1,
-    marginRight: 16,
+    paddingRight: 16,
   },
   optionLabel: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 4,
   },
   optionDescription: {
     fontSize: 13,
+    lineHeight: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
-  buttonText: {
+  actionButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 

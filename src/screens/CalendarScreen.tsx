@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   SafeAreaView,
   StatusBar,
@@ -31,6 +30,7 @@ import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 import { useCalendarData } from '../hooks/useCalendarData';
+import { UnifiedSpinner } from '../components/loading';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -276,8 +276,7 @@ const CalendarScreen = () => {
       <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={styles.loadingText}>Loading calendar...</Text>
+          <UnifiedSpinner size="large" text="Loading calendar..." />
         </View>
       </SafeAreaView>
     );
@@ -386,10 +385,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
   },
   sectionHeader: {
     paddingVertical: 8,

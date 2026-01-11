@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -12,16 +11,13 @@ import {
   Linking,
   Switch,
 } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
-import CustomSwitch from '../components/common/CustomSwitch';
-import Focusable from '../components/common/Focusable';
+import { UnifiedSpinner } from '../components/loading';
 import { useNavigation } from '@react-navigation/native';
 import { makeRedirectUri, useAuthRequest, ResponseType, Prompt, CodeChallengeMethod } from 'expo-auth-session';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FastImage from '@d11/react-native-fast-image';
 import { traktService, TraktUser } from '../services/traktService';
 import { useSettings } from '../hooks/useSettings';
-import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { logger } from '../utils/logger';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { useTheme } from '../contexts/ThemeContext';
@@ -43,9 +39,9 @@ const discovery = {
   tokenEndpoint: 'https://api.trakt.tv/oauth/token',
 };
 
-// For use with deep linking - use different scheme for TV
+// For use with deep linking
 const redirectUri = makeRedirectUri({
-  scheme: Platform.isTV ? 'nuvio-tv' : 'nuvio',
+  scheme: 'nuvio',
   path: 'auth/trakt',
 });
 
@@ -57,7 +53,7 @@ const TraktSettingsScreen: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState<TraktUser | null>(null);
   const { currentTheme } = useTheme();
-
+  
   const {
     settings: autosyncSettings,
     isSyncing,
@@ -78,13 +74,6 @@ const TraktSettingsScreen: React.FC = () => {
   const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
     { label: 'OK', onPress: () => setAlertVisible(false) },
   ]);
-
-  // TV Device Code Authentication State
-  const [deviceCode, setDeviceCode] = useState<string | null>(null);
-  const [userCode, setUserCode] = useState<string | null>(null);
-  const [verificationUrl, setVerificationUrl] = useState<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
-  const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const openAlert = (
     title: string,
@@ -112,7 +101,7 @@ const TraktSettingsScreen: React.FC = () => {
     try {
       const authenticated = await traktService.isAuthenticated();
       setIsAuthenticated(authenticated);
-
+      
       if (authenticated) {
         const profile = await traktService.getUserProfile();
         setUserProfile(profile);
@@ -162,8 +151,8 @@ const TraktSettingsScreen: React.FC = () => {
                   'Successfully Connected',
                   'Your Trakt account has been connected successfully.',
                   [
-                    {
-                      label: 'OK',
+                    { 
+                      label: 'OK', 
                       onPress: () => navigation.goBack(),
                     }
                   ]
@@ -192,99 +181,8 @@ const TraktSettingsScreen: React.FC = () => {
     }
   }, [response, checkAuthStatus, request?.codeVerifier, navigation]);
 
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // TV Device Code Flow
-  const startDeviceCodeFlow = async () => {
-    setIsExchangingCode(true);
-    try {
-      const codeData = await traktService.getDeviceCode();
-      if (codeData) {
-        setDeviceCode(codeData.device_code);
-        setUserCode(codeData.user_code);
-        setVerificationUrl(codeData.verification_url);
-        setIsPolling(true);
-
-        // Start polling for token
-        const pollInterval = (codeData.interval || 5) * 1000;
-        pollingIntervalRef.current = setInterval(async () => {
-          const result = await traktService.pollDeviceToken(codeData.device_code);
-
-          if (result === 'success') {
-            // Stop polling
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-            }
-            setIsPolling(false);
-            setDeviceCode(null);
-            setUserCode(null);
-            setVerificationUrl(null);
-            setIsExchangingCode(false);
-
-            checkAuthStatus().then(() => {
-              openAlert(
-                'Successfully Connected',
-                'Your Trakt account has been connected successfully.',
-                [{ label: 'OK', onPress: () => navigation.goBack() }]
-              );
-            });
-          } else if (result === 'expired' || result === 'error') {
-            // Stop polling on error
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-            }
-            setIsPolling(false);
-            setDeviceCode(null);
-            setUserCode(null);
-            setVerificationUrl(null);
-            setIsExchangingCode(false);
-
-            openAlert(
-              'Authentication Failed',
-              result === 'expired'
-                ? 'The code has expired. Please try again.'
-                : 'An error occurred during authentication. Please try again.'
-            );
-          }
-          // If 'pending', continue polling
-        }, pollInterval);
-      } else {
-        setIsExchangingCode(false);
-        openAlert('Error', 'Failed to get device code. Please try again.');
-      }
-    } catch (error) {
-      setIsExchangingCode(false);
-      logger.error('[TraktSettingsScreen] Device code flow error:', error);
-      openAlert('Error', 'An error occurred. Please try again.');
-    }
-  };
-
-  const cancelDeviceCodeFlow = () => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
-    setIsPolling(false);
-    setDeviceCode(null);
-    setUserCode(null);
-    setVerificationUrl(null);
-    setIsExchangingCode(false);
-  };
-
   const handleSignIn = () => {
-    if (Platform.isTV) {
-      // Use device code flow for TV
-      startDeviceCodeFlow();
-    } else {
-      // Use standard OAuth flow for mobile
-      promptAsync();
-    }
+    promptAsync(); // Trigger the authentication flow
   };
 
   const handleSignOut = async () => {
@@ -293,8 +191,8 @@ const TraktSettingsScreen: React.FC = () => {
       'Are you sure you want to sign out of your Trakt account?',
       [
         { label: 'Cancel', onPress: () => {} },
-        {
-          label: 'Sign Out',
+        { 
+          label: 'Sign Out', 
           onPress: async () => {
             setIsLoading(true);
             try {
@@ -322,47 +220,30 @@ const TraktSettingsScreen: React.FC = () => {
     ]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
-        <Focusable
-          onPress={() => {
-            triggerLight();
-            navigation.goBack();
-          }}
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
           style={styles.backButton}
-          hasTVPreferredFocus={true}
         >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark}
+          <MaterialIcons 
+            name="arrow-back" 
+            size={24} 
+            color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark} 
           />
           <Text style={[styles.backText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
             Settings
           </Text>
-        </Focusable>
-
+        </TouchableOpacity>
+        
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-
+      
       <Text style={[styles.headerTitle, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
         Trakt Settings
       </Text>
 
-      {/* Maintenance Mode Banner */}
-      {traktService.isMaintenanceMode() && (
-        <View style={styles.maintenanceBanner}>
-          <MaterialIcons name="engineering" size={24} color="#FFF" />
-          <View style={styles.maintenanceBannerTextContainer}>
-            <Text style={styles.maintenanceBannerTitle}>Under Maintenance</Text>
-            <Text style={styles.maintenanceBannerMessage}>
-              {traktService.getMaintenanceMessage()}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      <ScrollView
+      <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
@@ -372,46 +253,14 @@ const TraktSettingsScreen: React.FC = () => {
         ]}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-            </View>
-          ) : traktService.isMaintenanceMode() ? (
-            <View style={styles.signInContainer}>
-              <TraktIcon
-                width={120}
-                height={120}
-                style={[styles.traktLogo, { opacity: 0.5 }]}
-              />
-              <Text style={[
-                styles.signInTitle,
-                { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
-              ]}>
-                Trakt Unavailable
-              </Text>
-              <Text style={[
-                styles.signInDescription,
-                { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
-              ]}>
-                The Trakt integration is temporarily paused for maintenance. All syncing and authentication is disabled until maintenance is complete.
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: currentTheme.colors.border, opacity: 0.6 }
-                ]}
-                disabled={true}
-              >
-                <MaterialIcons name="engineering" size={20} color={currentTheme.colors.mediumEmphasis} style={{ marginRight: 8 }} />
-                <Text style={[styles.buttonText, { color: currentTheme.colors.mediumEmphasis }]}>
-                  Service Under Maintenance
-                </Text>
-              </TouchableOpacity>
+              <UnifiedSpinner size="large" />
             </View>
           ) : isAuthenticated && userProfile ? (
             <View style={styles.profileContainer}>
               <View style={styles.profileHeader}>
                 {userProfile.avatar ? (
-                  <FastImage
-                    source={{ uri: userProfile.avatar }}
+                  <FastImage 
+                    source={{ uri: userProfile.avatar }} 
                     style={styles.avatar}
                     resizeMode={FastImage.resizeMode.cover}
                   />
@@ -459,17 +308,14 @@ const TraktSettingsScreen: React.FC = () => {
                   styles.signOutButton,
                   { backgroundColor: currentTheme.colors.error }
                 ]}
-                onPress={() => {
-                  triggerHeavy();
-                  handleSignOut();
-                }}
+                onPress={handleSignOut}
               >
                 <Text style={styles.buttonText}>Sign Out</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.signInContainer}>
-              <TraktIcon
+              <TraktIcon 
                 width={120}
                 height={120}
                 style={styles.traktLogo}
@@ -486,60 +332,22 @@ const TraktSettingsScreen: React.FC = () => {
               ]}>
                 Sync your watch history, watchlist, and collection with Trakt.tv
               </Text>
-
-              {deviceCode && userCode && verificationUrl ? (
-                <View style={styles.deviceCodeContainer}>
-                  <QRCode
-                    value={verificationUrl}
-                    size={200}
-                    color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark}
-                    backgroundColor={isDarkMode ? currentTheme.colors.elevation1 : '#FFF'}
-                  />
-                  <Text style={[
-                    styles.deviceCodeLabel,
-                    { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
-                  ]}>
-                    Or enter code:
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
+                ]}
+                onPress={handleSignIn}
+                disabled={!request || isExchangingCode} // Disable while waiting for response or exchanging code
+              >
+                {isExchangingCode ? (
+                  <UnifiedSpinner size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    Sign In with Trakt
                   </Text>
-                  <Text style={[
-                    styles.deviceCode,
-                    { color: currentTheme.colors.primary }
-                  ]}>
-                    {userCode}
-                  </Text>
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: currentTheme.colors.border }]}
-                    onPress={() => {
-                      triggerLight();
-                      cancelDeviceCodeFlow();
-                    }}
-                  >
-                    <Text style={[styles.buttonText, { color: currentTheme.colors.highEmphasis }]}>
-                      Cancel
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={[
-                    styles.button,
-                    { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
-                  ]}
-                  onPress={() => {
-                    triggerMedium();
-                    handleSignIn();
-                  }}
-                  disabled={!request || isExchangingCode}
-                >
-                  {isExchangingCode ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    <Text style={styles.buttonText}>
-                      Sign In with Trakt
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              )}
+                )}
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -584,55 +392,116 @@ const TraktSettingsScreen: React.FC = () => {
                     </Text>
                   </View>
                   <View style={styles.settingToggleContainer}>
-                    <CustomSwitch
+                    <Switch
                       value={autosyncSettings.enabled}
-                      onValueChange={(value) => {
-                        triggerMedium();
-                        setAutosyncEnabled(value);
-                      }}
+                      onValueChange={setAutosyncEnabled}
                       trackColor={{
                         false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary
+                        true: currentTheme.colors.primary + '80'
                       }}
+                      thumbColor={autosyncSettings.enabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
                     />
                   </View>
                 </View>
               </View>
-
-              <TouchableOpacity
-                style={styles.settingItem}
-                onPress={() => {
-                  triggerLight();
-                  performManualSync();
-                }}
-                disabled={isSyncing}
-              >
+              <View style={styles.settingItem}>
                 <View style={styles.settingContent}>
                   <View style={styles.settingTextContainer}>
                     <Text style={[
                       styles.settingLabel,
-                      { color: isSyncing ? currentTheme.colors.mediumEmphasis : currentTheme.colors.highEmphasis }
+                      { color: currentTheme.colors.highEmphasis }
                     ]}>
-                      Manual Sync
+                      Import watched history
                     </Text>
                     <Text style={[
                       styles.settingDescription,
                       { color: currentTheme.colors.mediumEmphasis }
                     ]}>
-                      {isSyncing ? 'Syncing...' : 'Sync now'}
+                      Use "Sync Now" to import your watch history and progress from Trakt
                     </Text>
                   </View>
-                  {isSyncing ? (
-                    <ActivityIndicator size="small" color={currentTheme.colors.primary} />
-                  ) : (
-                    <MaterialIcons name="chevron-right" size={24} color={currentTheme.colors.mediumEmphasis} />
-                  )}
                 </View>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  {
+                    backgroundColor: currentTheme.colors.card,
+                    opacity: isSyncing ? 0.6 : 1
+                  }
+                ]}
+                disabled={isSyncing}
+                onPress={async () => {
+                  const success = await performManualSync();
+                  openAlert(
+                    'Sync Complete',
+                    success ? 'Successfully synced your watch progress with Trakt.' : 'Sync failed. Please try again.'
+                  );
+                }}
+              >
+                {isSyncing ? (
+                  <UnifiedSpinner size="small" />
+                ) : (
+                  <Text style={[
+                    styles.buttonText,
+                    { color: currentTheme.colors.primary }
+                  ]}>
+                    Sync Now
+                  </Text>
+                )}
               </TouchableOpacity>
+
+              {/* Display Settings Section */}
+              <Text style={[
+                styles.sectionTitle,
+                { color: currentTheme.colors.highEmphasis, marginTop: 24 }
+              ]}>
+                Display Settings
+              </Text>
+
+              <View style={styles.settingItem}>
+                <View style={styles.settingContent}>
+                  <View style={styles.settingTextContainer}>
+                    <Text style={[
+                      styles.settingLabel,
+                      { color: currentTheme.colors.highEmphasis }
+                    ]}>
+                      Show Trakt Comments
+                    </Text>
+                    <Text style={[
+                      styles.settingDescription,
+                      { color: currentTheme.colors.mediumEmphasis }
+                    ]}>
+                      Display Trakt comments in metadata screens when available
+                    </Text>
+                  </View>
+                  <View style={styles.settingToggleContainer}>
+                    <Switch
+                      value={settings.showTraktComments}
+                      onValueChange={(value) => updateSetting('showTraktComments', value)}
+                      trackColor={{
+                        false: currentTheme.colors.border,
+                        true: currentTheme.colors.primary + '80'
+                      }}
+                      thumbColor={settings.showTraktComments ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+                    />
+                  </View>
+                </View>
+              </View>
+
+
             </View>
           </View>
         )}
       </ScrollView>
+      
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        actions={alertActions}
+      />
     </SafeAreaView>
   );
 };
@@ -643,98 +512,119 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.isTV ? 20 : 0,
-    paddingBottom: 16,
+    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 8,
   },
   backText: {
-    fontSize: 16,
+    fontSize: 17,
     marginLeft: 8,
-    fontWeight: '500',
   },
   headerActions: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  maintenanceBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FF9500',
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-  },
-  maintenanceBannerTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  maintenanceBannerTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  maintenanceBannerMessage: {
-    fontSize: 12,
-    color: '#FFF',
-    marginTop: 4,
+    fontSize: 34,
+    fontWeight: 'bold',
+    paddingHorizontal: 16,
+    marginBottom: 24,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingBottom: 32,
   },
   card: {
     borderRadius: 12,
-    padding: 16,
+    overflow: 'hidden',
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   loadingContainer: {
-    justifyContent: 'center',
+    padding: 40,
     alignItems: 'center',
-    minHeight: 200,
+    justifyContent: 'center',
+  },
+  signInContainer: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  traktLogo: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+  },
+  signInTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  signInDescription: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  button: {
+    width: '100%',
+    height: 44,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  signOutButton: {
+    marginTop: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'white',
   },
   profileContainer: {
-    alignItems: 'center',
+    padding: 20,
   },
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 16,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'center',
   },
   avatarText: {
-    color: '#FFF',
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: 'white',
   },
   profileInfo: {
+    marginLeft: 16,
     flex: 1,
   },
   profileName: {
@@ -744,114 +634,73 @@ const styles = StyleSheet.create({
   },
   profileUsername: {
     fontSize: 14,
-    marginBottom: 8,
   },
   vipBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: '#FFD700',
+    borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   vipText: {
-    marginLeft: 4,
-    color: '#FFD700',
-    fontWeight: '600',
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#000',
   },
   statsContainer: {
-    marginBottom: 16,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(150,150,150,0.2)',
   },
   joinedDate: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  signInContainer: {
-    alignItems: 'center',
-  },
-  traktLogo: {
-    marginBottom: 24,
-  },
-  signInTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  signInDescription: {
     fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  deviceCodeContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  deviceCodeLabel: {
-    fontSize: 14,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  deviceCode: {
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: 2,
-    marginBottom: 24,
-  },
-  button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  signOutButton: {
-    marginTop: 16,
-    width: '100%',
   },
   settingsSection: {
-    gap: 16,
+    padding: 20,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-  },
-  infoBox: {
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  infoText: {
-    fontSize: 12,
-    lineHeight: 18,
+    marginBottom: 16,
+    marginTop: 8,
   },
   settingItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
+    marginBottom: 16,
   },
   settingContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: 60,
   },
   settingTextContainer: {
     flex: 1,
+    marginRight: 16,
+  },
+  settingToggleContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   settingLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     marginBottom: 4,
   },
   settingDescription: {
-    fontSize: 12,
+    fontSize: 14,
   },
-  settingToggleContainer: {
-    marginLeft: 12,
+  infoBox: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
 
-export default TraktSettingsScreen;
+export default TraktSettingsScreen; 

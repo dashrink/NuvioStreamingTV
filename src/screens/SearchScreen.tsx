@@ -6,19 +6,13 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
-  useColorScheme,
-  SafeAreaView,
   StatusBar,
   Keyboard,
   Dimensions,
   ScrollView,
-  Animated as RNAnimated,
-  Pressable,
   Platform,
-  Easing,
 } from 'react-native';
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { catalogService, StreamingContent, GroupedSearchResults, AddonSearchResults } from '../services/catalogService';
@@ -28,25 +22,19 @@ import { DropUpMenu } from '../components/home/DropUpMenu';
 import { DeviceEventEmitter, Share } from 'react-native';
 import { mmkvStorage } from '../services/mmkvStorage';
 import Animated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   interpolate,
-  withSpring,
-  withDelay,
 } from 'react-native-reanimated';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { logger } from '../utils/logger';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { UnifiedSpinner } from '../components/loading';
 import ScreenHeader from '../components/common/ScreenHeader';
-import { EmptyState } from '../components/common';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 // Enhanced responsive breakpoints
 const BREAKPOINTS = {
@@ -72,151 +60,12 @@ const TAB_BAR_HEIGHT = 85;
 // Responsive poster sizes
 const HORIZONTAL_ITEM_WIDTH = isTV ? width * 0.14 : isLargeTablet ? width * 0.16 : isTablet ? width * 0.18 : width * 0.3;
 const HORIZONTAL_POSTER_HEIGHT = HORIZONTAL_ITEM_WIDTH * 1.5;
-const POSTER_WIDTH = isTV ? 90 : isLargeTablet ? 80 : isTablet ? 70 : 90;
-const POSTER_HEIGHT = POSTER_WIDTH * 1.5;
 const RECENT_SEARCHES_KEY = 'recent_searches';
 const MAX_RECENT_SEARCHES = 10;
 
 const PLACEHOLDER_POSTER = 'https://placehold.co/300x450/222222/CCCCCC?text=No+Poster';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
-const SkeletonLoader = () => {
-  const pulseAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { currentTheme } = useTheme();
-
-  React.useEffect(() => {
-    const pulse = RNAnimated.loop(
-      RNAnimated.sequence([
-        RNAnimated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        RNAnimated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const opacity = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-
-  const renderSkeletonItem = () => (
-    <View style={styles.skeletonVerticalItem}>
-      <RNAnimated.View style={[
-        styles.skeletonPoster,
-        { opacity, backgroundColor: currentTheme.colors.darkBackground }
-      ]} />
-      <View style={styles.skeletonItemDetails}>
-        <RNAnimated.View style={[
-          styles.skeletonTitle,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]} />
-        <View style={styles.skeletonMetaRow}>
-          <RNAnimated.View style={[
-            styles.skeletonMeta,
-            { opacity, backgroundColor: currentTheme.colors.darkBackground }
-          ]} />
-          <RNAnimated.View style={[
-            styles.skeletonMeta,
-            { opacity, backgroundColor: currentTheme.colors.darkBackground }
-          ]} />
-        </View>
-      </View>
-    </View>
-  );
-
-  return (
-    <View style={styles.skeletonContainer}>
-      {[...Array(5)].map((_, index) => (
-        <View key={index}>
-          {index === 0 && (
-            <RNAnimated.View style={[
-              styles.skeletonSectionHeader,
-              { opacity, backgroundColor: currentTheme.colors.darkBackground }
-            ]} />
-          )}
-          {renderSkeletonItem()}
-        </View>
-      ))}
-    </View>
-  );
-};
-
-const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
-
-// Create a simple, elegant animation component
-const SimpleSearchAnimation = () => {
-  // Simple animation values that work reliably
-  const spinAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const fadeAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { currentTheme } = useTheme();
-
-  React.useEffect(() => {
-    // Rotation animation
-    const spin = RNAnimated.loop(
-      RNAnimated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-
-    // Fade animation
-    const fade = RNAnimated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    });
-
-    // Start animations
-    spin.start();
-    fade.start();
-
-    // Clean up
-    return () => {
-      spin.stop();
-    };
-  }, [spinAnim, fadeAnim]);
-
-  // Simple rotation interpolation
-  const spin = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <RNAnimated.View
-      style={[
-        styles.simpleAnimationContainer,
-        { opacity: fadeAnim }
-      ]}
-    >
-      <View style={styles.simpleAnimationContent}>
-        <RNAnimated.View style={[
-          styles.spinnerContainer,
-          { transform: [{ rotate: spin }], backgroundColor: currentTheme.colors.primary }
-        ]}>
-          <MaterialIcons
-            name="search"
-            size={32}
-            color={currentTheme.colors.white}
-          />
-        </RNAnimated.View>
-        <Text style={[styles.simpleAnimationText, { color: currentTheme.colors.white }]}>Searching</Text>
-      </View>
-    </RNAnimated.View>
-  );
-};
 
 const SearchScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -956,23 +805,43 @@ const SearchScreen = () => {
       <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
         {searching ? (
           <View style={styles.loadingOverlay} pointerEvents="none">
-            <LoadingSpinner
+            <UnifiedSpinner
               size="large"
               offsetY={-60}
             />
           </View>
         ) : query.trim().length === 1 ? (
-          <EmptyState
-            icon={{ name: 'search', size: 64, library: 'MaterialIcons' }}
-            title="Keep typing..."
-            subtitle="Type at least 2 characters to search"
-          />
+          <View
+            style={styles.emptyContainer}
+          >
+            <MaterialIcons
+              name="search"
+              size={64}
+              color={currentTheme.colors.lightGray}
+            />
+            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+              Keep typing...
+            </Text>
+            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
+              Type at least 2 characters to search
+            </Text>
+          </View>
         ) : searched && !hasResultsToShow ? (
-          <EmptyState
-            icon={{ name: 'search-off', size: 64, library: 'MaterialIcons' }}
-            title="No results found"
-            subtitle="Try different keywords or check your spelling"
-          />
+          <View
+            style={styles.emptyContainer}
+          >
+            <MaterialIcons
+              name="search-off"
+              size={64}
+              color={currentTheme.colors.lightGray}
+            />
+            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+              No results found
+            </Text>
+            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray }]}>
+              Try different keywords or check your spelling
+            </Text>
+          </View>
         ) : (
           <ScrollView
             style={styles.scrollView}
@@ -1189,11 +1058,6 @@ const styles = StyleSheet.create({
   recentSearchDeleteButton: {
     padding: 4,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
@@ -1204,52 +1068,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 5,
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-  },
-  skeletonContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 12,
-    paddingTop: 16,
-    justifyContent: 'space-between',
-  },
-  skeletonVerticalItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  skeletonPoster: {
-    width: POSTER_WIDTH,
-    height: POSTER_HEIGHT,
-    borderRadius: 12,
-  },
-  skeletonItemDetails: {
+  emptyContainer: {
     flex: 1,
-    marginLeft: 16,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: isTablet ? 64 : 32,
+    paddingBottom: isTablet ? 120 : 100,
   },
-  skeletonMetaRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
-  },
-  skeletonTitle: {
-    height: 20,
-    width: '80%',
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
     marginBottom: 8,
-    borderRadius: 4,
   },
-  skeletonMeta: {
-    height: 14,
-    width: '30%',
-    borderRadius: 4,
-  },
-  skeletonSectionHeader: {
-    height: 24,
-    width: '40%',
-    marginBottom: 16,
-    borderRadius: 4,
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   ratingContainer: {
     position: 'absolute',
@@ -1266,34 +1101,6 @@ const styles = StyleSheet.create({
     fontSize: isTablet ? 9 : 10,
     fontWeight: '700',
     marginLeft: 2,
-  },
-  simpleAnimationContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  simpleAnimationContent: {
-    alignItems: 'center',
-  },
-  spinnerContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  simpleAnimationText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   watchedIndicator: {
     position: 'absolute',

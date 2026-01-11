@@ -4,14 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
-  SafeAreaView,
   StatusBar,
   useColorScheme,
   Dimensions,
   useWindowDimensions,
   ImageBackground,
-  ScrollView,
   Platform,
   Image,
   Modal,
@@ -52,7 +49,7 @@ import FeaturedContent from '../components/home/FeaturedContent';
 import HeroCarousel from '../components/home/HeroCarousel';
 import AppleTVHero from '../components/home/AppleTVHero';
 import CatalogSection from '../components/home/CatalogSection';
-import { SkeletonFeatured } from '../components/home/SkeletonLoaders';
+import { CatalogRowSkeleton } from '../components/loading';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common';
 import homeStyles, { sharedStyles } from '../styles/homeStyles';
@@ -101,17 +98,6 @@ const SAMPLE_CATEGORIES: Category[] = [
   { id: 'series', name: 'Series' },
   { id: 'channel', name: 'Channels' },
 ];
-
-const SkeletonCatalog = React.memo(() => {
-  const { currentTheme } = useTheme();
-  return (
-    <View style={styles.catalogContainer}>
-      <View style={styles.loadingPlaceholder}>
-        <LoadingSpinner size="small" text="" />
-      </View>
-    </View>
-  );
-});
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -792,25 +778,11 @@ const HomeScreen = () => {
         return <CatalogSection catalog={item.catalog} />;
       case 'placeholder':
         return (
-          <Animated.View>
-            <View style={styles.catalogPlaceholder}>
-              <View style={styles.placeholderHeader}>
-                <View style={[styles.placeholderTitle, { backgroundColor: currentTheme.colors.elevation1 }]} />
-                <LoadingSpinner size="small" text="" />
-              </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.placeholderPosters}>
-                {[...Array(3)].map((_, posterIndex) => (
-                  <View
-                    key={posterIndex}
-                    style={[styles.placeholderPoster, { backgroundColor: currentTheme.colors.elevation1 }]}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          </Animated.View>
+          <CatalogRowSkeleton
+            posterCount={4}
+            showTitle={true}
+            testID="catalog-placeholder-skeleton"
+          />
         );
       case 'loadMore':
         return (
@@ -833,7 +805,7 @@ const HomeScreen = () => {
       default:
         return null;
     }
-  }, [memoizedThisWeekSection, currentTheme.colors.elevation1, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
+  }, [memoizedThisWeekSection, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
 
   // FlashList: using minimal props per installed version
 
@@ -1019,32 +991,6 @@ const styles = StyleSheet.create<any>({
   loadingMoreText: {
     marginLeft: 12,
     fontSize: 14,
-  },
-  catalogPlaceholder: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  placeholderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  placeholderTitle: {
-    width: 150,
-    height: 20,
-    borderRadius: 4,
-  },
-  placeholderPosters: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    gap: 8,
-  },
-  placeholderPoster: {
-    width: POSTER_WIDTH,
-    aspectRatio: 2 / 3,
-    borderRadius: 12,
-    marginRight: 2,
   },
   emptyCatalog: {
     padding: 32,

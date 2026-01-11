@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Dimensions,
   Platform,
 } from 'react-native';
+import { UnifiedSpinner } from '../loading';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import FastImage from '@d11/react-native-fast-image';
@@ -332,14 +332,7 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
               justifyContent: 'center',
               paddingVertical: 40,
             }}>
-              <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-              <Text style={{
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: 14,
-                marginTop: 12,
-              }}>
-                Loading details...
-              </Text>
+              <UnifiedSpinner size="large" text="Loading details..." />
             </View>
           ) : (
             <View>

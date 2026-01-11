@@ -12,10 +12,9 @@ import {
   Linking,
   RefreshControl,
   FlatList,
-  ActivityIndicator,
   Alert
 } from 'react-native';
-import Focusable from '../components/common/Focusable';
+import { UnifiedSpinner } from '../components/loading';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -25,7 +24,6 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchContributors, GitHubContributor } from '../services/githubReleaseService';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -89,18 +87,18 @@ interface ContributorCardProps {
 
 const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentTheme, isTablet, isLargeTablet }) => {
   const handlePress = useCallback(() => {
-    triggerLight();
     Linking.openURL(contributor.html_url);
   }, [contributor.html_url]);
 
   return (
-    <Focusable
+    <TouchableOpacity
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
         isTablet && styles.tabletContributorCard
       ]}
       onPress={handlePress}
+      activeOpacity={0.7}
     >
       <FastImage
         source={{ uri: contributor.avatar_url }}
@@ -132,7 +130,7 @@ const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentT
         color={currentTheme.colors.mediumEmphasis}
         style={styles.externalIcon}
       />
-    </Focusable>
+    </TouchableOpacity>
   );
 };
 
@@ -146,7 +144,6 @@ interface SpecialMentionCardProps {
 
 const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, currentTheme, isTablet, isLargeTablet }) => {
   const handlePress = useCallback(() => {
-    triggerLight();
     // Try to open Discord profile
     const discordUrl = `discord://-/users/${mention.discordId}`;
     Linking.canOpenURL(discordUrl).then((supported) => {
@@ -167,13 +164,14 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
   const defaultAvatar = `https://cdn.discordapp.com/embed/avatars/0.png`;
 
   return (
-    <Focusable
+    <TouchableOpacity
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
         isTablet && styles.tabletContributorCard
       ]}
       onPress={handlePress}
+      activeOpacity={0.7}
     >
       {/* Avatar with Discord badge */}
       <View style={styles.specialAvatarContainer}>
@@ -183,7 +181,7 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
             isTablet && styles.tabletAvatar,
             { backgroundColor: currentTheme.colors.elevation2, justifyContent: 'center', alignItems: 'center' }
           ]}>
-            <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+            <UnifiedSpinner size="small" />
           </View>
         ) : (
           <FastImage
@@ -232,7 +230,7 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
         color={currentTheme.colors.mediumEmphasis}
         style={styles.externalIcon}
       />
-    </Focusable>
+    </TouchableOpacity>
   );
 };
 
@@ -424,16 +422,13 @@ const ContributorsScreen: React.FC = () => {
         <StatusBar barStyle={'light-content'} />
         <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
           <View style={styles.header}>
-            <Focusable
+            <TouchableOpacity
               style={styles.backButton}
-              onPress={() => {
-                triggerLight();
-                navigation.goBack();
-              }}
+              onPress={() => navigation.goBack()}
             >
               <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
               <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-            </Focusable>
+            </TouchableOpacity>
           </View>
           <Text style={[
             styles.headerTitle,
@@ -444,10 +439,7 @@ const ContributorsScreen: React.FC = () => {
           </Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: currentTheme.colors.mediumEmphasis }]}>
-            Loading contributors...
-          </Text>
+          <UnifiedSpinner size="large" text="Loading contributors..." />
         </View>
       </View>
     );
@@ -459,18 +451,16 @@ const ContributorsScreen: React.FC = () => {
       { backgroundColor: currentTheme.colors.darkBackground }
     ]}>
       <StatusBar barStyle={'light-content'} />
+
       <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
         <View style={styles.header}>
-          <Focusable
+          <TouchableOpacity
             style={styles.backButton}
-            onPress={() => {
-              triggerLight();
-              navigation.goBack();
-            }}
+            onPress={() => navigation.goBack()}
           >
             <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
-          </Focusable>
+          </TouchableOpacity>
         </View>
         <Text style={[
           styles.headerTitle,
@@ -481,130 +471,179 @@ const ContributorsScreen: React.FC = () => {
         </Text>
       </View>
 
-      {/* Tab Buttons */}
+      {/* Tab Switcher */}
       <View style={[
-        styles.tabContainer,
-        { borderBottomColor: currentTheme.colors.elevation2 }
+        styles.tabSwitcher,
+        { backgroundColor: currentTheme.colors.elevation1 },
+        isTablet && styles.tabletTabSwitcher
       ]}>
-        <Focusable
+        <TouchableOpacity
           style={[
-            styles.tabButton,
-            activeTab === 'contributors' && [
-              styles.tabButtonActive,
-              { borderBottomColor: currentTheme.colors.primary }
-            ]
+            styles.tab,
+            activeTab === 'contributors' && { backgroundColor: currentTheme.colors.primary },
+            isTablet && styles.tabletTab
           ]}
           onPress={() => setActiveTab('contributors')}
+          activeOpacity={0.7}
         >
           <Text style={[
             styles.tabText,
-            { color: activeTab === 'contributors' ? currentTheme.colors.primary : currentTheme.colors.mediumEmphasis }
+            { color: activeTab === 'contributors' ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis },
+            isTablet && styles.tabletTabText
           ]}>
-            Contributors ({contributors.length})
+            Contributors
           </Text>
-        </Focusable>
-
-        <Focusable
+        </TouchableOpacity>
+        <TouchableOpacity
           style={[
-            styles.tabButton,
-            activeTab === 'special' && [
-              styles.tabButtonActive,
-              { borderBottomColor: currentTheme.colors.primary }
-            ]
+            styles.tab,
+            activeTab === 'special' && { backgroundColor: currentTheme.colors.primary },
+            isTablet && styles.tabletTab
           ]}
           onPress={() => setActiveTab('special')}
+          activeOpacity={0.7}
         >
           <Text style={[
             styles.tabText,
-            { color: activeTab === 'special' ? currentTheme.colors.primary : currentTheme.colors.mediumEmphasis }
+            { color: activeTab === 'special' ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis },
+            isTablet && styles.tabletTabText
           ]}>
-            Special Mentions ({specialMentions.length})
+            Special Mentions
           </Text>
-        </Focusable>
+        </TouchableOpacity>
       </View>
 
-      {/* Contributors List */}
-      {activeTab === 'contributors' && (
-        <>
-          {error && (
-            <View style={[
-              styles.errorContainer,
-              { backgroundColor: currentTheme.colors.elevation2 }
-            ]}>
-              <Feather
-                name="alert-circle"
-                size={20}
-                color={currentTheme.colors.error}
-                style={{ marginRight: 12 }}
-              />
-              <Text style={[
-                styles.errorText,
-                { color: currentTheme.colors.error }
-              ]}>
-                {error}
-              </Text>
-            </View>
-          )}
-          <FlatList
-            data={contributors}
-            renderItem={renderContributor}
-            keyExtractor={keyExtractor}
-            contentContainerStyle={styles.listContent}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                colors={[currentTheme.colors.primary]}
-                tintColor={currentTheme.colors.primary}
-              />
-            }
-            ListEmptyComponent={
-              !error ? (
+      <View style={styles.content}>
+        <View style={[styles.contentContainer, isTablet && styles.tabletContentContainer]}>
+          {activeTab === 'contributors' ? (
+            // Contributors Tab
+            <>
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Feather name="alert-circle" size={48} color={currentTheme.colors.mediumEmphasis} />
+                  <Text style={[styles.errorText, { color: currentTheme.colors.mediumEmphasis }]}>
+                    {error}
+                  </Text>
+                  <Text style={[styles.errorSubtext, { color: currentTheme.colors.mediumEmphasis }]}>
+                    GitHub API rate limit exceeded. Please try again later or pull to refresh.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
+                    onPress={() => loadContributors()}
+                  >
+                    <Text style={[styles.retryText, { color: currentTheme.colors.white }]}>
+                      Try Again
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : contributors.length === 0 ? (
                 <View style={styles.emptyContainer}>
+                  <Feather name="users" size={48} color={currentTheme.colors.mediumEmphasis} />
                   <Text style={[styles.emptyText, { color: currentTheme.colors.mediumEmphasis }]}>
                     No contributors found
                   </Text>
                 </View>
-              ) : null
-            }
-          />
-        </>
-      )}
+              ) : (
+                <ScrollView
+                  style={styles.scrollView}
+                  contentContainerStyle={[
+                    styles.listContent,
+                    isTablet && styles.tabletListContent
+                  ]}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                      tintColor={currentTheme.colors.primary}
+                      colors={[currentTheme.colors.primary]}
+                    />
+                  }
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={[
+                    styles.gratitudeCard,
+                    { backgroundColor: currentTheme.colors.elevation1 },
+                    isTablet && styles.tabletGratitudeCard
+                  ]}>
+                    <View style={styles.gratitudeContent}>
+                      <Feather name="heart" size={isTablet ? 32 : 24} color={currentTheme.colors.primary} />
+                      <Text style={[
+                        styles.gratitudeText,
+                        { color: currentTheme.colors.highEmphasis },
+                        isTablet && styles.tabletGratitudeText
+                      ]}>
+                        We're grateful for every contribution
+                      </Text>
+                      <Text style={[
+                        styles.gratitudeSubtext,
+                        { color: currentTheme.colors.mediumEmphasis },
+                        isTablet && styles.tabletGratitudeSubtext
+                      ]}>
+                        Each line of code, bug report, and suggestion helps make Nuvio better for everyone
+                      </Text>
+                    </View>
+                  </View>
 
-      {/* Special Mentions List */}
-      {activeTab === 'special' && (
-        <>
-          {specialMentionsLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-              <Text style={[styles.loadingText, { color: currentTheme.colors.mediumEmphasis }]}>
-                Loading special mentions...
-              </Text>
-            </View>
+                  <FlatList
+                    data={contributors}
+                    renderItem={renderContributor}
+                    keyExtractor={keyExtractor}
+                    numColumns={isTablet ? 2 : 1}
+                    key={isTablet ? 'tablet' : 'mobile'}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                    columnWrapperStyle={isTablet ? styles.tabletRow : undefined}
+                  />
+                </ScrollView>
+              )}
+            </>
           ) : (
-            <FlatList
-              data={specialMentions}
-              renderItem={({ item }) => (
+            // Special Mentions Tab
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={[
+                styles.listContent,
+                isTablet && styles.tabletListContent
+              ]}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={[
+                styles.gratitudeCard,
+                { backgroundColor: currentTheme.colors.elevation1 },
+                isTablet && styles.tabletGratitudeCard
+              ]}>
+                <View style={styles.gratitudeContent}>
+                  <FontAwesome5 name="star" size={isTablet ? 32 : 24} color={currentTheme.colors.primary} solid />
+                  <Text style={[
+                    styles.gratitudeText,
+                    { color: currentTheme.colors.highEmphasis },
+                    isTablet && styles.tabletGratitudeText
+                  ]}>
+                    Special Thanks
+                  </Text>
+                  <Text style={[
+                    styles.gratitudeSubtext,
+                    { color: currentTheme.colors.mediumEmphasis },
+                    isTablet && styles.tabletGratitudeSubtext
+                  ]}>
+                    These amazing people help keep the Nuvio community running and the servers online
+                  </Text>
+                </View>
+              </View>
+
+              {specialMentions.map((mention: SpecialMention) => (
                 <SpecialMentionCard
-                  mention={item}
+                  key={mention.discordId}
+                  mention={mention}
                   currentTheme={currentTheme}
                   isTablet={isTablet}
                   isLargeTablet={isLargeTablet}
                 />
-              )}
-              keyExtractor={(item) => item.discordId}
-              contentContainerStyle={styles.listContent}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Text style={[styles.emptyText, { color: currentTheme.colors.mediumEmphasis }]}>
-                    No special mentions configured
-                  </Text>
-                </View>
-              }
-            />
+              ))}
+            </ScrollView>
           )}
-        </>
-      )}
+        </View>
+      </View>
     </View>
   );
 };
@@ -614,77 +653,188 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    zIndex: 2,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingRight: 12,
   },
   backText: {
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontWeight: '500',
+    marginLeft: 4,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    paddingLeft: 4,
   },
   tabletHeaderTitle: {
-    fontSize: 32,
+    fontSize: 40,
+    letterSpacing: 0.5,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    paddingHorizontal: 16,
+  content: {
+    flex: 1,
+    zIndex: 1,
+    alignItems: 'center',
   },
-  tabButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    marginRight: 24,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+  contentContainer: {
+    flex: 1,
+    width: '100%',
   },
-  tabButtonActive: {},
-  tabText: {
+  tabletContentContainer: {
+    maxWidth: 1000,
+    width: '100%',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  gratitudeCard: {
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tabletGratitudeCard: {
+    padding: 32,
+    marginBottom: 32,
+    borderRadius: 24,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  gratitudeContent: {
+    alignItems: 'center',
+  },
+  gratitudeText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  tabletGratitudeText: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  gratitudeSubtext: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.8,
+    textAlign: 'center',
+  },
+  tabletGratitudeSubtext: {
+    fontSize: 17,
+    lineHeight: 26,
+    maxWidth: 600,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.7,
+    marginBottom: 24,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
     fontSize: 16,
     fontWeight: '600',
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+  },
   listContent: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 20,
+  },
+  tabletListContent: {
+    paddingHorizontal: 32,
+    paddingBottom: 40,
+  },
+  tabletRow: {
+    justifyContent: 'space-between',
   },
   contributorCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 12,
+    padding: 16,
     marginBottom: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabletContributorCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    padding: 20,
     marginBottom: 16,
+    marginHorizontal: 6,
+    borderRadius: 20,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    width: '48%',
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
   },
   tabletAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 20,
   },
   contributorInfo: {
     flex: 1,
@@ -696,78 +846,81 @@ const styles = StyleSheet.create({
   },
   tabletUsername: {
     fontSize: 18,
+    fontWeight: '700',
   },
   contributions: {
-    fontSize: 13,
-    marginBottom: 4,
+    fontSize: 14,
+    opacity: 0.8,
   },
   tabletContributions: {
-    fontSize: 14,
+    fontSize: 16,
   },
   externalIcon: {
-    marginLeft: 12,
+    marginLeft: 8,
   },
-  // Special mention styles
+  // Special Mentions - Compact styles for horizontal layout
   specialAvatarContainer: {
     position: 'relative',
-    marginRight: 12,
+    marginRight: 16,
   },
   discordBadgeSmall: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: -2,
+    right: -2,
     width: 20,
     height: 20,
     borderRadius: 10,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: '#1a1a1a',
   },
   roleBadgeSmall: {
-    marginTop: 6,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginTop: 4,
     alignSelf: 'flex-start',
   },
   roleBadgeText: {
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  // Tab Switcher Styles
+  tabSwitcher: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 4,
+    borderRadius: 12,
+  },
+  tabletTabSwitcher: {
+    marginHorizontal: 32,
+    marginBottom: 24,
+    padding: 6,
+    borderRadius: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabletTab: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  tabText: {
+    fontSize: 14,
     fontWeight: '600',
   },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginVertical: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
+  tabletTabText: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
 

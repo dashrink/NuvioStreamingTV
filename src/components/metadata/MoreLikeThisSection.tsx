@@ -5,10 +5,10 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Dimensions,
   Platform,
 } from 'react-native';
+import { UnifiedSpinner } from '../loading';
 import FastImage from '@d11/react-native-fast-image';
 import { useNavigation, StackActions } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
@@ -140,7 +140,7 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
   if (loadingRecommendations) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+        <UnifiedSpinner size="small" />
       </View>
     );
   }

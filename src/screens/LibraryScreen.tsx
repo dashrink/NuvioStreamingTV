@@ -14,8 +14,6 @@ import {
   useWindowDimensions,
   SafeAreaView,
   StatusBar,
-  Animated as RNAnimated,
-  ActivityIndicator,
   Platform,
   ScrollView,
   BackHandler,
@@ -37,7 +35,7 @@ import { useTraktContext } from '../contexts/TraktContext';
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
-import { EmptyState } from '../components/common';
+import { UnifiedSpinner, PosterGridSkeleton } from '../components/loading';
 import { useSettings } from '../hooks/useSettings';
 
 interface LibraryItem extends StreamingContent {
@@ -137,7 +135,7 @@ const TraktItem = React.memo(({
             />
           ) : (
             <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center' }]}>
-              <ActivityIndicator color={currentTheme.colors.primary} />
+              <UnifiedSpinner size="small" />
             </View>
           )}
         </View>
@@ -151,61 +149,22 @@ const TraktItem = React.memo(({
   );
 });
 
-const SkeletonLoader = () => {
-  const pulseAnim = React.useRef(new RNAnimated.Value(0)).current;
-  const { width, height } = useWindowDimensions();
-  const { numColumns, itemWidth } = getGridLayout(width);
-  const { currentTheme } = useTheme();
+/**
+ * LibrarySkeletonLoader - Uses unified PosterGridSkeleton for consistent loading UI
+ * Displays a grid of poster placeholders while library content loads
+ */
+const LibrarySkeletonLoader = () => {
+  const { width } = useWindowDimensions();
+  const { numColumns } = getGridLayout(width);
 
-  React.useEffect(() => {
-    const pulse = RNAnimated.loop(
-      RNAnimated.sequence([
-        RNAnimated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        RNAnimated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
-
-  const opacity = pulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-
-  const renderSkeletonItem = () => (
-    <View style={[styles.itemContainer, { width: itemWidth }]}>
-      <RNAnimated.View
-        style={[
-          styles.posterContainer,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]}
-      />
-      <RNAnimated.View
-        style={[
-          styles.skeletonTitle,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
-        ]}
-      />
-    </View>
-  );
-
-  const skeletonCount = numColumns * 2;
   return (
     <View style={styles.skeletonContainer}>
-      {Array.from({ length: skeletonCount }).map((_, index) => (
-        <View key={index} style={{ width: itemWidth, marginBottom: 16 }}>
-          {renderSkeletonItem()}
-        </View>
-      ))}
+      <PosterGridSkeleton
+        columns={numColumns}
+        rows={2}
+        gap={12}
+        testID="library-skeleton"
+      />
     </View>
   );
 };
@@ -710,15 +669,25 @@ const LibraryScreen = () => {
     if (!selectedTraktFolder) {
       if (traktFolders.length === 0) {
         return (
-          <EmptyState
-            icon={{ name: 'folder-off-outline', size: 64, library: 'MaterialCommunityIcons' }}
-            title="No Trakt collections"
-            subtitle="Your Trakt collections will appear here once you start using Trakt"
-            primaryAction={{
-              label: 'Load Collections',
-              onPress: () => loadAllCollections()
-            }}
-          />
+          <View style={styles.emptyContainer}>
+            <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
+            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No Trakt collections</Text>
+            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
+              Your Trakt collections will appear here once you start using Trakt
+            </Text>
+            <TouchableOpacity
+              style={[styles.exploreButton, {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black
+              }]}
+              onPress={() => {
+                loadAllCollections();
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
+            </TouchableOpacity>
+          </View>
         );
       }
 
@@ -741,15 +710,25 @@ const LibraryScreen = () => {
     if (folderItems.length === 0) {
       const folderName = traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection';
       return (
-        <EmptyState
-          icon={{ name: 'folder-open-outline', size: 64, library: 'MaterialCommunityIcons' }}
-          title={`No content in ${folderName}`}
-          subtitle="This collection is empty"
-          primaryAction={{
-            label: 'Refresh',
-            onPress: () => loadAllCollections()
-          }}
-        />
+        <View style={styles.emptyContainer}>
+          <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
+          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No content in {folderName}</Text>
+          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
+            This collection is empty
+          </Text>
+          <TouchableOpacity
+            style={[styles.exploreButton, {
+              backgroundColor: currentTheme.colors.primary,
+              shadowColor: currentTheme.colors.black
+            }]}
+            onPress={() => {
+              loadAllCollections();
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
@@ -820,21 +799,36 @@ const LibraryScreen = () => {
 
   const renderContent = () => {
     if (loading) {
-      return <SkeletonLoader />;
+      return <LibrarySkeletonLoader />;
     }
 
     if (filteredItems.length === 0) {
       const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
+      const emptySubtitle = 'Add some content to your library to see it here';
       return (
-        <EmptyState
-          icon={{ name: 'video-library', size: 64, library: 'MaterialIcons' }}
-          title={emptyTitle}
-          subtitle="Add some content to your library to see it here"
-          primaryAction={{
-            label: 'Find something to watch',
-            onPress: () => navigation.navigate('Search')
-          }}
-        />
+        <View style={styles.emptyContainer}>
+          <MaterialIcons
+            name="video-library"
+            size={64}
+            color={currentTheme.colors.lightGray}
+          />
+          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+            {emptyTitle}
+          </Text>
+          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
+            {emptySubtitle}
+          </Text>
+          <TouchableOpacity
+            style={[styles.exploreButton, {
+              backgroundColor: currentTheme.colors.primary,
+              shadowColor: currentTheme.colors.black
+            }]}
+            onPress={() => navigation.navigate('Search')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
@@ -1088,10 +1082,36 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  skeletonTitle: {
-    height: 14,
-    marginTop: 8,
-    borderRadius: 4,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 90,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  exploreButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  exploreButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   playsCount: {
     fontSize: 11,

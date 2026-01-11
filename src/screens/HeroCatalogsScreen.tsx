@@ -10,7 +10,6 @@ import {
   StatusBar,
   Platform,
   useColorScheme,
-  ActivityIndicator,
   Animated
 } from 'react-native';
 import CustomAlert from '../components/CustomAlert';
@@ -19,6 +18,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { colors } from '../styles/colors';
+import { UnifiedSpinner } from '../components/loading';
 import { catalogService, StreamingAddon } from '../services/catalogService';
 import { useCustomCatalogNames } from '../hooks/useCustomCatalogNames';
 
@@ -206,10 +206,7 @@ const HeroCatalogsScreen: React.FC = () => {
 
       {loading || isLoadingCustomNames ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>
-            Loading catalogs...
-          </Text>
+          <UnifiedSpinner size="large" text="Loading catalogs..." />
         </View>
       ) : (
         <>
@@ -325,10 +322,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
   },
   scrollView: {
     flex: 1,
