@@ -200,7 +200,9 @@
               "Opens profile switcher bottom sheet"
             ]
           },
-          "status": "pending"
+          "status": "completed",
+          "notes": "Added profile switcher option to settings menu. Added ProfileSwitcherBottomSheet import, showProfileSwitcher state, and activeProfile/profiles from ProfileContext. Created 'Profiles' SettingItem in account section showing active profile name or profile count. Integrated ProfileSwitcherBottomSheet component in both tablet and mobile layouts with onClose and onProfileSwitch handlers. Committed in 4d389831.",
+          "updated_at": "2026-01-11T16:06:00.000000+00:00"
         }
       ]
     },
@@ -510,6 +512,6 @@
   "last_updated": "2026-01-11T14:57:51.340614+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-11T15:05:52.492Z",
+  "updated_at": "2026-01-11T15:12:37.177Z",
   "recoveryNote": "Task recovered from stuck state at 2026-01-11T15:05:44.043Z"
 }

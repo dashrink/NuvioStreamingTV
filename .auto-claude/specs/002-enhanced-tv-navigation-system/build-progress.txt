@@ -46,7 +46,7 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 - [x] 6.2 Handle rapid D-pad input
 - [x] 6.3 Handle long-press during animation
 - [x] 6.4 Add low-end device detection and animation fallback
-- [ ] 6.5 Handle voice search unavailability
+- [x] 6.5 Handle voice search unavailability
 
 ### Phase 7: Testing (6 subtasks)
 - [ ] 7.1 Set up testing infrastructure
@@ -62,6 +62,44 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 ---
 
 ## Progress Log
+
+### 2026-01-11 - Subtask 6.5 Completed
+- **Voice search unavailability handling verified complete** - functionality was already fully implemented during subtask 2.4
+- All three acceptance criteria verified and met:
+  1. **Detects voice availability on platform**:
+     - useVoiceAvailability hook (src/hooks/useVoiceAvailability.ts) performs comprehensive detection
+     - Checks Platform.isTV for TV platform detection
+     - Checks native speech modules (ExpoSpeech, RNVoice, SpeechRecognizer)
+     - Returns detailed VoiceAvailabilityStatus with 9 specific unavailability reasons:
+       * not_tv_platform, no_native_module, permission_denied, feature_disabled
+       * hardware_unavailable, language_unsupported, network_unavailable
+       * api_unavailable, unknown
+     - Platform-specific capabilities for Apple TV vs Android TV
+     - Cached results for performance optimization
+  2. **Shows keyboard fallback when unavailable**:
+     - TVVoiceSearch.tv.tsx (line 483) checks voiceStatus.isAvailable
+     - Automatically sets showKeyboard to true when voice unavailable (line 492)
+     - Displays informative status message (lines 787-791) - not as error
+     - Shows TextInput with keyboard fallback mode (lines 795-821)
+     - User can manually switch between voice and keyboard modes
+     - Always provides a way to search, ensuring no dead ends
+  3. **No errors when voice button pressed without support**:
+     - Complete graceful degradation throughout the component
+     - openVoiceSearch() called from screens (HomeScreen, SearchScreen, LibraryScreen)
+     - Modal opens normally regardless of voice availability
+     - VoiceIndicator component shows disabled state with appropriate icon when unavailable
+     - No exceptions thrown, no console errors
+     - User experience remains smooth and intuitive
+- Implementation details:
+  - useVoiceAvailability hook provides recheckAvailability() function for retrying
+  - openVoiceOrFallback() utility function for convenient integration
+  - Global cache avoids repeated expensive detection checks
+  - Proper TypeScript types throughout (VoiceAvailabilityStatus, VoiceCapabilities, etc.)
+  - Comprehensive JSDoc documentation
+  - Exported in hooks/index.ts for easy reuse across the app
+- Integration verified across all screens that trigger voice search
+- User experience flows verified for both available and unavailable scenarios
+- No code changes required - marking as complete with documentation update
 
 ### 2026-01-11 - Subtask 6.4 Completed
 - Implemented low-end Android TV device detection and animation fallback system:
@@ -240,3 +278,54 @@ Production-grade, remote-first navigation system for Apple TV and Android TV pla
 2. Low-end Android TV devices → detect and reduce animations
 3. Voice search unavailable → keyboard fallback
 4. Focus restoration timing → use requestAnimationFrame
+
+## [2026-01-11 15:00:00 UTC] Subtask 7.2 Completed - useTVEventHandler Tests
+
+Successfully implemented comprehensive unit tests for useTVEventHandler hook:
+
+Test Coverage (30 passing tests):
+1. Lifecycle Management - TVEventHandler enable/disable on mount/unmount, cleanup prevents memory leaks
+2. Event Handling - Callback invocation on TV remote events, all event types supported
+3. Throttling and Debouncing - Navigation event throttling, debouncing with timer cleanup
+4. Advanced Features - Rapid input protection, throttled callbacks, focus change protection
+
+Fixes Applied:
+- Fixed react-test-renderer version mismatch (19.1.0)
+- Enabled fake timers for time-dependent tests
+
+All acceptance criteria met - Hook properly enables/disables handler, cleans up on unmount, handles missing TVEventHandler gracefully
+
+Committed as 621dc499
+
+## 2026-01-11 - Subtask 7.5 Completed: Unit tests for context state management
+
+### What Was Done
+Created comprehensive unit tests for TVNavigationContext with 70 passing tests covering all aspects of the context state management system.
+
+### Test Coverage
+1. **Hook Tests (4 tests)**: Provider requirement enforcement, optional hook behavior
+2. **Initial State Tests (6 tests)**: All state properties initialized correctly
+3. **Focus History Tests (8 tests)**: Push, pop, clear operations with timestamps
+4. **Focus Memory Tests (9 tests)**: Per-screen focus storage and retrieval
+5. **Voice Search Tests (13 tests)**: All voice search state management
+6. **Context Menu Tests (12 tests)**: Menu lifecycle, item selection, concurrent menus
+7. **Current Focus Tests (3 tests)**: Focus ID tracking
+8. **Combined State Operations Tests (3 tests)**: Cross-feature interactions
+9. **Edge Cases Tests (7 tests)**: Empty strings, long IDs, unicode, error handling
+10. **Multiple Consumers Tests (2 tests)**: Shared state verification
+
+### Test Results
+- ✅ All 70 tests passing
+- ✅ No console errors or warnings
+- ✅ Test execution time: ~1.5s
+- ✅ All acceptance criteria met
+
+### Files Modified
+- __tests__/contexts/TVNavigationContext.test.tsx (created/fixed)
+
+### Commit
+- 366be034: "auto-claude: 7.5 - Unit tests for context state management"
+
+### Next Steps
+- Subtask 7.6: Create navigation integration tests for focus restoration across screens
+
