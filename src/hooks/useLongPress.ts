@@ -5,6 +5,11 @@
  * - Apple TV: Timer-based detection (300ms threshold) since no native longSelect event
  * - Android TV: Uses native longSelect event from TVEventHandler
  *
+ * Features:
+ * - Animation-aware queuing: Long-press actions started during focus animations
+ *   are queued and executed after the animation completes
+ * - Duplicate prevention: Ensures queued actions are only executed once
+ *
  * @example
  * ```tsx
  * import { useLongPress } from '@/hooks/useLongPress';
@@ -28,7 +33,7 @@
  * ```
  */
 
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react';
 import { Platform } from 'react-native';
 import {
   useTVEventHandler,
@@ -39,6 +44,22 @@ import {
 // =============================================================================
 // Types & Interfaces
 // =============================================================================
+
+/**
+ * Configuration for animation-aware long-press queuing
+ */
+export interface AnimationAwareConfig {
+  /** Whether animation-aware queuing is enabled (default: true) */
+  enabled?: boolean;
+  /** Function that returns true if focus animation is currently in progress */
+  isAnimating?: () => boolean;
+  /** Maximum time to wait for animation to complete before executing action (default: 500ms) */
+  maxQueueWaitMs?: number;
+  /** Callback when action is queued due to animation */
+  onActionQueued?: () => void;
+  /** Callback when queued action is executed after animation completes */
+  onQueuedActionExecuted?: () => void;
+}
 
 /**
  * Configuration options for useLongPress hook
@@ -56,6 +77,8 @@ export interface UseLongPressOptions {
   onPressStart?: () => void;
   /** Callback when press ends (optional) */
   onPressEnd?: () => void;
+  /** Animation-aware queuing configuration */
+  animationAware?: AnimationAwareConfig;
 }
 
 /**
@@ -73,6 +96,12 @@ export interface UseLongPressReturn {
   isLongPressed: boolean;
   /** Reset the long press state manually */
   reset: () => void;
+  /** Whether a long-press action is currently queued (waiting for animation) */
+  isActionQueued: boolean;
+  /** Notify that animation has completed (executes queued action if any) */
+  notifyAnimationComplete: () => void;
+  /** Cancel any queued action */
+  cancelQueuedAction: () => void;
 }
 
 /**
@@ -97,6 +126,12 @@ export interface UseLongPressWithTVEventsReturn {
   isFocused: boolean;
   /** Set the focused state (call from onFocus/onBlur) */
   setFocused: (focused: boolean) => void;
+  /** Whether a long-press action is currently queued (waiting for animation) */
+  isActionQueued: boolean;
+  /** Notify that animation has completed (executes queued action if any) */
+  notifyAnimationComplete: () => void;
+  /** Cancel any queued action */
+  cancelQueuedAction: () => void;
 }
 
 // =============================================================================
@@ -105,6 +140,12 @@ export interface UseLongPressWithTVEventsReturn {
 
 /** Default long press threshold in milliseconds */
 export const LONG_PRESS_THRESHOLD_MS = 300;
+
+/** Default maximum time to wait for animation to complete before executing queued action */
+export const DEFAULT_ANIMATION_QUEUE_WAIT_MS = 500;
+
+/** Enum for queued action types */
+type QueuedActionType = 'longPress' | 'shortPress' | null;
 
 /**
  * Detect if running on Apple TV specifically
@@ -129,6 +170,13 @@ const isAndroidTV = Platform.OS === 'android' && Platform.isTV;
  * This is a general-purpose hook that works with touch/press events.
  * For TV-specific usage with TVEventHandler, use useLongPressWithTVEvents instead.
  *
+ * Features:
+ * - Animation-aware queuing: If animationAware.isAnimating returns true when
+ *   long-press is triggered, the action is queued and executed when
+ *   notifyAnimationComplete() is called
+ * - Duplicate prevention: Queued actions are marked as executed to prevent
+ *   double-triggering
+ *
  * @param options - Configuration options
  * @returns Object with handlers, state, and reset function
  */
@@ -140,16 +188,32 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
     enabled = true,
     onPressStart,
     onPressEnd,
+    animationAware,
   } = options;
+
+  // Animation-aware config with defaults
+  const animationConfig = useMemo(() => ({
+    enabled: animationAware?.enabled ?? true,
+    isAnimating: animationAware?.isAnimating ?? (() => false),
+    maxQueueWaitMs: animationAware?.maxQueueWaitMs ?? DEFAULT_ANIMATION_QUEUE_WAIT_MS,
+    onActionQueued: animationAware?.onActionQueued,
+    onQueuedActionExecuted: animationAware?.onQueuedActionExecuted,
+  }), [animationAware]);
 
   // State
   const [isPressed, setIsPressed] = useState(false);
   const [isLongPressed, setIsLongPressed] = useState(false);
+  const [isActionQueued, setIsActionQueued] = useState(false);
 
   // Refs
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pressStartTimeRef = useRef<number>(0);
   const longPressTriggeredRef = useRef(false);
+
+  // Animation queue refs
+  const queuedActionRef = useRef<QueuedActionType>(null);
+  const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const actionExecutedRef = useRef(false); // Prevents duplicate actions
 
   // Clear any pending timers
   const clearTimer = useCallback(() => {
@@ -159,14 +223,83 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
     }
   }, []);
 
+  // Clear queue timeout
+  const clearQueueTimeout = useCallback(() => {
+    if (queueTimeoutRef.current) {
+      clearTimeout(queueTimeoutRef.current);
+      queueTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Cancel queued action
+  const cancelQueuedAction = useCallback(() => {
+    clearQueueTimeout();
+    queuedActionRef.current = null;
+    actionExecutedRef.current = false;
+    setIsActionQueued(false);
+  }, [clearQueueTimeout]);
+
+  // Execute the appropriate action based on type
+  const executeAction = useCallback((actionType: QueuedActionType) => {
+    // Prevent duplicate execution
+    if (actionExecutedRef.current) return;
+    actionExecutedRef.current = true;
+
+    if (actionType === 'longPress') {
+      onLongPress?.();
+    } else if (actionType === 'shortPress') {
+      onShortPress?.();
+    }
+  }, [onLongPress, onShortPress]);
+
+  // Queue an action to be executed after animation completes
+  const queueAction = useCallback((actionType: QueuedActionType) => {
+    if (!animationConfig.enabled || !actionType) return false;
+
+    // Check if animation is in progress
+    if (animationConfig.isAnimating()) {
+      queuedActionRef.current = actionType;
+      actionExecutedRef.current = false;
+      setIsActionQueued(true);
+      animationConfig.onActionQueued?.();
+
+      // Set a maximum wait timeout to ensure action eventually executes
+      clearQueueTimeout();
+      queueTimeoutRef.current = setTimeout(() => {
+        // If action hasn't been executed yet, execute it now
+        if (queuedActionRef.current && !actionExecutedRef.current) {
+          executeAction(queuedActionRef.current);
+          animationConfig.onQueuedActionExecuted?.();
+          cancelQueuedAction();
+        }
+      }, animationConfig.maxQueueWaitMs);
+
+      return true; // Action was queued
+    }
+
+    return false; // Action was not queued (animation not in progress)
+  }, [animationConfig, clearQueueTimeout, executeAction, cancelQueuedAction]);
+
+  // Notify that animation has completed - execute queued action
+  const notifyAnimationComplete = useCallback(() => {
+    if (queuedActionRef.current && !actionExecutedRef.current) {
+      clearQueueTimeout();
+      executeAction(queuedActionRef.current);
+      animationConfig.onQueuedActionExecuted?.();
+      cancelQueuedAction();
+    }
+  }, [clearQueueTimeout, executeAction, animationConfig, cancelQueuedAction]);
+
   // Reset all state
   const reset = useCallback(() => {
     clearTimer();
+    cancelQueuedAction();
     setIsPressed(false);
     setIsLongPressed(false);
     longPressTriggeredRef.current = false;
     pressStartTimeRef.current = 0;
-  }, [clearTimer]);
+    actionExecutedRef.current = false;
+  }, [clearTimer, cancelQueuedAction]);
 
   // Handle press start
   const onPressIn = useCallback(() => {
@@ -175,8 +308,10 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
     // Record press start time
     pressStartTimeRef.current = Date.now();
     longPressTriggeredRef.current = false;
+    actionExecutedRef.current = false; // Reset for new press
     setIsPressed(true);
     setIsLongPressed(false);
+    cancelQueuedAction(); // Cancel any previously queued action
 
     // Notify press start
     onPressStart?.();
@@ -187,9 +322,15 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
       // Long press threshold reached
       longPressTriggeredRef.current = true;
       setIsLongPressed(true);
-      onLongPress?.();
+
+      // Try to queue the action if animation is in progress
+      const wasQueued = queueAction('longPress');
+      if (!wasQueued) {
+        // No animation in progress, execute immediately
+        executeAction('longPress');
+      }
     }, threshold);
-  }, [enabled, threshold, onLongPress, onPressStart, clearTimer]);
+  }, [enabled, threshold, onPressStart, clearTimer, cancelQueuedAction, queueAction, executeAction]);
 
   // Handle press end
   const onPressOut = useCallback(() => {
@@ -202,7 +343,12 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
 
     // If long press wasn't triggered and press was short, trigger short press
     if (!longPressTriggeredRef.current && pressDuration < threshold) {
-      onShortPress?.();
+      // Try to queue the action if animation is in progress
+      const wasQueued = queueAction('shortPress');
+      if (!wasQueued) {
+        // No animation in progress, execute immediately
+        executeAction('shortPress');
+      }
     }
 
     // Reset state
@@ -212,14 +358,15 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
     // Reset long press triggered ref for next press
     longPressTriggeredRef.current = false;
     pressStartTimeRef.current = 0;
-  }, [enabled, threshold, onShortPress, onPressEnd, clearTimer]);
+  }, [enabled, threshold, onPressEnd, clearTimer, queueAction, executeAction]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       clearTimer();
+      clearQueueTimeout();
     };
-  }, [clearTimer]);
+  }, [clearTimer, clearQueueTimeout]);
 
   return {
     handlers: {
@@ -229,6 +376,9 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
     isPressed,
     isLongPressed,
     reset,
+    isActionQueued,
+    notifyAnimationComplete,
+    cancelQueuedAction,
   };
 }
 
@@ -243,15 +393,29 @@ export function useLongPress(options: UseLongPressOptions = {}): UseLongPressRet
  * This hook integrates with useTVEventHandler and should be used in components
  * that receive TV remote focus.
  *
+ * Features:
+ * - Animation-aware queuing: Long-press actions started during focus animations
+ *   are queued and executed after the animation completes
+ * - Duplicate prevention: Ensures queued actions are only executed once
+ *
  * @param options - Configuration options
  * @returns Object with state and focus handlers
  *
  * @example
  * ```tsx
  * function TVFocusableCard() {
- *   const { isPressed, isLongPressed, isFocused, setFocused } = useLongPressWithTVEvents({
+ *   const {
+ *     isPressed,
+ *     isLongPressed,
+ *     isFocused,
+ *     setFocused,
+ *     notifyAnimationComplete
+ *   } = useLongPressWithTVEvents({
  *     onShortPress: () => navigateToDetail(),
  *     onLongPress: () => openContextMenu(),
+ *     animationAware: {
+ *       isAnimating: () => focusAnimationInProgress,
+ *     }
  *   });
  *
  *   return (
@@ -276,17 +440,33 @@ export function useLongPressWithTVEvents(
     enabled = true,
     onPressStart,
     onPressEnd,
+    animationAware,
   } = options;
+
+  // Animation-aware config with defaults
+  const animationConfig = useMemo(() => ({
+    enabled: animationAware?.enabled ?? true,
+    isAnimating: animationAware?.isAnimating ?? (() => false),
+    maxQueueWaitMs: animationAware?.maxQueueWaitMs ?? DEFAULT_ANIMATION_QUEUE_WAIT_MS,
+    onActionQueued: animationAware?.onActionQueued,
+    onQueuedActionExecuted: animationAware?.onQueuedActionExecuted,
+  }), [animationAware]);
 
   // State
   const [isPressed, setIsPressed] = useState(false);
   const [isLongPressed, setIsLongPressed] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isActionQueued, setIsActionQueued] = useState(false);
 
   // Refs for timer-based detection (Apple TV)
   const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pressStartTimeRef = useRef<number>(0);
   const longPressTriggeredRef = useRef(false);
+
+  // Animation queue refs
+  const queuedActionRef = useRef<QueuedActionType>(null);
+  const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const actionExecutedRef = useRef(false); // Prevents duplicate actions
 
   // Check if TV event handling is available
   const isTVEventHandlerAvailable = useTVEventHandlerAvailable();
@@ -299,14 +479,83 @@ export function useLongPressWithTVEvents(
     }
   }, []);
 
+  // Clear queue timeout
+  const clearQueueTimeout = useCallback(() => {
+    if (queueTimeoutRef.current) {
+      clearTimeout(queueTimeoutRef.current);
+      queueTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Cancel queued action
+  const cancelQueuedAction = useCallback(() => {
+    clearQueueTimeout();
+    queuedActionRef.current = null;
+    actionExecutedRef.current = false;
+    setIsActionQueued(false);
+  }, [clearQueueTimeout]);
+
+  // Execute the appropriate action based on type
+  const executeAction = useCallback((actionType: QueuedActionType) => {
+    // Prevent duplicate execution
+    if (actionExecutedRef.current) return;
+    actionExecutedRef.current = true;
+
+    if (actionType === 'longPress') {
+      onLongPress?.();
+    } else if (actionType === 'shortPress') {
+      onShortPress?.();
+    }
+  }, [onLongPress, onShortPress]);
+
+  // Queue an action to be executed after animation completes
+  const queueAction = useCallback((actionType: QueuedActionType) => {
+    if (!animationConfig.enabled || !actionType) return false;
+
+    // Check if animation is in progress
+    if (animationConfig.isAnimating()) {
+      queuedActionRef.current = actionType;
+      actionExecutedRef.current = false;
+      setIsActionQueued(true);
+      animationConfig.onActionQueued?.();
+
+      // Set a maximum wait timeout to ensure action eventually executes
+      clearQueueTimeout();
+      queueTimeoutRef.current = setTimeout(() => {
+        // If action hasn't been executed yet, execute it now
+        if (queuedActionRef.current && !actionExecutedRef.current) {
+          executeAction(queuedActionRef.current);
+          animationConfig.onQueuedActionExecuted?.();
+          cancelQueuedAction();
+        }
+      }, animationConfig.maxQueueWaitMs);
+
+      return true; // Action was queued
+    }
+
+    return false; // Action was not queued (animation not in progress)
+  }, [animationConfig, clearQueueTimeout, executeAction, cancelQueuedAction]);
+
+  // Notify that animation has completed - execute queued action
+  const notifyAnimationComplete = useCallback(() => {
+    if (queuedActionRef.current && !actionExecutedRef.current) {
+      clearQueueTimeout();
+      executeAction(queuedActionRef.current);
+      animationConfig.onQueuedActionExecuted?.();
+      cancelQueuedAction();
+    }
+  }, [clearQueueTimeout, executeAction, animationConfig, cancelQueuedAction]);
+
   // Reset all state
   const reset = useCallback(() => {
     clearTimer();
+    cancelQueuedAction();
     setIsPressed(false);
     setIsLongPressed(false);
     longPressTriggeredRef.current = false;
     pressStartTimeRef.current = 0;
-  }, [clearTimer]);
+    actionExecutedRef.current = false;
+  }, [clearTimer, cancelQueuedAction]);
 
   // Set focused state
   const setFocused = useCallback((focused: boolean) => {
@@ -336,7 +585,11 @@ export function useLongPressWithTVEvents(
             // Set a small delay to reset pressed state (visual feedback)
             setTimeout(() => {
               if (!longPressTriggeredRef.current) {
-                onShortPress?.();
+                // Try to queue the action if animation is in progress
+                const wasQueued = queueAction('shortPress');
+                if (!wasQueued) {
+                  executeAction('shortPress');
+                }
               }
               setIsPressed(false);
               onPressEnd?.();
@@ -347,8 +600,10 @@ export function useLongPressWithTVEvents(
             if (!isPressed) {
               pressStartTimeRef.current = Date.now();
               longPressTriggeredRef.current = false;
+              actionExecutedRef.current = false; // Reset for new press
               setIsPressed(true);
               setIsLongPressed(false);
+              cancelQueuedAction(); // Cancel any previously queued action
               onPressStart?.();
 
               // Start long press timer
@@ -356,7 +611,12 @@ export function useLongPressWithTVEvents(
               pressTimerRef.current = setTimeout(() => {
                 longPressTriggeredRef.current = true;
                 setIsLongPressed(true);
-                onLongPress?.();
+
+                // Try to queue the action if animation is in progress
+                const wasQueued = queueAction('longPress');
+                if (!wasQueued) {
+                  executeAction('longPress');
+                }
               }, threshold);
             } else {
               // This is the release event (select fires again on release on some platforms)
@@ -364,7 +624,11 @@ export function useLongPressWithTVEvents(
               clearTimer();
 
               if (!longPressTriggeredRef.current && pressDuration < threshold) {
-                onShortPress?.();
+                // Try to queue the action if animation is in progress
+                const wasQueued = queueAction('shortPress');
+                if (!wasQueued) {
+                  executeAction('shortPress');
+                }
               }
 
               setIsPressed(false);
@@ -381,7 +645,12 @@ export function useLongPressWithTVEvents(
             longPressTriggeredRef.current = true;
             setIsLongPressed(true);
             setIsPressed(true);
-            onLongPress?.();
+
+            // Try to queue the action if animation is in progress
+            const wasQueued = queueAction('longPress');
+            if (!wasQueued) {
+              executeAction('longPress');
+            }
 
             // Reset after a short delay
             setTimeout(() => {
@@ -406,12 +675,13 @@ export function useLongPressWithTVEvents(
       isFocused,
       isPressed,
       threshold,
-      onShortPress,
-      onLongPress,
       onPressStart,
       onPressEnd,
       clearTimer,
       reset,
+      queueAction,
+      executeAction,
+      cancelQueuedAction,
     ]
   );
 
@@ -424,8 +694,9 @@ export function useLongPressWithTVEvents(
   useEffect(() => {
     return () => {
       clearTimer();
+      clearQueueTimeout();
     };
-  }, [clearTimer]);
+  }, [clearTimer, clearQueueTimeout]);
 
   return {
     isPressed,
@@ -433,6 +704,9 @@ export function useLongPressWithTVEvents(
     reset,
     isFocused,
     setFocused,
+    isActionQueued,
+    notifyAnimationComplete,
+    cancelQueuedAction,
   };
 }
 

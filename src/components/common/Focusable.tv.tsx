@@ -32,7 +32,7 @@
  * ```
  */
 
-import React, { useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useCallback, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import {
   TouchableOpacity,
   View,
@@ -50,8 +50,9 @@ import Animated, {
   interpolate,
   cancelAnimation,
   runOnJS,
+  runOnUI,
 } from 'react-native-reanimated';
-import { useLongPress } from '../../hooks/useLongPress';
+import { useLongPress, AnimationAwareConfig } from '../../hooks/useLongPress';
 
 // =============================================================================
 // Types & Interfaces
@@ -161,6 +162,8 @@ export interface FocusableProps {
   focusId?: string;
   /** Rapid input protection configuration */
   rapidInputConfig?: RapidInputConfig;
+  /** Animation-aware long-press configuration - enables queuing of actions during animations */
+  animationAwareLongPress?: Omit<AnimationAwareConfig, 'isAnimating'>;
 }
 
 /**
@@ -177,6 +180,10 @@ export interface FocusableRef {
   isFocused: () => boolean;
   /** Set native props (for hasTVPreferredFocus) */
   setNativeProps: (props: object) => void;
+  /** Check if focus animation is currently in progress */
+  isAnimating: () => boolean;
+  /** Notify that animation has completed (triggers any queued long-press actions) */
+  notifyAnimationComplete: () => void;
 }
 
 // =============================================================================
@@ -293,6 +300,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       accessibilityLabel,
       accessibilityHint,
       rapidInputConfig = {},
+      animationAwareLongPress = {},
     },
     ref
   ) => {
@@ -316,16 +324,43 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
     const lastFocusChangeTimeRef = useRef<number>(0);
     const pendingFocusCallbackRef = useRef<(() => void) | null>(null);
 
+    // Animation state tracking refs
+    const isAnimatingRef = useRef(false);
+    const animationStartTimeRef = useRef<number>(0);
+    // Expected animation duration for spring (approximate based on damping/stiffness)
+    const EXPECTED_ANIMATION_DURATION_MS = 200;
+
     // Shared values for animations
     const focusProgress = useSharedValue(0);
     const pressProgress = useSharedValue(0);
 
-    // Long press hook integration
-    const { handlers: longPressHandlers } = useLongPress({
+    // Create a memoized isAnimating function that can be passed to useLongPress
+    const isAnimatingCallback = useCallback(() => {
+      // Check if animation recently started (within expected duration)
+      const timeSinceStart = Date.now() - animationStartTimeRef.current;
+      return isAnimatingRef.current && timeSinceStart < EXPECTED_ANIMATION_DURATION_MS;
+    }, []);
+
+    // Animation-aware config for long-press hook
+    const animationAwareConfig = useMemo((): AnimationAwareConfig => ({
+      enabled: animationAwareLongPress.enabled ?? true,
+      isAnimating: isAnimatingCallback,
+      maxQueueWaitMs: animationAwareLongPress.maxQueueWaitMs ?? 500,
+      onActionQueued: animationAwareLongPress.onActionQueued,
+      onQueuedActionExecuted: animationAwareLongPress.onQueuedActionExecuted,
+    }), [animationAwareLongPress, isAnimatingCallback]);
+
+    // Long press hook integration with animation-aware queuing
+    const {
+      handlers: longPressHandlers,
+      notifyAnimationComplete,
+      isActionQueued,
+    } = useLongPress({
       onShortPress: disabled ? undefined : onPress,
       onLongPress: disabled ? undefined : onLongPress,
       threshold: 300,
       enabled: !disabled,
+      animationAware: animationAwareConfig,
     });
 
     // =============================================================================
@@ -414,7 +449,16 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
     // =============================================================================
 
     /**
-     * Handle focus event with rapid input protection
+     * Handle animation completion - notify long-press hook to execute queued actions
+     */
+    const handleAnimationComplete = useCallback(() => {
+      isAnimatingRef.current = false;
+      // Notify long-press hook that animation is complete, allowing queued actions to execute
+      notifyAnimationComplete();
+    }, [notifyAnimationComplete]);
+
+    /**
+     * Handle focus event with rapid input protection and animation tracking
      */
     const handleFocus = useCallback(() => {
       const now = Date.now();
@@ -440,16 +484,28 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         }
       }
 
+      // Mark animation as in progress
+      isAnimatingRef.current = true;
+      animationStartTimeRef.current = now;
+
       isFocusedRef.current = true;
-      focusProgress.value = withSpring(1, SPRING_CONFIG);
+
+      // Start the spring animation with a completion callback
+      focusProgress.value = withSpring(1, SPRING_CONFIG, (finished) => {
+        'worklet';
+        if (finished) {
+          // Use runOnJS to call the completion handler on the JS thread
+          runOnJS(handleAnimationComplete)();
+        }
+      });
 
       // Clear any pending focus callback and call the current one
       pendingFocusCallbackRef.current = null;
       onFocus?.();
-    }, [focusProgress, onFocus, rapidConfig]);
+    }, [focusProgress, onFocus, rapidConfig, handleAnimationComplete]);
 
     /**
-     * Handle blur event with rapid input protection
+     * Handle blur event with rapid input protection and animation tracking
      */
     const handleBlur = useCallback(() => {
       const now = Date.now();
@@ -464,13 +520,25 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         }
       }
 
+      // Mark animation as in progress
+      isAnimatingRef.current = true;
+      animationStartTimeRef.current = now;
+
       isFocusedRef.current = false;
-      focusProgress.value = withSpring(0, SPRING_CONFIG);
+
+      // Start the spring animation with a completion callback
+      focusProgress.value = withSpring(0, SPRING_CONFIG, (finished) => {
+        'worklet';
+        if (finished) {
+          // Use runOnJS to call the completion handler on the JS thread
+          runOnJS(handleAnimationComplete)();
+        }
+      });
 
       // Clear any pending focus callback
       pendingFocusCallbackRef.current = null;
       onBlur?.();
-    }, [focusProgress, onBlur, rapidConfig]);
+    }, [focusProgress, onBlur, rapidConfig, handleAnimationComplete]);
 
     /**
      * Handle press in (for press feedback)
@@ -513,6 +581,8 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
           viewRef.current.setNativeProps(props);
         }
       },
+      isAnimating: () => isAnimatingRef.current,
+      notifyAnimationComplete: handleAnimationComplete,
     }));
 
     // =============================================================================
