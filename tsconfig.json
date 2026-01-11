@@ -9,12 +9,15 @@
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"
-    ]
+    ],
+    "types": ["jest", "node"]
   },
   "include": [
     "src/**/*",
     "App.tsx",
     "index.ts",
-    "assets/**/*.svg"
+    "assets/**/*.svg",
+    "__tests__/**/*",
+    "jest.config.js"
   ]
 }
