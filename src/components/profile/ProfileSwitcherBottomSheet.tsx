@@ -29,6 +29,9 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
+import { useTVBackHandler } from '../../hooks/useTVMode';
+import { useFocusGroup } from '../../hooks/useFocusGroup';
+import Focusable from '../common/Focusable';
 
 // TV detection breakpoint
 const TV_BREAKPOINT = 1440;
@@ -73,18 +76,53 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
   const [profilePins, setProfilePins] = useState<Record<string, string>>({});
 
   // TV focus management state
-  const [focusedProfileId, setFocusedProfileId] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
-  const profileRefs = useRef<Record<string, TouchableOpacity | null>>({});
-  const closeButtonRef = useRef<TouchableOpacity | null>(null);
-  const pinCancelRef = useRef<TouchableOpacity | null>(null);
-  const pinSubmitRef = useRef<TouchableOpacity | null>(null);
-  const pinInputRef = useRef<TextInput | null>(null);
 
   // Detect TV mode based on screen dimensions
   const isTV = useMemo(() => {
     return dimensions.width >= TV_BREAKPOINT || Platform.isTV;
   }, [dimensions.width]);
+
+  // TV Back button handler
+  useTVBackHandler(
+    useCallback(() => {
+      if (visible) {
+        if (showPinModal) {
+          // Close PIN modal
+          setShowPinModal(false);
+          setPinInput('');
+          setPinError('');
+          setSelectedProfile(null);
+          return true;
+        }
+        onClose();
+        return true;
+      }
+      return false;
+    }, [visible, showPinModal, onClose])
+  );
+
+  // Focus groups for profile list and PIN modal
+  const profileFocusGroup = useFocusGroup({
+    id: 'profile-switcher-list',
+    autoFocus: visible && !showPinModal && isTV,
+    trapFocus: false,
+    rememberFocus: true,
+    onFocusChange: (index) => {
+      if (index >= 0 && index < profiles.length && scrollToFocused && isTV) {
+        // Auto-scroll to focused profile if needed
+      }
+    },
+  });
+
+  const pinButtonFocusGroup = useFocusGroup({
+    id: 'pin-modal-buttons',
+    autoFocus: showPinModal && isTV,
+    trapFocus: true,
+    rememberFocus: false,
+  });
+
+  const scrollToFocused = true;
 
   // Listen for dimension changes
   useEffect(() => {
@@ -118,11 +156,14 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
       translateY.value = withTiming(0, { duration: 300 });
       loadProfiles();
 
-      // Set initial focus for TV mode
-      if (isTV && profiles.length > 0) {
-        // Focus on active profile or first profile
-        const initialFocusId = activeProfile?.id || profiles[0]?.id;
-        setFocusedProfileId(initialFocusId || null);
+      // Focus first profile on TV when opening
+      if (isTV && profiles.length > 0 && !showPinModal) {
+        setTimeout(() => {
+          // Find active profile index or use 0
+          const activeIndex = profiles.findIndex(p => p.id === activeProfile?.id);
+          const initialIndex = activeIndex >= 0 ? activeIndex : 0;
+          profileFocusGroup.focusItem(initialIndex);
+        }, 100);
       }
     } else {
       opacity.value = withTiming(0, { duration: 200 });
@@ -132,10 +173,17 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
       setPinInput('');
       setPinError('');
       setSelectedProfile(null);
-      // Reset focus state
-      setFocusedProfileId(null);
     }
-  }, [visible, isTV, profiles, activeProfile]);
+  }, [visible, isTV, profiles, activeProfile, showPinModal]);
+
+  // Focus PIN modal buttons when PIN modal opens
+  useEffect(() => {
+    if (showPinModal && isTV) {
+      setTimeout(() => {
+        pinButtonFocusGroup.focusFirst();
+      }, 150);
+    }
+  }, [showPinModal, isTV]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -236,32 +284,16 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
 
   const backgroundColor = currentTheme.colors.elevation2 || '#1A1A1A';
 
-  // TV focus event handlers
-  const handleProfileFocus = useCallback((profileId: string) => {
-    setFocusedProfileId(profileId);
-  }, []);
-
-  const handleProfileBlur = useCallback(() => {
-    // Don't clear focus immediately to prevent flicker during navigation
-  }, []);
-
-  // Get the profile that should have initial TV focus
-  const getInitialFocusProfile = useCallback((profileId: string) => {
-    if (!isTV || !visible) return false;
-    const targetId = activeProfile?.id || profiles[0]?.id;
-    return profileId === targetId;
-  }, [isTV, visible, activeProfile, profiles]);
-
   const renderProfileItem = (profile: Profile, index: number) => {
     const isActive = profile.id === activeProfile?.id;
     const hasPinProtection = hasPin(profile.id);
-    const isFocused = isTV && focusedProfileId === profile.id;
-    const shouldHaveInitialFocus = getInitialFocusProfile(profile.id);
+    const isFocused = isTV && profileFocusGroup.focusedIndex === index;
 
     return (
-      <TouchableOpacity
+      <Focusable
         key={profile.id}
-        ref={(ref) => { profileRefs.current[profile.id] = ref; }}
+        ref={profileFocusGroup.getItemRef(index)}
+        variant="card"
         style={[
           styles.profileItem,
           isTV && styles.profileItemTV,
@@ -270,36 +302,43 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
             borderColor: currentTheme.colors.primary,
             borderWidth: 1,
           },
-          // TV focus indicator styles
-          isFocused && {
-            backgroundColor: `${currentTheme.colors.primary}40`,
-            borderColor: currentTheme.colors.primary,
-            borderWidth: 3,
-            transform: [{ scale: 1.05 }],
-          }
         ]}
+        focusedStyle={
+          isTV
+            ? {
+                backgroundColor: `${currentTheme.colors.primary}40`,
+              }
+            : undefined
+        }
         onPress={() => handleProfileSelect(profile)}
-        onFocus={() => handleProfileFocus(profile.id)}
-        onBlur={handleProfileBlur}
-        activeOpacity={0.7}
-        accessible={true}
+        hasTVPreferredFocus={isTV && index === profileFocusGroup.focusedIndex}
         accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${hasPinProtection ? ', PIN protected' : ''}`}
-        accessibilityRole="button"
-        accessibilityState={{ selected: isActive }}
-        // TV-specific props for focus management
-        {...(isTV && {
-          hasTVPreferredFocus: shouldHaveInitialFocus,
-          isTVSelectable: true,
-        })}
+        accessibilityHint={isActive ? 'Currently active profile' : 'Double-tap to switch to this profile'}
+        enableScale={isTV}
+        enableGlow={isTV}
+        enableBorder={isTV}
+        borderRadius={isTV ? 20 : 16}
       >
         <View style={[styles.avatarContainer, isTV && styles.avatarContainerTV]}>
           <MaterialIcons
             name="account-circle"
             size={isTV ? 64 : 48}
-            color={isFocused ? currentTheme.colors.primary : (isActive ? currentTheme.colors.primary : currentTheme.colors.text)}
+            color={
+              isFocused
+                ? currentTheme.colors.primary
+                : isActive
+                ? currentTheme.colors.primary
+                : currentTheme.colors.text
+            }
           />
           {hasPinProtection && (
-            <View style={[styles.pinBadge, { backgroundColor: currentTheme.colors.primary }, isTV && styles.pinBadgeTV]}>
+            <View
+              style={[
+                styles.pinBadge,
+                { backgroundColor: currentTheme.colors.primary },
+                isTV && styles.pinBadgeTV,
+              ]}
+            >
               <MaterialIcons name="lock" size={isTV ? 14 : 12} color="#FFFFFF" />
             </View>
           )}
@@ -309,20 +348,25 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
             styles.profileName,
             isTV && styles.profileNameTV,
             { color: currentTheme.colors.text },
-            (isActive || isFocused) && { color: currentTheme.colors.primary, fontWeight: '600' }
+            (isActive || isFocused) && {
+              color: currentTheme.colors.primary,
+              fontWeight: '600',
+            },
           ]}
           numberOfLines={1}
         >
           {profile.name}
         </Text>
         {isActive && (
-          <View style={[styles.activeIndicator, { backgroundColor: currentTheme.colors.primary }, isTV && styles.activeIndicatorTV]} />
+          <View
+            style={[
+              styles.activeIndicator,
+              { backgroundColor: currentTheme.colors.primary },
+              isTV && styles.activeIndicatorTV,
+            ]}
+          />
         )}
-        {/* TV focus ring indicator */}
-        {isFocused && (
-          <View style={[styles.tvFocusRing, { borderColor: currentTheme.colors.primary }]} />
-        )}
-      </TouchableOpacity>
+      </Focusable>
     );
   };
 
@@ -350,18 +394,23 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 ]}>
                   Switch Profile
                 </Text>
-                <TouchableOpacity
-                  ref={closeButtonRef}
+                <Focusable
+                  variant="button"
                   style={[styles.closeButton, isTV && styles.closeButtonTV]}
                   onPress={onClose}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  accessible={true}
                   accessibilityLabel="Close profile switcher"
-                  accessibilityRole="button"
-                  {...(isTV && { isTVSelectable: true })}
+                  accessibilityHint="Double-tap to close"
+                  enableScale={isTV}
+                  enableGlow={false}
+                  enableBorder={isTV}
+                  borderRadius={isTV ? 8 : 4}
                 >
-                  <MaterialIcons name="close" size={isTV ? 32 : 24} color={currentTheme.colors.textMuted} />
-                </TouchableOpacity>
+                  <MaterialIcons
+                    name="close"
+                    size={isTV ? 32 : 24}
+                    color={currentTheme.colors.textMuted}
+                  />
+                </Focusable>
               </View>
 
               {/* Profiles List */}
@@ -418,7 +467,6 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
             </Text>
 
             <TextInput
-              ref={pinInputRef}
               style={[
                 styles.pinInput,
                 isTV && styles.pinInputTV,
@@ -460,39 +508,55 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
             ) : null}
 
             <View style={[styles.pinModalButtons, isTV && styles.pinModalButtonsTV]}>
-              <TouchableOpacity
-                ref={pinCancelRef}
+              <Focusable
+                ref={pinButtonFocusGroup.getItemRef(0)}
+                variant="button"
                 style={[styles.pinButton, styles.pinCancelButton, isTV && styles.pinButtonTV]}
                 onPress={handlePinCancel}
-                accessible={true}
                 accessibilityLabel="Cancel PIN entry"
-                accessibilityRole="button"
-                {...(isTV && { isTVSelectable: true })}
+                accessibilityHint="Double-tap to cancel"
+                hasTVPreferredFocus={isTV && showPinModal && pinButtonFocusGroup.focusedIndex === 0}
+                enableScale={isTV}
+                enableGlow={isTV}
+                enableBorder={isTV}
+                borderRadius={isTV ? 16 : 12}
               >
-                <Text style={[
-                  { color: currentTheme.colors.textMuted },
-                  isTV && styles.pinButtonTextTV
-                ]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                ref={pinSubmitRef}
+                <Text
+                  style={[
+                    { color: currentTheme.colors.textMuted },
+                    isTV && styles.pinButtonTextTV,
+                  ]}
+                >
+                  Cancel
+                </Text>
+              </Focusable>
+              <Focusable
+                ref={pinButtonFocusGroup.getItemRef(1)}
+                variant="button"
                 style={[
                   styles.pinButton,
                   styles.pinSubmitButton,
                   isTV && styles.pinButtonTV,
-                  { backgroundColor: currentTheme.colors.primary }
+                  { backgroundColor: currentTheme.colors.primary },
                 ]}
                 onPress={handlePinSubmit}
-                accessible={true}
                 accessibilityLabel="Unlock profile"
-                accessibilityRole="button"
-                {...(isTV && { isTVSelectable: true })}
+                accessibilityHint="Double-tap to unlock with entered PIN"
+                hasTVPreferredFocus={isTV && showPinModal && pinButtonFocusGroup.focusedIndex === 1}
+                enableScale={isTV}
+                enableGlow={isTV}
+                enableBorder={isTV}
+                borderRadius={isTV ? 16 : 12}
               >
-                <Text style={[
-                  { color: '#FFFFFF', fontWeight: '600' },
-                  isTV && styles.pinButtonTextTV
-                ]}>Unlock</Text>
-              </TouchableOpacity>
+                <Text
+                  style={[
+                    { color: '#FFFFFF', fontWeight: '600' },
+                    isTV && styles.pinButtonTextTV,
+                  ]}
+                >
+                  Unlock
+                </Text>
+              </Focusable>
             </View>
           </View>
         </View>
@@ -688,8 +752,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minWidth: 140,
     marginRight: 20,
-    borderWidth: 2,
-    borderColor: 'transparent',
   },
   avatarContainerTV: {
     marginBottom: 12,
@@ -708,16 +770,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     marginTop: 8,
-  },
-  tvFocusRing: {
-    position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderWidth: 3,
-    borderRadius: 24,
-    opacity: 0.8,
   },
   // TV PIN Modal Styles
   pinModalContentTV: {
