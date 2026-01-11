@@ -9,7 +9,11 @@
     "postinstall": "patch-package",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "dependencies": {
     "@adrianso/react-native-device-brightness": "^1.2.7",
@@ -94,6 +98,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-tvos/config-tv": "^0.1.4",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/crypto-js": "^4.2.2",
