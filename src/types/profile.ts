@@ -25,27 +25,37 @@ export type AgeRating =
 // Age rating levels for filtering (lower = more restrictive)
 export const AGE_RATING_LEVELS: Record<AgeRating, number> = {
   'TV-Y': 1,
-  'G': 1,
+  G: 1,
   'TV-Y7': 2,
   'TV-G': 2,
-  'PG': 3,
+  PG: 3,
   'TV-PG': 3,
   'PG-13': 4,
   'TV-14': 4,
-  'R': 5,
+  R: 5,
   'TV-MA': 5,
   'NC-17': 6,
-  'NR': 6,
-  'UNRATED': 6,
+  NR: 6,
+  UNRATED: 6,
 };
 
 // Kids mode allowed ratings (G, PG, TV-Y, TV-Y7, TV-G, TV-PG)
-export const KIDS_MODE_ALLOWED_RATINGS: AgeRating[] = [
-  'G', 'PG', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'
+export const KIDS_MODE_ALLOWED_RATINGS: AgeRating[] = ['G', 'PG', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG'];
+
+// Teen mode allowed ratings (up to PG-13 / TV-14)
+export const TEEN_MODE_ALLOWED_RATINGS: AgeRating[] = [
+  'G',
+  'PG',
+  'PG-13',
+  'TV-Y',
+  'TV-Y7',
+  'TV-G',
+  'TV-PG',
+  'TV-14',
 ];
 
 // Profile type enumeration
-export type ProfileType = 'standard' | 'kids' | 'admin';
+export type ProfileType = 'standard' | 'kids' | 'teen' | 'admin';
 
 // Avatar options available for profile selection
 export interface AvatarOption {
@@ -79,6 +89,16 @@ export const KIDS_AVATAR_OPTIONS: AvatarOption[] = [
   { id: 'kids_4', name: 'Rocket', icon: 'rocket', color: '#5f27cd' },
   { id: 'kids_5', name: 'Star', icon: 'auto-awesome', color: '#feca57' },
   { id: 'kids_6', name: 'Rainbow', icon: 'wb-sunny', color: '#ff9f43' },
+];
+
+// Teen-specific avatar options
+export const TEEN_AVATAR_OPTIONS: AvatarOption[] = [
+  { id: 'teen_1', name: 'Gamer', icon: 'sports-esports', color: '#6366f1' },
+  { id: 'teen_2', name: 'Music', icon: 'headphones', color: '#ec4899' },
+  { id: 'teen_3', name: 'Sports', icon: 'sports-basketball', color: '#f97316' },
+  { id: 'teen_4', name: 'Tech', icon: 'computer', color: '#14b8a6' },
+  { id: 'teen_5', name: 'Art', icon: 'brush', color: '#a855f7' },
+  { id: 'teen_6', name: 'Explorer', icon: 'explore', color: '#3b82f6' },
 ];
 
 // Profile interface
@@ -126,6 +146,15 @@ export const DEFAULT_KIDS_PREFERENCES: ProfilePreferences = {
   preferredAudioLanguage: 'en',
 };
 
+// Default preferences for teen profiles
+export const DEFAULT_TEEN_PREFERENCES: ProfilePreferences = {
+  autoplayEnabled: true,
+  autoplayNextEpisode: true,
+  preferredGenres: [],
+  preferredSubtitleLanguage: 'en',
+  preferredAudioLanguage: 'en',
+};
+
 // PIN-related types
 export interface PinAttemptInfo {
   attempts: number;
@@ -139,6 +168,17 @@ export const PIN_CONFIG = {
   lockoutDurations: [30000, 60000, 300000], // 30s, 1min, 5min (exponential backoff)
   pinMinLength: 4,
   pinMaxLength: 6,
+};
+
+// Age rating bounds for profile types (admin can configure within these bounds)
+export const PROFILE_AGE_RATING_BOUNDS: Record<
+  ProfileType,
+  { min: AgeRating; max: AgeRating; default: AgeRating }
+> = {
+  kids: { min: 'G', max: 'TV-PG', default: 'TV-PG' },
+  teen: { min: 'PG', max: 'R', default: 'TV-14' },
+  standard: { min: 'G', max: 'NC-17', default: 'NC-17' },
+  admin: { min: 'G', max: 'NC-17', default: 'NC-17' },
 };
 
 // Profile creation input
@@ -176,6 +216,7 @@ export const PROFILE_STORAGE_KEYS = {
   pinAttempts: '@profiles:pin_attempts',
   syncQueue: '@profiles:sync_queue',
   lastSync: '@profiles:last_sync',
+  masterPin: '@profiles:master_pin', // Master PIN for recovery
 };
 
 // Maximum number of profiles allowed
@@ -183,14 +224,21 @@ export const MAX_PROFILES = 6;
 
 // Helper function to get default max age rating based on profile type
 export function getDefaultMaxAgeRating(type: ProfileType): AgeRating {
-  switch (type) {
-    case 'kids':
-      return 'TV-PG';
-    case 'admin':
-    case 'standard':
-    default:
-      return 'NC-17'; // No restrictions for adults
-  }
+  return PROFILE_AGE_RATING_BOUNDS[type].default;
+}
+
+// Helper function to get age rating bounds for a profile type
+export function getAgeRatingBounds(type: ProfileType): { min: AgeRating; max: AgeRating } {
+  return PROFILE_AGE_RATING_BOUNDS[type];
+}
+
+// Helper function to check if an age rating is within bounds for a profile type
+export function isAgeRatingWithinBounds(rating: AgeRating, type: ProfileType): boolean {
+  const bounds = PROFILE_AGE_RATING_BOUNDS[type];
+  const ratingLevel = AGE_RATING_LEVELS[rating];
+  const minLevel = AGE_RATING_LEVELS[bounds.min];
+  const maxLevel = AGE_RATING_LEVELS[bounds.max];
+  return ratingLevel >= minLevel && ratingLevel <= maxLevel;
 }
 
 // Helper function to check if a rating is allowed for a profile
@@ -205,8 +253,8 @@ export function isRatingAllowedForProfile(
   const profileMaxLevel = AGE_RATING_LEVELS[profile.maxAgeRating];
 
   if (contentLevel === undefined) {
-    // Unknown rating - block for kids, allow for others
-    return profile.type !== 'kids';
+    // Unknown rating - block for kids/teen, allow for others
+    return profile.type !== 'kids' && profile.type !== 'teen';
   }
 
   return contentLevel <= profileMaxLevel;
@@ -215,4 +263,26 @@ export function isRatingAllowedForProfile(
 // Helper function to check if profile is in kids mode
 export function isKidsProfile(profile: Profile | null): boolean {
   return profile?.type === 'kids';
+}
+
+// Helper function to check if profile is a teen profile
+export function isTeenProfile(profile: Profile | null): boolean {
+  return profile?.type === 'teen';
+}
+
+// Helper function to check if profile is a restricted profile (kids or teen)
+export function isRestrictedProfile(profile: Profile | null): boolean {
+  return profile?.type === 'kids' || profile?.type === 'teen';
+}
+
+// Get all avatar options for a profile type
+export function getAvatarOptionsForType(type: ProfileType): AvatarOption[] {
+  switch (type) {
+    case 'kids':
+      return [...KIDS_AVATAR_OPTIONS, ...AVATAR_OPTIONS];
+    case 'teen':
+      return [...TEEN_AVATAR_OPTIONS, ...AVATAR_OPTIONS];
+    default:
+      return AVATAR_OPTIONS;
+  }
 }

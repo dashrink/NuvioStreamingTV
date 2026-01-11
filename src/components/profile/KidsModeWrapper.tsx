@@ -4,16 +4,12 @@
  */
 
 import React, { ReactNode } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { kidsModeColors, kidsModeStyles } from '../../styles/kidsModeTheme';
+import { isKidsProfile, isTeenProfile } from '../../types/profile';
 
 interface KidsModeWrapperProps {
   children: ReactNode;
@@ -110,15 +106,17 @@ interface KidsModeIndicatorProps {
 }
 
 /**
- * Standalone kids mode indicator badge
+ * Standalone kids/teen mode indicator badge
+ * Shows "KIDS" or "TEEN" based on active profile type
  */
-export const KidsModeIndicator: React.FC<KidsModeIndicatorProps> = ({
-  style,
-  size = 'medium',
-}) => {
+export const KidsModeIndicator: React.FC<KidsModeIndicatorProps> = ({ style, size = 'medium' }) => {
   const { isKidsMode, activeProfile } = useProfile();
 
-  if (!isKidsMode) return null;
+  // Check for both kids and teen profiles
+  const isKids = activeProfile ? isKidsProfile(activeProfile) : false;
+  const isTeen = activeProfile ? isTeenProfile(activeProfile) : false;
+
+  if (!isKids && !isTeen) return null;
 
   const sizeStyles = {
     small: { paddingHorizontal: 6, paddingVertical: 2, iconSize: 10, fontSize: 8 },
@@ -128,21 +126,26 @@ export const KidsModeIndicator: React.FC<KidsModeIndicatorProps> = ({
 
   const currentSize = sizeStyles[size];
 
+  // Different colors and labels for kids vs teen
+  const badgeColor = isKids ? kidsModeColors.primary : '#6366f1'; // Green for kids, indigo for teen
+  const badgeLabel = isKids ? 'KIDS' : 'TEEN';
+  const badgeIcon = isKids ? 'child-care' : 'school';
+
   return (
     <View
       style={[
         styles.standaloneIndicator,
         {
-          backgroundColor: kidsModeColors.primary,
+          backgroundColor: badgeColor,
           paddingHorizontal: currentSize.paddingHorizontal,
           paddingVertical: currentSize.paddingVertical,
         },
         style,
       ]}
     >
-      <MaterialIcons name="child-care" size={currentSize.iconSize} color="#FFF" />
+      <MaterialIcons name={badgeIcon as any} size={currentSize.iconSize} color="#FFF" />
       <Text style={[styles.standaloneIndicatorText, { fontSize: currentSize.fontSize }]}>
-        KIDS
+        {badgeLabel}
       </Text>
     </View>
   );
@@ -165,7 +168,9 @@ export const ContentAgeWarning: React.FC<ContentAgeWarningProps> = ({
   const { currentTheme } = useTheme();
 
   return (
-    <View style={[styles.warningContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
+    <View
+      style={[styles.warningContainer, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <View style={[styles.warningIcon, { backgroundColor: currentTheme.colors.warning }]}>
         <MaterialIcons name="warning" size={40} color="#FFF" />
       </View>

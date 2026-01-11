@@ -2603,6 +2603,78 @@
         }
       ],
       "status": "completed"
+    },
+    "subtask-3-3": {
+      "attempts": [
+        {
+          "session": 1,
+          "timestamp": "2026-01-11T19:12:30.518041",
+          "approach": "Implemented: Add profile switcher to settings menu",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "subtask-4-1": {
+      "attempts": [
+        {
+          "session": 2,
+          "timestamp": "2026-01-11T19:19:07.774472",
+          "approach": "Implemented: Add TV focus management to ProfileSwitcherBottomSheet",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "subtask-4-3": {
+      "attempts": [
+        {
+          "session": 3,
+          "timestamp": "2026-01-11T19:24:00.518286",
+          "approach": "Implemented: Test TV profile switcher on tvOS and Android TV",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "subtask-5-1": {
+      "attempts": [
+        {
+          "session": 4,
+          "timestamp": "2026-01-11T19:30:36.979831",
+          "approach": "Implemented: End-to-end profile isolation verification",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "subtask-5-2": {
+      "attempts": [
+        {
+          "session": 5,
+          "timestamp": "2026-01-11T19:38:38.102397",
+          "approach": "Implemented: PIN protection end-to-end verification",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "subtask-5-3": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-11T19:47:43.007171",
+          "approach": "Implemented: TV platform integration testing",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [
@@ -2615,6 +2687,6 @@
   ],
   "metadata": {
     "created_at": "2026-01-10T14:00:36.873016",
-    "last_updated": "2026-01-10T15:27:05.484941"
+    "last_updated": "2026-01-11T19:47:43.007177"
   }
 }

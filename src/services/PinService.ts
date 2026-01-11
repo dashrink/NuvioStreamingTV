@@ -5,11 +5,7 @@
 
 import * as Crypto from 'expo-crypto';
 import { mmkvStorage } from './mmkvStorage';
-import {
-  PinAttemptInfo,
-  PIN_CONFIG,
-  PROFILE_STORAGE_KEYS,
-} from '../types/profile';
+import { PinAttemptInfo, PIN_CONFIG, PROFILE_STORAGE_KEYS } from '../types/profile';
 import { logger } from '../utils/logger';
 
 // Storage keys for PIN data
@@ -33,10 +29,7 @@ class PinService {
    */
   private async hashPin(pin: string, salt: string): Promise<string> {
     const saltedPin = `${salt}:${pin}:nuvio_profile_pin`;
-    const hash = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      saltedPin
-    );
+    const hash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, saltedPin);
     return hash;
   }
 
@@ -106,7 +99,10 @@ class PinService {
   /**
    * Verify a PIN for a profile
    */
-  async verifyPin(profileId: string, pin: string): Promise<{
+  async verifyPin(
+    profileId: string,
+    pin: string
+  ): Promise<{
     success: boolean;
     attemptsRemaining?: number;
     lockedUntil?: number;
@@ -118,7 +114,7 @@ class PinService {
         return {
           success: false,
           attemptsRemaining: 0,
-          lockedUntil: lockoutInfo.lockedUntil,
+          lockedUntil: lockoutInfo.lockedUntil ?? undefined,
         };
       }
 
@@ -185,7 +181,11 @@ class PinService {
   /**
    * Change PIN for a profile (requires old PIN verification)
    */
-  async changePin(profileId: string, oldPin: string, newPin: string): Promise<{
+  async changePin(
+    profileId: string,
+    oldPin: string,
+    newPin: string
+  ): Promise<{
     success: boolean;
     error?: string;
   }> {
@@ -304,10 +304,7 @@ class PinService {
         currentInfo.lockedUntil = now + lockoutDuration;
       }
 
-      await mmkvStorage.setItem(
-        `${PIN_ATTEMPTS_PREFIX}${profileId}`,
-        JSON.stringify(currentInfo)
-      );
+      await mmkvStorage.setItem(`${PIN_ATTEMPTS_PREFIX}${profileId}`, JSON.stringify(currentInfo));
 
       return currentInfo;
     } catch (error) {

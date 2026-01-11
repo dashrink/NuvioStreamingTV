@@ -1,5 +1,6 @@
 /**
- * PinEntryModal - Modal for entering PIN to unlock profiles
+ * ForgotPinModal - Modal for recovering access via Master PIN
+ * Allows users to reset their profile PIN using the master PIN
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -16,40 +17,34 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PIN_CONFIG } from '../../types/profile';
+import { masterPinService } from '../../services/MasterPinService';
+import { pinService } from '../../services/PinService';
 
-interface PinEntryModalProps {
+interface ForgotPinModalProps {
   visible: boolean;
+  profileId: string;
   profileName: string;
-  profileId?: string;
-  onSubmit: (pin: string) => Promise<{
-    success: boolean;
-    attemptsRemaining?: number;
-    lockedUntil?: number;
-  }>;
+  onSuccess: () => void;
   onCancel: () => void;
-  onForgotPin?: () => void;
-  lockedUntil?: number | null;
-  attemptsRemaining?: number;
 }
 
-export const PinEntryModal: React.FC<PinEntryModalProps> = ({
+type Step = 'enter_master_pin' | 'create_new_pin' | 'confirm_new_pin';
+
+export const ForgotPinModal: React.FC<ForgotPinModalProps> = ({
   visible,
-  profileName,
   profileId,
-  onSubmit,
+  profileName,
+  onSuccess,
   onCancel,
-  onForgotPin,
-  lockedUntil: initialLockedUntil,
-  attemptsRemaining: initialAttempts,
 }) => {
   const { currentTheme } = useTheme();
+  const [step, setStep] = useState<Step>('enter_master_pin');
   const [pin, setPin] = useState('');
+  const [newPin, setNewPin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [attemptsRemaining, setAttemptsRemaining] = useState(
-    initialAttempts ?? PIN_CONFIG.maxAttempts
-  );
-  const [lockedUntil, setLockedUntil] = useState<number | null>(initialLockedUntil ?? null);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(PIN_CONFIG.maxAttempts);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [lockoutCountdown, setLockoutCountdown] = useState<number>(0);
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -57,12 +52,14 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
   // Reset state when modal opens
   useEffect(() => {
     if (visible) {
+      setStep('enter_master_pin');
       setPin('');
+      setNewPin('');
       setError(null);
-      setAttemptsRemaining(initialAttempts ?? PIN_CONFIG.maxAttempts);
-      setLockedUntil(initialLockedUntil ?? null);
+      setAttemptsRemaining(PIN_CONFIG.maxAttempts);
+      setLockedUntil(null);
     }
-  }, [visible, initialAttempts, initialLockedUntil]);
+  }, [visible]);
 
   // Lockout countdown timer
   useEffect(() => {
@@ -104,17 +101,16 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
     (digit: string) => {
       if (lockedUntil || pin.length >= PIN_CONFIG.pinMaxLength) return;
 
-      const newPin = pin + digit;
-      setPin(newPin);
+      const newPinValue = pin + digit;
+      setPin(newPinValue);
       setError(null);
 
       // Auto-submit when PIN reaches minimum length
-      if (newPin.length >= PIN_CONFIG.pinMinLength) {
-        // Small delay to show the filled dot before submitting
-        setTimeout(() => handleSubmit(newPin), 100);
+      if (newPinValue.length >= PIN_CONFIG.pinMinLength) {
+        setTimeout(() => handleSubmit(newPinValue), 100);
       }
     },
-    [pin, lockedUntil]
+    [pin, lockedUntil, step]
   );
 
   const handleBackspace = useCallback(() => {
@@ -132,23 +128,53 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
       setError(null);
 
       try {
-        const result = await onSubmit(pinToSubmit);
+        if (step === 'enter_master_pin') {
+          // Verify master PIN
+          const result = await masterPinService.verifyMasterPin(pinToSubmit);
 
-        if (result.success) {
-          setPin('');
-          // Success - modal will be closed by parent
-        } else {
-          shake();
-          setPin('');
-
-          if (result.lockedUntil) {
-            setLockedUntil(result.lockedUntil);
-            setError('Too many failed attempts');
-          } else if (result.attemptsRemaining !== undefined) {
-            setAttemptsRemaining(result.attemptsRemaining);
-            setError(`Incorrect PIN. ${result.attemptsRemaining} attempts remaining`);
+          if (result.success) {
+            // Master PIN verified - move to create new PIN step
+            setStep('create_new_pin');
+            setPin('');
           } else {
-            setError('Incorrect PIN');
+            shake();
+            setPin('');
+
+            if (result.lockedUntil) {
+              setLockedUntil(result.lockedUntil);
+              setError('Too many failed attempts');
+            } else if (result.attemptsRemaining !== undefined) {
+              setAttemptsRemaining(result.attemptsRemaining);
+              setError(`Incorrect Master PIN. ${result.attemptsRemaining} attempts remaining`);
+            } else {
+              setError('Incorrect Master PIN');
+            }
+          }
+        } else if (step === 'create_new_pin') {
+          // Store new PIN and move to confirm step
+          setNewPin(pinToSubmit);
+          setStep('confirm_new_pin');
+          setPin('');
+        } else if (step === 'confirm_new_pin') {
+          // Confirm new PIN matches
+          if (pinToSubmit !== newPin) {
+            shake();
+            setPin('');
+            setError('PINs do not match. Try again.');
+            setStep('create_new_pin');
+            setNewPin('');
+          } else {
+            // Set new PIN for profile
+            const success = await pinService.setPin(profileId, pinToSubmit);
+            if (success) {
+              onSuccess();
+            } else {
+              shake();
+              setPin('');
+              setError('Failed to set new PIN. Please try again.');
+              setStep('create_new_pin');
+              setNewPin('');
+            }
           }
         }
       } catch (err) {
@@ -158,8 +184,30 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
         setIsLoading(false);
       }
     },
-    [isLoading, lockedUntil, onSubmit, shake]
+    [isLoading, lockedUntil, step, newPin, profileId, onSuccess, shake]
   );
+
+  const getTitle = () => {
+    switch (step) {
+      case 'enter_master_pin':
+        return 'Enter Master PIN';
+      case 'create_new_pin':
+        return 'Create New PIN';
+      case 'confirm_new_pin':
+        return 'Confirm New PIN';
+    }
+  };
+
+  const getSubtitle = () => {
+    switch (step) {
+      case 'enter_master_pin':
+        return `Enter the master PIN to reset ${profileName}'s PIN`;
+      case 'create_new_pin':
+        return 'Enter a new PIN for this profile';
+      case 'confirm_new_pin':
+        return 'Re-enter the new PIN to confirm';
+    }
+  };
 
   const renderPinDots = () => {
     const dots = [];
@@ -255,18 +303,49 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Profile info */}
-          <View style={styles.profileInfo}>
+          {/* Step indicator */}
+          <View style={styles.stepIndicator}>
+            {['enter_master_pin', 'create_new_pin', 'confirm_new_pin'].map((s, index) => (
+              <View
+                key={s}
+                style={[
+                  styles.stepDot,
+                  {
+                    backgroundColor:
+                      step === s
+                        ? currentTheme.colors.primary
+                        : index <
+                            ['enter_master_pin', 'create_new_pin', 'confirm_new_pin'].indexOf(step)
+                          ? currentTheme.colors.success
+                          : currentTheme.colors.border,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Info */}
+          <View style={styles.infoSection}>
             <View
-              style={[styles.avatarPlaceholder, { backgroundColor: currentTheme.colors.primary }]}
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor:
+                    step === 'enter_master_pin'
+                      ? currentTheme.colors.warning
+                      : currentTheme.colors.primary,
+                },
+              ]}
             >
-              <MaterialIcons name="lock" size={32} color={currentTheme.colors.text} />
+              <MaterialIcons
+                name={step === 'enter_master_pin' ? 'vpn-key' : 'lock-reset'}
+                size={32}
+                color="#FFFFFF"
+              />
             </View>
-            <Text style={[styles.profileName, { color: currentTheme.colors.text }]}>
-              {profileName}
-            </Text>
+            <Text style={[styles.title, { color: currentTheme.colors.text }]}>{getTitle()}</Text>
             <Text style={[styles.subtitle, { color: currentTheme.colors.textMuted }]}>
-              Enter PIN to access this profile
+              {getSubtitle()}
             </Text>
           </View>
 
@@ -289,19 +368,6 @@ export const PinEntryModal: React.FC<PinEntryModalProps> = ({
 
           {/* Keypad */}
           {renderKeypad()}
-
-          {/* Forgot PIN link */}
-          {onForgotPin && (
-            <TouchableOpacity
-              style={styles.forgotPinButton}
-              onPress={onForgotPin}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.forgotPinText, { color: currentTheme.colors.primary }]}>
-                Forgot PIN?
-              </Text>
-            </TouchableOpacity>
-          )}
         </Animated.View>
       </View>
     </Modal>
@@ -330,12 +396,21 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 8,
   },
-  profileInfo: {
+  stepIndicator: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  stepDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  infoSection: {
     alignItems: 'center',
-    marginTop: 8,
     marginBottom: 24,
   },
-  avatarPlaceholder: {
+  iconContainer: {
     width: 64,
     height: 64,
     borderRadius: 32,
@@ -343,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  profileName: {
+  title: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
@@ -351,6 +426,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     textAlign: 'center',
+    paddingHorizontal: 16,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -405,15 +481,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '500',
   },
-  forgotPinButton: {
-    marginTop: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  forgotPinText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
 });
 
-export default PinEntryModal;
+export default ForgotPinModal;

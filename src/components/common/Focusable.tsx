@@ -8,6 +8,7 @@ import {
   Pressable,
   PressableProps,
   GestureResponderEvent,
+  StyleProp,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -43,7 +44,7 @@ export interface FocusableProps extends UseTVFocusOptions {
   /** Enable/disable border animation on focus */
   enableBorder?: boolean;
   /** Container style applied to the outer animated view */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   /** Additional style applied when focused */
   focusedStyle?: ViewStyle;
   /** Test ID for testing */
@@ -155,13 +156,7 @@ const Focusable = forwardRef<View, FocusableProps>(
     ref
   ) => {
     // Get focus state and animation from hook
-    const {
-      isFocused,
-      focusAnim,
-      focusProps,
-      isTV,
-      isTVFocusEnabled,
-    } = useTVFocus({
+    const { isFocused, focusAnim, focusProps, isTV, isTVFocusEnabled } = useTVFocus({
       onFocus,
       onBlur,
       hasTVPreferredFocus,
@@ -203,9 +198,7 @@ const Focusable = forwardRef<View, FocusableProps>(
     // Animated style for focus effects
     const animatedFocusStyle = useAnimatedStyle(() => {
       // Scale transform
-      const scale = enableScale
-        ? interpolate(focusAnim.value, [0, 1], scaleValues)
-        : 1;
+      const scale = enableScale ? interpolate(focusAnim.value, [0, 1], scaleValues) : 1;
 
       // Border color animation
       const borderColor = enableBorder
@@ -217,7 +210,11 @@ const Focusable = forwardRef<View, FocusableProps>(
         ? interpolate(focusAnim.value, [0, 1], [0, focusShadow.opacity])
         : 0;
       const shadowRadius = enableGlow
-        ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.shadowRadius || focusShadow.radius])
+        ? interpolate(
+            focusAnim.value,
+            [0, 1],
+            [0, styleConfig.shadow.shadowRadius || focusShadow.radius]
+          )
         : 0;
       const elevation = enableGlow
         ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.elevation || 8])
@@ -235,24 +232,11 @@ const Focusable = forwardRef<View, FocusableProps>(
         shadowRadius,
         elevation,
       };
-    }, [
-      focusAnim,
-      enableScale,
-      enableBorder,
-      enableGlow,
-      scaleValues,
-      styleConfig,
-      borderRadius,
-    ]);
+    }, [focusAnim, enableScale, enableBorder, enableGlow, scaleValues, styleConfig, borderRadius]);
 
     // Combined styles
     const containerStyle = useMemo(
-      () => [
-        styles.container,
-        { borderRadius },
-        style,
-        isFocused && focusedStyle,
-      ],
+      () => [styles.container, { borderRadius }, style, isFocused && focusedStyle],
       [borderRadius, style, isFocused, focusedStyle]
     );
 
@@ -337,12 +321,7 @@ export const useFocusAnimatedStyle = (
     borderRadius?: number;
   } = {}
 ) => {
-  const {
-    enableScale = true,
-    enableBorder = true,
-    enableGlow = true,
-    borderRadius,
-  } = options;
+  const { enableScale = true, enableBorder = true, enableGlow = true, borderRadius } = options;
 
   const styleConfig = getFocusStyleConfig(variant);
   const finalBorderRadius = borderRadius ?? styleConfig.borderRadius;
@@ -364,9 +343,7 @@ export const useFocusAnimatedStyle = (
   })();
 
   return useAnimatedStyle(() => {
-    const scale = enableScale
-      ? interpolate(focusAnim.value, [0, 1], scaleValues)
-      : 1;
+    const scale = enableScale ? interpolate(focusAnim.value, [0, 1], scaleValues) : 1;
 
     const borderColor = enableBorder
       ? interpolateColor(focusAnim.value, [0, 1], [focusBorder.colorUnfocused, focusBorder.color])
@@ -377,7 +354,11 @@ export const useFocusAnimatedStyle = (
       : 0;
 
     const shadowRadius = enableGlow
-      ? interpolate(focusAnim.value, [0, 1], [0, styleConfig.shadow.shadowRadius || focusShadow.radius])
+      ? interpolate(
+          focusAnim.value,
+          [0, 1],
+          [0, styleConfig.shadow.shadowRadius || focusShadow.radius]
+        )
       : 0;
 
     const elevation = enableGlow

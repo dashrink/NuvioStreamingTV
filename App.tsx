@@ -6,14 +6,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  I18nManager,
-  Platform,
-  LogBox,
-  Dimensions
-} from 'react-native';
+import { View, StyleSheet, I18nManager, Platform, LogBox, Dimensions } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
@@ -21,7 +14,7 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import { enableScreens, enableFreeze } from 'react-native-screens';
 import AppNavigator, {
   CustomNavigationDarkTheme,
-  CustomDarkTheme
+  CustomDarkTheme,
 } from './src/navigation/AppNavigator';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import 'react-native-reanimated';
@@ -73,7 +66,7 @@ I18nManager.forceRTL(false);
 // Suppress duplicate key warnings app-wide
 LogBox.ignoreLogs([
   'Warning: Encountered two children with the same key',
-  'Keys should be unique so that components maintain their identity across updates'
+  'Keys should be unique so that components maintain their identity across updates',
 ]);
 
 // This fixes many navigation layout issues by using native screen containers
@@ -91,7 +84,7 @@ const ThemedApp = () => {
       const engine = (global as any).HermesInternal ? 'Hermes' : 'JSC';
       console.log('[App] JS Engine:', engine);
       console.log('[App] Platform:', Platform.OS, 'isTV:', Platform.isTV);
-    } catch { }
+    } catch {}
   }, []);
   const { currentTheme } = useTheme();
   const { activeProfile, loadProfiles } = useProfile();
@@ -100,10 +93,15 @@ const ThemedApp = () => {
   const [hasActiveProfile, setHasActiveProfile] = useState<boolean | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
 
-
-
   useEffect(() => {
-    console.log('[App] isAppReady:', isAppReady, 'hasCompletedOnboarding:', hasCompletedOnboarding, 'hasActiveProfile:', hasActiveProfile);
+    console.log(
+      '[App] isAppReady:',
+      isAppReady,
+      'hasCompletedOnboarding:',
+      hasCompletedOnboarding,
+      'hasActiveProfile:',
+      hasActiveProfile
+    );
   }, [isAppReady, hasCompletedOnboarding, hasActiveProfile]);
 
   // Update hasActiveProfile when activeProfile changes
@@ -147,7 +145,8 @@ const ThemedApp = () => {
     {
       icon: 'zap',
       title: 'Debrid Integration',
-      description: 'Unlock 4K high-quality streams with lightning-fast speeds. Connect your TorBox account to access cached premium content with zero buffering.',
+      description:
+        'Unlock 4K high-quality streams with lightning-fast speeds. Connect your TorBox account to access cached premium content with zero buffering.',
       tag: 'NEW',
     },
   ];
@@ -182,7 +181,6 @@ const ThemedApp = () => {
             setShowAnnouncement(true);
           }, 1000);
         }
-
       } catch (error) {
         console.error('Error initializing app:', error);
         // Default to showing onboarding if we can't check
@@ -201,7 +199,7 @@ const ThemedApp = () => {
     colors: {
       ...CustomDarkTheme.colors,
       primary: currentTheme.colors.primary,
-    }
+    },
   };
 
   const customNavigationTheme = {
@@ -211,10 +209,10 @@ const ThemedApp = () => {
       primary: currentTheme.colors.primary,
       card: currentTheme.colors.darkBackground,
       background: currentTheme.colors.darkBackground,
-    }
+    },
   };
 
-  // Handler for splash screen completion  
+  // Handler for splash screen completion
   const handleSplashComplete = () => {
     setIsAppReady(true);
   };
@@ -238,18 +236,17 @@ const ThemedApp = () => {
 
   // Don't render anything until we know the onboarding status
   const shouldShowApp = isAppReady && hasCompletedOnboarding !== null && hasActiveProfile !== null;
-  const initialRouteName = !hasCompletedOnboarding ? 'Onboarding' : (!hasActiveProfile ? 'ProfileSelector' : 'MainTabs');
+  // Always show ProfileSelector after onboarding (every startup)
+  const initialRouteName = !hasCompletedOnboarding ? 'Onboarding' : 'ProfileSelector';
 
   return (
     <AccountProvider>
       <PaperProvider theme={customDarkTheme}>
-        <NavigationContainer
-          ref={navigationRef}
-          theme={customNavigationTheme}
-          linking={undefined}
-        >
+        <NavigationContainer ref={navigationRef} theme={customNavigationTheme} linking={undefined}>
           <DownloadsProvider>
-            <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+            <View
+              style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+            >
               <StatusBar style="light" />
               {!isAppReady && <SplashScreen onFinish={handleSplashComplete} />}
               {shouldShowApp && (
@@ -287,7 +284,7 @@ const ThemedApp = () => {
       </PaperProvider>
     </AccountProvider>
   );
-}
+};
 
 function App(): React.JSX.Element {
   return (

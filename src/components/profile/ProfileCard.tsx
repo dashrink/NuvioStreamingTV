@@ -11,14 +11,8 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Profile } from '../../contexts/ProfileContext';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  useSharedValue,
-  interpolate,
-  Extrapolate,
-} from 'react-native-reanimated';
+import { Profile, AVATAR_OPTIONS, KIDS_AVATAR_OPTIONS } from '../../types/profile';
+import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 
 // TV detection breakpoint - matches ProfileSwitcherBottomSheet
 const TV_BREAKPOINT = 1440;
@@ -26,11 +20,13 @@ const TV_BREAKPOINT = 1440;
 // Focus animation duration
 const FOCUS_ANIMATION_DURATION = 200;
 
-interface ProfileCardProps {
+export interface ProfileCardProps {
   profile: Profile;
   isActive?: boolean;
   hasPinProtection?: boolean;
+  isEditMode?: boolean;
   onPress: (profile: Profile) => void;
+  onEdit?: (profile: Profile) => void;
   onFocus?: (profileId: string) => void;
   onBlur?: () => void;
   hasTVPreferredFocus?: boolean;
@@ -40,11 +36,20 @@ interface ProfileCardProps {
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
+// Helper to get avatar info from avatarId
+const getAvatarInfo = (avatarId: string, profileType: string) => {
+  const allAvatars = [...AVATAR_OPTIONS, ...KIDS_AVATAR_OPTIONS];
+  const avatar = allAvatars.find(a => a.id === avatarId);
+  return avatar || AVATAR_OPTIONS[0];
+};
+
 export const ProfileCard: React.FC<ProfileCardProps> = ({
   profile,
   isActive = false,
   hasPinProtection = false,
+  isEditMode = false,
   onPress,
+  onEdit,
   onFocus,
   onBlur,
   hasTVPreferredFocus = false,
@@ -54,7 +59,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const { currentTheme } = useTheme();
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
   const [internalFocused, setInternalFocused] = useState(false);
-  const cardRef = useRef<TouchableOpacity | null>(null);
+  const cardRef = useRef<React.ElementRef<typeof TouchableOpacity> | null>(null);
 
   // Animation values
   const focusScale = useSharedValue(1);
@@ -89,8 +94,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   // Handle press
   const handlePress = useCallback(() => {
-    onPress(profile);
-  }, [onPress, profile]);
+    if (isEditMode && onEdit) {
+      onEdit(profile);
+    } else {
+      onPress(profile);
+    }
+  }, [isEditMode, onEdit, onPress, profile]);
 
   // Handle TV focus
   const handleFocus = useCallback(() => {
@@ -117,23 +126,49 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     };
   });
 
-  // Dynamic styles based on state
+  // Dynamic styles based on state - filter out false values
   const containerStyles: ViewStyle[] = [
     styles.container,
-    isTV && styles.containerTV,
-    isActive && {
-      backgroundColor: `${currentTheme.colors.primary}30`,
-      borderColor: currentTheme.colors.primary,
-      borderWidth: 1,
-    },
+    ...(isTV ? [styles.containerTV] : []),
+    ...(isActive
+      ? [
+          {
+            backgroundColor: `${currentTheme.colors.primary}30`,
+            borderColor: currentTheme.colors.primary,
+            borderWidth: 1,
+          },
+        ]
+      : []),
+    ...(isEditMode
+      ? [
+          {
+            opacity: 0.8,
+          },
+        ]
+      : []),
   ];
+
+  // Get avatar info
+  const avatarInfo = useMemo(() => {
+    return getAvatarInfo(profile.avatarId, profile.type);
+  }, [profile.avatarId, profile.type]);
 
   // Get avatar color based on profile or theme
   const avatarColor = useMemo(() => {
+    // Use avatar's own color if available
+    if (avatarInfo.color && !isFocused && !isActive) {
+      return avatarInfo.color;
+    }
     if (isFocused) return currentTheme.colors.primary;
     if (isActive) return currentTheme.colors.primary;
     return currentTheme.colors.text;
-  }, [isFocused, isActive, currentTheme.colors.primary, currentTheme.colors.text]);
+  }, [
+    isFocused,
+    isActive,
+    avatarInfo.color,
+    currentTheme.colors.primary,
+    currentTheme.colors.text,
+  ]);
 
   // Get name text style
   const nameTextStyle: TextStyle = useMemo(() => {
@@ -142,6 +177,9 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       fontWeight: isFocused || isActive ? '600' : '400',
     };
   }, [isFocused, isActive, currentTheme.colors.primary, currentTheme.colors.text]);
+
+  // Check if profile has PIN - use isPinProtected from profile or passed prop
+  const showPinBadge = hasPinProtection || profile.isPinProtected;
 
   return (
     <AnimatedTouchableOpacity
@@ -152,7 +190,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       onBlur={handleBlur}
       activeOpacity={0.7}
       accessible={true}
-      accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${hasPinProtection ? ', PIN protected' : ''}`}
+      accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${showPinBadge ? ', PIN protected' : ''}${isEditMode ? ', tap to edit' : ''}`}
       accessibilityRole="button"
       accessibilityState={{ selected: isActive }}
       testID={testID || `profile-card-${profile.id}`}
@@ -163,47 +201,56 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       })}
     >
       {/* Avatar Container */}
-      <View style={[styles.avatarContainer, isTV && styles.avatarContainerTV]}>
-        {profile.avatar ? (
-          // Custom avatar image would go here when implemented
-          <MaterialIcons
-            name="account-circle"
-            size={isTV ? 72 : 52}
-            color={avatarColor}
-          />
-        ) : (
-          <MaterialIcons
-            name="account-circle"
-            size={isTV ? 72 : 52}
-            color={avatarColor}
-          />
-        )}
+      <View style={[styles.avatarContainer, ...(isTV ? [styles.avatarContainerTV] : [])]}>
+        {/* Use MaterialIcons with the avatar's icon name */}
+        <View
+          style={[
+            styles.avatarCircle,
+            { backgroundColor: `${avatarColor}20` },
+            ...(isTV ? [styles.avatarCircleTV] : []),
+          ]}
+        >
+          <MaterialIcons name={avatarInfo.icon as any} size={isTV ? 48 : 32} color={avatarColor} />
+        </View>
 
         {/* PIN Protection Badge */}
-        {hasPinProtection && (
+        {showPinBadge && (
           <View
             style={[
               styles.pinBadge,
               { backgroundColor: currentTheme.colors.primary },
-              isTV && styles.pinBadgeTV,
+              ...(isTV ? [styles.pinBadgeTV] : []),
             ]}
           >
-            <MaterialIcons
-              name="lock"
-              size={isTV ? 16 : 12}
-              color="#FFFFFF"
-            />
+            <MaterialIcons name="lock" size={isTV ? 16 : 12} color="#FFFFFF" />
+          </View>
+        )}
+
+        {/* Edit Mode Overlay */}
+        {isEditMode && (
+          <View style={styles.editOverlay}>
+            <MaterialIcons name="edit" size={isTV ? 24 : 18} color="#FFFFFF" />
+          </View>
+        )}
+
+        {/* Profile Type Badge for Kids/Teen */}
+        {(profile.type === 'kids' || profile.type === 'teen') && (
+          <View
+            style={[
+              styles.typeBadge,
+              {
+                backgroundColor: profile.type === 'kids' ? '#FF6B6B' : '#6366f1',
+              },
+            ]}
+          >
+            <Text style={styles.typeBadgeText}>{profile.type === 'kids' ? 'Kids' : 'Teen'}</Text>
           </View>
         )}
       </View>
 
       {/* Profile Name */}
       <Text
-        style={[
-          styles.profileName,
-          isTV && styles.profileNameTV,
-          nameTextStyle,
-        ]}
+        style={[styles.profileName, ...(isTV ? [styles.profileNameTV] : []), nameTextStyle]}
         numberOfLines={1}
         ellipsizeMode="tail"
       >
@@ -216,7 +263,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           style={[
             styles.activeIndicator,
             { backgroundColor: currentTheme.colors.primary },
-            isTV && styles.activeIndicatorTV,
+            ...(isTV ? [styles.activeIndicatorTV] : []),
           ]}
         />
       )}
@@ -236,10 +283,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       {/* TV Focus Border - Inner highlight */}
       {isTV && isFocused && (
         <View
-          style={[
-            styles.tvFocusBorder,
-            { borderColor: currentTheme.colors.primary },
-          ]}
+          style={[styles.tvFocusBorder, { borderColor: currentTheme.colors.primary }]}
           pointerEvents="none"
         />
       )}
@@ -283,6 +327,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
+  // Avatar Circle
+  avatarCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  avatarCircleTV: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+
   // PIN Protection Badge - Mobile
   pinBadge: {
     position: 'absolute',
@@ -314,6 +373,35 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     bottom: -4,
     right: -4,
+  },
+
+  // Edit Mode Overlay
+  editOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Profile Type Badge
+  typeBadge: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+
+  typeBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
   },
 
   // Profile Name - Mobile

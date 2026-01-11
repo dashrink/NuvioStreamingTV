@@ -4686,6 +4686,37 @@
         }
       ],
       "status": "completed"
+    },
+    "7.5": {
+      "attempts": [
+        {
+          "session": 6,
+          "timestamp": "2026-01-11T19:15:26.616170",
+          "approach": "Implemented: Unit tests for context state management",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
+    },
+    "7.6": {
+      "attempts": [
+        {
+          "session": 7,
+          "timestamp": "2026-01-11T19:19:59.321419",
+          "approach": "Implemented: Integration tests for focus restoration across screens",
+          "success": true,
+          "error": null
+        },
+        {
+          "session": 1,
+          "timestamp": "2026-01-11T22:43:09.066494",
+          "approach": "Implemented: Integration tests for focus restoration across screens",
+          "success": true,
+          "error": null
+        }
+      ],
+      "status": "completed"
     }
   },
   "stuck_subtasks": [
@@ -4698,6 +4729,6 @@
   ],
   "metadata": {
     "created_at": "2026-01-11T00:57:26.869849",
-    "last_updated": "2026-01-11T19:12:54.642809"
+    "last_updated": "2026-01-11T22:43:09.066515"
   }
 }

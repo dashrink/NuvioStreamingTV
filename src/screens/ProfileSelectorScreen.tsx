@@ -15,7 +15,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useProfile } from '../contexts/ProfileContext';
@@ -23,13 +23,11 @@ import {
   ProfileCard,
   PinEntryModal,
   ProfileEditModal,
+  ForgotPinModal,
 } from '../components/profile';
-import {
-  Profile,
-  CreateProfileInput,
-  MAX_PROFILES,
-} from '../types/profile';
+import { Profile, CreateProfileInput, UpdateProfileInput, MAX_PROFILES } from '../types/profile';
 import CustomAlert from '../components/CustomAlert';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -38,10 +36,8 @@ interface ProfileSelectorScreenProps {
   onProfileSelected?: () => void;
 }
 
-const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
-  onProfileSelected,
-}) => {
-  const navigation = useNavigation();
+const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({ onProfileSelected }) => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const {
     profiles,
@@ -59,6 +55,7 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
   // Modal states
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showForgotPinModal, setShowForgotPinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [pinLockoutInfo, setPinLockoutInfo] = useState<{
@@ -70,11 +67,13 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{
-    label: string;
-    onPress: () => void;
-    style?: object;
-  }>>([]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{
+      label: string;
+      onPress: () => void;
+      style?: object;
+    }>
+  >([]);
 
   const openAlert = (
     title: string,
@@ -87,69 +86,94 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
     setAlertVisible(true);
   };
 
+  // Navigate to MainTabs after profile is selected
+  const navigateToMain = useCallback(() => {
+    onProfileSelected?.();
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      })
+    );
+  }, [navigation, onProfileSelected]);
+
   // Load profiles on mount
   useEffect(() => {
     loadProfiles();
   }, [loadProfiles]);
 
-  const handleProfilePress = useCallback(async (profile: Profile) => {
-    if (isEditMode) {
-      // In edit mode, tapping a profile navigates to edit
-      navigation.navigate('ProfileSettings' as never, { profileId: profile.id } as never);
-      return;
-    }
+  const handleProfilePress = useCallback(
+    async (profile: Profile) => {
+      if (isEditMode) {
+        // In edit mode, tapping a profile opens edit modal (ProfileSettings screen will be added later)
+        // For now, just show an alert
+        openAlert('Edit Profile', `Edit mode for ${profile.name} - feature coming soon`);
+        return;
+      }
 
-    // Check if PIN is required
-    const hasPin = await checkProfileHasPin(profile.id);
-    if (hasPin) {
-      // Check lockout status
-      const lockout = await getLockoutInfo(profile.id);
-      setPinLockoutInfo({
-        lockedUntil: lockout.lockedUntil || undefined,
-        attemptsRemaining: lockout.attemptsRemaining,
-      });
-      setSelectedProfile(profile);
-      setShowPinModal(true);
-      return;
-    }
+      // Check if PIN is required
+      const hasPin = await checkProfileHasPin(profile.id);
+      if (hasPin) {
+        // Check lockout status
+        const lockout = await getLockoutInfo(profile.id);
+        setPinLockoutInfo({
+          lockedUntil: lockout.lockedUntil || undefined,
+          attemptsRemaining: lockout.attemptsRemaining,
+        });
+        setSelectedProfile(profile);
+        setShowPinModal(true);
+        return;
+      }
 
-    // No PIN - switch directly
-    const result = await switchProfile(profile.id);
-    if (result.success) {
-      onProfileSelected?.();
-    } else {
-      openAlert('Error', result.error || 'Failed to switch profile');
-    }
-  }, [isEditMode, checkProfileHasPin, getLockoutInfo, switchProfile, navigation, onProfileSelected]);
+      // No PIN - switch directly
+      const result = await switchProfile(profile.id);
+      if (result.success) {
+        navigateToMain();
+      } else {
+        openAlert('Error', result.error || 'Failed to switch profile');
+      }
+    },
+    [isEditMode, checkProfileHasPin, getLockoutInfo, switchProfile, navigateToMain]
+  );
 
-  const handlePinSubmit = useCallback(async (pin: string) => {
-    if (!selectedProfile) {
-      return { success: false };
-    }
+  const handlePinSubmit = useCallback(
+    async (pin: string) => {
+      if (!selectedProfile) {
+        return { success: false };
+      }
 
-    const result = await switchProfile(selectedProfile.id, pin);
+      const result = await switchProfile(selectedProfile.id, pin);
 
-    if (result.success) {
-      setShowPinModal(false);
-      setSelectedProfile(null);
-      onProfileSelected?.();
-    }
+      if (result.success) {
+        setShowPinModal(false);
+        setSelectedProfile(null);
+        navigateToMain();
+      }
 
-    return {
-      success: result.success,
-      attemptsRemaining: result.attemptsRemaining,
-      lockedUntil: result.lockedUntil,
-    };
-  }, [selectedProfile, switchProfile, onProfileSelected]);
+      return {
+        success: result.success,
+        attemptsRemaining: result.attemptsRemaining,
+        lockedUntil: result.lockedUntil,
+      };
+    },
+    [selectedProfile, switchProfile, navigateToMain]
+  );
 
-  const handleCreateProfile = useCallback(async (input: CreateProfileInput) => {
-    const newProfile = await createProfile(input);
-    if (newProfile) {
-      setShowCreateModal(false);
-      return true;
-    }
-    return false;
-  }, [createProfile]);
+  const handleCreateProfile = useCallback(
+    async (input: CreateProfileInput | UpdateProfileInput) => {
+      // Type guard to ensure we have CreateProfileInput for create mode
+      if (!('type' in input)) {
+        return false;
+      }
+      const newProfile = await createProfile(input as CreateProfileInput);
+      if (newProfile) {
+        setShowCreateModal(false);
+        return true;
+      }
+      return false;
+    },
+    [createProfile]
+  );
 
   const handleAddProfile = useCallback(() => {
     if (!canCreateProfile) {
@@ -162,14 +186,44 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
     setShowCreateModal(true);
   }, [canCreateProfile]);
 
+  // Handle Quick Continue - continue with the last active profile
+  const handleQuickContinue = useCallback(async () => {
+    if (!activeProfile) return;
+
+    const hasPin = await checkProfileHasPin(activeProfile.id);
+    if (hasPin) {
+      // Check lockout status
+      const lockout = await getLockoutInfo(activeProfile.id);
+      setPinLockoutInfo({
+        lockedUntil: lockout.lockedUntil || undefined,
+        attemptsRemaining: lockout.attemptsRemaining,
+      });
+      setSelectedProfile(activeProfile);
+      setShowPinModal(true);
+      return;
+    }
+
+    // No PIN - continue directly
+    navigateToMain();
+  }, [activeProfile, checkProfileHasPin, getLockoutInfo, navigateToMain]);
+
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-        Who's Watching?
-      </Text>
+      <Text style={[styles.title, { color: currentTheme.colors.text }]}>Who's Watching?</Text>
       <Text style={[styles.subtitle, { color: currentTheme.colors.textMuted }]}>
         Select your profile to continue
       </Text>
+      {/* Quick Continue Button - shown when there's an active profile */}
+      {activeProfile && !isEditMode && (
+        <TouchableOpacity
+          style={[styles.quickContinueButton, { backgroundColor: currentTheme.colors.primary }]}
+          onPress={handleQuickContinue}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="play-arrow" size={20} color="#FFF" />
+          <Text style={styles.quickContinueText}>Continue as {activeProfile.name}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -188,7 +242,7 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {profiles.map((profile) => (
+          {profiles.map(profile => (
             <View key={profile.id} style={styles.profileCardWrapper}>
               <ProfileCard
                 profile={profile}
@@ -196,7 +250,8 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
                 isEditMode={isEditMode}
                 onPress={() => handleProfilePress(profile)}
                 onEdit={() => {
-                  navigation.navigate('ProfileSettings' as never, { profileId: profile.id } as never);
+                  // ProfileSettings screen will be added later
+                  openAlert('Edit Profile', `Edit mode for ${profile.name} - feature coming soon`);
                 }}
               />
             </View>
@@ -206,10 +261,7 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
           {canCreateProfile && !isEditMode && (
             <View style={styles.profileCardWrapper}>
               <TouchableOpacity
-                style={[
-                  styles.addProfileCard,
-                  { backgroundColor: currentTheme.colors.elevation2 },
-                ]}
+                style={[styles.addProfileCard, { backgroundColor: currentTheme.colors.elevation2 }]}
                 onPress={handleAddProfile}
                 activeOpacity={0.7}
               >
@@ -221,12 +273,7 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
                 >
                   <MaterialIcons name="add" size={32} color="#FFFFFF" />
                 </View>
-                <Text
-                  style={[
-                    styles.addProfileText,
-                    { color: currentTheme.colors.textMuted },
-                  ]}
-                >
+                <Text style={[styles.addProfileText, { color: currentTheme.colors.textMuted }]}>
                   Add Profile
                 </Text>
               </TouchableOpacity>
@@ -274,10 +321,7 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground },
-      ]}
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
     >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
@@ -289,13 +333,40 @@ const ProfileSelectorScreen: React.FC<ProfileSelectorScreenProps> = ({
       <PinEntryModal
         visible={showPinModal}
         profileName={selectedProfile?.name || ''}
+        profileId={selectedProfile?.id}
         onSubmit={handlePinSubmit}
         onCancel={() => {
           setShowPinModal(false);
           setSelectedProfile(null);
         }}
+        onForgotPin={() => {
+          setShowPinModal(false);
+          setShowForgotPinModal(true);
+        }}
         lockedUntil={pinLockoutInfo.lockedUntil}
         attemptsRemaining={pinLockoutInfo.attemptsRemaining}
+      />
+
+      {/* Forgot PIN Modal */}
+      <ForgotPinModal
+        visible={showForgotPinModal}
+        profileId={selectedProfile?.id || ''}
+        profileName={selectedProfile?.name || ''}
+        onSuccess={() => {
+          setShowForgotPinModal(false);
+          setSelectedProfile(null);
+          openAlert(
+            'Success',
+            'Your PIN has been reset. You can now use your new PIN to access this profile.'
+          );
+        }}
+        onCancel={() => {
+          setShowForgotPinModal(false);
+          // Re-open PIN entry modal
+          if (selectedProfile) {
+            setShowPinModal(true);
+          }
+        }}
       />
 
       {/* Create Profile Modal */}
@@ -335,6 +406,20 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+  },
+  quickContinueButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 20,
+    gap: 8,
+  },
+  quickContinueText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
   profilesContainer: {
     flex: 1,

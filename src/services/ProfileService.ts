@@ -13,6 +13,7 @@ import {
   MAX_PROFILES,
   DEFAULT_PROFILE_PREFERENCES,
   DEFAULT_KIDS_PREFERENCES,
+  DEFAULT_TEEN_PREFERENCES,
   getDefaultMaxAgeRating,
   AVATAR_OPTIONS,
 } from '../types/profile';
@@ -150,6 +151,15 @@ class ProfileService {
       const now = Date.now();
       const isFirstProfile = profiles.length === 0;
       const isKidsProfile = input.type === 'kids';
+      const isTeenProfile = input.type === 'teen';
+
+      // Get default preferences based on profile type
+      let defaultPreferences = DEFAULT_PROFILE_PREFERENCES;
+      if (isKidsProfile) {
+        defaultPreferences = DEFAULT_KIDS_PREFERENCES;
+      } else if (isTeenProfile) {
+        defaultPreferences = DEFAULT_TEEN_PREFERENCES;
+      }
 
       const newProfile: Profile = {
         id: this.generateId(),
@@ -161,7 +171,7 @@ class ProfileService {
         isAdmin: isFirstProfile || input.type === 'admin', // First profile is always admin
         createdAt: now,
         updatedAt: now,
-        preferences: isKidsProfile ? { ...DEFAULT_KIDS_PREFERENCES } : { ...DEFAULT_PROFILE_PREFERENCES },
+        preferences: { ...defaultPreferences },
       };
 
       // Save profiles
@@ -243,9 +253,10 @@ class ProfileService {
         if (!adminExists && updatedProfiles.length > 0) {
           // Promote the oldest adult profile to admin
           const adultProfiles = updatedProfiles.filter(p => p.type !== 'kids');
-          const profileToPromote = adultProfiles.length > 0
-            ? adultProfiles.sort((a, b) => a.createdAt - b.createdAt)[0]
-            : updatedProfiles.sort((a, b) => a.createdAt - b.createdAt)[0];
+          const profileToPromote =
+            adultProfiles.length > 0
+              ? adultProfiles.sort((a, b) => a.createdAt - b.createdAt)[0]
+              : updatedProfiles.sort((a, b) => a.createdAt - b.createdAt)[0];
 
           const promoteIndex = updatedProfiles.findIndex(p => p.id === profileToPromote.id);
           if (promoteIndex !== -1) {

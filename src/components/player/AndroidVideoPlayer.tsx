@@ -978,28 +978,6 @@ const AndroidVideoPlayer: React.FC = () => {
         });
       }, 300);
     };
-
-
-
-
-
-    // TV Event Handler removed from mobile version
-          // D-pad up - show controls
-          if (!showControls) {
-            setShowControls(true);
-            fadeAnim.setValue(1);
-          }
-          resetTVControlsTimeout();
-          break;
-
-        case 'down':
-          // D-pad down - show controls
-          if (!showControls) {
-            setShowControls(true);
-            fadeAnim.setValue(1);
-          }
-
-
     // Handle next episode button press
     const handlePlayNextEpisode = useCallback(async () => {
       if (!nextEpisode || !id || isLoadingNextEpisode) return;

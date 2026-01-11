@@ -1,10 +1,36 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { NavigationContainer, DefaultTheme as NavigationDefaultTheme, DarkTheme as NavigationDarkTheme, Theme, NavigationProp } from '@react-navigation/native';
-import { createNativeStackNavigator, NativeStackNavigationOptions, NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+  NavigationContainer,
+  DefaultTheme as NavigationDefaultTheme,
+  DarkTheme as NavigationDarkTheme,
+  Theme,
+  NavigationProp,
+} from '@react-navigation/native';
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+  NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useColorScheme, Platform, Animated, StatusBar, TouchableOpacity, View, Text, AppState, Easing, Dimensions } from 'react-native';
+import {
+  useColorScheme,
+  Platform,
+  Animated,
+  StatusBar,
+  TouchableOpacity,
+  View,
+  Text,
+  AppState,
+  Easing,
+  Dimensions,
+} from 'react-native';
 import { mmkvStorage } from '../services/mmkvStorage';
-import { PaperProvider, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
+import {
+  PaperProvider,
+  MD3DarkTheme,
+  MD3LightTheme,
+  adaptNavigationTheme,
+} from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
@@ -26,7 +52,8 @@ if (Platform.OS === 'ios') {
     // Dynamically require so app still runs if the package isn't installed yet
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     GlassViewComp = null;
     liquidGlassAvailable = false;
@@ -57,6 +84,7 @@ import TraktSettingsScreen from '../screens/TraktSettingsScreen';
 import PlayerSettingsScreen from '../screens/PlayerSettingsScreen';
 import ThemeScreen from '../screens/ThemeScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import ProfileSelectorScreen from '../screens/ProfileSelectorScreen';
 import AuthScreen from '../screens/AuthScreen';
 import AccountManageScreen from '../screens/AccountManageScreen';
 import { useAccount } from '../contexts/AccountContext';
@@ -88,6 +116,7 @@ if (Platform.OS === 'android') {
 // Stack navigator types
 export type RootStackParamList = {
   Onboarding: undefined;
+  ProfileSelector: undefined;
   MainTabs: undefined;
   Backup: undefined;
   Home: undefined;
@@ -400,60 +429,57 @@ export const CustomNavigationDarkTheme: Theme = {
 type IconNameType = string;
 
 // Add TabIcon component
-const TabIcon = React.memo(({ focused, color, iconName, iconLibrary = 'material' }: {
-  focused: boolean;
-  color: string;
-  iconName: IconNameType;
-  iconLibrary?: 'material' | 'feather' | 'ionicons';
-}) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+const TabIcon = React.memo(
+  ({
+    focused,
+    color,
+    iconName,
+    iconLibrary = 'material',
+  }: {
+    focused: boolean;
+    color: string;
+    iconName: IconNameType;
+    iconLibrary?: 'material' | 'feather' | 'ionicons';
+  }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    Animated.spring(scaleAnim, {
-      toValue: focused ? 1.1 : 1,
-      useNativeDriver: true,
-      friction: 8,
-      tension: 100
-    }).start();
-  }, [focused]);
+    useEffect(() => {
+      Animated.spring(scaleAnim, {
+        toValue: focused ? 1.1 : 1,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 100,
+      }).start();
+    }, [focused]);
 
-  // Use outline variant when available for Material icons; Feather has single-form icons
-  const finalIconName = (() => {
-    if (iconLibrary === 'feather') {
-      return iconName;
-    }
-    if (iconName === 'magnify') return 'magnify';
-    return focused ? iconName : `${iconName}-outline` as IconNameType;
-  })();
+    // Use outline variant when available for Material icons; Feather has single-form icons
+    const finalIconName = (() => {
+      if (iconLibrary === 'feather') {
+        return iconName;
+      }
+      if (iconName === 'magnify') return 'magnify';
+      return focused ? iconName : (`${iconName}-outline` as IconNameType);
+    })();
 
-  return (
-    <Animated.View style={{
-      alignItems: 'center',
-      justifyContent: 'center',
-      transform: [{ scale: scaleAnim }]
-    }}>
-      {iconLibrary === 'feather' ? (
-        <Feather
-          name={finalIconName as any}
-          size={24}
-          color={color}
-        />
-      ) : iconLibrary === 'ionicons' ? (
-        <Ionicons
-          name={finalIconName as any}
-          size={24}
-          color={color}
-        />
-      ) : (
-        <MaterialCommunityIcons
-          name={finalIconName as any}
-          size={24}
-          color={color}
-        />
-      )}
-    </Animated.View>
-  );
-});
+    return (
+      <Animated.View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: [{ scale: scaleAnim }],
+        }}
+      >
+        {iconLibrary === 'feather' ? (
+          <Feather name={finalIconName as any} size={24} color={color} />
+        ) : iconLibrary === 'ionicons' ? (
+          <Ionicons name={finalIconName as any} size={24} color={color} />
+        ) : (
+          <MaterialCommunityIcons name={finalIconName as any} size={24} color={color} />
+        )}
+      </Animated.View>
+    );
+  }
+);
 
 // Update the TabScreenWrapper component with fixed layout dimensions
 const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -470,7 +496,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
   const isTablet = useMemo(() => {
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
-    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+    return Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768;
   }, [dimensions]);
   const insets = useSafeAreaInsets();
   // Force consistent status bar settings
@@ -484,13 +510,14 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
     applyStatusBarConfig();
 
     // Apply status bar config on every focus
-    const subscription = Platform.OS === 'android'
-      ? AppState.addEventListener('change', (state) => {
-        if (state === 'active') {
-          applyStatusBarConfig();
-        }
-      })
-      : { remove: () => { } };
+    const subscription =
+      Platform.OS === 'android'
+        ? AppState.addEventListener('change', state => {
+            if (state === 'active') {
+              applyStatusBarConfig();
+            }
+          })
+        : { remove: () => {} };
 
     return () => {
       subscription.remove();
@@ -498,24 +525,28 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
   }, []);
 
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: colors.darkBackground,
-      // Lock the layout to prevent shifts
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Reserve consistent space for the header area on all screens */}
-      <View style={{
-        height: isTablet ? (insets.top + 64) : (Platform.OS === 'android' ? 80 : 60),
-        width: '100%',
+    <View
+      style={{
+        flex: 1,
         backgroundColor: colors.darkBackground,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: -1
-      }} />
+        // Lock the layout to prevent shifts
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Reserve consistent space for the header area on all screens */}
+      <View
+        style={{
+          height: isTablet ? insets.top + 64 : Platform.OS === 'android' ? 80 : 60,
+          width: '100%',
+          backgroundColor: colors.darkBackground,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: -1,
+        }}
+      />
       {children}
     </View>
   );
@@ -555,7 +586,7 @@ const MainTabs = () => {
       try {
         const flag = await mmkvStorage.getItem('@update_badge_pending');
         if (mounted) setHasUpdateBadge(flag === 'true');
-      } catch { }
+      } catch {}
     };
     load();
     // Fast poll initially for quick badge appearance, then slow down
@@ -583,7 +614,7 @@ const MainTabs = () => {
   const isTablet = useMemo(() => {
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
-    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+    return Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768;
   }, [dimensions]);
   const insets = useSafeAreaInsets();
   const isIosTablet = Platform.OS === 'ios' && isTablet;
@@ -616,29 +647,37 @@ const MainTabs = () => {
       // Top floating, text-only pill nav for tablets
       return (
         <Animated.View
-          style={[{
-            position: 'absolute',
-            top: insets.top + 12,
-            left: 0,
-            right: 0,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-            zIndex: 100,
-          }, shouldKeepFixed ? {} : {
-            transform: [{ translateY }],
-            opacity: fade,
-          }]}>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderRadius: 28,
-            overflow: 'hidden',
-            padding: 4,
-            position: 'relative',
-            backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)'
-          }}>
-            {isIosTablet && (
-              GlassViewComp && liquidGlassAvailable ? (
+          style={[
+            {
+              position: 'absolute',
+              top: insets.top + 12,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+              zIndex: 100,
+            },
+            shouldKeepFixed
+              ? {}
+              : {
+                  transform: [{ translateY }],
+                  opacity: fade,
+                },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 28,
+              overflow: 'hidden',
+              padding: 4,
+              position: 'relative',
+              backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)',
+            }}
+          >
+            {isIosTablet &&
+              (GlassViewComp && liquidGlassAvailable ? (
                 <GlassViewComp
                   style={{
                     position: 'absolute',
@@ -663,8 +702,7 @@ const MainTabs = () => {
                     borderRadius: 28,
                   }}
                 />
-              )
-            )}
+              ))}
             {props.state.routes.map((route, index) => {
               const { options } = props.descriptors[route.key];
               const label =
@@ -697,7 +735,11 @@ const MainTabs = () => {
                   onPress={onPress}
                   hasTVPreferredFocus={index === 0}
                   accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
-                  accessibilityHint={isFocused ? 'Currently selected' : `Navigate to ${typeof label === 'string' ? label : route.name}`}
+                  accessibilityHint={
+                    isFocused
+                      ? 'Currently selected'
+                      : `Navigate to ${typeof label === 'string' ? label : route.name}`
+                  }
                   style={{
                     paddingHorizontal: 16,
                     paddingVertical: 10,
@@ -706,12 +748,14 @@ const MainTabs = () => {
                   }}
                   activeOpacity={0.8}
                 >
-                  <Text style={{
-                    color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                    fontWeight: '700',
-                    fontSize: 14,
-                    letterSpacing: 0.2,
-                  }}>
+                  <Text
+                    style={{
+                      color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
+                      fontWeight: '700',
+                      fontSize: 14,
+                      letterSpacing: 0.2,
+                    }}
+                  >
                     {typeof label === 'string' ? label : ''}
                   </Text>
                 </Focusable>
@@ -734,11 +778,13 @@ const MainTabs = () => {
             >
               <ProfileIcon size={20} color={currentTheme.colors.white} />
               {activeProfile && (
-                <Text style={{
-                  color: currentTheme.colors.white,
-                  fontWeight: '600',
-                  fontSize: 13,
-                }}>
+                <Text
+                  style={{
+                    color: currentTheme.colors.white,
+                    fontWeight: '600',
+                    fontSize: 13,
+                  }}
+                >
                   {activeProfile.name}
                 </Text>
               )}
@@ -750,15 +796,17 @@ const MainTabs = () => {
 
     // Default bottom tab for phones
     return (
-      <View style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: Platform.OS === 'android' ? 70 + insets.bottom : 85 + insets.bottom,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-      }}>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: Platform.OS === 'android' ? 70 + insets.bottom : 85 + insets.bottom,
+          backgroundColor: 'transparent',
+          overflow: 'hidden',
+        }}
+      >
         {Platform.OS === 'ios' ? (
           GlassViewComp && liquidGlassAvailable ? (
             <GlassViewComp
@@ -869,7 +917,11 @@ const MainTabs = () => {
                   onPress={onPress}
                   hasTVPreferredFocus={index === 0}
                   accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
-                  accessibilityHint={isFocused ? 'Currently selected' : `Navigate to ${typeof label === 'string' ? label : route.name}`}
+                  accessibilityHint={
+                    isFocused
+                      ? 'Currently selected'
+                      : `Navigate to ${typeof label === 'string' ? label : route.name}`
+                  }
                   style={{
                     flex: 1,
                     justifyContent: 'center',
@@ -915,11 +967,7 @@ const MainTabs = () => {
 
     return (
       <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
-        <StatusBar
-          translucent
-          barStyle="light-content"
-          backgroundColor="transparent"
-        />
+        <StatusBar translucent barStyle="light-content" backgroundColor="transparent" />
         <IOSTab.Navigator
           key={`ios-tabs-${downloadsEnabled ? 'with-dl' : 'no-dl'}`}
           initialRouteName="Home"
@@ -999,12 +1047,16 @@ const MainTabs = () => {
         >
           <ProfileIcon size={18} color={currentTheme.colors.white} />
           {activeProfile && !isTablet && (
-            <Text style={{
-              color: currentTheme.colors.white,
-              fontWeight: '600',
-              fontSize: 12,
-            }}>
-              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            <Text
+              style={{
+                color: currentTheme.colors.white,
+                fontWeight: '600',
+                fontSize: 12,
+              }}
+            >
+              {activeProfile.name.length > 8
+                ? activeProfile.name.slice(0, 8) + '...'
+                : activeProfile.name}
             </Text>
           )}
         </TouchableOpacity>
@@ -1021,11 +1073,7 @@ const MainTabs = () => {
   return (
     <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
       {/* Common StatusBar for all tabs */}
-      <StatusBar
-        translucent
-        barStyle="light-content"
-        backgroundColor="transparent"
-      />
+      <StatusBar translucent barStyle="light-content" backgroundColor="transparent" />
 
       <Tab.Navigator
         tabBar={renderTabBar}
@@ -1079,7 +1127,11 @@ const MainTabs = () => {
           options={{
             tabBarLabel: 'Home',
             tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+              <MaterialCommunityIcons
+                name={focused ? 'home' : 'home-outline'}
+                size={size}
+                color={color}
+              />
             ),
             freezeOnBlur: true,
           }}
@@ -1090,7 +1142,11 @@ const MainTabs = () => {
           options={{
             tabBarLabel: 'Library',
             tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons name={focused ? 'heart' : 'heart-outline'} size={size} color={color} />
+              <MaterialCommunityIcons
+                name={focused ? 'heart' : 'heart-outline'}
+                size={size}
+                color={color}
+              />
             ),
           }}
         />
@@ -1111,7 +1167,11 @@ const MainTabs = () => {
             options={{
               tabBarLabel: 'Downloads',
               tabBarIcon: ({ color, size, focused }) => (
-                <MaterialCommunityIcons name={focused ? 'download' : 'download-outline'} size={size} color={color} />
+                <MaterialCommunityIcons
+                  name={focused ? 'download' : 'download-outline'}
+                  size={size}
+                  color={color}
+                />
               ),
             }}
           />
@@ -1122,7 +1182,11 @@ const MainTabs = () => {
           options={{
             tabBarLabel: 'Settings',
             tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons name={focused ? 'cog' : 'cog-outline'} size={size} color={color} />
+              <MaterialCommunityIcons
+                name={focused ? 'cog' : 'cog-outline'}
+                size={size}
+                color={color}
+              />
             ),
           }}
         />
@@ -1149,12 +1213,16 @@ const MainTabs = () => {
         >
           <ProfileIcon size={18} color={currentTheme.colors.white} />
           {activeProfile && (
-            <Text style={{
-              color: currentTheme.colors.white,
-              fontWeight: '600',
-              fontSize: 12,
-            }}>
-              {activeProfile.name.length > 8 ? activeProfile.name.slice(0, 8) + '...' : activeProfile.name}
+            <Text
+              style={{
+                color: currentTheme.colors.white,
+                fontWeight: '600',
+                fontSize: 12,
+              }}
+            >
+              {activeProfile.name.length > 8
+                ? activeProfile.name.slice(0, 8) + '...'
+                : activeProfile.name}
             </Text>
           )}
         </TouchableOpacity>
@@ -1222,20 +1290,18 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <PaperProvider theme={CustomDarkTheme}>
-        <View style={{
-          flex: 1,
-          backgroundColor: currentTheme.colors.darkBackground,
-          ...(Platform.OS === 'android' && {
-            // Prevent white flashes on Android
-            opacity: 1,
-          })
-        }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: currentTheme.colors.darkBackground,
+            ...(Platform.OS === 'android' && {
+              // Prevent white flashes on Android
+              opacity: 1,
+            }),
+          }}
+        >
           <Stack.Navigator
             initialRouteName={initialRouteName || 'MainTabs'}
             screenOptions={{
@@ -1281,6 +1347,18 @@ const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootSta
             <Stack.Screen
               name="Onboarding"
               component={OnboardingScreen}
+              options={{
+                headerShown: false,
+                animation: 'fade',
+                animationDuration: 300,
+                contentStyle: {
+                  backgroundColor: currentTheme.colors.darkBackground,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ProfileSelector"
+              component={ProfileSelectorScreen}
               options={{
                 headerShown: false,
                 animation: 'fade',
@@ -1732,7 +1810,7 @@ const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStack
   <PostHogProvider
     apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
     options={{
-      host: "https://us.i.posthog.com",
+      host: 'https://us.i.posthog.com',
     }}
   >
     <ProfileProvider>

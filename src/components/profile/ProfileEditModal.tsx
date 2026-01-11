@@ -25,6 +25,8 @@ import {
   UpdateProfileInput,
   Profile,
   MAX_PROFILES,
+  PROFILE_AGE_RATING_BOUNDS,
+  isAgeRatingWithinBounds,
 } from '../../types/profile';
 
 interface ProfileEditModalProps {
@@ -128,13 +130,18 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const handleProfileTypeChange = (type: ProfileType) => {
     setProfileType(type);
-    // Automatically set appropriate age rating for kids profiles
+    // Automatically set appropriate age rating based on profile type
     if (type === 'kids') {
       setMaxAgeRating('TV-PG');
+    } else if (type === 'teen') {
+      setMaxAgeRating('TV-14');
+    } else {
+      setMaxAgeRating('NC-17');
     }
   };
 
   const isKidsProfile = profileType === 'kids';
+  const isTeenProfile = profileType === 'teen';
 
   return (
     <Modal
@@ -145,12 +152,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       onRequestClose={onCancel}
     >
       <View style={styles.overlay}>
-        <View
-          style={[
-            styles.container,
-            { backgroundColor: currentTheme.colors.darkBackground },
-          ]}
-        >
+        <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
@@ -161,15 +163,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             </Text>
             <TouchableOpacity
               onPress={handleSave}
-              style={[
-                styles.saveButton,
-                { backgroundColor: currentTheme.colors.primary },
-              ]}
+              style={[styles.saveButton, { backgroundColor: currentTheme.colors.primary }]}
               disabled={isLoading}
             >
-              <Text style={styles.saveButtonText}>
-                {isLoading ? 'Saving...' : 'Save'}
-              </Text>
+              <Text style={styles.saveButtonText}>{isLoading ? 'Saving...' : 'Save'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -181,10 +178,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             {/* Error message */}
             {error && (
               <View
-                style={[
-                  styles.errorBanner,
-                  { backgroundColor: `${currentTheme.colors.error}20` },
-                ]}
+                style={[styles.errorBanner, { backgroundColor: `${currentTheme.colors.error}20` }]}
               >
                 <MaterialIcons name="error" size={20} color={currentTheme.colors.error} />
                 <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>
@@ -227,12 +221,14 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                     style={[
                       styles.typeOption,
                       {
-                        backgroundColor: profileType === 'standard'
-                          ? currentTheme.colors.primary
-                          : currentTheme.colors.elevation2,
-                        borderColor: profileType === 'standard'
-                          ? currentTheme.colors.primary
-                          : currentTheme.colors.border,
+                        backgroundColor:
+                          profileType === 'standard'
+                            ? currentTheme.colors.primary
+                            : currentTheme.colors.elevation2,
+                        borderColor:
+                          profileType === 'standard'
+                            ? currentTheme.colors.primary
+                            : currentTheme.colors.border,
                       },
                     ]}
                     onPress={() => handleProfileTypeChange('standard')}
@@ -246,25 +242,49 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                       style={[
                         styles.typeLabel,
                         {
-                          color: profileType === 'standard'
-                            ? '#FFF'
-                            : currentTheme.colors.text,
+                          color: profileType === 'standard' ? '#FFF' : currentTheme.colors.text,
                         },
                       ]}
                     >
-                      Standard
+                      Adult
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.typeOption,
                       {
-                        backgroundColor: profileType === 'kids'
-                          ? '#FF6B6B'
-                          : currentTheme.colors.elevation2,
-                        borderColor: profileType === 'kids'
-                          ? '#FF6B6B'
-                          : currentTheme.colors.border,
+                        backgroundColor:
+                          profileType === 'teen' ? '#6366f1' : currentTheme.colors.elevation2,
+                        borderColor:
+                          profileType === 'teen' ? '#6366f1' : currentTheme.colors.border,
+                      },
+                    ]}
+                    onPress={() => handleProfileTypeChange('teen')}
+                  >
+                    <MaterialIcons
+                      name="school"
+                      size={24}
+                      color={profileType === 'teen' ? '#FFF' : currentTheme.colors.text}
+                    />
+                    <Text
+                      style={[
+                        styles.typeLabel,
+                        {
+                          color: profileType === 'teen' ? '#FFF' : currentTheme.colors.text,
+                        },
+                      ]}
+                    >
+                      Teen
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeOption,
+                      {
+                        backgroundColor:
+                          profileType === 'kids' ? '#FF6B6B' : currentTheme.colors.elevation2,
+                        borderColor:
+                          profileType === 'kids' ? '#FF6B6B' : currentTheme.colors.border,
                       },
                     ]}
                     onPress={() => handleProfileTypeChange('kids')}
@@ -278,9 +298,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                       style={[
                         styles.typeLabel,
                         {
-                          color: profileType === 'kids'
-                            ? '#FFF'
-                            : currentTheme.colors.text,
+                          color: profileType === 'kids' ? '#FFF' : currentTheme.colors.text,
                         },
                       ]}
                     >
@@ -290,7 +308,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 </View>
                 {isKidsProfile && (
                   <Text style={[styles.hint, { color: currentTheme.colors.textMuted }]}>
-                    Kids profiles only show age-appropriate content (G, PG, TV-Y, TV-Y7, TV-G, TV-PG)
+                    Kids profiles only show age-appropriate content (G, PG, TV-Y, TV-Y7, TV-G,
+                    TV-PG)
+                  </Text>
+                )}
+                {isTeenProfile && (
+                  <Text style={[styles.hint, { color: currentTheme.colors.textMuted }]}>
+                    Teen profiles show content up to PG-13/TV-14. Admin can adjust the limit.
                   </Text>
                 )}
               </View>
@@ -301,27 +325,33 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               selectedAvatarId={avatarId}
               onSelect={setAvatarId}
               isKidsProfile={isKidsProfile}
+              isTeenProfile={isTeenProfile}
             />
 
-            {/* Age Rating (not for kids profiles) */}
+            {/* Age Rating (not for kids profiles - they have fixed rating) */}
             {!isKidsProfile && (
               <View style={styles.section}>
                 <Text style={[styles.label, { color: currentTheme.colors.textMuted }]}>
                   Content Rating Limit
+                  {isTeenProfile && ' (Admin configurable within bounds)'}
                 </Text>
                 <View style={styles.ratingOptions}>
-                  {AGE_RATING_OPTIONS.map((option) => (
+                  {AGE_RATING_OPTIONS.filter(option =>
+                    isAgeRatingWithinBounds(option.value, profileType)
+                  ).map(option => (
                     <TouchableOpacity
                       key={option.value}
                       style={[
                         styles.ratingOption,
                         {
-                          backgroundColor: maxAgeRating === option.value
-                            ? `${currentTheme.colors.primary}20`
-                            : currentTheme.colors.elevation2,
-                          borderColor: maxAgeRating === option.value
-                            ? currentTheme.colors.primary
-                            : currentTheme.colors.border,
+                          backgroundColor:
+                            maxAgeRating === option.value
+                              ? `${currentTheme.colors.primary}20`
+                              : currentTheme.colors.elevation2,
+                          borderColor:
+                            maxAgeRating === option.value
+                              ? currentTheme.colors.primary
+                              : currentTheme.colors.border,
                         },
                       ]}
                       onPress={() => setMaxAgeRating(option.value)}
@@ -331,9 +361,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                           style={[
                             styles.ratingLabel,
                             {
-                              color: maxAgeRating === option.value
-                                ? currentTheme.colors.primary
-                                : currentTheme.colors.text,
+                              color:
+                                maxAgeRating === option.value
+                                  ? currentTheme.colors.primary
+                                  : currentTheme.colors.text,
                             },
                           ]}
                         >
@@ -380,13 +411,19 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                     <MaterialIcons
                       name="lock"
                       size={24}
-                      color={profile.isPinProtected ? currentTheme.colors.primary : currentTheme.colors.textMuted}
+                      color={
+                        profile.isPinProtected
+                          ? currentTheme.colors.primary
+                          : currentTheme.colors.textMuted
+                      }
                     />
                     <View style={styles.pinTextContainer}>
                       <Text style={[styles.pinTitle, { color: currentTheme.colors.text }]}>
                         Profile PIN
                       </Text>
-                      <Text style={[styles.pinDescription, { color: currentTheme.colors.textMuted }]}>
+                      <Text
+                        style={[styles.pinDescription, { color: currentTheme.colors.textMuted }]}
+                      >
                         {profile.isPinProtected
                           ? 'This profile is PIN protected'
                           : 'Add a PIN to lock this profile'}

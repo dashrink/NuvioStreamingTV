@@ -85,71 +85,84 @@ function getGridLayout(screenWidth: number): { numColumns: number; itemWidth: nu
   return { numColumns, itemWidth };
 }
 
-const TraktItem = React.memo(({
-  item,
-  width,
-  navigation,
-  currentTheme,
-  showTitles
-}: {
-  item: TraktDisplayItem;
-  width: number;
-  navigation: any;
-  currentTheme: any;
-  showTitles: boolean;
-}) => {
-  const [posterUrl, setPosterUrl] = useState<string | null>(null);
+const TraktItem = React.memo(
+  ({
+    item,
+    width,
+    navigation,
+    currentTheme,
+    showTitles,
+  }: {
+    item: TraktDisplayItem;
+    width: number;
+    navigation: any;
+    currentTheme: any;
+    showTitles: boolean;
+  }) => {
+    const [posterUrl, setPosterUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchPoster = async () => {
-      if (item.images) {
-        const url = TraktService.getTraktPosterUrl(item.images);
-        if (isMounted && url) {
-          setPosterUrl(url);
+    useEffect(() => {
+      let isMounted = true;
+      const fetchPoster = async () => {
+        if (item.images) {
+          const url = TraktService.getTraktPosterUrl(item.images);
+          if (isMounted && url) {
+            setPosterUrl(url);
+          }
         }
+      };
+      fetchPoster();
+      return () => {
+        isMounted = false;
+      };
+    }, [item.images]);
+
+    const handlePress = useCallback(() => {
+      triggerLight();
+      if (item.imdbId) {
+        navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
       }
-    };
-    fetchPoster();
-    return () => { isMounted = false; };
-  }, [item.images]);
+    }, [navigation, item.imdbId, item.type]);
 
-  const handlePress = useCallback(() => {
-    triggerLight();
-    if (item.imdbId) {
-      navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
-    }
-  }, [navigation, item.imdbId, item.type]);
-
-  return (
-    <TouchableOpacity
-      style={[styles.itemContainer, { width }]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      <View>
-        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
-          {posterUrl ? (
-            <FastImage
-              source={{ uri: posterUrl }}
-              style={styles.poster}
-              resizeMode={FastImage.resizeMode.cover}
-            />
-          ) : (
-            <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center' }]}>
-              <UnifiedSpinner size="small" />
-            </View>
+    return (
+      <TouchableOpacity
+        style={[styles.itemContainer, { width }]}
+        onPress={handlePress}
+        activeOpacity={0.7}
+      >
+        <View>
+          <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
+            {posterUrl ? (
+              <FastImage
+                source={{ uri: posterUrl }}
+                style={styles.poster}
+                resizeMode={FastImage.resizeMode.cover}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.poster,
+                  {
+                    backgroundColor: currentTheme.colors.elevation1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                ]}
+              >
+                <UnifiedSpinner size="small" />
+              </View>
+            )}
+          </View>
+          {showTitles && (
+            <Text style={[styles.cardTitle, { color: currentTheme.colors.mediumEmphasis }]}>
+              {item.name}
+            </Text>
           )}
         </View>
-        {showTitles && (
-          <Text style={[styles.cardTitle, { color: currentTheme.colors.mediumEmphasis }]}>
-            {item.name}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-});
+      </TouchableOpacity>
+    );
+  }
+);
 
 /**
  * LibrarySkeletonLoader - Uses unified PosterGridSkeleton for consistent loading UI
@@ -161,12 +174,7 @@ const LibrarySkeletonLoader = () => {
 
   return (
     <View style={styles.skeletonContainer}>
-      <PosterGridSkeleton
-        columns={numColumns}
-        rows={2}
-        gap={12}
-        testID="library-skeleton"
-      />
+      <PosterGridSkeleton columns={numColumns} rows={2} gap={12} testID="library-skeleton" />
     </View>
   );
 };
@@ -200,7 +208,7 @@ const LibraryScreen = () => {
     continueWatching,
     ratedContent,
     loadWatchedItems,
-    loadAllCollections
+    loadAllCollections,
   } = useTraktContext();
 
   useEffect(() => {
@@ -246,19 +254,23 @@ const LibraryScreen = () => {
           return timeB - timeA;
         });
 
-        const updatedItems = await Promise.all(sortedItems.map(async (item) => {
-          const libraryItem: LibraryItem = {
-            ...item,
-            gradient: Array.isArray((item as any).gradient) ? (item as any).gradient : ['#222', '#444'],
-            traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
-          };
-          const key = `watched:${item.type}:${item.id}`;
-          const watched = await mmkvStorage.getItem(key);
-          return {
-            ...libraryItem,
-            watched: watched === 'true'
-          };
-        }));
+        const updatedItems = await Promise.all(
+          sortedItems.map(async item => {
+            const libraryItem: LibraryItem = {
+              ...item,
+              gradient: Array.isArray((item as any).gradient)
+                ? (item as any).gradient
+                : ['#222', '#444'],
+              traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
+            };
+            const key = `watched:${item.type}:${item.id}`;
+            const watched = await mmkvStorage.getItem(key);
+            return {
+              ...libraryItem,
+              watched: watched === 'true',
+            };
+          })
+        );
         setLibraryItems(updatedItems);
       } catch (error) {
         logger.error('Failed to load library:', error);
@@ -269,26 +281,30 @@ const LibraryScreen = () => {
 
     loadLibrary();
 
-    const unsubscribe = catalogService.subscribeToLibraryUpdates(async (items) => {
+    const unsubscribe = catalogService.subscribeToLibraryUpdates(async items => {
       const sortedItems = items.sort((a, b) => {
         const timeA = (a as any).addedToLibraryAt || 0;
         const timeB = (b as any).addedToLibraryAt || 0;
         return timeB - timeA;
       });
 
-      const updatedItems = await Promise.all(sortedItems.map(async (item) => {
-        const libraryItem: LibraryItem = {
-          ...item,
-          gradient: Array.isArray((item as any).gradient) ? (item as any).gradient : ['#222', '#444'],
-          traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
-        };
-        const key = `watched:${item.type}:${item.id}`;
-        const watched = await mmkvStorage.getItem(key);
-        return {
-          ...libraryItem,
-          watched: watched === 'true'
-        };
-      }));
+      const updatedItems = await Promise.all(
+        sortedItems.map(async item => {
+          const libraryItem: LibraryItem = {
+            ...item,
+            gradient: Array.isArray((item as any).gradient)
+              ? (item as any).gradient
+              : ['#222', '#444'],
+            traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
+          };
+          const key = `watched:${item.type}:${item.id}`;
+          const watched = await mmkvStorage.getItem(key);
+          return {
+            ...libraryItem,
+            watched: watched === 'true',
+          };
+        })
+      );
       setLibraryItems(updatedItems);
     });
 
@@ -341,11 +357,21 @@ const LibraryScreen = () => {
         name: 'Rated',
         icon: 'star',
         itemCount: ratedContent?.length || 0,
-      }
+      },
     ];
 
     return folders.filter(folder => folder.itemCount > 0);
-  }, [traktAuthenticated, watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
+  }, [
+    traktAuthenticated,
+    watchedMovies,
+    watchedShows,
+    watchlistMovies,
+    watchlistShows,
+    collectionMovies,
+    collectionShows,
+    continueWatching,
+    ratedContent,
+  ]);
 
   const renderItem = ({ item }: { item: LibraryItem }) => (
     <TouchableOpacity
@@ -370,7 +396,11 @@ const LibraryScreen = () => {
           />
           {item.watched && (
             <View style={styles.watchedIndicator}>
-              <MaterialIcons name="check-circle" size={22} color={currentTheme.colors.success || '#4CAF50'} />
+              <MaterialIcons
+                name="check-circle"
+                size={22}
+                color={currentTheme.colors.success || '#4CAF50'}
+              />
             </View>
           )}
           {item.progress !== undefined && item.progress < 1 && (
@@ -378,7 +408,10 @@ const LibraryScreen = () => {
               <View
                 style={[
                   styles.progressBar,
-                  { width: `${item.progress * 100}%`, backgroundColor: currentTheme.colors.primary }
+                  {
+                    width: `${item.progress * 100}%`,
+                    backgroundColor: currentTheme.colors.primary,
+                  },
                 ]}
               />
             </View>
@@ -403,7 +436,16 @@ const LibraryScreen = () => {
       }}
       activeOpacity={0.7}
     >
-      <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+      <View
+        style={[
+          styles.posterContainer,
+          styles.folderContainer,
+          {
+            shadowColor: currentTheme.colors.black,
+            backgroundColor: currentTheme.colors.elevation1,
+          },
+        ]}
+      >
         <View style={styles.folderGradient}>
           <MaterialIcons
             name={folder.icon}
@@ -414,9 +456,7 @@ const LibraryScreen = () => {
           <Text style={[styles.folderTitle, { color: currentTheme.colors.white }]}>
             {folder.name}
           </Text>
-          <Text style={styles.folderCount}>
-            {folder.itemCount} items
-          </Text>
+          <Text style={styles.folderCount}>{folder.itemCount} items</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -438,16 +478,21 @@ const LibraryScreen = () => {
       activeOpacity={0.7}
     >
       <View>
-        <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
+        <View
+          style={[
+            styles.posterContainer,
+            styles.folderContainer,
+            {
+              shadowColor: currentTheme.colors.black,
+              backgroundColor: currentTheme.colors.elevation1,
+            },
+          ]}
+        >
           <View style={styles.folderGradient}>
             <TraktIcon width={48} height={48} style={{ marginBottom: 8 }} />
-            <Text style={[styles.folderTitle, { color: currentTheme.colors.white }]}>
-              Trakt
-            </Text>
+            <Text style={[styles.folderTitle, { color: currentTheme.colors.white }]}>Trakt</Text>
             {traktAuthenticated && traktFolders.length > 0 && (
-              <Text style={styles.folderCount}>
-                {traktFolders.length} items
-              </Text>
+              <Text style={styles.folderCount}>{traktFolders.length} items</Text>
             )}
           </View>
         </View>
@@ -460,214 +505,231 @@ const LibraryScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderTraktItem = useCallback(({ item }: { item: TraktDisplayItem }) => {
-    return <TraktItem
-      item={item}
-      width={itemWidth}
-      navigation={navigation}
-      currentTheme={currentTheme}
-      showTitles={settings.showPosterTitles}
-    />;
-  }, [itemWidth, navigation, currentTheme, settings.showPosterTitles]);
+  const renderTraktItem = useCallback(
+    ({ item }: { item: TraktDisplayItem }) => {
+      return (
+        <TraktItem
+          item={item}
+          width={itemWidth}
+          navigation={navigation}
+          currentTheme={currentTheme}
+          showTitles={settings.showPosterTitles}
+        />
+      );
+    },
+    [itemWidth, navigation, currentTheme, settings.showPosterTitles]
+  );
 
-  const getTraktFolderItems = useCallback((folderId: string): TraktDisplayItem[] => {
-    const items: TraktDisplayItem[] = [];
+  const getTraktFolderItems = useCallback(
+    (folderId: string): TraktDisplayItem[] => {
+      const items: TraktDisplayItem[] = [];
 
-    switch (folderId) {
-      case 'watched':
-        if (watchedMovies) {
-          for (const watchedMovie of watchedMovies) {
-            const movie = watchedMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: watchedMovie.last_watched_at,
-                plays: watchedMovie.plays,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+      switch (folderId) {
+        case 'watched':
+          if (watchedMovies) {
+            for (const watchedMovie of watchedMovies) {
+              const movie = watchedMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: watchedMovie.last_watched_at,
+                  plays: watchedMovie.plays,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (watchedShows) {
-          for (const watchedShow of watchedShows) {
-            const show = watchedShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: watchedShow.last_watched_at,
-                plays: watchedShow.plays,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (watchedShows) {
+            for (const watchedShow of watchedShows) {
+              const show = watchedShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: watchedShow.last_watched_at,
+                  plays: watchedShow.plays,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'continue-watching':
-        if (continueWatching) {
-          for (const item of continueWatching) {
-            if (item.type === 'movie' && item.movie) {
-              items.push({
-                id: String(item.movie.ids.trakt),
-                name: item.movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: item.movie.year,
-                lastWatched: item.paused_at,
-                imdbId: item.movie.ids.imdb,
-                traktId: item.movie.ids.trakt,
-                images: item.movie.images,
-              });
-            } else if (item.type === 'episode' && item.show && item.episode) {
-              items.push({
-                id: `${item.show.ids.trakt}:${item.episode.season}:${item.episode.number}`,
-                name: `${item.show.title} S${item.episode.season}E${item.episode.number}`,
-                type: 'series',
-                poster: 'placeholder',
-                year: item.show.year,
-                lastWatched: item.paused_at,
-                imdbId: item.show.ids.imdb,
-                traktId: item.show.ids.trakt,
-                images: item.show.images,
-              });
+        case 'continue-watching':
+          if (continueWatching) {
+            for (const item of continueWatching) {
+              if (item.type === 'movie' && item.movie) {
+                items.push({
+                  id: String(item.movie.ids.trakt),
+                  name: item.movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: item.movie.year,
+                  lastWatched: item.paused_at,
+                  imdbId: item.movie.ids.imdb,
+                  traktId: item.movie.ids.trakt,
+                  images: item.movie.images,
+                });
+              } else if (item.type === 'episode' && item.show && item.episode) {
+                items.push({
+                  id: `${item.show.ids.trakt}:${item.episode.season}:${item.episode.number}`,
+                  name: `${item.show.title} S${item.episode.season}E${item.episode.number}`,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: item.show.year,
+                  lastWatched: item.paused_at,
+                  imdbId: item.show.ids.imdb,
+                  traktId: item.show.ids.trakt,
+                  images: item.show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'watchlist':
-        if (watchlistMovies) {
-          for (const watchlistMovie of watchlistMovies) {
-            const movie = watchlistMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: watchlistMovie.listed_at,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+        case 'watchlist':
+          if (watchlistMovies) {
+            for (const watchlistMovie of watchlistMovies) {
+              const movie = watchlistMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: watchlistMovie.listed_at,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (watchlistShows) {
-          for (const watchlistShow of watchlistShows) {
-            const show = watchlistShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: watchlistShow.listed_at,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (watchlistShows) {
+            for (const watchlistShow of watchlistShows) {
+              const show = watchlistShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: watchlistShow.listed_at,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'collection':
-        if (collectionMovies) {
-          for (const collectionMovie of collectionMovies) {
-            const movie = collectionMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: collectionMovie.collected_at,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+        case 'collection':
+          if (collectionMovies) {
+            for (const collectionMovie of collectionMovies) {
+              const movie = collectionMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: collectionMovie.collected_at,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (collectionShows) {
-          for (const collectionShow of collectionShows) {
-            const show = collectionShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: collectionShow.collected_at,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (collectionShows) {
+            for (const collectionShow of collectionShows) {
+              const show = collectionShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: collectionShow.collected_at,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'ratings':
-        if (ratedContent) {
-          for (const ratedItem of ratedContent) {
-            if (ratedItem.movie) {
-              const movie = ratedItem.movie;
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: ratedItem.rated_at,
-                rating: ratedItem.rating,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
-            } else if (ratedItem.show) {
-              const show = ratedItem.show;
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: ratedItem.rated_at,
-                rating: ratedItem.rating,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+        case 'ratings':
+          if (ratedContent) {
+            for (const ratedItem of ratedContent) {
+              if (ratedItem.movie) {
+                const movie = ratedItem.movie;
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: ratedItem.rated_at,
+                  rating: ratedItem.rating,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              } else if (ratedItem.show) {
+                const show = ratedItem.show;
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: ratedItem.rated_at,
+                  rating: ratedItem.rating,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
-    }
+          break;
+      }
 
-    return items.sort((a, b) => {
-      const dateA = a.lastWatched ? new Date(a.lastWatched).getTime() : 0;
-      const dateB = b.lastWatched ? new Date(b.lastWatched).getTime() : 0;
-      return dateB - dateA;
-    });
-  }, [watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
+      return items.sort((a, b) => {
+        const dateA = a.lastWatched ? new Date(a.lastWatched).getTime() : 0;
+        const dateB = b.lastWatched ? new Date(b.lastWatched).getTime() : 0;
+        return dateB - dateA;
+      });
+    },
+    [
+      watchedMovies,
+      watchedShows,
+      watchlistMovies,
+      watchlistShows,
+      collectionMovies,
+      collectionShows,
+      continueWatching,
+      ratedContent,
+    ]
+  );
 
   const renderTraktContent = () => {
     if (traktLoading) {
@@ -679,22 +741,29 @@ const LibraryScreen = () => {
         return (
           <View style={styles.emptyContainer}>
             <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No Trakt collections</Text>
+            <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+              No Trakt collections
+            </Text>
             <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
               Your Trakt collections will appear here once you start using Trakt
             </Text>
             <TouchableOpacity
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
+              style={[
+                styles.exploreButton,
+                {
+                  backgroundColor: currentTheme.colors.primary,
+                  shadowColor: currentTheme.colors.black,
+                },
+              ]}
               onPress={() => {
                 triggerMedium();
                 loadAllCollections();
               }}
               activeOpacity={0.7}
             >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Load Collections</Text>
+              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>
+                Load Collections
+              </Text>
             </TouchableOpacity>
           </View>
         );
@@ -709,7 +778,7 @@ const LibraryScreen = () => {
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.7}
-          onEndReached={() => { }}
+          onEndReached={() => {}}
         />
       );
     }
@@ -721,22 +790,29 @@ const LibraryScreen = () => {
       return (
         <View style={styles.emptyContainer}>
           <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>No content in {folderName}</Text>
+          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
+            No content in {folderName}
+          </Text>
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             This collection is empty
           </Text>
           <TouchableOpacity
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
+            style={[
+              styles.exploreButton,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black,
+              },
+            ]}
             onPress={() => {
               triggerMedium();
               loadAllCollections();
             }}
             activeOpacity={0.7}
           >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Refresh</Text>
+            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>
+              Refresh
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -746,18 +822,22 @@ const LibraryScreen = () => {
       <FlashList
         data={folderItems}
         renderItem={({ item }) => renderTraktItem({ item })}
-        keyExtractor={(item) => `${item.type}-${item.id}`}
+        keyExtractor={item => `${item.type}-${item.id}`}
         numColumns={numColumns}
         style={styles.traktContainer}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         showsVerticalScrollIndicator={false}
         onEndReachedThreshold={0.7}
-        onEndReached={() => { }}
+        onEndReached={() => {}}
       />
     );
   };
 
-  const renderFilter = (filterType: 'trakt' | 'movies' | 'series', label: string, iconName: keyof typeof MaterialIcons.glyphMap) => {
+  const renderFilter = (
+    filterType: 'trakt' | 'movies' | 'series',
+    label: string,
+    iconName: keyof typeof MaterialIcons.glyphMap
+  ) => {
     const isActive = filter === filterType;
 
     return (
@@ -765,7 +845,7 @@ const LibraryScreen = () => {
         style={[
           styles.filterButton,
           isActive && { backgroundColor: currentTheme.colors.primary },
-          { shadowColor: currentTheme.colors.black }
+          { shadowColor: currentTheme.colors.black },
         ]}
         onPress={() => {
           triggerLight();
@@ -799,7 +879,7 @@ const LibraryScreen = () => {
           style={[
             styles.filterText,
             { color: currentTheme.colors.mediumGray },
-            isActive && { color: currentTheme.colors.white, fontWeight: '600' }
+            isActive && { color: currentTheme.colors.white, fontWeight: '600' },
           ]}
         >
           {label}
@@ -814,33 +894,37 @@ const LibraryScreen = () => {
     }
 
     if (filteredItems.length === 0) {
-      const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
+      const emptyTitle =
+        filter === 'movies'
+          ? 'No movies yet'
+          : filter === 'series'
+            ? 'No TV shows yet'
+            : 'No content yet';
       const emptySubtitle = 'Add some content to your library to see it here';
       return (
         <View style={styles.emptyContainer}>
-          <MaterialIcons
-            name="video-library"
-            size={64}
-            color={currentTheme.colors.lightGray}
-          />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>
-            {emptyTitle}
-          </Text>
+          <MaterialIcons name="video-library" size={64} color={currentTheme.colors.lightGray} />
+          <Text style={[styles.emptyText, { color: currentTheme.colors.white }]}>{emptyTitle}</Text>
           <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray }]}>
             {emptySubtitle}
           </Text>
           <TouchableOpacity
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
+            style={[
+              styles.exploreButton,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black,
+              },
+            ]}
             onPress={() => {
               triggerMedium();
               navigation.navigate('Search');
             }}
             activeOpacity={0.7}
           >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>Find something to watch</Text>
+            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white }]}>
+              Find something to watch
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -855,40 +939,48 @@ const LibraryScreen = () => {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
         onEndReachedThreshold={0.7}
-        onEndReached={() => { }}
+        onEndReached={() => {}}
       />
     );
   };
 
   const isTablet = useMemo(() => {
     const smallestDimension = Math.min(width, height);
-    return (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+    return Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768;
   }, [width, height]);
 
   return (
     <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <ScreenHeader
-        title={showTraktContent
-          ? (selectedTraktFolder
-            ? traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection'
-            : 'Trakt Collection')
-          : 'Library'
+        title={
+          showTraktContent
+            ? selectedTraktFolder
+              ? traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection'
+              : 'Trakt Collection'
+            : 'Library'
         }
         showBackButton={showTraktContent}
-        onBackPress={showTraktContent ? () => {
-          if (selectedTraktFolder) {
-            setSelectedTraktFolder(null);
-          } else {
-            setShowTraktContent(false);
-          }
-        } : undefined}
+        onBackPress={
+          showTraktContent
+            ? () => {
+                if (selectedTraktFolder) {
+                  setSelectedTraktFolder(null);
+                } else {
+                  setShowTraktContent(false);
+                }
+              }
+            : undefined
+        }
         useMaterialIcons={showTraktContent}
         rightActionIcon={!showTraktContent ? 'calendar' : undefined}
         onRightActionPress={!showTraktContent ? () => navigation.navigate('Calendar') : undefined}
         isTablet={isTablet}
+        showProfileButton
       />
 
-      <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <View
+        style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}
+      >
         {!showTraktContent && (
           <View style={styles.filtersContainer}>
             {renderFilter('trakt', 'Trakt', 'pan-tool')}
@@ -907,14 +999,18 @@ const LibraryScreen = () => {
           item={selectedItem}
           isWatched={!!selectedItem.watched}
           isSaved={true}
-          onOptionSelect={async (option) => {
+          onOptionSelect={async option => {
             if (!selectedItem) return;
             switch (option) {
               case 'library': {
                 try {
                   await catalogService.removeFromLibrary(selectedItem.type, selectedItem.id);
                   showInfo('Removed from Library', 'Item removed from your library');
-                  setLibraryItems(prev => prev.filter(item => !(item.id === selectedItem.id && item.type === selectedItem.type)));
+                  setLibraryItems(prev =>
+                    prev.filter(
+                      item => !(item.id === selectedItem.id && item.type === selectedItem.type)
+                    )
+                  );
                   setMenuVisible(false);
                 } catch (error) {
                   showError('Failed to update Library', 'Unable to remove item from library');
@@ -926,12 +1022,17 @@ const LibraryScreen = () => {
                   const key = `watched:${selectedItem.type}:${selectedItem.id}`;
                   const newWatched = !selectedItem.watched;
                   await mmkvStorage.setItem(key, newWatched ? 'true' : 'false');
-                  showInfo(newWatched ? 'Marked as Watched' : 'Marked as Unwatched', newWatched ? 'Item marked as watched' : 'Item marked as unwatched');
-                  setLibraryItems(prev => prev.map(item =>
-                    item.id === selectedItem.id && item.type === selectedItem.type
-                      ? { ...item, watched: newWatched }
-                      : item
-                  ));
+                  showInfo(
+                    newWatched ? 'Marked as Watched' : 'Marked as Unwatched',
+                    newWatched ? 'Item marked as watched' : 'Item marked as unwatched'
+                  );
+                  setLibraryItems(prev =>
+                    prev.map(item =>
+                      item.id === selectedItem.id && item.type === selectedItem.type
+                        ? { ...item, watched: newWatched }
+                        : item
+                    )
+                  );
                 } catch (error) {
                   showError('Failed to update watched status', 'Unable to update watched status');
                 }

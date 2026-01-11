@@ -3,21 +3,21 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import { AVATAR_OPTIONS, KIDS_AVATAR_OPTIONS, AvatarOption } from '../../types/profile';
+import {
+  AVATAR_OPTIONS,
+  KIDS_AVATAR_OPTIONS,
+  TEEN_AVATAR_OPTIONS,
+  AvatarOption,
+} from '../../types/profile';
 
 interface AvatarSelectorProps {
   selectedAvatarId: string;
   onSelect: (avatarId: string) => void;
   isKidsProfile?: boolean;
+  isTeenProfile?: boolean;
   columns?: number;
 }
 
@@ -25,6 +25,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
   selectedAvatarId,
   onSelect,
   isKidsProfile = false,
+  isTeenProfile = false,
   columns = 4,
 }) => {
   const { currentTheme } = useTheme();
@@ -32,7 +33,9 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
   // Get available avatars based on profile type
   const availableAvatars = isKidsProfile
     ? [...KIDS_AVATAR_OPTIONS, ...AVATAR_OPTIONS]
-    : AVATAR_OPTIONS;
+    : isTeenProfile
+      ? [...TEEN_AVATAR_OPTIONS, ...AVATAR_OPTIONS]
+      : AVATAR_OPTIONS;
 
   const renderAvatar = (avatar: AvatarOption) => {
     const isSelected = avatar.id === selectedAvatarId;
@@ -53,25 +56,14 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
         onPress={() => onSelect(avatar.id)}
         activeOpacity={0.7}
       >
-        <View
-          style={[
-            styles.avatarCircle,
-            { backgroundColor: avatar.color },
-          ]}
-        >
-          <MaterialIcons
-            name={avatar.icon as any}
-            size={28}
-            color="#FFFFFF"
-          />
+        <View style={[styles.avatarCircle, { backgroundColor: avatar.color }]}>
+          <MaterialIcons name={avatar.icon as any} size={28} color="#FFFFFF" />
         </View>
         <Text
           style={[
             styles.avatarName,
             {
-              color: isSelected
-                ? currentTheme.colors.primary
-                : currentTheme.colors.textMuted,
+              color: isSelected ? currentTheme.colors.primary : currentTheme.colors.textMuted,
             },
           ]}
           numberOfLines={1}
@@ -79,12 +71,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
           {avatar.name}
         </Text>
         {isSelected && (
-          <View
-            style={[
-              styles.checkmark,
-              { backgroundColor: currentTheme.colors.primary },
-            ]}
-          >
+          <View style={[styles.checkmark, { backgroundColor: currentTheme.colors.primary }]}>
             <MaterialIcons name="check" size={12} color="#FFFFFF" />
           </View>
         )}
@@ -94,9 +81,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: currentTheme.colors.textMuted }]}>
-        Choose Avatar
-      </Text>
+      <Text style={[styles.label, { color: currentTheme.colors.textMuted }]}>Choose Avatar</Text>
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
