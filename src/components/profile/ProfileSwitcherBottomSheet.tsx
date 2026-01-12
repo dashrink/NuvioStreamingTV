@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
@@ -11,11 +12,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useProfileContext, Profile } from '../../contexts/ProfileContext';
-import { mmkvStorage } from '../../services/mmkvStorage';
-import { colors } from '../../styles/colors';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -24,13 +21,13 @@ import Animated, {
   Extrapolate,
   runOnJS,
 } from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import { useTVBackHandler } from '../../hooks/useTVMode';
+
+import { useProfileContext, Profile } from '../../contexts/ProfileContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useFocusGroup } from '../../hooks/useFocusGroup';
+import { useTVBackHandler } from '../../hooks/useTVMode';
+import { mmkvStorage } from '../../services/mmkvStorage';
+import { colors } from '../../styles/colors';
 import Focusable from '../common/Focusable';
 
 // TV detection breakpoint
@@ -60,7 +57,7 @@ const hashPin = (pin: string): string => {
 export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProps> = ({
   visible,
   onClose,
-  onProfileSwitch
+  onProfileSwitch,
 }) => {
   const translateY = useSharedValue(400);
   const opacity = useSharedValue(0);
@@ -108,7 +105,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     autoFocus: visible && !showPinModal && isTV,
     trapFocus: false,
     rememberFocus: true,
-    onFocusChange: (index) => {
+    onFocusChange: index => {
       if (index >= 0 && index < profiles.length && scrollToFocused && isTV) {
         // Auto-scroll to focused profile if needed
       }
@@ -189,18 +186,13 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     .onStart(() => {
       // Store initial position if needed
     })
-    .onUpdate((event) => {
+    .onUpdate(event => {
       if (event.translationY > 0) {
         translateY.value = event.translationY;
-        opacity.value = interpolate(
-          event.translationY,
-          [0, 400],
-          [1, 0],
-          Extrapolate.CLAMP
-        );
+        opacity.value = interpolate(event.translationY, [0, 400], [1, 0], Extrapolate.CLAMP);
       }
     })
-    .onEnd((event) => {
+    .onEnd(event => {
       if (event.translationY > SNAP_THRESHOLD || event.velocityY > 500) {
         translateY.value = withTiming(400, { duration: 300 });
         opacity.value = withTiming(0, { duration: 200 });
@@ -221,36 +213,45 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     borderTopRightRadius: 24,
   }));
 
-  const hasPin = useCallback((profileId: string): boolean => {
-    return !!profilePins[profileId];
-  }, [profilePins]);
+  const hasPin = useCallback(
+    (profileId: string): boolean => {
+      return !!profilePins[profileId];
+    },
+    [profilePins]
+  );
 
-  const verifyPin = useCallback((profileId: string, pin: string): boolean => {
-    const storedHash = profilePins[profileId];
-    if (!storedHash) return true; // No PIN set
-    return hashPin(pin) === storedHash;
-  }, [profilePins]);
+  const verifyPin = useCallback(
+    (profileId: string, pin: string): boolean => {
+      const storedHash = profilePins[profileId];
+      if (!storedHash) return true; // No PIN set
+      return hashPin(pin) === storedHash;
+    },
+    [profilePins]
+  );
 
-  const handleProfileSelect = useCallback(async (profile: Profile) => {
-    // If it's already the active profile, just close
-    if (profile.id === activeProfile?.id) {
-      onClose();
-      return;
-    }
+  const handleProfileSelect = useCallback(
+    async (profile: Profile) => {
+      // If it's already the active profile, just close
+      if (profile.id === activeProfile?.id) {
+        onClose();
+        return;
+      }
 
-    // Check if profile has a PIN
-    if (hasPin(profile.id)) {
-      setSelectedProfile(profile as ProfileWithPin);
-      setShowPinModal(true);
-      setPinInput('');
-      setPinError('');
-    } else {
-      // No PIN, switch directly
-      await setActiveProfile(profile.id);
-      onProfileSwitch?.(profile);
-      onClose();
-    }
-  }, [activeProfile, hasPin, setActiveProfile, onProfileSwitch, onClose]);
+      // Check if profile has a PIN
+      if (hasPin(profile.id)) {
+        setSelectedProfile(profile as ProfileWithPin);
+        setShowPinModal(true);
+        setPinInput('');
+        setPinError('');
+      } else {
+        // No PIN, switch directly
+        await setActiveProfile(profile.id);
+        onProfileSwitch?.(profile);
+        onClose();
+      }
+    },
+    [activeProfile, hasPin, setActiveProfile, onProfileSwitch, onClose]
+  );
 
   const handlePinSubmit = useCallback(async () => {
     if (!selectedProfile) return;
@@ -313,7 +314,9 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
         onPress={() => handleProfileSelect(profile)}
         hasTVPreferredFocus={isTV && index === profileFocusGroup.focusedIndex}
         accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${hasPinProtection ? ', PIN protected' : ''}`}
-        accessibilityHint={isActive ? 'Currently active profile' : 'Double-tap to switch to this profile'}
+        accessibilityHint={
+          isActive ? 'Currently active profile' : 'Double-tap to switch to this profile'
+        }
         enableScale={isTV}
         enableGlow={isTV}
         enableBorder={isTV}
@@ -327,8 +330,8 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               isFocused
                 ? currentTheme.colors.primary
                 : isActive
-                ? currentTheme.colors.primary
-                : currentTheme.colors.text
+                  ? currentTheme.colors.primary
+                  : currentTheme.colors.text
             }
           />
           {hasPinProtection && (
@@ -387,11 +390,13 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
 
               {/* Header */}
               <View style={[styles.header, isTV && styles.headerTV]}>
-                <Text style={[
-                  styles.headerTitle,
-                  isTV && styles.headerTitleTV,
-                  { color: currentTheme.colors.text }
-                ]}>
+                <Text
+                  style={[
+                    styles.headerTitle,
+                    isTV && styles.headerTitleTV,
+                    { color: currentTheme.colors.text },
+                  ]}
+                >
                   Switch Profile
                 </Text>
                 <Focusable
@@ -419,7 +424,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={[
                   styles.profilesContainer,
-                  isTV && styles.profilesContainerTV
+                  isTV && styles.profilesContainerTV,
                 ]}
               >
                 {profiles.map((profile, index) => renderProfileItem(profile, index))}
@@ -428,7 +433,9 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               {/* Active Profile Info */}
               {activeProfile && (
                 <View style={styles.activeProfileInfo}>
-                  <Text style={[styles.activeProfileLabel, { color: currentTheme.colors.textMuted }]}>
+                  <Text
+                    style={[styles.activeProfileLabel, { color: currentTheme.colors.textMuted }]}
+                  >
                     Current Profile:
                   </Text>
                   <Text style={[styles.activeProfileName, { color: currentTheme.colors.text }]}>
@@ -450,19 +457,25 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
         onRequestClose={handlePinCancel}
       >
         <View style={styles.pinModalOverlay}>
-          <View style={[styles.pinModalContent, isTV && styles.pinModalContentTV, { backgroundColor }]}>
-            <Text style={[
-              styles.pinModalTitle,
-              isTV && styles.pinModalTitleTV,
-              { color: currentTheme.colors.text }
-            ]}>
+          <View
+            style={[styles.pinModalContent, isTV && styles.pinModalContentTV, { backgroundColor }]}
+          >
+            <Text
+              style={[
+                styles.pinModalTitle,
+                isTV && styles.pinModalTitleTV,
+                { color: currentTheme.colors.text },
+              ]}
+            >
               Enter PIN
             </Text>
-            <Text style={[
-              styles.pinModalSubtitle,
-              isTV && styles.pinModalSubtitleTV,
-              { color: currentTheme.colors.textMuted }
-            ]}>
+            <Text
+              style={[
+                styles.pinModalSubtitle,
+                isTV && styles.pinModalSubtitleTV,
+                { color: currentTheme.colors.textMuted },
+              ]}
+            >
               {selectedProfile?.name} is protected by a PIN
             </Text>
 
@@ -473,11 +486,11 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 {
                   backgroundColor: `${currentTheme.colors.textMuted}20`,
                   color: currentTheme.colors.text,
-                  borderColor: pinError ? currentTheme.colors.error : currentTheme.colors.border
-                }
+                  borderColor: pinError ? currentTheme.colors.error : currentTheme.colors.border,
+                },
               ]}
               value={pinInput}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 // Only allow digits
                 const digits = text.replace(/\D/g, '').slice(0, 4);
                 setPinInput(digits);
@@ -498,11 +511,13 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
             />
 
             {pinError ? (
-              <Text style={[
-                styles.pinError,
-                isTV && styles.pinErrorTV,
-                { color: currentTheme.colors.error }
-              ]}>
+              <Text
+                style={[
+                  styles.pinError,
+                  isTV && styles.pinErrorTV,
+                  { color: currentTheme.colors.error },
+                ]}
+              >
                 {pinError}
               </Text>
             ) : null}
@@ -522,10 +537,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 borderRadius={isTV ? 16 : 12}
               >
                 <Text
-                  style={[
-                    { color: currentTheme.colors.textMuted },
-                    isTV && styles.pinButtonTextTV,
-                  ]}
+                  style={[{ color: currentTheme.colors.textMuted }, isTV && styles.pinButtonTextTV]}
                 >
                   Cancel
                 </Text>
@@ -549,10 +561,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 borderRadius={isTV ? 16 : 12}
               >
                 <Text
-                  style={[
-                    { color: '#FFFFFF', fontWeight: '600' },
-                    isTV && styles.pinButtonTextTV,
-                  ]}
+                  style={[{ color: '#FFFFFF', fontWeight: '600' }, isTV && styles.pinButtonTextTV]}
                 >
                   Unlock
                 </Text>
