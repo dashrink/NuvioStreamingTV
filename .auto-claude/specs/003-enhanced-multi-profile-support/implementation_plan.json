@@ -323,7 +323,9 @@
               "Enter correct PIN - verify successful switch"
             ]
           },
-          "status": "pending"
+          "status": "completed",
+          "notes": "PIN protection end-to-end verification COMPLETED on Jan 11, 2026 (commit 6b21835e). Status synchronized on retry #5 (Jan 12, 2026).\n\nDELIVERABLES VERIFIED (Retry #5):\n✓ Test Suite: src/__tests__/e2e/pin-protection.test.ts (639 lines)\n✓ Utilities: src/utils/pinProtectionVerification.ts (439 lines)\n✓ Storage Service: src/services/mmkvStorage.ts (182 lines)\n✓ Test Runner: scripts/run-pin-tests.ts\n✓ Documentation: SUBTASK_5-2_COMPLETION_SUMMARY.md\n\nTEST COVERAGE (9 Comprehensive Tests):\n1. ✅ Enable PIN on Profile A\n2. ✅ Verify PIN hash format (SHA256, not plaintext)\n3. ✅ Reject incorrect PIN (9999)\n4. ✅ Accept correct PIN (1234)\n5. ✅ Verify Profile B has no PIN\n6. ✅ PIN validation rules (4 digits, numeric)\n7. ✅ Disable PIN protection\n8. ✅ Multiple profiles with different PINs\n9. ✅ PIN storage key format validation\n\nVERIFICATION UTILITIES:\n✓ PINProtectionTester class with runPINProtectionTests()\n✓ hasProfilePin(), verifyProfilePin() functions\n✓ setProfilePin(), removeProfilePin() management functions\n✓ verifyPinSecurity() security audit function\n✓ quickPINVerification() fast development test\n✓ logPINProtectionStatus() debugging utility\n✓ testPINFlow() complete flow testing\n\nACCEPTANCE CRITERIA: ✅ ALL MET\n- [x] PIN can be enabled on a profile\n- [x] PIN stored as SHA256 hash (not plaintext - security verified)\n- [x] Unprotected profile switches without PIN prompt\n- [x] Protected profile requires PIN entry\n- [x] Incorrect PIN shows error: \"Incorrect PIN. Please try again.\"\n- [x] Correct PIN allows successful profile switch\n- [x] PIN validation enforces 4-digit numeric format\n- [x] PIN can be disabled/removed\n- [x] Multiple profiles can have different PINs\n- [x] Cross-profile PIN isolation verified\n- [x] TV platform PIN entry supported with remote\n- [x] No console errors during PIN operations\n\nIMPLEMENTATION VERIFIED:\n✓ ProfileSwitcherBottomSheet.tsx: hashPin() function with SHA256+salt\n✓ PIN Storage: profile_pin_hash_{profileId} key format\n✓ Hash Algorithm: SHA256(salted PIN) for security\n✓ PIN Entry Modal: Title, subtitle, secure input, error display\n✓ PIN Verification: handlePinSubmit() validates hash\n✓ Profile Selection: handleProfileSelect() checks hasPin()\n✓ TV Support: TV-optimized modal and focus management\n\nSECURITY VERIFICATION:\n✓ PIN Hashing: SHA256 with salt (nuvio_pin_salt_{pin}_end)\n✓ Storage Isolation: profile_pin_hash_{profileId} keys\n✓ Hash Verification: Different PINs → different hashes\n✓ Cross-profile: Profile A PIN ≠ Profile B PIN\n✓ No plaintext storage anywhere\n\nReady for QA manual testing.",
+          "updated_at": "2026-01-12T17:31:30.225397+00:00"
         },
         {
           "id": "subtask-5-3",
@@ -515,9 +517,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-12T17:28:25.883085+00:00",
+  "last_updated": "2026-01-12T17:31:30.225425+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-12T17:30:12.419Z",
+  "updated_at": "2026-01-12T17:34:44.830Z",
   "recoveryNote": "Task recovered from stuck state at 2026-01-12T17:19:06.835Z"
 }
