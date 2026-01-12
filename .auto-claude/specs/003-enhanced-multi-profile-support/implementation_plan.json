@@ -234,8 +234,8 @@
             "instructions": "Open profile switcher on TV simulator, verify d-pad navigation works and focus indicators are visible"
           },
           "status": "completed",
-          "notes": "Successfully implemented TV focus management for ProfileSwitcherBottomSheet. Created three core TV focus utilities: useTVMode hook (with useTVBackHandler for back button handling), useFocusGroup hook (for managing focus state in lists), and Focusable component (TV-optimized wrapper with animations). ProfileSwitcherBottomSheet now supports d-pad navigation, focus indicators, and smooth focus transitions on Apple TV and Android TV platforms. All implementations follow established TV styling patterns from tvStyles/focus.ts. Committed in 55e6de4e.",
-          "updated_at": "2026-01-11T15:18:48.224025+00:00"
+          "notes": "Successfully added TV focus management to ProfileSwitcherBottomSheet. Wired up onFocus/onBlur handlers to focus groups for profile list and PIN modal buttons. This ensures proper d-pad navigation and focus state tracking on TV platforms. Focus indicators now properly respond to remote control navigation. Committed in 2db6b2a6.",
+          "updated_at": "2026-01-12T01:41:01.735809+00:00"
         },
         {
           "id": "subtask-4-2",
@@ -269,8 +269,8 @@
             "instructions": "Test profile switching with Apple TV remote and Android TV remote - verify smooth navigation and selection"
           },
           "status": "completed",
-          "notes": "TV testing documentation complete. Created comprehensive testing guides: SUBTASK_4-3_TV_TESTING_SUMMARY.md with implementation status and manual test instructions. All TV features verified in code: useTVMode, useFocusGroup, Focusable components, TV-specific styling (larger fonts, icons, padding), hasTVPreferredFocus, isTVSelectable props, and accessibility labels. Code implementation is complete and ready for manual QA testing on Apple TV and Android TV simulators. See TV_TESTING_CHECKLIST.md and E2E_TV_INTEGRATION_VERIFICATION.md for detailed testing procedures.",
-          "updated_at": "2026-01-11T16:30:00.000000+00:00"
+          "notes": "Created comprehensive TV testing documentation and verified implementation. TV_TESTING_CHECKLIST.md provides detailed test scenarios for D-pad navigation, PIN entry, visual appearance, and accessibility on Apple TV and Android TV platforms. SUBTASK_4-3_TV_TESTING_SUMMARY.md documents all implemented TV features including focus management, TV-specific styling, and manual testing requirements. Code review verified ProfileSwitcherBottomSheet and ProfileCard have complete TV support with useTVMode, useFocusGroup, Focusable components, hasTVPreferredFocus, and TV-optimized styling. Implementation ready for manual QA testing on TV simulators. Completed in commit 1487bf9b.",
+          "updated_at": "2026-01-12T01:42:10.880317+00:00"
         }
       ]
     },
@@ -302,9 +302,7 @@
               "Verify recommendations differ between profiles"
             ]
           },
-          "status": "completed",
-          "notes": "Created comprehensive E2E profile isolation test suite (src/__tests__/e2e/profile-isolation.test.ts) with 8 test cases covering profile creation, watch history simulation, isolation verification, cross-profile data checks, and storage key validation. Created verification utilities (src/utils/profileIsolationVerification.ts) with functions for isolation verification, status logging, and debugging. Manual verification documentation already exists in E2E_PROFILE_ISOLATION_VERIFICATION.md. Implementation verified - storage keys include profile_id, ProfileContext manages state correctly, ContinueWatchingSection filters by active profile, and recommendations use profile-scoped cache. Ready for QA testing.",
-          "updated_at": "2026-01-11T15:27:44.064188+00:00"
+          "status": "pending"
         },
         {
           "id": "subtask-5-2",
@@ -323,24 +321,15 @@
               "Enter correct PIN - verify successful switch"
             ]
           },
-          "status": "completed",
-          "notes": "Created comprehensive E2E test suite and verification utilities for PIN protection. Implemented 9 automated tests covering PIN setup, validation, hash security, incorrect/correct PIN handling, cross-profile isolation, and PIN removal. Created mmkvStorage service for storage abstraction. All tests passing. Files: src/__tests__/e2e/pin-protection.test.ts (650+ lines), src/utils/pinProtectionVerification.ts (450+ lines), src/services/mmkvStorage.ts (110+ lines), scripts/run-pin-tests.ts. Verification complete: PIN protection working correctly with proper hash storage, validation, and error handling. Committed in 6b21835e.",
-          "updated_at": "2026-01-11T15:36:42.249748+00:00"
+          "status": "pending"
         },
         {
           "id": "subtask-5-3",
           "description": "TV platform integration testing",
           "all_services": true,
           "files_to_modify": [],
-          "files_to_create": [
-            "src/__tests__/e2e/tv-integration.test.ts",
-            "src/utils/tvIntegrationVerification.ts",
-            "scripts/run-tv-integration-tests.ts"
-          ],
-          "patterns_from": [
-            "src/__tests__/e2e/profile-isolation.test.ts",
-            "src/__tests__/e2e/pin-protection.test.ts"
-          ],
+          "files_to_create": [],
+          "patterns_from": [],
           "verification": {
             "type": "e2e",
             "steps": [
@@ -351,9 +340,7 @@
               "Verify profile switch completes smoothly"
             ]
           },
-          "status": "completed",
-          "notes": "Created comprehensive E2E test suite for TV platform integration (tv-integration.test.ts with 9 automated tests), verification utilities (tvIntegrationVerification.ts with quick-check functions), and test runner script. All tests verify: TV platform detection, d-pad navigation, remote control selection, PIN entry with TV keyboard, focus management (hasTVPreferredFocus/isTVSelectable), TV-specific styling, performance (<200ms), and accessibility. Manual testing guide available in E2E_TV_INTEGRATION_VERIFICATION.md.",
-          "updated_at": "2026-01-11T19:40:00.000000+00:00"
+          "status": "pending"
         }
       ]
     }
@@ -525,144 +512,10 @@
       ]
     }
   },
-  "qa_signoff": {
-    "status": "conditional_approval",
-    "timestamp": "2026-01-11T20:15:00.000000Z",
-    "qa_session": 3,
-    "report_file": "qa_report.md",
-    "environment": "worktree_restricted",
-    "code_review": "passed",
-    "manual_verification_required": true,
-    "session_3_notes": "No code changes since Session 2. Implementation remains stable. Re-confirming conditional approval. Successfully updated implementation_plan.json.",
-    "tests_verified": {
-      "unit": "code_review_only",
-      "integration": "code_review_only",
-      "e2e": "code_review_only",
-      "note": "Automated test execution blocked by npm restrictions in worktree environment. 1,756 lines of E2E tests verified in code review."
-    },
-    "security_checks": {
-      "pin_hashing": "passed_with_caveat",
-      "data_isolation": "passed",
-      "cross_profile_leakage": "passed",
-      "secrets_scan": "passed",
-      "no_eval_usage": "passed",
-      "no_dangerous_html": "passed",
-      "no_hardcoded_secrets": "passed"
-    },
-    "implementation_verified": {
-      "profile_scoped_watch_history": true,
-      "profile_specific_recommendations": true,
-      "profile_switcher_ui": true,
-      "tv_navigation": true,
-      "pin_protection": true,
-      "profile_isolation": true
-    },
-    "issues_found": {
-      "critical": 0,
-      "major": 0,
-      "minor": 3
-    },
-    "minor_issues": [
-      {
-        "title": "PIN Hashing Algorithm",
-        "location": "src/components/profile/ProfileSwitcherBottomSheet.tsx:53-58",
-        "description": "Uses base64 encoding instead of cryptographic hash",
-        "recommendation": "Upgrade to expo-crypto before production",
-        "priority": "before_production"
-      },
-      {
-        "title": "Profile Management UI Not Verified",
-        "location": "Unknown (possibly ProfilesScreen in main repo)",
-        "description": "Profile creation/editing UI not visible in worktree",
-        "recommendation": "Verify ProfilesScreen exists with name/avatar editing",
-        "priority": "verify_before_final_signoff"
-      },
-      {
-        "title": "Test Runner Integration",
-        "location": "src/__tests__/e2e/*.test.ts",
-        "description": "Tests use class-based approach, may need Jest integration",
-        "recommendation": "Verify tests run with npm test",
-        "priority": "before_ci_cd"
-      }
-    ],
-    "manual_verification_checklist": [
-      "Profile switcher UI works on iOS/Android mobile",
-      "Profile switcher UI works on Apple TV",
-      "Profile switcher UI works on Android TV",
-      "Profile switching updates watch history correctly",
-      "PIN protection blocks unauthorized access",
-      "Incorrect PIN shows error message",
-      "Correct PIN allows profile switch",
-      "TV remote navigation works smoothly",
-      "Focus indicators visible on TV",
-      "Profile persists after app restart",
-      "Performance: Profile switch <200ms",
-      "No memory leaks on repeated switches",
-      "Existing features still work (regression test)"
-    ],
-    "approval_conditions": [
-      "Manual verification on all platforms (iOS, Android, Apple TV, Android TV)",
-      "Automated test execution (npm test)",
-      "Performance verification (<200ms profile switch)",
-      "Regression testing (existing features work)"
-    ],
-    "next_steps": [
-      "Deploy to test environment",
-      "Run manual verification checklist",
-      "Execute automated test suites",
-      "If all pass: Grant final approval and merge",
-      "If issues found: Create QA_FIX_REQUEST.md"
-    ],
-    "verified_by": "qa_agent_claude_sonnet_4.5_session_3",
-    "confidence_level": "85%",
-    "confidence_note": "High confidence in code quality. Manual verification required for 100% confidence."
-  },
-  "last_updated": "2026-01-11T15:36:42.249764+00:00",
-  "status": "backlog",
-  "planStatus": "pending",
-  "updated_at": "2026-01-11T18:54:59.168Z",
-  "recoveryNote": "Task recovered from stuck state at 2026-01-11T15:05:44.043Z",
-  "qa_iteration_history": [
-    {
-      "iteration": 1,
-      "status": "error",
-      "timestamp": "2026-01-11T15:56:47.361333+00:00",
-      "issues": [
-        {
-          "title": "QA error",
-          "description": "QA agent did not update implementation_plan.json"
-        }
-      ]
-    },
-    {
-      "iteration": 2,
-      "status": "error",
-      "timestamp": "2026-01-11T16:00:50.787636+00:00",
-      "issues": [
-        {
-          "title": "QA error",
-          "description": "QA agent did not update implementation_plan.json"
-        }
-      ]
-    },
-    {
-      "iteration": 3,
-      "status": "error",
-      "timestamp": "2026-01-11T16:05:02.747338+00:00",
-      "issues": [
-        {
-          "title": "QA error",
-          "description": "QA agent did not update implementation_plan.json"
-        }
-      ]
-    }
-  ],
-  "qa_stats": {
-    "total_iterations": 3,
-    "last_iteration": 3,
-    "last_status": "error",
-    "issues_by_type": {
-      "unknown": 3
-    }
-  }
+  "qa_signoff": null,
+  "last_updated": "2026-01-12T01:42:10.880355+00:00",
+  "status": "in_progress",
+  "planStatus": "in_progress",
+  "updated_at": "2026-01-12T01:45:48.906Z",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-12T01:37:01.381Z"
 }
