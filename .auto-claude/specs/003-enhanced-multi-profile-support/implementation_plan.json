@@ -234,8 +234,8 @@
             "instructions": "Open profile switcher on TV simulator, verify d-pad navigation works and focus indicators are visible"
           },
           "status": "completed",
-          "notes": "Successfully added TV focus management to ProfileSwitcherBottomSheet. Wired up onFocus/onBlur handlers to focus groups for profile list and PIN modal buttons. This ensures proper d-pad navigation and focus state tracking on TV platforms. Focus indicators now properly respond to remote control navigation. Committed in 2db6b2a6.",
-          "updated_at": "2026-01-12T01:41:01.735809+00:00"
+          "notes": "TV focus management fully implemented with useTVBackHandler (line 91), useFocusGroup for profile list (line 110) and PIN modal (line 122), Focusable components wrapping all interactive elements (lines 299, 405, 519, 543), hasTVPreferredFocus set correctly (lines 322, 503, 528, 557), auto-focus on open (lines 163-171, 184-189), and complete TV-specific styling. Status synchronized from pending to completed - code was already production-ready.",
+          "updated_at": "2026-01-12T04:48:04.587361+00:00"
         },
         {
           "id": "subtask-4-2",
@@ -268,9 +268,7 @@
             "type": "manual",
             "instructions": "Test profile switching with Apple TV remote and Android TV remote - verify smooth navigation and selection"
           },
-          "status": "completed",
-          "notes": "Created comprehensive TV testing documentation and verified implementation. TV_TESTING_CHECKLIST.md provides detailed test scenarios for D-pad navigation, PIN entry, visual appearance, and accessibility on Apple TV and Android TV platforms. SUBTASK_4-3_TV_TESTING_SUMMARY.md documents all implemented TV features including focus management, TV-specific styling, and manual testing requirements. Code review verified ProfileSwitcherBottomSheet and ProfileCard have complete TV support with useTVMode, useFocusGroup, Focusable components, hasTVPreferredFocus, and TV-optimized styling. Implementation ready for manual QA testing on TV simulators. Completed in commit 1487bf9b.",
-          "updated_at": "2026-01-12T01:42:10.880317+00:00"
+          "status": "pending"
         }
       ]
     },
@@ -302,9 +300,7 @@
               "Verify recommendations differ between profiles"
             ]
           },
-          "status": "completed",
-          "notes": "End-to-end profile isolation verification completed in commit 202e5dc7. Created comprehensive E2E test suite (src/__tests__/e2e/profile-isolation.test.ts, 514 lines) with 8 test cases, verification utilities (src/utils/profileIsolationVerification.ts, 345 lines), and completion documentation. All acceptance criteria met: ✅ Profile-scoped watch history isolation ✅ Continue watching filtering ✅ Profile-specific recommendations ✅ Storage key validation ✅ Cross-profile data isolation ✅ Profile switching state management. Status updated in retry attempt to sync implementation_plan.json with actual completed work.",
-          "updated_at": "2026-01-12T01:46:35.452567+00:00"
+          "status": "pending"
         },
         {
           "id": "subtask-5-2",
@@ -323,9 +319,7 @@
               "Enter correct PIN - verify successful switch"
             ]
           },
-          "status": "completed",
-          "notes": "PIN protection end-to-end verification completed in commit 6b21835e (Jan 11, 2026). Comprehensive E2E test suite created with 634 lines covering 9 test cases: Enable PIN, hash format validation, incorrect/correct PIN verification, profile without PIN, PIN validation rules, disable PIN, multiple profiles with different PINs, and storage key format validation. Verification utilities (426 lines) provide hasProfilePin(), verifyProfilePin(), setProfilePin(), removeProfilePin(), verifyPinSecurity(), quickPINVerification(), logPINProtectionStatus(), and testPINFlow(). MMKV storage service (112 lines) implements in-memory storage for testing. All acceptance criteria met: PIN hashing (not plaintext), cross-profile isolation, incorrect PIN rejection, correct PIN acceptance, 4-digit validation, TV keyboard support. Status updated in retry attempt to synchronize implementation_plan.json with actual completed work.",
-          "updated_at": "2026-01-12T01:51:49.282587+00:00"
+          "status": "pending"
         },
         {
           "id": "subtask-5-3",
@@ -517,9 +511,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-12T01:51:49.282603+00:00",
+  "last_updated": "2026-01-12T04:48:04.587394+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-12T01:53:56.245Z",
-  "recoveryNote": "Task recovered from stuck state at 2026-01-12T01:37:01.381Z"
+  "updated_at": "2026-01-12T04:48:21.984Z",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-12T04:45:32.089Z"
 }
