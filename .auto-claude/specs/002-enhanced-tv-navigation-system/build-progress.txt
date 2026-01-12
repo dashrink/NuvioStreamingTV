@@ -329,3 +329,108 @@ Created comprehensive unit tests for TVNavigationContext with 70 passing tests c
 ### Next Steps
 - Subtask 7.6: Create navigation integration tests for focus restoration across screens
 
+
+## [2026-01-11 18:40:00 UTC] Subtask 7.6 Completed - Navigation Integration Tests
+
+Successfully verified integration tests for focus restoration across screens. All 45 tests passing.
+
+### Test Coverage Summary
+
+**1. useTVFocusRestoration Hook (20 tests)**
+- Focus state storage in route params via navigation.setParams()
+- Focus restoration on navigation return using setNativeProps
+- requestAnimationFrame timing for layout completion
+- Disabled state handling
+- Ref management (register, unregister, auto-register)
+- Callbacks (onFocusRestored, onFocusSaved)
+- Custom restore delays
+
+**2. useTVFocusRestorationSimple Hook (3 tests)**
+- Save focus to TVNavigationContext
+- Retrieve saved focus
+- Handle missing focus gracefully
+
+**3. TVScreenWrapper Component (6 tests)**
+- Auto focus restoration on screen mount
+- Restore from route params when available
+- Focus saving functionality
+- useTVScreenFocus hook behavior
+- useTVScreenFocusOptional hook behavior
+
+**4. Cross-Screen Focus Memory (4 tests)**
+- Maintain separate focus memory per screen
+- Update focus memory on navigation
+- Clear specific screen focus
+- Clear all focus memory
+
+**5. Navigation Flow Simulation (2 tests)**
+- Home → Details → Back flow with focus restoration
+- Deep navigation with focus memory stack
+
+**6. Focus History (2 tests)**
+- Track focus history across screens
+- Pop focus history on back navigation
+
+**7. Error Handling (3 tests)**
+- Handle navigation.setParams errors gracefully
+- Handle ref.setNativeProps errors gracefully
+- Handle null ref.current gracefully
+
+**8. Edge Cases (5 tests)**
+- Very long focus IDs (1000 chars)
+- Special characters in focus IDs
+- Unicode characters in focus IDs
+- Rapid focus changes (100 rapid saves)
+- Concurrent hooks on same screen
+
+### All Acceptance Criteria Met
+✅ Focus state stored in route params - Verified via navigation.setParams calls
+✅ Focus restored on navigation return - Verified via setNativeProps({ hasTVPreferredFocus: true })
+✅ requestAnimationFrame timing correct - Verified with custom delays and timing tests
+
+### Test Results
+- Test file: __tests__/navigation/AppNavigator.test.tsx
+- Total tests: 45
+- Status: All passing
+- Execution time: ~1.5s
+- Committed as: 9bdbc6c2
+
+### Phase 7 (Testing) Status
+All 6 subtasks completed:
+- [x] 7.1 Set up testing infrastructure
+- [x] 7.2 Create useTVEventHandler tests (30 tests)
+- [x] 7.3 Create useLongPress tests (55 tests)
+- [x] 7.4 Create useSpatialNavigation tests (70 tests)
+- [x] 7.5 Create TVNavigationContext tests (70 tests)
+- [x] 7.6 Create navigation integration tests (45 tests)
+
+**Total Test Coverage: 270 tests across all TV navigation features**
+
+### [2026-01-12] Subtask 7.6 Verified - Integration Tests Status Confirmed
+
+Re-verified integration tests for focus restoration across screens on retry attempt 3.
+
+**Verification Results:**
+- Test file: __tests__/navigation/AppNavigator.test.tsx already exists
+- All 45 tests passing (100% success rate)
+- Test execution time: ~1.9s
+- No test failures or console errors
+
+**All Acceptance Criteria Met:**
+✅ Focus state stored in route params - Verified via navigation.setParams calls in 6 tests
+✅ Focus restored on navigation return - Verified via setNativeProps({ hasTVPreferredFocus: true }) in 8 tests
+✅ requestAnimationFrame timing correct - Verified with custom delays and timing tests (2 tests)
+
+**Test Coverage Breakdown:**
+1. useTVFocusRestoration Hook - 20 tests covering storage, restoration, timing, ref management
+2. useTVFocusRestorationSimple Hook - 3 tests for simple context-based focus management
+3. TVScreenWrapper Component - 6 tests for auto-restoration and screen-level focus
+4. Cross-Screen Focus Memory - 4 tests for per-screen focus persistence
+5. Navigation Flow Simulation - 2 tests for real-world navigation scenarios
+6. Focus History - 2 tests for focus stack management
+7. Error Handling - 3 tests for graceful error recovery
+8. Edge Cases - 5 tests for special characters, long IDs, rapid changes, etc.
+
+**Conclusion:**
+Tests were already implemented and passing from previous successful attempts. This retry confirmed all tests remain functional and meet all acceptance criteria. Updated implementation_plan.json status from "pending" to "completed".
+
