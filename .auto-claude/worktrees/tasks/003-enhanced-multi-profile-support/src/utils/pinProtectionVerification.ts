@@ -5,6 +5,7 @@
  * in development and testing environments.
  */
 
+import * as Crypto from 'expo-crypto';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { Profile } from '../contexts/ProfileContext';
 
@@ -12,9 +13,13 @@ import { Profile } from '../contexts/ProfileContext';
 const PIN_STORAGE_PREFIX = 'profile_pin_hash_';
 
 // Hash function (must match ProfileSwitcherBottomSheet)
-const hashPin = (pin: string): string => {
+const hashPin = async (pin: string): Promise<string> => {
   const salted = `nuvio_pin_salt_${pin}_end`;
-  return btoa(salted);
+  const hash = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    salted
+  );
+  return hash; // 64-char hexadecimal string (irreversible)
 };
 
 /**
@@ -67,7 +72,8 @@ export async function verifyProfilePin(profileId: string, pin: string): Promise<
     if (!storedHash) {
       return true; // No PIN set, allow access
     }
-    return hashPin(pin) === storedHash;
+    const inputHash = await hashPin(pin);
+    return inputHash === storedHash;
   } catch (error) {
     console.error('[PINVerification] Error verifying PIN:', error);
     return false;
@@ -85,7 +91,7 @@ export async function setProfilePin(profileId: string, pin: string): Promise<boo
       return false;
     }
 
-    const pinHash = hashPin(pin);
+    const pinHash = await hashPin(pin);
     await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileId}`, pinHash);
     return true;
   } catch (error) {
