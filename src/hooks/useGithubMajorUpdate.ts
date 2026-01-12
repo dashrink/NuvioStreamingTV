@@ -1,9 +1,10 @@
+import * as Updates from 'expo-updates';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import * as Updates from 'expo-updates';
-import { getDisplayedAppVersion } from '../utils/version';
+
 import { fetchLatestGithubRelease, isAnyUpgrade } from '../services/githubReleaseService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { getDisplayedAppVersion } from '../utils/version';
 
 const DISMISSED_KEY = '@github_major_update_dismissed_version';
 
@@ -69,5 +70,3 @@ export function useGithubMajorUpdate(): MajorUpdateData {
 
   return { visible, latestTag, releaseNotes, releaseUrl, onDismiss, onLater, refresh: check };
 }
-
-

@@ -24,9 +24,10 @@
  * ```
  */
 
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import React, { useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+
 import { setTVNavigationBackHandler, clearTVNavigationBackHandler } from './TVBackHandler';
 
 // =============================================================================
@@ -63,7 +64,7 @@ export function TVNavigationBackHandlerProvider({
   const navigation = useNavigation();
 
   // Get current route name from navigation state
-  const currentRouteName = useNavigationState((state) => {
+  const currentRouteName = useNavigationState(state => {
     if (!state?.routes || state.routes.length === 0) {
       return undefined;
     }
@@ -71,7 +72,7 @@ export function TVNavigationBackHandlerProvider({
   });
 
   // Check if we can go back
-  const canGoBack = useNavigationState((state) => {
+  const canGoBack = useNavigationState(state => {
     if (!state) return false;
     return state.index > 0;
   });

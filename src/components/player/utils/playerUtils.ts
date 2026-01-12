@@ -1,7 +1,8 @@
-import { logger } from '../../../utils/logger';
 import { useEffect } from 'react';
+
 import { SubtitleCue } from './playerTypes';
 import { parseSRT as parseSRTEnhanced, parseSubtitle } from './subtitleParser';
+import { logger } from '../../../utils/logger';
 
 // Debug flag - set back to false to disable verbose logging
 // WARNING: Setting this to true currently causes infinite render loops
@@ -26,54 +27,54 @@ export const safeDebugLog = (message: string, data?: any) => {
 
 // Add language code to name mapping
 export const languageMap: { [key: string]: string } = {
-  'en': 'English',
-  'eng': 'English',
-  'es': 'Spanish',
-  'spa': 'Spanish',
-  'fr': 'French',
-  'fre': 'French',
-  'de': 'German',
-  'ger': 'German',
-  'it': 'Italian',
-  'ita': 'Italian',
-  'ja': 'Japanese',
-  'jpn': 'Japanese',
-  'ko': 'Korean',
-  'kor': 'Korean',
-  'zh': 'Chinese',
-  'chi': 'Chinese',
-  'ru': 'Russian',
-  'rus': 'Russian',
-  'pt': 'Portuguese',
-  'por': 'Portuguese',
-  'hi': 'Hindi',
-  'hin': 'Hindi',
-  'ar': 'Arabic',
-  'ara': 'Arabic',
-  'nl': 'Dutch',
-  'dut': 'Dutch',
-  'sv': 'Swedish',
-  'swe': 'Swedish',
-  'no': 'Norwegian',
-  'nor': 'Norwegian',
-  'fi': 'Finnish',
-  'fin': 'Finnish',
-  'da': 'Danish',
-  'dan': 'Danish',
-  'pl': 'Polish',
-  'pol': 'Polish',
-  'tr': 'Turkish',
-  'tur': 'Turkish',
-  'cs': 'Czech',
-  'cze': 'Czech',
-  'hu': 'Hungarian',
-  'hun': 'Hungarian',
-  'el': 'Greek',
-  'gre': 'Greek',
-  'th': 'Thai',
-  'tha': 'Thai',
-  'vi': 'Vietnamese',
-  'vie': 'Vietnamese',
+  en: 'English',
+  eng: 'English',
+  es: 'Spanish',
+  spa: 'Spanish',
+  fr: 'French',
+  fre: 'French',
+  de: 'German',
+  ger: 'German',
+  it: 'Italian',
+  ita: 'Italian',
+  ja: 'Japanese',
+  jpn: 'Japanese',
+  ko: 'Korean',
+  kor: 'Korean',
+  zh: 'Chinese',
+  chi: 'Chinese',
+  ru: 'Russian',
+  rus: 'Russian',
+  pt: 'Portuguese',
+  por: 'Portuguese',
+  hi: 'Hindi',
+  hin: 'Hindi',
+  ar: 'Arabic',
+  ara: 'Arabic',
+  nl: 'Dutch',
+  dut: 'Dutch',
+  sv: 'Swedish',
+  swe: 'Swedish',
+  no: 'Norwegian',
+  nor: 'Norwegian',
+  fi: 'Finnish',
+  fin: 'Finnish',
+  da: 'Danish',
+  dan: 'Danish',
+  pl: 'Polish',
+  pol: 'Polish',
+  tr: 'Turkish',
+  tur: 'Turkish',
+  cs: 'Czech',
+  cze: 'Czech',
+  hu: 'Hungarian',
+  hun: 'Hungarian',
+  el: 'Greek',
+  gre: 'Greek',
+  th: 'Thai',
+  tha: 'Thai',
+  vi: 'Vietnamese',
+  vie: 'Vietnamese',
 };
 
 // Function to format language code to readable name
@@ -91,7 +92,11 @@ export const formatLanguage = (code?: string): string => {
 };
 
 // Helper function to extract a display name from the track's name property
-export const getTrackDisplayName = (track: { name?: string, id: number, language?: string }): string => {
+export const getTrackDisplayName = (track: {
+  name?: string;
+  id: number;
+  language?: string;
+}): string => {
   if (!track) return 'Unknown Track';
 
   // If no name, use track number
@@ -103,8 +108,15 @@ export const getTrackDisplayName = (track: { name?: string, id: number, language
   }
 
   // If the track name contains detailed information (like codec, bitrate, etc.), use it as-is
-  if (track.name && (track.name.includes('DDP') || track.name.includes('DTS') || track.name.includes('AAC') ||
-    track.name.includes('Kbps') || track.name.includes('Atmos') || track.name.includes('~'))) {
+  if (
+    track.name &&
+    (track.name.includes('DDP') ||
+      track.name.includes('DTS') ||
+      track.name.includes('AAC') ||
+      track.name.includes('Kbps') ||
+      track.name.includes('Atmos') ||
+      track.name.includes('~'))
+  ) {
     return track.name;
   }
 
@@ -131,7 +143,7 @@ export const getTrackDisplayName = (track: { name?: string, id: number, language
   // Check for common language patterns in the name
   const languagePatterns = [
     /\b(english|spanish|french|german|italian|japanese|korean|chinese|russian|portuguese|hindi|arabic|dutch|swedish|norwegian|finnish|danish|polish|turkish|czech|hungarian|greek|thai|vietnamese)\b/i,
-    /\b(en|es|fr|de|it|ja|ko|zh|ru|pt|hi|ar|nl|sv|no|fi|da|pl|tr|cs|hu|el|th|vi)\b/i
+    /\b(en|es|fr|de|it|ja|ko|zh|ru|pt|hi|ar|nl|sv|no|fi|da|pl|tr|cs|hu|el|th|vi)\b/i,
   ];
 
   for (const pattern of languagePatterns) {
@@ -189,7 +201,8 @@ export const detectRTL = (text: string): boolean => {
   // Arabic Presentation Forms-B: U+FE70–U+FEFF
   // Hebrew: U+0590–U+05FF
   // Persian/Urdu use Arabic script (no separate range)
-  const rtlRegex = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+  const rtlRegex =
+    /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
 
   // Remove whitespace and count characters
   const nonWhitespace = text.replace(/\s/g, '');
@@ -222,13 +235,13 @@ export const processUrlForVLC = (url: string | undefined): string => {
 // Default headers for Android requests
 export const defaultAndroidHeaders = {
   'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile; rv:89.0) Gecko/89.0 Firefox/89.0',
-  'Accept': '*/*'
+  Accept: '*/*',
 };
 
 // Get specific headers for HLS streams
 export const getHlsHeaders = () => {
   return {
     ...defaultAndroidHeaders,
-    'Accept': 'application/x-mpegURL, application/vnd.apple.mpegurl, application/json, text/plain',
+    Accept: 'application/x-mpegURL, application/vnd.apple.mpegurl, application/json, text/plain',
   };
-}; 
+};

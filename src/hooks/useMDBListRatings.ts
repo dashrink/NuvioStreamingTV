@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+
+import { isMDBListEnabled } from '../constants/mdblistConstants';
 import { mdblistService, MDBListRatings } from '../services/mdblistService';
 import { logger } from '../utils/logger';
-import { isMDBListEnabled } from '../constants/mdblistConstants';
 
 export const useMDBListRatings = (imdbId: string, mediaType: 'movie' | 'show') => {
   const [ratings, setRatings] = useState<MDBListRatings | null>(null);
@@ -46,4 +47,4 @@ export const useMDBListRatings = (imdbId: string, mediaType: 'movie' | 'show') =
   }, [imdbId, mediaType]);
 
   return { ratings, loading, error };
-}; 
+};

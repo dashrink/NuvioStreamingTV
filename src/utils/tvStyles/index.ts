@@ -40,27 +40,13 @@ export {
 } from './deviceDetection';
 
 // Typography
-export {
-  TV_TYPOGRAPHY,
-  TV_FONT_WEIGHTS,
-  type TVTypography,
-  type TVFontWeight,
-} from './typography';
+export { TV_TYPOGRAPHY, TV_FONT_WEIGHTS, type TVTypography, type TVFontWeight } from './typography';
 
 // Spacing
-export {
-  TV_SPACING,
-  TV_SPACING_PRESETS,
-  type TVSpacing,
-  type TVSpacingPresets,
-} from './spacing';
+export { TV_SPACING, TV_SPACING_PRESETS, type TVSpacing, type TVSpacingPresets } from './spacing';
 
 // Focus and animations
-export {
-  TV_FOCUS_CONFIG,
-  getTVFocusStyle,
-  type TVFocusConfig,
-} from './focus';
+export { TV_FOCUS_CONFIG, getTVFocusStyle, type TVFocusConfig } from './focus';
 
 // Touch targets
 export {

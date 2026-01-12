@@ -3,9 +3,10 @@
  * Applies kid-friendly styling and restrictions when active
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useProfile } from '../../contexts/ProfileContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { kidsModeColors, kidsModeStyles } from '../../styles/kidsModeTheme';

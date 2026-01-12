@@ -9,4 +9,4 @@ export { default as LibraryScreen } from './LibraryScreen';
 export { default as ShowRatingsScreen } from './ShowRatingsScreen';
 export { default as CatalogSettingsScreen } from './CatalogSettingsScreen';
 export { default as StreamsScreen } from './StreamsScreen';
-export { default as OnboardingScreen } from './OnboardingScreen'; 
+export { default as OnboardingScreen } from './OnboardingScreen';

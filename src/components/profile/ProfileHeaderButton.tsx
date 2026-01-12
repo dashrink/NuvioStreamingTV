@@ -3,12 +3,15 @@
  * Shows current user's avatar and optionally name, with badges for Kids/Teen profiles
  */
 
-import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, CommonActions, NavigationProp } from '@react-navigation/native';
-import { useTheme } from '../../contexts/ThemeContext';
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
+
 import { useProfile } from '../../contexts/ProfileContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { triggerLight } from '../../hooks/useHaptics';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import {
   AVATAR_OPTIONS,
   KIDS_AVATAR_OPTIONS,
@@ -16,8 +19,6 @@ import {
   isKidsProfile,
   isTeenProfile,
 } from '../../types/profile';
-import { triggerLight } from '../../hooks/useHaptics';
-import { RootStackParamList } from '../../navigation/AppNavigator';
 
 interface ProfileHeaderButtonProps {
   /**

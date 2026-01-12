@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef } from 'react';
 import {
   View,
@@ -8,7 +9,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -99,7 +100,7 @@ const Toast: React.FC<ToastProps> = ({
   const getToastConfig = () => {
     // Use the app's theme colors directly
     const isDarkTheme = true; // App uses dark theme by default
-    
+
     switch (type) {
       case 'success':
         return {
@@ -165,27 +166,19 @@ const Toast: React.FC<ToastProps> = ({
         },
       ]}
     >
-      <TouchableOpacity
-        style={styles.content}
-        onPress={removeToast}
-        activeOpacity={0.8}
-      >
+      <TouchableOpacity style={styles.content} onPress={removeToast} activeOpacity={0.8}>
         <View style={styles.leftSection}>
           <View style={[styles.iconContainer, { backgroundColor: config.color }]}>
             <MaterialIcons name={config.icon} size={20} color="white" />
           </View>
           <View style={styles.textContainer}>
-            <Text style={[styles.title, { color: config.textColor }]}>
-              {title}
-            </Text>
+            <Text style={[styles.title, { color: config.textColor }]}>{title}</Text>
             {message && (
-              <Text style={[styles.message, { color: config.messageColor }]}>
-                {message}
-              </Text>
+              <Text style={[styles.message, { color: config.messageColor }]}>{message}</Text>
             )}
           </View>
         </View>
-        
+
         <View style={styles.rightSection}>
           {action && (
             <TouchableOpacity
@@ -198,10 +191,7 @@ const Toast: React.FC<ToastProps> = ({
               <Text style={styles.actionText}>{action.label}</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={removeToast}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={removeToast}>
             <MaterialIcons name="close" size={18} color={currentTheme.colors.disabled} />
           </TouchableOpacity>
         </View>

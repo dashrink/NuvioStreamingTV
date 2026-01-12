@@ -34,11 +34,7 @@ export interface TVScreenWrapperProps {
 /**
  * Non-TV fallback: simply renders children without any TV-specific logic
  */
-export function TVScreenWrapper({
-  children,
-  style,
-  testID,
-}: TVScreenWrapperProps): JSX.Element {
+export function TVScreenWrapper({ children, style, testID }: TVScreenWrapperProps): JSX.Element {
   return (
     <View style={[styles.container, style]} testID={testID}>
       {children}

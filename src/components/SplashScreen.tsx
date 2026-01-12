@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, Animated } from 'react-native';
+
 import { colors } from '../styles/colors';
 
 interface SplashScreenProps {

@@ -12,9 +12,9 @@
  * @see SkeletonGroup - Component for multiple synchronized skeletons
  */
 
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Dimensions, ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -25,13 +25,14 @@ import Animated, {
   SharedValue,
   Easing,
 } from 'react-native-reanimated';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import {
   SkeletonLoadingProps,
   LOADING_ANIMATION_DURATIONS,
   DEFAULT_LOADING_CONFIG,
   getLoadingColorTokens,
 } from './types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -319,11 +320,7 @@ const ShimmerSkeleton: React.FC<ShimmerSkeletonProps> = ({
       return { opacity: 0 };
     }
 
-    const translateX = interpolate(
-      shimmerProgress.value,
-      [0, 1],
-      [-screenWidth, screenWidth]
-    );
+    const translateX = interpolate(shimmerProgress.value, [0, 1], [-screenWidth, screenWidth]);
     return {
       transform: [{ translateX }],
     };
@@ -347,16 +344,9 @@ const ShimmerSkeleton: React.FC<ShimmerSkeletonProps> = ({
       accessibilityLabel="Loading placeholder"
     >
       {animated && (
-        <Animated.View
-          style={[StyleSheet.absoluteFill, animatedStyle]}
-        >
+        <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
           <LinearGradient
-            colors={[
-              'transparent',
-              highlightColor,
-              highlightColor,
-              'transparent',
-            ]}
+            colors={['transparent', highlightColor, highlightColor, 'transparent']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[StyleSheet.absoluteFill, { width: screenWidth * 2 }]}

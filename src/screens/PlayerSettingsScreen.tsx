@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
   View,
@@ -10,11 +11,11 @@ import {
   StatusBar,
   Switch,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSettings, AppSettings } from '../hooks/useSettings';
-import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { useSettings, AppSettings } from '../hooks/useSettings';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -53,32 +54,13 @@ const SettingItem: React.FC<SettingItemProps> = ({
       ]}
     >
       <View style={styles.settingContent}>
-        <View style={[
-          styles.settingIconContainer,
-          { backgroundColor: 'rgba(255,255,255,0.1)' }
-        ]}>
-          <MaterialIcons
-            name={icon}
-            size={20}
-            color={currentTheme.colors.primary}
-          />
+        <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+          <MaterialIcons name={icon} size={20} color={currentTheme.colors.primary} />
         </View>
         <View style={styles.settingText}>
-          <Text
-            style={[
-              styles.settingTitle,
-              { color: currentTheme.colors.text },
-            ]}
-          >
-            {title}
-          </Text>
+          <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>{title}</Text>
           {description && (
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: currentTheme.colors.textMuted },
-              ]}
-            >
+            <Text style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}>
               {description}
             </Text>
           )}
@@ -105,48 +87,50 @@ const PlayerSettingsScreen: React.FC = () => {
     {
       id: 'internal',
       title: 'Built-in Player',
-      description: 'Use the app\'s default video player',
+      description: "Use the app's default video player",
       icon: 'play-circle-outline',
     },
-    ...(Platform.OS === 'ios' ? [
-      {
-        id: 'vlc',
-        title: 'VLC',
-        description: 'Open streams in VLC media player',
-        icon: 'video-library',
-      },
-      {
-        id: 'infuse',
-        title: 'Infuse',
-        description: 'Open streams in Infuse player',
-        icon: 'smart-display',
-      },
-      {
-        id: 'outplayer',
-        title: 'OutPlayer',
-        description: 'Open streams in OutPlayer',
-        icon: 'slideshow',
-      },
-      {
-        id: 'vidhub',
-        title: 'VidHub',
-        description: 'Open streams in VidHub player',
-        icon: 'ondemand-video',
-      },
-      {
-        id: 'infuse_livecontainer',
-        title: 'Infuse Livecontainer',
-        description: 'Open streams in Infuse player LiveContainer',
-        icon: 'smart-display',
-      },
-    ] : [
-      {
-        id: 'external',
-        title: 'External Player',
-        description: 'Open streams in your preferred video player',
-        icon: 'open-in-new',
-      },
-    ]),
+    ...(Platform.OS === 'ios'
+      ? [
+          {
+            id: 'vlc',
+            title: 'VLC',
+            description: 'Open streams in VLC media player',
+            icon: 'video-library',
+          },
+          {
+            id: 'infuse',
+            title: 'Infuse',
+            description: 'Open streams in Infuse player',
+            icon: 'smart-display',
+          },
+          {
+            id: 'outplayer',
+            title: 'OutPlayer',
+            description: 'Open streams in OutPlayer',
+            icon: 'slideshow',
+          },
+          {
+            id: 'vidhub',
+            title: 'VidHub',
+            description: 'Open streams in VidHub player',
+            icon: 'ondemand-video',
+          },
+          {
+            id: 'infuse_livecontainer',
+            title: 'Infuse Livecontainer',
+            description: 'Open streams in Infuse player LiveContainer',
+            icon: 'smart-display',
+          },
+        ]
+      : [
+          {
+            id: 'external',
+            title: 'External Player',
+            description: 'Open streams in your preferred video player',
+            icon: 'open-in-new',
+          },
+        ]),
   ];
 
   const handleBack = () => {
@@ -156,31 +140,14 @@ const PlayerSettingsScreen: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground },
-      ]}
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
     >
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handleBack}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={currentTheme.colors.text}
-          />
-          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
-            Settings
-          </Text>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
+          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>Settings</Text>
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
@@ -188,21 +155,11 @@ const PlayerSettingsScreen: React.FC = () => {
         </View>
       </View>
 
-      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-        Video Player
-      </Text>
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Video Player</Text>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: currentTheme.colors.textMuted },
-            ]}
-          >
+          <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
             PLAYER SELECTION
           </Text>
           <View
@@ -238,12 +195,7 @@ const PlayerSettingsScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: currentTheme.colors.textMuted },
-            ]}
-          >
+          <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
             PLAYBACK OPTIONS
           </Text>
           <View
@@ -256,37 +208,27 @@ const PlayerSettingsScreen: React.FC = () => {
           >
             <View style={styles.settingItem}>
               <View style={styles.settingContent}>
-                <View style={[
-                  styles.settingIconContainer,
-                  { backgroundColor: 'rgba(255,255,255,0.1)' }
-                ]}>
-                  <MaterialIcons
-                    name="play-arrow"
-                    size={20}
-                    color={currentTheme.colors.primary}
-                  />
+                <View
+                  style={[
+                    styles.settingIconContainer,
+                    { backgroundColor: 'rgba(255,255,255,0.1)' },
+                  ]}
+                >
+                  <MaterialIcons name="play-arrow" size={20} color={currentTheme.colors.primary} />
                 </View>
                 <View style={styles.settingText}>
-                  <Text
-                    style={[
-                      styles.settingTitle,
-                      { color: currentTheme.colors.text },
-                    ]}
-                  >
+                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
                     Auto-play Best Stream
                   </Text>
                   <Text
-                    style={[
-                      styles.settingDescription,
-                      { color: currentTheme.colors.textMuted },
-                    ]}
+                    style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}
                   >
                     Automatically start the highest quality stream available.
                   </Text>
                 </View>
                 <Switch
                   value={settings.autoplayBestStream}
-                  onValueChange={(value) => {
+                  onValueChange={value => {
                     triggerMedium();
                     updateSetting('autoplayBestStream', value);
                   }}
@@ -297,37 +239,28 @@ const PlayerSettingsScreen: React.FC = () => {
 
             <View style={styles.settingItem}>
               <View style={styles.settingContent}>
-                <View style={[
-                  styles.settingIconContainer,
-                  { backgroundColor: 'rgba(255,255,255,0.1)' }
-                ]}>
-                  <MaterialIcons
-                    name="restore"
-                    size={20}
-                    color={currentTheme.colors.primary}
-                  />
+                <View
+                  style={[
+                    styles.settingIconContainer,
+                    { backgroundColor: 'rgba(255,255,255,0.1)' },
+                  ]}
+                >
+                  <MaterialIcons name="restore" size={20} color={currentTheme.colors.primary} />
                 </View>
                 <View style={styles.settingText}>
-                  <Text
-                    style={[
-                      styles.settingTitle,
-                      { color: currentTheme.colors.text },
-                    ]}
-                  >
+                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
                     Always Resume
                   </Text>
                   <Text
-                    style={[
-                      styles.settingDescription,
-                      { color: currentTheme.colors.textMuted },
-                    ]}
+                    style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}
                   >
-                    Skip the resume prompt and automatically continue where you left off (if less than 85% watched).
+                    Skip the resume prompt and automatically continue where you left off (if less
+                    than 85% watched).
                   </Text>
                 </View>
                 <Switch
                   value={settings.alwaysResume}
-                  onValueChange={(value) => {
+                  onValueChange={value => {
                     triggerMedium();
                     updateSetting('alwaysResume', value);
                   }}
@@ -339,47 +272,55 @@ const PlayerSettingsScreen: React.FC = () => {
             {/* External Player for Downloads */}
             {((Platform.OS === 'android' && settings.useExternalPlayer) ||
               (Platform.OS === 'ios' && settings.preferredPlayer !== 'internal')) && (
-                <View style={[styles.settingItem, styles.settingItemBorder, { borderBottomWidth: 0, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' }]}>
-                  <View style={styles.settingContent}>
-                    <View style={[
+              <View
+                style={[
+                  styles.settingItem,
+                  styles.settingItemBorder,
+                  {
+                    borderBottomWidth: 0,
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(255,255,255,0.08)',
+                  },
+                ]}
+              >
+                <View style={styles.settingContent}>
+                  <View
+                    style={[
                       styles.settingIconContainer,
-                      { backgroundColor: 'rgba(255,255,255,0.1)' }
-                    ]}>
-                      <MaterialIcons
-                        name="open-in-new"
-                        size={20}
-                        color={currentTheme.colors.primary}
-                      />
-                    </View>
-                    <View style={styles.settingText}>
-                      <Text
-                        style={[
-                          styles.settingTitle,
-                          { color: currentTheme.colors.text },
-                        ]}
-                      >
-                        External Player for Downloads
-                      </Text>
-                      <Text
-                        style={[
-                          styles.settingDescription,
-                          { color: currentTheme.colors.textMuted },
-                        ]}
-                      >
-                        Play downloaded content in your preferred external player.
-                      </Text>
-                    </View>
-                    <Switch
-                      value={settings.useExternalPlayerForDownloads}
-                      onValueChange={(value) => {
-                        triggerMedium();
-                        updateSetting('useExternalPlayerForDownloads', value);
-                      }}
-                      thumbColor={settings.useExternalPlayerForDownloads ? currentTheme.colors.primary : undefined}
+                      { backgroundColor: 'rgba(255,255,255,0.1)' },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="open-in-new"
+                      size={20}
+                      color={currentTheme.colors.primary}
                     />
                   </View>
+                  <View style={styles.settingText}>
+                    <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                      External Player for Downloads
+                    </Text>
+                    <Text
+                      style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}
+                    >
+                      Play downloaded content in your preferred external player.
+                    </Text>
+                  </View>
+                  <Switch
+                    value={settings.useExternalPlayerForDownloads}
+                    onValueChange={value => {
+                      triggerMedium();
+                      updateSetting('useExternalPlayerForDownloads', value);
+                    }}
+                    thumbColor={
+                      settings.useExternalPlayerForDownloads
+                        ? currentTheme.colors.primary
+                        : undefined
+                    }
+                  />
                 </View>
-              )}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -484,4 +425,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlayerSettingsScreen; 
+export default PlayerSettingsScreen;

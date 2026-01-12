@@ -4,72 +4,72 @@
  */
 import { useRef, useCallback, MutableRefObject } from 'react';
 import { Platform } from 'react-native';
+
 import { logger } from '../../../utils/logger';
 
 const DEBUG_MODE = false;
 const END_EPSILON = 0.3;
 
 interface PlayerControlsConfig {
-    playerRef: MutableRefObject<any>;
-    paused: boolean;
-    setPaused: (paused: boolean) => void;
-    currentTime: number;
-    duration: number;
-    isSeeking: MutableRefObject<boolean>;
-    isMounted: MutableRefObject<boolean>;
+  playerRef: MutableRefObject<any>;
+  paused: boolean;
+  setPaused: (paused: boolean) => void;
+  currentTime: number;
+  duration: number;
+  isSeeking: MutableRefObject<boolean>;
+  isMounted: MutableRefObject<boolean>;
 }
 
 export const usePlayerControls = (config: PlayerControlsConfig) => {
-    const {
-        playerRef,
-        paused,
-        setPaused,
-        currentTime,
-        duration,
-        isSeeking,
-        isMounted
-    } = config;
+  const { playerRef, paused, setPaused, currentTime, duration, isSeeking, isMounted } = config;
 
-    // iOS seeking helpers
-    const iosWasPausedDuringSeekRef = useRef<boolean | null>(null);
+  // iOS seeking helpers
+  const iosWasPausedDuringSeekRef = useRef<boolean | null>(null);
 
-    const togglePlayback = useCallback(() => {
-        setPaused(!paused);
-    }, [paused, setPaused]);
+  const togglePlayback = useCallback(() => {
+    setPaused(!paused);
+  }, [paused, setPaused]);
 
-    const seekToTime = useCallback((rawSeconds: number) => {
-        const timeInSeconds = Math.max(0, Math.min(rawSeconds, duration > 0 ? duration - END_EPSILON : rawSeconds));
+  const seekToTime = useCallback(
+    (rawSeconds: number) => {
+      const timeInSeconds = Math.max(
+        0,
+        Math.min(rawSeconds, duration > 0 ? duration - END_EPSILON : rawSeconds)
+      );
 
-        if (playerRef.current && duration > 0 && !isSeeking.current) {
-            if (DEBUG_MODE) logger.log(`[usePlayerControls] Seeking to ${timeInSeconds}`);
+      if (playerRef.current && duration > 0 && !isSeeking.current) {
+        if (DEBUG_MODE) logger.log(`[usePlayerControls] Seeking to ${timeInSeconds}`);
 
-            isSeeking.current = true;
+        isSeeking.current = true;
 
-            // iOS optimization: pause while seeking for smoother experience
+        // iOS optimization: pause while seeking for smoother experience
 
+        // Actually perform the seek
+        playerRef.current.seek(timeInSeconds);
 
-            // Actually perform the seek
-            playerRef.current.seek(timeInSeconds);
+        // Debounce the seeking state reset
+        setTimeout(() => {
+          if (isMounted.current && isSeeking.current) {
+            isSeeking.current = false;
+            // Resume if it was playing (iOS specific)
+          }
+        }, 500);
+      }
+    },
+    [duration, paused, setPaused, playerRef, isSeeking, isMounted]
+  );
 
-            // Debounce the seeking state reset
-            setTimeout(() => {
-                if (isMounted.current && isSeeking.current) {
-                    isSeeking.current = false;
-                    // Resume if it was playing (iOS specific)
+  const skip = useCallback(
+    (seconds: number) => {
+      seekToTime(currentTime + seconds);
+    },
+    [currentTime, seekToTime]
+  );
 
-                }
-            }, 500);
-        }
-    }, [duration, paused, setPaused, playerRef, isSeeking, isMounted]);
-
-    const skip = useCallback((seconds: number) => {
-        seekToTime(currentTime + seconds);
-    }, [currentTime, seekToTime]);
-
-    return {
-        togglePlayback,
-        seekToTime,
-        skip,
-        iosWasPausedDuringSeekRef
-    };
+  return {
+    togglePlayback,
+    seekToTime,
+    skip,
+    iosWasPausedDuringSeekRef,
+  };
 };

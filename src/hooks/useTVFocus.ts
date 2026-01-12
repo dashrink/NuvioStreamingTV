@@ -8,6 +8,7 @@ import {
   cancelAnimation,
   SharedValue,
 } from 'react-native-reanimated';
+
 import { triggerFocusFeedbackSync } from '../utils/focusSound';
 
 /**
@@ -265,13 +266,16 @@ export const useTVFocus = (options: UseTVFocusOptions = {}): UseTVFocusReturn =>
   }, [focusAnim, animationDuration, onBlur]);
 
   // Manual focus setter (useful for testing or non-TV scenarios)
-  const setFocused = useCallback((focused: boolean) => {
-    if (focused) {
-      handleFocus();
-    } else {
-      handleBlur();
-    }
-  }, [handleFocus, handleBlur]);
+  const setFocused = useCallback(
+    (focused: boolean) => {
+      if (focused) {
+        handleFocus();
+      } else {
+        handleBlur();
+      }
+    },
+    [handleFocus, handleBlur]
+  );
 
   // Cleanup on unmount
   useEffect(() => {

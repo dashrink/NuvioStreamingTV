@@ -4,6 +4,7 @@
  */
 
 import { Platform } from 'react-native';
+
 import { isMkvStream } from './mkvDetection';
 
 export interface PlayerSelectionOptions {
@@ -18,7 +19,7 @@ export interface PlayerSelectionOptions {
 export const shouldUseKSPlayer = ({
   uri,
   headers,
-  platform = Platform.OS
+  platform = Platform.OS,
 }: PlayerSelectionOptions): boolean => {
   // Android always uses AndroidVideoPlayer (MPV)
   if (platform === 'android') {
@@ -38,6 +39,8 @@ export const shouldUseKSPlayer = ({
 /**
  * Get the appropriate player component name
  */
-export const getPlayerComponent = (options: PlayerSelectionOptions): 'AndroidVideoPlayer' | 'KSPlayerCore' => {
+export const getPlayerComponent = (
+  options: PlayerSelectionOptions
+): 'AndroidVideoPlayer' | 'KSPlayerCore' => {
   return shouldUseKSPlayer(options) ? 'KSPlayerCore' : 'AndroidVideoPlayer';
 };

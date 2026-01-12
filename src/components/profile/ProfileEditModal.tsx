@@ -2,6 +2,7 @@
  * ProfileEditModal - Modal for creating and editing profiles
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,9 +14,9 @@ import {
   ScrollView,
   Switch,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import { AvatarSelector } from './AvatarSelector';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   ProfileType,
   AgeRating,

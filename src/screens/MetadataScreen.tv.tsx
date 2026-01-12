@@ -15,6 +15,15 @@
  * - Uses TV-specific HeroSection and CastSection components
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+  RouteProp,
+  NavigationProp,
+} from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 import React, { useCallback, useState, useEffect, useMemo, useRef, memo } from 'react';
 import {
   View,
@@ -29,24 +38,6 @@ import {
   Alert,
   findNodeHandle,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTraktContext } from '../contexts/TraktContext';
-import { useMetadata } from '../hooks/useMetadata';
-import { useDominantColor, preloadDominantColor } from '../hooks/useDominantColor';
-import { CastSection } from '../components/metadata/CastSection';
-import { CastDetailsModal } from '../components/metadata/CastDetailsModal';
-import { SeriesContent } from '../components/metadata/SeriesContent';
-import { MovieContent } from '../components/metadata/MovieContent';
-import { MoreLikeThisSection } from '../components/metadata/MoreLikeThisSection';
-import { RatingsSection } from '../components/metadata/RatingsSection';
-import { CommentsSection, CommentBottomSheet } from '../components/metadata/CommentsSection';
-import TrailersSection from '../components/metadata/TrailersSection';
-import CollectionSection from '../components/metadata/CollectionSection';
-import { RouteParams, Episode } from '../types/metadata';
 import Animated, {
   useAnimatedStyle,
   interpolate,
@@ -60,14 +51,34 @@ import Animated, {
   withSpring,
   createAnimatedComponent,
 } from 'react-native-reanimated';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import Focusable, { FocusableRef } from '../components/common/Focusable';
+import {
+  MetadataLoadingScreen,
+  MetadataLoadingScreenRef,
+} from '../components/loading/MetadataLoadingScreen';
+import { CastDetailsModal } from '../components/metadata/CastDetailsModal';
+import { CastSection } from '../components/metadata/CastSection';
+import { CommentsSection, CommentBottomSheet } from '../components/metadata/CommentsSection';
+import { MoreLikeThisSection } from '../components/metadata/MoreLikeThisSection';
+import { MovieContent } from '../components/metadata/MovieContent';
+import { SeriesContent } from '../components/metadata/SeriesContent';
+import { useTheme } from '../contexts/ThemeContext';
+import { useTraktContext } from '../contexts/TraktContext';
+import { useMetadata } from '../hooks/useMetadata';
+import { useDominantColor, preloadDominantColor } from '../hooks/useDominantColor';
+import { RatingsSection } from '../components/metadata/RatingsSection';
+import TrailersSection from '../components/metadata/TrailersSection';
+import CollectionSection from '../components/metadata/CollectionSection';
+import { RouteParams, Episode } from '../types/metadata';
 
 const AnimatedSafeAreaView = createAnimatedComponent(SafeAreaView);
-import { RouteProp } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
+
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useSettings } from '../hooks/useSettings';
-import { MetadataLoadingScreen, MetadataLoadingScreenRef } from '../components/loading/MetadataLoadingScreen';
 import { useTrailer } from '../contexts/TrailerContext';
+
 import FastImage from '@d11/react-native-fast-image';
 
 // Import optimized components and hooks
@@ -85,7 +96,6 @@ import { catalogService } from '../services/catalogService';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
 import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
 import { useTVBackHandler } from '../hooks/useTVBackHandler';
-import Focusable, { FocusableRef } from '../components/common/Focusable';
 
 const { height } = Dimensions.get('window');
 
@@ -111,7 +121,10 @@ const MemoizedCastDetailsModal = memo(CastDetailsModal);
 // =============================================================================
 
 const MetadataScreenTV: React.FC = () => {
-  const route = useRoute<RouteProp<Record<string, RouteParams & { episodeId?: string; addonId?: string }>, string>>();
+  const route =
+    useRoute<
+      RouteProp<Record<string, RouteParams & { episodeId?: string; addonId?: string }>, string>
+    >();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { id, type, episodeId, addonId } = route.params;
 
@@ -122,7 +135,15 @@ const MetadataScreenTV: React.FC = () => {
   const { pauseTrailer } = useTrailer();
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+  const {
+    isAuthenticated,
+    isInWatchlist,
+    isInCollection,
+    addToWatchlist,
+    removeFromWatchlist,
+    addToCollection,
+    removeFromCollection,
+  } = useTraktContext();
 
   // TV Navigation context
   const tvNav = useTVNavigationOptional();
@@ -156,10 +177,14 @@ const MetadataScreenTV: React.FC = () => {
 
   const horizontalPadding = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 32;
-      case 'largeTablet': return 28;
-      case 'tablet': return 24;
-      default: return 16;
+      case 'tv':
+        return 32;
+      case 'largeTablet':
+        return 28;
+      case 'tablet':
+        return 24;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
@@ -211,7 +236,12 @@ const MetadataScreenTV: React.FC = () => {
   } = useMetadata({ id, type, addonId });
 
   // Hooks with memoization
-  const watchProgressData = useWatchProgress(id, Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series', episodeId, episodes);
+  const watchProgressData = useWatchProgress(
+    id,
+    Object.keys(groupedEpisodes).length > 0 ? 'series' : (type as 'movie' | 'series'),
+    episodeId,
+    episodes
+  );
   const assetData = useMetadataAssets(metadata, id, type, imdbId, settings, setMetadata);
   const animations = useMetadataAnimations(safeAreaTop, watchProgressData.watchProgress);
 
@@ -243,9 +273,13 @@ const MetadataScreenTV: React.FC = () => {
   const hasAnimatedInitialColorRef = useRef(false);
   useEffect(() => {
     const base = currentTheme.colors.darkBackground;
-    const target = (settings.useDominantBackgroundColor && dominantColor && dominantColor !== '#1a1a1a' && dominantColor !== null)
-      ? dominantColor
-      : base;
+    const target =
+      settings.useDominantBackgroundColor &&
+      dominantColor &&
+      dominantColor !== '#1a1a1a' &&
+      dominantColor !== null
+        ? dominantColor
+        : base;
 
     if (!hasAnimatedInitialColorRef.current) {
       bgFromColor.value = base as any;
@@ -294,7 +328,13 @@ const MetadataScreenTV: React.FC = () => {
   }));
 
   const dynamicBackgroundColor = useMemo(() => {
-    if (settings.useDominantBackgroundColor && dominantColor && dominantColor !== '#1a1a1a' && dominantColor !== null && dominantColor !== currentTheme.colors.darkBackground) {
+    if (
+      settings.useDominantBackgroundColor &&
+      dominantColor &&
+      dominantColor !== '#1a1a1a' &&
+      dominantColor !== null &&
+      dominantColor !== currentTheme.colors.darkBackground
+    ) {
       return dominantColor;
     }
     return currentTheme.colors.darkBackground;
@@ -380,23 +420,37 @@ const MetadataScreenTV: React.FC = () => {
     const hasNetworks = metadata?.networks && metadata.networks.length > 0;
     const hasDescription = !!metadata?.description;
     const isSeries = Object.keys(groupedEpisodes).length > 0;
-    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isSeries;
+    const shouldShow =
+      shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isSeries;
 
     if (shouldShow && networkSectionOpacity.value === 0) {
       networkSectionOpacity.value = withTiming(1, { duration: 400 });
     }
-  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone]);
+  }, [
+    metadata?.networks,
+    metadata?.description,
+    Object.keys(groupedEpisodes).length,
+    shouldLoadSecondaryData,
+    postCastDelayDone,
+  ]);
 
   useEffect(() => {
     const hasNetworks = metadata?.networks && metadata.networks.length > 0;
     const hasDescription = !!metadata?.description;
     const isMovie = Object.keys(groupedEpisodes).length === 0;
-    const shouldShow = shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isMovie;
+    const shouldShow =
+      shouldLoadSecondaryData && postCastDelayDone && hasNetworks && hasDescription && isMovie;
 
     if (shouldShow && productionSectionOpacity.value === 0) {
       productionSectionOpacity.value = withTiming(1, { duration: 400 });
     }
-  }, [metadata?.networks, metadata?.description, Object.keys(groupedEpisodes).length, shouldLoadSecondaryData, postCastDelayDone]);
+  }, [
+    metadata?.networks,
+    metadata?.description,
+    Object.keys(groupedEpisodes).length,
+    shouldLoadSecondaryData,
+    postCastDelayDone,
+  ]);
 
   useEffect(() => {
     if (!shouldLoadSecondaryData) {
@@ -445,7 +499,10 @@ const MetadataScreenTV: React.FC = () => {
   // Optimized Callbacks
   // =============================================================================
 
-  const isReady = useMemo(() => !loading && metadata && !metadataError, [loading, metadata, metadataError]);
+  const isReady = useMemo(
+    () => !loading && metadata && !metadataError,
+    [loading, metadata, metadataError]
+  );
 
   useEffect(() => {
     if (isReady && isScreenFocused) {
@@ -466,22 +523,29 @@ const MetadataScreenTV: React.FC = () => {
 
   const handleToggleLibrary = useCallback(() => {
     if (isScreenFocused) {
-      Haptics.impactAsync(inLibrary ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(
+        inLibrary ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium
+      );
     }
     toggleLibrary();
   }, [inLibrary, toggleLibrary, isScreenFocused]);
 
-  const handleSeasonChangeWithHaptics = useCallback((seasonNumber: number) => {
-    if (isScreenFocused) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    handleSeasonChange(seasonNumber);
-  }, [handleSeasonChange, isScreenFocused]);
+  const handleSeasonChangeWithHaptics = useCallback(
+    (seasonNumber: number) => {
+      if (isScreenFocused) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      handleSeasonChange(seasonNumber);
+    },
+    [handleSeasonChange, isScreenFocused]
+  );
 
   const handleShowStreams = useCallback(() => {
     const { watchProgress } = watchProgressData;
 
-    try { pauseTrailer(); } catch { }
+    try {
+      pauseTrailer();
+    } catch {}
 
     const buildEpisodeId = (ep: any): string => {
       return ep.stremioId || `${id}:${ep.season_number}:${ep.episode_number}`;
@@ -522,7 +586,10 @@ const MetadataScreenTV: React.FC = () => {
       }
 
       if (!targetEpisodeId) {
-        targetEpisodeId = watchProgress?.episodeId || episodeId || (episodes.length > 0 ? buildEpisodeId(episodes[0]) : undefined);
+        targetEpisodeId =
+          watchProgress?.episodeId ||
+          episodeId ||
+          (episodes.length > 0 ? buildEpisodeId(episodes[0]) : undefined);
       }
 
       if (targetEpisodeId) {
@@ -542,35 +609,56 @@ const MetadataScreenTV: React.FC = () => {
       fallbackEpisodeId = `${id}:${p[0]}:${p[1]}`;
     }
     navigation.navigate('Streams', { id, type, episodeId: fallbackEpisodeId });
-  }, [navigation, id, type, episodes, episodeId, watchProgressData.watchProgress, pauseTrailer, groupedEpisodes]);
+  }, [
+    navigation,
+    id,
+    type,
+    episodes,
+    episodeId,
+    watchProgressData.watchProgress,
+    pauseTrailer,
+    groupedEpisodes,
+  ]);
 
-  const handleEpisodeSelect = useCallback((episode: Episode) => {
-    if (!isScreenFocused) return;
+  const handleEpisodeSelect = useCallback(
+    (episode: Episode) => {
+      if (!isScreenFocused) return;
 
-    const episodeId = episode.stremioId || `${id}:${episode.season_number}:${episode.episode_number}`;
+      const episodeId =
+        episode.stremioId || `${id}:${episode.season_number}:${episode.episode_number}`;
 
-    requestAnimationFrame(() => {
-      try { pauseTrailer(); } catch { }
-      navigation.navigate('Streams', {
-        id,
-        type,
-        episodeId,
-        episodeThumbnail: episode.still_path || undefined
+      requestAnimationFrame(() => {
+        try {
+          pauseTrailer();
+        } catch {}
+        navigation.navigate('Streams', {
+          id,
+          type,
+          episodeId,
+          episodeThumbnail: episode.still_path || undefined,
+        });
       });
-    });
-  }, [navigation, id, type, isScreenFocused, pauseTrailer]);
+    },
+    [navigation, id, type, isScreenFocused, pauseTrailer]
+  );
 
-  const handleSelectCastMember = useCallback((castMember: any) => {
-    if (!isScreenFocused) return;
-    setSelectedCastMember(castMember);
-    setShowCastModal(true);
-  }, [isScreenFocused]);
+  const handleSelectCastMember = useCallback(
+    (castMember: any) => {
+      if (!isScreenFocused) return;
+      setSelectedCastMember(castMember);
+      setShowCastModal(true);
+    },
+    [isScreenFocused]
+  );
 
-  const handleCommentPress = useCallback((comment: any) => {
-    if (!isScreenFocused) return;
-    setSelectedComment(comment);
-    setCommentBottomSheetVisible(true);
-  }, [isScreenFocused]);
+  const handleCommentPress = useCallback(
+    (comment: any) => {
+      if (!isScreenFocused) return;
+      setSelectedComment(comment);
+      setCommentBottomSheetVisible(true);
+    },
+    [isScreenFocused]
+  );
 
   const handleCommentBottomSheetClose = useCallback(() => {
     setCommentBottomSheetVisible(false);
@@ -598,18 +686,27 @@ const MetadataScreenTV: React.FC = () => {
   // Animated Styles
   // =============================================================================
 
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: isScreenFocused ? animations.screenOpacity.value : 0.8,
-  }), [isScreenFocused]);
+  const containerStyle = useAnimatedStyle(
+    () => ({
+      opacity: isScreenFocused ? animations.screenOpacity.value : 0.8,
+    }),
+    [isScreenFocused]
+  );
 
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: animations.contentOpacity.value,
-    transform: [{ translateY: animations.uiElementsTranslateY.value }]
-  }), []);
+  const contentStyle = useAnimatedStyle(
+    () => ({
+      opacity: animations.contentOpacity.value,
+      transform: [{ translateY: animations.uiElementsTranslateY.value }],
+    }),
+    []
+  );
 
-  const transitionStyle = useAnimatedStyle(() => ({
-    opacity: transitionOpacity.value,
-  }), []);
+  const transitionStyle = useAnimatedStyle(
+    () => ({
+      opacity: transitionOpacity.value,
+    }),
+    []
+  );
 
   // =============================================================================
   // Get Next Focus Props
@@ -646,7 +743,8 @@ const MetadataScreenTV: React.FC = () => {
     if (!metadataError) return null;
 
     const parseError = (error: string) => {
-      const statusCodeMatch = error.match(/status code (\d+)/) ||
+      const statusCodeMatch =
+        error.match(/status code (\d+)/) ||
         error.match(/"status":\s*(\d+)/) ||
         error.match(/Request failed with status code (\d+)/);
 
@@ -654,19 +752,39 @@ const MetadataScreenTV: React.FC = () => {
         const code = parseInt(statusCodeMatch[1]);
         switch (code) {
           case 404:
-            return { code: '404', message: 'Content not found', userMessage: 'This content doesn\'t exist or may have been removed.' };
+            return {
+              code: '404',
+              message: 'Content not found',
+              userMessage: "This content doesn't exist or may have been removed.",
+            };
           case 500:
-            return { code: '500', message: 'Server error', userMessage: 'The server is temporarily unavailable. Please try again later.' };
+            return {
+              code: '500',
+              message: 'Server error',
+              userMessage: 'The server is temporarily unavailable. Please try again later.',
+            };
           default:
-            return { code: code.toString(), message: `Error ${code}`, userMessage: 'Something went wrong. Please try again.' };
+            return {
+              code: code.toString(),
+              message: `Error ${code}`,
+              userMessage: 'Something went wrong. Please try again.',
+            };
         }
       }
 
       if (error.includes('Network Error')) {
-        return { code: 'NETWORK', message: 'Network error', userMessage: 'Please check your internet connection and try again.' };
+        return {
+          code: 'NETWORK',
+          message: 'Network error',
+          userMessage: 'Please check your internet connection and try again.',
+        };
       }
 
-      return { code: 'UNKNOWN', message: 'Unknown error', userMessage: 'An unexpected error occurred. Please try again.' };
+      return {
+        code: 'UNKNOWN',
+        message: 'Unknown error',
+        userMessage: 'An unexpected error occurred. Please try again.',
+      };
     };
 
     const errorInfo = parseError(metadataError);
@@ -678,14 +796,22 @@ const MetadataScreenTV: React.FC = () => {
       >
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         <View style={styles.errorContainer}>
-          <MaterialIcons name="error-outline" size={72} color={currentTheme.colors.error || '#FF6B6B'} />
-          <Text style={[styles.errorTitle, { color: currentTheme.colors.highEmphasis, fontSize: 24 }]}>
+          <MaterialIcons
+            name="error-outline"
+            size={72}
+            color={currentTheme.colors.error || '#FF6B6B'}
+          />
+          <Text
+            style={[styles.errorTitle, { color: currentTheme.colors.highEmphasis, fontSize: 24 }]}
+          >
             Unable to Load Content
           </Text>
           <Text style={[styles.errorCode, { color: currentTheme.colors.textMuted, fontSize: 16 }]}>
             Error Code: {errorInfo.code}
           </Text>
-          <Text style={[styles.errorMessage, { color: currentTheme.colors.highEmphasis, fontSize: 18 }]}>
+          <Text
+            style={[styles.errorMessage, { color: currentTheme.colors.highEmphasis, fontSize: 18 }]}
+          >
             {errorInfo.userMessage}
           </Text>
           <Focusable
@@ -701,7 +827,12 @@ const MetadataScreenTV: React.FC = () => {
             }}
             accessibilityLabel="Try Again"
           >
-            <MaterialIcons name="refresh" size={24} color={currentTheme.colors.white} style={{ marginRight: 12 }} />
+            <MaterialIcons
+              name="refresh"
+              size={24}
+              color={currentTheme.colors.white}
+              style={{ marginRight: 12 }}
+            />
             <Text style={[styles.retryButtonText, { fontSize: 18 }]}>Try Again</Text>
           </Focusable>
           <Focusable
@@ -716,7 +847,11 @@ const MetadataScreenTV: React.FC = () => {
             }}
             accessibilityLabel="Go Back"
           >
-            <Text style={[styles.backButtonText, { color: currentTheme.colors.primary, fontSize: 18 }]}>Go Back</Text>
+            <Text
+              style={[styles.backButtonText, { color: currentTheme.colors.primary, fontSize: 18 }]}
+            >
+              Go Back
+            </Text>
           </Focusable>
         </View>
       </SafeAreaView>
@@ -735,7 +870,7 @@ const MetadataScreenTV: React.FC = () => {
     return (
       <MetadataLoadingScreen
         ref={loadingScreenRef}
-        type={Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series'}
+        type={Object.keys(groupedEpisodes).length > 0 ? 'series' : (type as 'movie' | 'series')}
         onExitComplete={() => setLoadingScreenExited(true)}
       />
     );
@@ -747,10 +882,7 @@ const MetadataScreenTV: React.FC = () => {
 
   return (
     <Animated.View style={[animatedBackgroundStyle, { flex: 1 }]}>
-      <AnimatedSafeAreaView
-        style={[containerStyle, styles.container]}
-        edges={[]}
-      >
+      <AnimatedSafeAreaView style={[containerStyle, styles.container]} edges={[]}>
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" animated />
 
         {metadata && (
@@ -796,7 +928,9 @@ const MetadataScreenTV: React.FC = () => {
                 watchProgressWidth={animations.watchProgressWidth}
                 watchProgress={watchProgressData.watchProgress}
                 onStableLogoUriChange={setStableLogoUri}
-                type={Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series'}
+                type={
+                  Object.keys(groupedEpisodes).length > 0 ? 'series' : (type as 'movie' | 'series')
+                }
                 getEpisodeDetails={watchProgressData.getEpisodeDetails}
                 handleShowStreams={handleShowStreams}
                 handleToggleLibrary={handleToggleLibrary}
@@ -837,39 +971,69 @@ const MetadataScreenTV: React.FC = () => {
                 <MetadataDetails
                   metadata={metadata}
                   imdbId={imdbId}
-                  type={Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series'}
+                  type={
+                    Object.keys(groupedEpisodes).length > 0
+                      ? 'series'
+                      : (type as 'movie' | 'series')
+                  }
                   contentId={id}
                   loadingMetadata={false}
-                  renderRatings={() => imdbId && shouldLoadSecondaryData ? (
-                    <MemoizedRatingsSection imdbId={imdbId} type={Object.keys(groupedEpisodes).length > 0 ? 'show' : 'movie'} />
-                  ) : null}
+                  renderRatings={() =>
+                    imdbId && shouldLoadSecondaryData ? (
+                      <MemoizedRatingsSection
+                        imdbId={imdbId}
+                        type={Object.keys(groupedEpisodes).length > 0 ? 'show' : 'movie'}
+                      />
+                    ) : null
+                  }
                 />
 
                 {/* Network Section for Series */}
-                {shouldLoadSecondaryData && Object.keys(groupedEpisodes).length > 0 && metadata?.networks && metadata.networks.length > 0 && metadata?.description && (
-                  <Animated.View style={[
-                    styles.productionContainer,
-                    networkSectionAnimatedStyle,
-                    { paddingHorizontal: horizontalPadding }
-                  ]}>
-                    <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>Network</Text>
-                    <View style={[styles.productionRow, { gap: 12 }]}>
-                      {metadata.networks.slice(0, 6).map((net: any) => (
-                        <View key={String(net.id || net.name)} style={[styles.productionChip, { paddingVertical: 12, paddingHorizontal: 16, minHeight: 48, borderRadius: 16 }]}>
-                          {net.logo ? (
-                            <FastImage
-                              source={{ uri: net.logo }}
-                              style={[styles.productionLogo, { width: 80, height: 28 }]}
-                              resizeMode={FastImage.resizeMode.contain}
-                            />
-                          ) : (
-                            <Text style={[styles.productionText, { fontSize: 14 }]}>{net.name}</Text>
-                          )}
-                        </View>
-                      ))}
-                    </View>
-                  </Animated.View>
-                )}
+                {shouldLoadSecondaryData &&
+                  Object.keys(groupedEpisodes).length > 0 &&
+                  metadata?.networks &&
+                  metadata.networks.length > 0 &&
+                  metadata?.description && (
+                    <Animated.View
+                      style={[
+                        styles.productionContainer,
+                        networkSectionAnimatedStyle,
+                        { paddingHorizontal: horizontalPadding },
+                      ]}
+                    >
+                      <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>
+                        Network
+                      </Text>
+                      <View style={[styles.productionRow, { gap: 12 }]}>
+                        {metadata.networks.slice(0, 6).map((net: any) => (
+                          <View
+                            key={String(net.id || net.name)}
+                            style={[
+                              styles.productionChip,
+                              {
+                                paddingVertical: 12,
+                                paddingHorizontal: 16,
+                                minHeight: 48,
+                                borderRadius: 16,
+                              },
+                            ]}
+                          >
+                            {net.logo ? (
+                              <FastImage
+                                source={{ uri: net.logo }}
+                                style={[styles.productionLogo, { width: 80, height: 28 }]}
+                                resizeMode={FastImage.resizeMode.contain}
+                              />
+                            ) : (
+                              <Text style={[styles.productionText, { fontSize: 14 }]}>
+                                {net.name}
+                              </Text>
+                            )}
+                          </View>
+                        ))}
+                      </View>
+                    </Animated.View>
+                  )}
 
                 {/* Cast Section with TV Navigation */}
                 {shouldLoadSecondaryData && (
@@ -891,21 +1055,37 @@ const MetadataScreenTV: React.FC = () => {
                 {/* Production Section for Movies */}
                 {shouldLoadSecondaryData &&
                   Object.keys(groupedEpisodes).length === 0 &&
-                  metadata?.networks && Array.isArray(metadata.networks) &&
+                  metadata?.networks &&
+                  Array.isArray(metadata.networks) &&
                   metadata.networks.some((n: any) => !!n?.logo) &&
                   metadata?.description && (
-                    <Animated.View style={[
-                      styles.productionContainer,
-                      productionSectionAnimatedStyle,
-                      { paddingHorizontal: horizontalPadding }
-                    ]}>
-                      <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>Production</Text>
+                    <Animated.View
+                      style={[
+                        styles.productionContainer,
+                        productionSectionAnimatedStyle,
+                        { paddingHorizontal: horizontalPadding },
+                      ]}
+                    >
+                      <Text style={[styles.productionHeader, { fontSize: 20, marginBottom: 16 }]}>
+                        Production
+                      </Text>
                       <View style={[styles.productionRow, { gap: 12 }]}>
                         {metadata.networks
                           .filter((net: any) => !!net?.logo)
                           .slice(0, 6)
                           .map((net: any) => (
-                            <View key={String(net.id || net.name)} style={[styles.productionChip, { paddingVertical: 12, paddingHorizontal: 16, minHeight: 48, borderRadius: 16 }]}>
+                            <View
+                              key={String(net.id || net.name)}
+                              style={[
+                                styles.productionChip,
+                                {
+                                  paddingVertical: 12,
+                                  paddingHorizontal: 16,
+                                  minHeight: 48,
+                                  borderRadius: 16,
+                                },
+                              ]}
+                            >
                               <FastImage
                                 source={{ uri: net.logo }}
                                 style={[styles.productionLogo, { width: 80, height: 28 }]}
@@ -970,7 +1150,11 @@ const MetadataScreenTV: React.FC = () => {
                       recommendations={recommendations}
                       loading={loadingRecommendations}
                       contentId={id}
-                      type={Object.keys(groupedEpisodes).length > 0 ? 'series' : type as 'movie' | 'series'}
+                      type={
+                        Object.keys(groupedEpisodes).length > 0
+                          ? 'series'
+                          : (type as 'movie' | 'series')
+                      }
                       // TV-specific props
                       onFocusEnter={handleRecommendationsFocus}
                     />

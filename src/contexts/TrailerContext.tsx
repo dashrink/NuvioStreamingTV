@@ -24,18 +24,17 @@ export const TrailerProvider: React.FC<{ children: ReactNode }> = ({ children })
     setIsTrailerPlaying(playing);
   }, []);
 
-  const value: TrailerContextValue = useMemo(() => ({
-    isTrailerPlaying,
-    pauseTrailer,
-    resumeTrailer,
-    setTrailerPlaying,
-  }), [isTrailerPlaying, pauseTrailer, resumeTrailer, setTrailerPlaying]);
-
-  return (
-    <TrailerContext.Provider value={value}>
-      {children}
-    </TrailerContext.Provider>
+  const value: TrailerContextValue = useMemo(
+    () => ({
+      isTrailerPlaying,
+      pauseTrailer,
+      resumeTrailer,
+      setTrailerPlaying,
+    }),
+    [isTrailerPlaying, pauseTrailer, resumeTrailer, setTrailerPlaying]
   );
+
+  return <TrailerContext.Provider value={value}>{children}</TrailerContext.Provider>;
 };
 
 export const useTrailer = (): TrailerContextValue => {

@@ -1,3 +1,8 @@
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation, useFocusEffect, NavigationProp } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
@@ -8,26 +13,21 @@ import {
   AppState,
   AppStateStatus,
   ActivityIndicator,
-  Platform
+  Platform,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
+
+import CustomAlert from '../../components/CustomAlert';
+import { useProfileContext } from '../../contexts/ProfileContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useSettings } from '../../hooks/useSettings';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { StreamingContent, catalogService } from '../../services/catalogService';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useProfileContext } from '../../contexts/ProfileContext';
 import { storageService } from '../../services/storageService';
-import { logger } from '../../utils/logger';
-import * as Haptics from 'expo-haptics';
-import { TraktService } from '../../services/traktService';
-import { stremioService } from '../../services/stremioService';
 import { streamCacheService } from '../../services/streamCacheService';
-import { useSettings } from '../../hooks/useSettings';
-import CustomAlert from '../../components/CustomAlert';
+import { stremioService } from '../../services/stremioService';
+import { TraktService } from '../../services/traktService';
+import { logger } from '../../utils/logger';
 
 // Define interface for continue watching items
 interface ContinueWatchingItem extends StreamingContent {
@@ -70,7 +70,7 @@ const calculatePosterLayout = (screenWidth: number) => {
   return {
     numColumns,
     posterWidth,
-    spacing: 12 // Space between posters
+    spacing: 12, // Space between posters
   };
 };
 
@@ -210,7 +210,9 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   const TRAKT_SYNC_COOLDOWN = 5 * 60 * 1000; // 5 minutes between Trakt syncs
 
   // Cache for metadata to avoid redundant API calls
-  const metadataCache = useRef<Record<string, { metadata: any; basicContent: StreamingContent | null; timestamp: number }>>({});
+  const metadataCache = useRef<
+    Record<string, { metadata: any; basicContent: StreamingContent | null; timestamp: number }>
+  >({});
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   // Helper function to get cached or fetch metadata
@@ -219,7 +221,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
     const cached = metadataCache.current[cacheKey];
     const now = Date.now();
 
-    if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
       return cached;
     }
 
@@ -227,7 +229,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       const shouldFetchMeta = await stremioService.isValidContentId(type, id);
       const [metadata, basicContent] = await Promise.all([
         shouldFetchMeta ? stremioService.getMetaDetails(type, id) : Promise.resolve(null),
-        catalogService.getBasicContentDetails(type, id)
+        catalogService.getBasicContentDetails(type, id),
       ]);
 
       if (basicContent) {
@@ -243,285 +245,393 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   }, []);
 
   // Helper function to find the next episode
-  const findNextEpisode = useCallback((currentSeason: number, currentEpisode: number, videos: any[]) => {
-    if (!videos || !Array.isArray(videos)) return null;
+  const findNextEpisode = useCallback(
+    (currentSeason: number, currentEpisode: number, videos: any[]) => {
+      if (!videos || !Array.isArray(videos)) return null;
 
-    // Sort videos to ensure correct order
-    const sortedVideos = [...videos].sort((a, b) => {
-      if (a.season !== b.season) return a.season - b.season;
-      return a.episode - b.episode;
-    });
+      // Sort videos to ensure correct order
+      const sortedVideos = [...videos].sort((a, b) => {
+        if (a.season !== b.season) return a.season - b.season;
+        return a.episode - b.episode;
+      });
 
-    // Strategy 1: Look for next episode in the same season
-    let nextEp = sortedVideos.find(v => v.season === currentSeason && v.episode === currentEpisode + 1);
+      // Strategy 1: Look for next episode in the same season
+      let nextEp = sortedVideos.find(
+        v => v.season === currentSeason && v.episode === currentEpisode + 1
+      );
 
-    // Strategy 2: If not found, look for the first episode of the next season
-    if (!nextEp) {
-      nextEp = sortedVideos.find(v => v.season === currentSeason + 1 && v.episode === 1);
-    }
-
-    // Strategy 3: Just find the very next video in the list after the current one
-    // This handles cases where episode numbering isn't sequential or S+1 E1 isn't the standard start
-    if (!nextEp) {
-      const currentIndex = sortedVideos.findIndex(v => v.season === currentSeason && v.episode === currentEpisode);
-      if (currentIndex !== -1 && currentIndex + 1 < sortedVideos.length) {
-        const candidate = sortedVideos[currentIndex + 1];
-        // Ensure we didn't just jump to a random special; check reasonable bounds if needed,
-        // but generally taking the next sorted item is correct for sequential viewing.
-        nextEp = candidate;
+      // Strategy 2: If not found, look for the first episode of the next season
+      if (!nextEp) {
+        nextEp = sortedVideos.find(v => v.season === currentSeason + 1 && v.episode === 1);
       }
-    }
 
-    // Verify the found episode is released
-    if (nextEp && isEpisodeReleased(nextEp)) {
-      return nextEp;
-    }
+      // Strategy 3: Just find the very next video in the list after the current one
+      // This handles cases where episode numbering isn't sequential or S+1 E1 isn't the standard start
+      if (!nextEp) {
+        const currentIndex = sortedVideos.findIndex(
+          v => v.season === currentSeason && v.episode === currentEpisode
+        );
+        if (currentIndex !== -1 && currentIndex + 1 < sortedVideos.length) {
+          const candidate = sortedVideos[currentIndex + 1];
+          // Ensure we didn't just jump to a random special; check reasonable bounds if needed,
+          // but generally taking the next sorted item is correct for sequential viewing.
+          nextEp = candidate;
+        }
+      }
 
-    return null;
-  }, []);
+      // Verify the found episode is released
+      if (nextEp && isEpisodeReleased(nextEp)) {
+        return nextEp;
+      }
+
+      return null;
+    },
+    []
+  );
 
   // Modified loadContinueWatching to render incrementally
-  const loadContinueWatching = useCallback(async (isBackgroundRefresh = false) => {
-    if (isRefreshingRef.current) {
-      return;
-    }
-
-    if (!isBackgroundRefresh) {
-      setLoading(true);
-    }
-    isRefreshingRef.current = true;
-
-    // Helper to merge a batch of items into state (dedupe by type:id, keep newest)
-    const mergeBatchIntoState = async (batch: ContinueWatchingItem[]) => {
-      if (!batch || batch.length === 0) return;
-
-      // 1. Filter items first (async checks) - do this BEFORE any state updates
-      const validItems: ContinueWatchingItem[] = [];
-      for (const it of batch) {
-        const key = `${it.type}:${it.id}`;
-
-        // Skip recently removed items
-        if (recentlyRemovedRef.current.has(key)) {
-          continue;
-        }
-
-        // Skip persistently removed items
-        const isRemoved = await storageService.isContinueWatchingRemoved(it.id, it.type);
-        if (isRemoved) {
-          continue;
-        }
-
-        validItems.push(it);
-      }
-
-      if (validItems.length === 0) return;
-
-      // 2. Single state update for the entire batch
-      setContinueWatchingItems((prev) => {
-        const map = new Map<string, ContinueWatchingItem>();
-        // Add existing items
-        for (const it of prev) {
-          map.set(`${it.type}:${it.id}`, it);
-        }
-
-        // Merge new valid items
-        for (const it of validItems) {
-          const key = `${it.type}:${it.id}`;
-          const existing = map.get(key);
-          // Only update if newer or doesn't exist
-          if (!existing || (it.lastUpdated ?? 0) > (existing.lastUpdated ?? 0)) {
-            map.set(key, it);
-          }
-        }
-
-        const merged = Array.from(map.values());
-        merged.sort((a, b) => (b.lastUpdated ?? 0) - (a.lastUpdated ?? 0));
-
-        return merged;
-      });
-    };
-
-    try {
-      const allProgress = await storageService.getAllWatchProgress();
-      if (Object.keys(allProgress).length === 0) {
-        setContinueWatchingItems([]);
+  const loadContinueWatching = useCallback(
+    async (isBackgroundRefresh = false) => {
+      if (isRefreshingRef.current) {
         return;
       }
 
-      // Get the active profile ID for filtering watch progress
-      const profileId = activeProfile?.id;
-
-      // Group progress items by content ID, filtered by profile
-      const contentGroups: Record<string, { type: string; id: string; episodes: Array<{ key: string; episodeId?: string; progress: any; progressPercent: number }> }> = {};
-      for (const key in allProgress) {
-        // Filter by profile if activeProfile is set
-        // Keys with profile have format: profile:${profileId}:${type}:${id}:...
-        // Keys without profile (legacy) have format: ${type}:${id}:...
-        if (profileId) {
-          const hasProfilePrefix = key.startsWith(`profile:${profileId}:`);
-          const isLegacyKey = !key.startsWith('profile:');
-          // Include both profile-specific keys and legacy keys (for migration)
-          if (!hasProfilePrefix && !isLegacyKey) continue;
-        }
-
-        // Parse key, handling both profile-scoped and legacy formats
-        let type: string;
-        let id: string;
-        let episodeIdParts: string[];
-
-        if (key.startsWith('profile:')) {
-          // Profile-scoped key: profile:${profileId}:${type}:${id}:${episodeId}
-          const afterProfile = key.replace(/^profile:[^:]+:/, '');
-          const keyParts = afterProfile.split(':');
-          [type, id, ...episodeIdParts] = keyParts;
-        } else {
-          // Legacy key: ${type}:${id}:${episodeId}
-          const keyParts = key.split(':');
-          [type, id, ...episodeIdParts] = keyParts;
-        }
-
-        const episodeId = episodeIdParts.length > 0 ? episodeIdParts.join(':') : undefined;
-        const progress = allProgress[key];
-        const progressPercent = (progress.currentTime / progress.duration) * 100;
-        // Skip fully watched movies
-        if (type === 'movie' && progressPercent >= 85) continue;
-        // Skip movies with no actual progress (ensure > 0%)
-        if (type === 'movie' && (!isFinite(progressPercent) || progressPercent <= 0)) continue;
-        const contentKey = `${type}:${id}`;
-        if (!contentGroups[contentKey]) contentGroups[contentKey] = { type, id, episodes: [] };
-        contentGroups[contentKey].episodes.push({ key, episodeId, progress, progressPercent });
+      if (!isBackgroundRefresh) {
+        setLoading(true);
       }
+      isRefreshingRef.current = true;
 
-      // Fetch Trakt watched movies once and reuse
-      const traktMoviesSetPromise = (async () => {
-        try {
-          const traktService = TraktService.getInstance();
-          const isAuthed = await traktService.isAuthenticated();
-          if (!isAuthed) return new Set<string>();
-          if (typeof (traktService as any).getWatchedMovies === 'function') {
-            const watched = await (traktService as any).getWatchedMovies();
-            const watchedSet = new Set<string>();
+      // Helper to merge a batch of items into state (dedupe by type:id, keep newest)
+      const mergeBatchIntoState = async (batch: ContinueWatchingItem[]) => {
+        if (!batch || batch.length === 0) return;
 
-            if (Array.isArray(watched)) {
-              watched.forEach((w: any) => {
-                const ids = w?.movie?.ids;
-                if (!ids) return;
+        // 1. Filter items first (async checks) - do this BEFORE any state updates
+        const validItems: ContinueWatchingItem[] = [];
+        for (const it of batch) {
+          const key = `${it.type}:${it.id}`;
 
-                if (ids.imdb) {
-                  const imdb = ids.imdb;
-                  watchedSet.add(imdb.startsWith('tt') ? imdb : `tt${imdb}`);
-                }
-                if (ids.tmdb) {
-                  watchedSet.add(ids.tmdb.toString());
-                }
-              });
-            }
-            return watchedSet;
+          // Skip recently removed items
+          if (recentlyRemovedRef.current.has(key)) {
+            continue;
           }
-          return new Set<string>();
-        } catch {
-          return new Set<string>();
+
+          // Skip persistently removed items
+          const isRemoved = await storageService.isContinueWatchingRemoved(it.id, it.type);
+          if (isRemoved) {
+            continue;
+          }
+
+          validItems.push(it);
         }
-      })();
 
-      // Fetch Trakt watched shows once and reuse
-      const traktShowsSetPromise = (async () => {
-        try {
-          const traktService = TraktService.getInstance();
-          const isAuthed = await traktService.isAuthenticated();
-          if (!isAuthed) return new Set<string>();
+        if (validItems.length === 0) return;
 
-          if (typeof (traktService as any).getWatchedShows === 'function') {
-            const watched = await (traktService as any).getWatchedShows();
-            const watchedSet = new Set<string>();
+        // 2. Single state update for the entire batch
+        setContinueWatchingItems(prev => {
+          const map = new Map<string, ContinueWatchingItem>();
+          // Add existing items
+          for (const it of prev) {
+            map.set(`${it.type}:${it.id}`, it);
+          }
 
-            if (Array.isArray(watched)) {
-              watched.forEach((show: any) => {
-                const ids = show?.show?.ids;
-                if (!ids) return;
+          // Merge new valid items
+          for (const it of validItems) {
+            const key = `${it.type}:${it.id}`;
+            const existing = map.get(key);
+            // Only update if newer or doesn't exist
+            if (!existing || (it.lastUpdated ?? 0) > (existing.lastUpdated ?? 0)) {
+              map.set(key, it);
+            }
+          }
 
-                const imdbId = ids.imdb;
-                const tmdbId = ids.tmdb;
+          const merged = Array.from(map.values());
+          merged.sort((a, b) => (b.lastUpdated ?? 0) - (a.lastUpdated ?? 0));
 
-                if (show.seasons && Array.isArray(show.seasons)) {
-                  show.seasons.forEach((season: any) => {
-                    if (season.episodes && Array.isArray(season.episodes)) {
-                      season.episodes.forEach((episode: any) => {
-                        if (imdbId) {
-                          const cleanImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
-                          watchedSet.add(`${cleanImdbId}:${season.number}:${episode.number}`);
-                        }
-                        if (tmdbId) {
-                          watchedSet.add(`${tmdbId}:${season.number}:${episode.number}`);
-                        }
-                      });
+          return merged;
+        });
+      };
+
+      try {
+        const allProgress = await storageService.getAllWatchProgress();
+        if (Object.keys(allProgress).length === 0) {
+          setContinueWatchingItems([]);
+          return;
+        }
+
+        // Get the active profile ID for filtering watch progress
+        const profileId = activeProfile?.id;
+
+        // Group progress items by content ID, filtered by profile
+        const contentGroups: Record<
+          string,
+          {
+            type: string;
+            id: string;
+            episodes: Array<{
+              key: string;
+              episodeId?: string;
+              progress: any;
+              progressPercent: number;
+            }>;
+          }
+        > = {};
+        for (const key in allProgress) {
+          // Filter by profile if activeProfile is set
+          // Keys with profile have format: profile:${profileId}:${type}:${id}:...
+          // Keys without profile (legacy) have format: ${type}:${id}:...
+          if (profileId) {
+            const hasProfilePrefix = key.startsWith(`profile:${profileId}:`);
+            const isLegacyKey = !key.startsWith('profile:');
+            // Include both profile-specific keys and legacy keys (for migration)
+            if (!hasProfilePrefix && !isLegacyKey) continue;
+          }
+
+          // Parse key, handling both profile-scoped and legacy formats
+          let type: string;
+          let id: string;
+          let episodeIdParts: string[];
+
+          if (key.startsWith('profile:')) {
+            // Profile-scoped key: profile:${profileId}:${type}:${id}:${episodeId}
+            const afterProfile = key.replace(/^profile:[^:]+:/, '');
+            const keyParts = afterProfile.split(':');
+            [type, id, ...episodeIdParts] = keyParts;
+          } else {
+            // Legacy key: ${type}:${id}:${episodeId}
+            const keyParts = key.split(':');
+            [type, id, ...episodeIdParts] = keyParts;
+          }
+
+          const episodeId = episodeIdParts.length > 0 ? episodeIdParts.join(':') : undefined;
+          const progress = allProgress[key];
+          const progressPercent = (progress.currentTime / progress.duration) * 100;
+          // Skip fully watched movies
+          if (type === 'movie' && progressPercent >= 85) continue;
+          // Skip movies with no actual progress (ensure > 0%)
+          if (type === 'movie' && (!isFinite(progressPercent) || progressPercent <= 0)) continue;
+          const contentKey = `${type}:${id}`;
+          if (!contentGroups[contentKey]) contentGroups[contentKey] = { type, id, episodes: [] };
+          contentGroups[contentKey].episodes.push({ key, episodeId, progress, progressPercent });
+        }
+
+        // Fetch Trakt watched movies once and reuse
+        const traktMoviesSetPromise = (async () => {
+          try {
+            const traktService = TraktService.getInstance();
+            const isAuthed = await traktService.isAuthenticated();
+            if (!isAuthed) return new Set<string>();
+            if (typeof (traktService as any).getWatchedMovies === 'function') {
+              const watched = await (traktService as any).getWatchedMovies();
+              const watchedSet = new Set<string>();
+
+              if (Array.isArray(watched)) {
+                watched.forEach((w: any) => {
+                  const ids = w?.movie?.ids;
+                  if (!ids) return;
+
+                  if (ids.imdb) {
+                    const imdb = ids.imdb;
+                    watchedSet.add(imdb.startsWith('tt') ? imdb : `tt${imdb}`);
+                  }
+                  if (ids.tmdb) {
+                    watchedSet.add(ids.tmdb.toString());
+                  }
+                });
+              }
+              return watchedSet;
+            }
+            return new Set<string>();
+          } catch {
+            return new Set<string>();
+          }
+        })();
+
+        // Fetch Trakt watched shows once and reuse
+        const traktShowsSetPromise = (async () => {
+          try {
+            const traktService = TraktService.getInstance();
+            const isAuthed = await traktService.isAuthenticated();
+            if (!isAuthed) return new Set<string>();
+
+            if (typeof (traktService as any).getWatchedShows === 'function') {
+              const watched = await (traktService as any).getWatchedShows();
+              const watchedSet = new Set<string>();
+
+              if (Array.isArray(watched)) {
+                watched.forEach((show: any) => {
+                  const ids = show?.show?.ids;
+                  if (!ids) return;
+
+                  const imdbId = ids.imdb;
+                  const tmdbId = ids.tmdb;
+
+                  if (show.seasons && Array.isArray(show.seasons)) {
+                    show.seasons.forEach((season: any) => {
+                      if (season.episodes && Array.isArray(season.episodes)) {
+                        season.episodes.forEach((episode: any) => {
+                          if (imdbId) {
+                            const cleanImdbId = imdbId.startsWith('tt') ? imdbId : `tt${imdbId}`;
+                            watchedSet.add(`${cleanImdbId}:${season.number}:${episode.number}`);
+                          }
+                          if (tmdbId) {
+                            watchedSet.add(`${tmdbId}:${season.number}:${episode.number}`);
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+              return watchedSet;
+            }
+            return new Set<string>();
+          } catch {
+            return new Set<string>();
+          }
+        })();
+
+        // Process each content group concurrently, merging results as they arrive
+        const groupPromises = Object.values(contentGroups).map(async group => {
+          try {
+            if (!isSupportedId(group.id)) return;
+            // Skip movies that are already watched on Trakt
+            if (group.type === 'movie') {
+              const watchedSet = await traktMoviesSetPromise;
+              if (watchedSet.has(group.id)) {
+                // Optional: sync local store to watched to prevent reappearance
+                try {
+                  await storageService.setWatchProgress(group.id, 'movie', {
+                    currentTime: 1,
+                    duration: 1,
+                    lastUpdated: Date.now(),
+                    traktSynced: true,
+                    traktProgress: 100,
+                  } as any);
+                } catch (_e) {}
+                return;
+              }
+            }
+            const cachedData = await getCachedMetadata(group.type, group.id);
+            if (!cachedData?.basicContent) return;
+            const { metadata, basicContent } = cachedData;
+
+            const batch: ContinueWatchingItem[] = [];
+            for (const episode of group.episodes) {
+              const { episodeId, progress, progressPercent } = episode;
+
+              if (group.type === 'series' && progressPercent >= 85) {
+                // Local progress completion check
+                if (episodeId) {
+                  let currentSeason: number | undefined;
+                  let currentEpisode: number | undefined;
+
+                  const match = episodeId.match(/s(\d+)e(\d+)/i);
+                  if (match) {
+                    currentSeason = parseInt(match[1], 10);
+                    currentEpisode = parseInt(match[2], 10);
+                  } else {
+                    const parts = episodeId.split(':');
+                    if (parts.length >= 2) {
+                      const seasonNum = parseInt(parts[parts.length - 2], 10);
+                      const episodeNum = parseInt(parts[parts.length - 1], 10);
+                      if (!isNaN(seasonNum) && !isNaN(episodeNum)) {
+                        currentSeason = seasonNum;
+                        currentEpisode = episodeNum;
+                      }
                     }
-                  });
+                  }
+
+                  if (
+                    currentSeason !== undefined &&
+                    currentEpisode !== undefined &&
+                    metadata?.videos
+                  ) {
+                    const nextEpisodeVideo = findNextEpisode(
+                      currentSeason,
+                      currentEpisode,
+                      metadata.videos
+                    );
+
+                    if (nextEpisodeVideo) {
+                      batch.push({
+                        ...basicContent,
+                        id: group.id,
+                        type: group.type,
+                        progress: 0,
+                        lastUpdated: progress.lastUpdated,
+                        season: nextEpisodeVideo.season,
+                        episode: nextEpisodeVideo.episode,
+                        episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
+                      } as ContinueWatchingItem);
+                    }
+                  }
                 }
-              });
-            }
-            return watchedSet;
-          }
-          return new Set<string>();
-        } catch {
-          return new Set<string>();
-        }
-      })();
+                continue;
+              }
 
-      // Process each content group concurrently, merging results as they arrive
-      const groupPromises = Object.values(contentGroups).map(async (group) => {
-        try {
-          if (!isSupportedId(group.id)) return;
-          // Skip movies that are already watched on Trakt
-          if (group.type === 'movie') {
-            const watchedSet = await traktMoviesSetPromise;
-            if (watchedSet.has(group.id)) {
-              // Optional: sync local store to watched to prevent reappearance
-              try {
-                await storageService.setWatchProgress(group.id, 'movie', {
-                  currentTime: 1,
-                  duration: 1,
-                  lastUpdated: Date.now(),
-                  traktSynced: true,
-                  traktProgress: 100,
-                } as any);
-              } catch (_e) { }
-              return;
-            }
-          }
-          const cachedData = await getCachedMetadata(group.type, group.id);
-          if (!cachedData?.basicContent) return;
-          const { metadata, basicContent } = cachedData;
+              let season: number | undefined;
+              let episodeNumber: number | undefined;
+              let episodeTitle: string | undefined;
+              let isWatchedOnTrakt = false;
 
-          const batch: ContinueWatchingItem[] = [];
-          for (const episode of group.episodes) {
-            const { episodeId, progress, progressPercent } = episode;
-
-            if (group.type === 'series' && progressPercent >= 85) {
-              // Local progress completion check
-              if (episodeId) {
-                let currentSeason: number | undefined;
-                let currentEpisode: number | undefined;
-
+              if (episodeId && group.type === 'series') {
                 const match = episodeId.match(/s(\d+)e(\d+)/i);
                 if (match) {
-                  currentSeason = parseInt(match[1], 10);
-                  currentEpisode = parseInt(match[2], 10);
+                  season = parseInt(match[1], 10);
+                  episodeNumber = parseInt(match[2], 10);
+                  episodeTitle = `Episode ${episodeNumber}`;
                 } else {
                   const parts = episodeId.split(':');
-                  if (parts.length >= 2) {
-                    const seasonNum = parseInt(parts[parts.length - 2], 10);
-                    const episodeNum = parseInt(parts[parts.length - 1], 10);
+                  if (parts.length >= 3) {
+                    const seasonPart = parts[parts.length - 2];
+                    const episodePart = parts[parts.length - 1];
+                    const seasonNum = parseInt(seasonPart, 10);
+                    const episodeNum = parseInt(episodePart, 10);
                     if (!isNaN(seasonNum) && !isNaN(episodeNum)) {
-                      currentSeason = seasonNum;
-                      currentEpisode = episodeNum;
+                      season = seasonNum;
+                      episodeNumber = episodeNum;
+                      episodeTitle = `Episode ${episodeNumber}`;
                     }
                   }
                 }
 
-                if (currentSeason !== undefined && currentEpisode !== undefined && metadata?.videos) {
-                  const nextEpisodeVideo = findNextEpisode(currentSeason, currentEpisode, metadata.videos);
+                // Check if this specific episode is watched on Trakt
+                if (season !== undefined && episodeNumber !== undefined) {
+                  const watchedEpisodesSet = await traktShowsSetPromise;
+                  // Try with both raw ID and tt-prefixed ID, and TMDB ID (which is just the ID string)
+                  const rawId = group.id.replace(/^tt/, '');
+                  const ttId = `tt${rawId}`;
 
+                  if (
+                    watchedEpisodesSet.has(`${ttId}:${season}:${episodeNumber}`) ||
+                    watchedEpisodesSet.has(`${rawId}:${season}:${episodeNumber}`) ||
+                    watchedEpisodesSet.has(`${group.id}:${season}:${episodeNumber}`)
+                  ) {
+                    isWatchedOnTrakt = true;
+
+                    // Update local storage to reflect watched status
+                    try {
+                      await storageService.setWatchProgress(
+                        group.id,
+                        'series',
+                        {
+                          currentTime: 1,
+                          duration: 1,
+                          lastUpdated: Date.now(),
+                          traktSynced: true,
+                          traktProgress: 100,
+                        } as any,
+                        episodeId
+                      );
+                    } catch (_e) {}
+                  }
+                }
+              }
+
+              // If watched on Trakt, treat it as completed (try to find next episode)
+              if (isWatchedOnTrakt) {
+                if (season !== undefined && episodeNumber !== undefined && metadata?.videos) {
+                  const nextEpisodeVideo = findNextEpisode(season, episodeNumber, metadata.videos);
                   if (nextEpisodeVideo) {
                     batch.push({
                       ...basicContent,
@@ -535,315 +645,261 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
                     } as ContinueWatchingItem);
                   }
                 }
+                continue;
               }
-              continue;
+
+              batch.push({
+                ...basicContent,
+                progress: progressPercent,
+                lastUpdated: progress.lastUpdated,
+                season,
+                episode: episodeNumber,
+                episodeTitle,
+              } as ContinueWatchingItem);
             }
 
-            let season: number | undefined;
-            let episodeNumber: number | undefined;
-            let episodeTitle: string | undefined;
-            let isWatchedOnTrakt = false;
+            if (batch.length > 0) await mergeBatchIntoState(batch);
+          } catch (error) {
+            // Continue processing other groups even if one fails
+          }
+        });
 
-            if (episodeId && group.type === 'series') {
-              let match = episodeId.match(/s(\d+)e(\d+)/i);
-              if (match) {
-                season = parseInt(match[1], 10);
-                episodeNumber = parseInt(match[2], 10);
-                episodeTitle = `Episode ${episodeNumber}`;
-              } else {
-                const parts = episodeId.split(':');
-                if (parts.length >= 3) {
-                  const seasonPart = parts[parts.length - 2];
-                  const episodePart = parts[parts.length - 1];
-                  const seasonNum = parseInt(seasonPart, 10);
-                  const episodeNum = parseInt(episodePart, 10);
-                  if (!isNaN(seasonNum) && !isNaN(episodeNum)) {
-                    season = seasonNum;
-                    episodeNumber = episodeNum;
-                    episodeTitle = `Episode ${episodeNumber}`;
+        // TRAKT: fetch playback progress (in-progress items) and history, merge incrementally
+        const traktMergePromise = (async () => {
+          try {
+            const traktService = TraktService.getInstance();
+            const isAuthed = await traktService.isAuthenticated();
+            if (!isAuthed) return;
+
+            // Check Trakt sync cooldown to prevent excessive API calls
+            const now = Date.now();
+            if (now - lastTraktSyncRef.current < TRAKT_SYNC_COOLDOWN) {
+              logger.log(
+                `[TraktSync] Skipping Trakt sync - cooldown active (${Math.round((TRAKT_SYNC_COOLDOWN - (now - lastTraktSyncRef.current)) / 1000)}s remaining)`
+              );
+              return;
+            }
+
+            lastTraktSyncRef.current = now;
+
+            // Fetch both playback progress (paused items) and watch history in parallel
+            const [playbackItems, historyItems, watchedShows] = await Promise.all([
+              traktService.getPlaybackProgress(), // Items with actual progress %
+              traktService.getWatchedEpisodesHistory(1, 200), // Completed episodes
+              traktService.getWatchedShows(), // For reset_at handling
+            ]);
+
+            // Build a map of shows with reset_at for re-watching support
+            const showResetMap: Record<string, number> = {};
+            for (const show of watchedShows) {
+              if (show.show?.ids?.imdb && show.reset_at) {
+                const imdbId = show.show.ids.imdb.startsWith('tt')
+                  ? show.show.ids.imdb
+                  : `tt${show.show.ids.imdb}`;
+                showResetMap[imdbId] = new Date(show.reset_at).getTime();
+              }
+            }
+
+            const traktBatch: ContinueWatchingItem[] = [];
+            const processedShows = new Set<string>(); // Track which shows we've added
+
+            // STEP 1: Process playback progress items (in-progress, paused)
+            // These have actual progress percentage from Trakt
+            for (const item of playbackItems) {
+              try {
+                // Skip items with very low or very high progress
+                if (item.progress <= 0 || item.progress >= 85) continue;
+
+                if (item.type === 'movie' && item.movie?.ids?.imdb) {
+                  const imdbId = item.movie.ids.imdb.startsWith('tt')
+                    ? item.movie.ids.imdb
+                    : `tt${item.movie.ids.imdb}`;
+
+                  // Check if recently removed
+                  const movieKey = `movie:${imdbId}`;
+                  if (recentlyRemovedRef.current.has(movieKey)) continue;
+
+                  const cachedData = await getCachedMetadata('movie', imdbId);
+                  if (!cachedData?.basicContent) continue;
+
+                  const pausedAt = new Date(item.paused_at).getTime();
+                  traktBatch.push({
+                    ...cachedData.basicContent,
+                    id: imdbId,
+                    type: 'movie',
+                    progress: item.progress,
+                    lastUpdated: pausedAt,
+                  } as ContinueWatchingItem);
+
+                  logger.log(
+                    `📺 [TraktPlayback] Adding movie ${item.movie.title} with ${item.progress.toFixed(1)}% progress`
+                  );
+                } else if (item.type === 'episode' && item.show?.ids?.imdb && item.episode) {
+                  const showImdb = item.show.ids.imdb.startsWith('tt')
+                    ? item.show.ids.imdb
+                    : `tt${item.show.ids.imdb}`;
+
+                  // Check if recently removed
+                  const showKey = `series:${showImdb}`;
+                  if (recentlyRemovedRef.current.has(showKey)) continue;
+
+                  // Check reset_at - skip if this was paused before re-watch started
+                  const resetTime = showResetMap[showImdb];
+                  const pausedAt = new Date(item.paused_at).getTime();
+                  if (resetTime && pausedAt < resetTime) {
+                    logger.log(
+                      `🔄 [TraktPlayback] Skipping ${showImdb} S${item.episode.season}E${item.episode.number} - paused before reset_at`
+                    );
+                    continue;
                   }
+
+                  const cachedData = await getCachedMetadata('series', showImdb);
+                  if (!cachedData?.basicContent) continue;
+
+                  traktBatch.push({
+                    ...cachedData.basicContent,
+                    id: showImdb,
+                    type: 'series',
+                    progress: item.progress,
+                    lastUpdated: pausedAt,
+                    season: item.episode.season,
+                    episode: item.episode.number,
+                    episodeTitle: item.episode.title || `Episode ${item.episode.number}`,
+                  } as ContinueWatchingItem);
+
+                  processedShows.add(showImdb);
+                  logger.log(
+                    `📺 [TraktPlayback] Adding ${item.show.title} S${item.episode.season}E${item.episode.number} with ${item.progress.toFixed(1)}% progress`
+                  );
                 }
+              } catch (err) {
+                // Continue with other items
+              }
+            }
+
+            // STEP 2: Process watch history for shows NOT in playback progress
+            // Find the next episode for completed shows
+            const latestWatchedByShow: Record<
+              string,
+              { season: number; episode: number; watchedAt: number }
+            > = {};
+            for (const item of historyItems) {
+              if (item.type !== 'episode') continue;
+              const showImdb = item.show?.ids?.imdb
+                ? item.show.ids.imdb.startsWith('tt')
+                  ? item.show.ids.imdb
+                  : `tt${item.show.ids.imdb}`
+                : null;
+              if (!showImdb) continue;
+
+              // Skip if we already have an in-progress episode for this show
+              if (processedShows.has(showImdb)) continue;
+
+              const season = item.episode?.season;
+              const epNum = item.episode?.number;
+              if (season === undefined || epNum === undefined) continue;
+
+              const watchedAt = new Date(item.watched_at).getTime();
+
+              // Check reset_at - skip episodes watched before re-watch started
+              const resetTime = showResetMap[showImdb];
+              if (resetTime && watchedAt < resetTime) {
+                continue; // This was watched in a previous viewing
               }
 
-              // Check if this specific episode is watched on Trakt
-              if (season !== undefined && episodeNumber !== undefined) {
-                const watchedEpisodesSet = await traktShowsSetPromise;
-                // Try with both raw ID and tt-prefixed ID, and TMDB ID (which is just the ID string)
-                const rawId = group.id.replace(/^tt/, '');
-                const ttId = `tt${rawId}`;
+              const existing = latestWatchedByShow[showImdb];
+              if (!existing || existing.watchedAt < watchedAt) {
+                latestWatchedByShow[showImdb] = { season, episode: epNum, watchedAt };
+              }
+            }
 
-                if (watchedEpisodesSet.has(`${ttId}:${season}:${episodeNumber}`) ||
-                  watchedEpisodesSet.has(`${rawId}:${season}:${episodeNumber}`) ||
-                  watchedEpisodesSet.has(`${group.id}:${season}:${episodeNumber}`)) {
-                  isWatchedOnTrakt = true;
+            // Add next episodes for completed shows
+            for (const [showId, info] of Object.entries(latestWatchedByShow)) {
+              try {
+                // Check if this show was recently removed
+                const showKey = `series:${showId}`;
+                if (recentlyRemovedRef.current.has(showKey)) {
+                  logger.log(`🚫 [TraktSync] Skipping recently removed show: ${showKey}`);
+                  continue;
+                }
 
-                  // Update local storage to reflect watched status
-                  try {
+                const cachedData = await getCachedMetadata('series', showId);
+                if (!cachedData?.basicContent) continue;
+                const { metadata, basicContent } = cachedData;
+
+                if (metadata?.videos) {
+                  const nextEpisodeVideo = findNextEpisode(
+                    info.season,
+                    info.episode,
+                    metadata.videos
+                  );
+                  if (nextEpisodeVideo) {
+                    logger.log(
+                      `➕ [TraktSync] Adding next episode for ${showId}: S${nextEpisodeVideo.season}E${nextEpisodeVideo.episode}`
+                    );
+                    traktBatch.push({
+                      ...basicContent,
+                      id: showId,
+                      type: 'series',
+                      progress: 0, // Next episode, not started
+                      lastUpdated: info.watchedAt,
+                      season: nextEpisodeVideo.season,
+                      episode: nextEpisodeVideo.episode,
+                      episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
+                    } as ContinueWatchingItem);
+                  }
+                }
+
+                // Persist "watched" progress for the episode that Trakt reported
+                if (!recentlyRemovedRef.current.has(showKey)) {
+                  const watchedEpisodeId = `${showId}:${info.season}:${info.episode}`;
+                  const existingProgress = allProgress[`series:${showId}:${watchedEpisodeId}`];
+                  const existingPercent = existingProgress
+                    ? (existingProgress.currentTime / existingProgress.duration) * 100
+                    : 0;
+                  if (!existingProgress || existingPercent < 85) {
                     await storageService.setWatchProgress(
-                      group.id,
+                      showId,
                       'series',
                       {
                         currentTime: 1,
                         duration: 1,
-                        lastUpdated: Date.now(),
+                        lastUpdated: info.watchedAt,
                         traktSynced: true,
                         traktProgress: 100,
                       } as any,
-                      episodeId
+                      `${info.season}:${info.episode}`
                     );
-                  } catch (_e) { }
+                  }
                 }
+              } catch (err) {
+                // Continue with other shows
               }
             }
 
-            // If watched on Trakt, treat it as completed (try to find next episode)
-            if (isWatchedOnTrakt) {
-              if (season !== undefined && episodeNumber !== undefined && metadata?.videos) {
-                const nextEpisodeVideo = findNextEpisode(season, episodeNumber, metadata.videos);
-                if (nextEpisodeVideo) {
-                  batch.push({
-                    ...basicContent,
-                    id: group.id,
-                    type: group.type,
-                    progress: 0,
-                    lastUpdated: progress.lastUpdated,
-                    season: nextEpisodeVideo.season,
-                    episode: nextEpisodeVideo.episode,
-                    episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
-                  } as ContinueWatchingItem);
-                }
-              }
-              continue;
+            // Merge all Trakt items as a single batch to ensure proper sorting
+            if (traktBatch.length > 0) {
+              logger.log(
+                `📋 [TraktSync] Merging ${traktBatch.length} items from Trakt (playback + history)`
+              );
+              await mergeBatchIntoState(traktBatch);
             }
-
-            batch.push({
-              ...basicContent,
-              progress: progressPercent,
-              lastUpdated: progress.lastUpdated,
-              season,
-              episode: episodeNumber,
-              episodeTitle,
-            } as ContinueWatchingItem);
+          } catch (err) {
+            logger.error('[TraktSync] Error in Trakt merge:', err);
           }
+        })();
 
-          if (batch.length > 0) await mergeBatchIntoState(batch);
-        } catch (error) {
-          // Continue processing other groups even if one fails
-        }
-      });
-
-      // TRAKT: fetch playback progress (in-progress items) and history, merge incrementally
-      const traktMergePromise = (async () => {
-        try {
-          const traktService = TraktService.getInstance();
-          const isAuthed = await traktService.isAuthenticated();
-          if (!isAuthed) return;
-
-          // Check Trakt sync cooldown to prevent excessive API calls
-          const now = Date.now();
-          if (now - lastTraktSyncRef.current < TRAKT_SYNC_COOLDOWN) {
-            logger.log(`[TraktSync] Skipping Trakt sync - cooldown active (${Math.round((TRAKT_SYNC_COOLDOWN - (now - lastTraktSyncRef.current)) / 1000)}s remaining)`);
-            return;
-          }
-
-          lastTraktSyncRef.current = now;
-
-          // Fetch both playback progress (paused items) and watch history in parallel
-          const [playbackItems, historyItems, watchedShows] = await Promise.all([
-            traktService.getPlaybackProgress(), // Items with actual progress %
-            traktService.getWatchedEpisodesHistory(1, 200), // Completed episodes
-            traktService.getWatchedShows(), // For reset_at handling
-          ]);
-
-          // Build a map of shows with reset_at for re-watching support
-          const showResetMap: Record<string, number> = {};
-          for (const show of watchedShows) {
-            if (show.show?.ids?.imdb && show.reset_at) {
-              const imdbId = show.show.ids.imdb.startsWith('tt')
-                ? show.show.ids.imdb
-                : `tt${show.show.ids.imdb}`;
-              showResetMap[imdbId] = new Date(show.reset_at).getTime();
-            }
-          }
-
-          const traktBatch: ContinueWatchingItem[] = [];
-          const processedShows = new Set<string>(); // Track which shows we've added
-
-          // STEP 1: Process playback progress items (in-progress, paused)
-          // These have actual progress percentage from Trakt
-          for (const item of playbackItems) {
-            try {
-              // Skip items with very low or very high progress
-              if (item.progress <= 0 || item.progress >= 85) continue;
-
-              if (item.type === 'movie' && item.movie?.ids?.imdb) {
-                const imdbId = item.movie.ids.imdb.startsWith('tt')
-                  ? item.movie.ids.imdb
-                  : `tt${item.movie.ids.imdb}`;
-
-                // Check if recently removed
-                const movieKey = `movie:${imdbId}`;
-                if (recentlyRemovedRef.current.has(movieKey)) continue;
-
-                const cachedData = await getCachedMetadata('movie', imdbId);
-                if (!cachedData?.basicContent) continue;
-
-                const pausedAt = new Date(item.paused_at).getTime();
-                traktBatch.push({
-                  ...cachedData.basicContent,
-                  id: imdbId,
-                  type: 'movie',
-                  progress: item.progress,
-                  lastUpdated: pausedAt,
-                } as ContinueWatchingItem);
-
-                logger.log(`📺 [TraktPlayback] Adding movie ${item.movie.title} with ${item.progress.toFixed(1)}% progress`);
-
-              } else if (item.type === 'episode' && item.show?.ids?.imdb && item.episode) {
-                const showImdb = item.show.ids.imdb.startsWith('tt')
-                  ? item.show.ids.imdb
-                  : `tt${item.show.ids.imdb}`;
-
-                // Check if recently removed
-                const showKey = `series:${showImdb}`;
-                if (recentlyRemovedRef.current.has(showKey)) continue;
-
-                // Check reset_at - skip if this was paused before re-watch started
-                const resetTime = showResetMap[showImdb];
-                const pausedAt = new Date(item.paused_at).getTime();
-                if (resetTime && pausedAt < resetTime) {
-                  logger.log(`🔄 [TraktPlayback] Skipping ${showImdb} S${item.episode.season}E${item.episode.number} - paused before reset_at`);
-                  continue;
-                }
-
-                const cachedData = await getCachedMetadata('series', showImdb);
-                if (!cachedData?.basicContent) continue;
-
-                traktBatch.push({
-                  ...cachedData.basicContent,
-                  id: showImdb,
-                  type: 'series',
-                  progress: item.progress,
-                  lastUpdated: pausedAt,
-                  season: item.episode.season,
-                  episode: item.episode.number,
-                  episodeTitle: item.episode.title || `Episode ${item.episode.number}`,
-                } as ContinueWatchingItem);
-
-                processedShows.add(showImdb);
-                logger.log(`📺 [TraktPlayback] Adding ${item.show.title} S${item.episode.season}E${item.episode.number} with ${item.progress.toFixed(1)}% progress`);
-              }
-            } catch (err) {
-              // Continue with other items
-            }
-          }
-
-          // STEP 2: Process watch history for shows NOT in playback progress
-          // Find the next episode for completed shows
-          const latestWatchedByShow: Record<string, { season: number; episode: number; watchedAt: number }> = {};
-          for (const item of historyItems) {
-            if (item.type !== 'episode') continue;
-            const showImdb = item.show?.ids?.imdb
-              ? (item.show.ids.imdb.startsWith('tt') ? item.show.ids.imdb : `tt${item.show.ids.imdb}`)
-              : null;
-            if (!showImdb) continue;
-
-            // Skip if we already have an in-progress episode for this show
-            if (processedShows.has(showImdb)) continue;
-
-            const season = item.episode?.season;
-            const epNum = item.episode?.number;
-            if (season === undefined || epNum === undefined) continue;
-
-            const watchedAt = new Date(item.watched_at).getTime();
-
-            // Check reset_at - skip episodes watched before re-watch started
-            const resetTime = showResetMap[showImdb];
-            if (resetTime && watchedAt < resetTime) {
-              continue; // This was watched in a previous viewing
-            }
-
-            const existing = latestWatchedByShow[showImdb];
-            if (!existing || existing.watchedAt < watchedAt) {
-              latestWatchedByShow[showImdb] = { season, episode: epNum, watchedAt };
-            }
-          }
-
-          // Add next episodes for completed shows
-          for (const [showId, info] of Object.entries(latestWatchedByShow)) {
-            try {
-              // Check if this show was recently removed
-              const showKey = `series:${showId}`;
-              if (recentlyRemovedRef.current.has(showKey)) {
-                logger.log(`🚫 [TraktSync] Skipping recently removed show: ${showKey}`);
-                continue;
-              }
-
-              const cachedData = await getCachedMetadata('series', showId);
-              if (!cachedData?.basicContent) continue;
-              const { metadata, basicContent } = cachedData;
-
-              if (metadata?.videos) {
-                const nextEpisodeVideo = findNextEpisode(info.season, info.episode, metadata.videos);
-                if (nextEpisodeVideo) {
-                  logger.log(`➕ [TraktSync] Adding next episode for ${showId}: S${nextEpisodeVideo.season}E${nextEpisodeVideo.episode}`);
-                  traktBatch.push({
-                    ...basicContent,
-                    id: showId,
-                    type: 'series',
-                    progress: 0, // Next episode, not started
-                    lastUpdated: info.watchedAt,
-                    season: nextEpisodeVideo.season,
-                    episode: nextEpisodeVideo.episode,
-                    episodeTitle: `Episode ${nextEpisodeVideo.episode}`,
-                  } as ContinueWatchingItem);
-                }
-              }
-
-              // Persist "watched" progress for the episode that Trakt reported
-              if (!recentlyRemovedRef.current.has(showKey)) {
-                const watchedEpisodeId = `${showId}:${info.season}:${info.episode}`;
-                const existingProgress = allProgress[`series:${showId}:${watchedEpisodeId}`];
-                const existingPercent = existingProgress ? (existingProgress.currentTime / existingProgress.duration) * 100 : 0;
-                if (!existingProgress || existingPercent < 85) {
-                  await storageService.setWatchProgress(
-                    showId,
-                    'series',
-                    {
-                      currentTime: 1,
-                      duration: 1,
-                      lastUpdated: info.watchedAt,
-                      traktSynced: true,
-                      traktProgress: 100,
-                    } as any,
-                    `${info.season}:${info.episode}`
-                  );
-                }
-              }
-            } catch (err) {
-              // Continue with other shows
-            }
-          }
-
-          // Merge all Trakt items as a single batch to ensure proper sorting
-          if (traktBatch.length > 0) {
-            logger.log(`📋 [TraktSync] Merging ${traktBatch.length} items from Trakt (playback + history)`);
-            await mergeBatchIntoState(traktBatch);
-          }
-        } catch (err) {
-          logger.error('[TraktSync] Error in Trakt merge:', err);
-        }
-      })();
-
-      // Wait for all groups and trakt merge to settle, then finalize loading state
-      await Promise.allSettled([...groupPromises, traktMergePromise]);
-    } catch (error) {
-      // Continue even if loading fails
-    } finally {
-      setLoading(false);
-      isRefreshingRef.current = false;
-    }
-  }, [getCachedMetadata, activeProfile?.id]); // Added activeProfile.id dependency for profile filtering
+        // Wait for all groups and trakt merge to settle, then finalize loading state
+        await Promise.allSettled([...groupPromises, traktMergePromise]);
+      } catch (error) {
+        // Continue even if loading fails
+      } finally {
+        setLoading(false);
+        isRefreshingRef.current = false;
+      }
+    },
+    [getCachedMetadata, activeProfile?.id]
+  ); // Added activeProfile.id dependency for profile filtering
 
   // Clear cache when component unmounts or when needed
   useEffect(() => {
@@ -853,17 +909,17 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   }, []);
 
   // Function to handle app state changes
-  const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
-    if (
-      appState.current.match(/inactive|background/) &&
-      nextAppState === 'active'
-    ) {
-      // App has come to the foreground - force Trakt sync by resetting cooldown
-      lastTraktSyncRef.current = 0; // Reset cooldown to allow immediate Trakt sync
-      loadContinueWatching(true);
-    }
-    appState.current = nextAppState;
-  }, [loadContinueWatching]);
+  const handleAppStateChange = useCallback(
+    (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App has come to the foreground - force Trakt sync by resetting cooldown
+        lastTraktSyncRef.current = 0; // Reset cooldown to allow immediate Trakt sync
+        loadContinueWatching(true);
+      }
+      appState.current = nextAppState;
+    },
+    [loadContinueWatching]
+  );
 
   // Set up storage event listener and app state listener
   useEffect(() => {
@@ -885,7 +941,9 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
 
     // Try to set up a custom event listener or use a timer as fallback
     if (storageService.subscribeToWatchProgressUpdates) {
-      const unsubscribe = storageService.subscribeToWatchProgressUpdates(watchProgressUpdateHandler);
+      const unsubscribe = storageService.subscribeToWatchProgressUpdates(
+        watchProgressUpdateHandler
+      );
       return () => {
         subscription.remove();
         unsubscribe();
@@ -921,7 +979,7 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   useFocusEffect(
     useCallback(() => {
       loadContinueWatching(true);
-      return () => { };
+      return () => {};
     }, [loadContinueWatching])
   );
 
@@ -932,351 +990,420 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
       lastTraktSyncRef.current = 0; // Reset cooldown for manual refresh
       await loadContinueWatching(false);
       return true;
-    }
+    },
   }));
 
-  const handleContentPress = useCallback(async (item: ContinueWatchingItem) => {
-    try {
-      logger.log(`🎬 [ContinueWatching] User clicked on: ${item.name} (${item.type}:${item.id})`);
+  const handleContentPress = useCallback(
+    async (item: ContinueWatchingItem) => {
+      try {
+        logger.log(`🎬 [ContinueWatching] User clicked on: ${item.name} (${item.type}:${item.id})`);
 
-      // Check if cached streams are enabled in settings
-      if (!settings.useCachedStreams) {
-        logger.log(`📺 [ContinueWatching] Cached streams disabled, navigating to ${settings.openMetadataScreenWhenCacheDisabled ? 'MetadataScreen' : 'StreamsScreen'} for ${item.name}`);
+        // Check if cached streams are enabled in settings
+        if (!settings.useCachedStreams) {
+          logger.log(
+            `📺 [ContinueWatching] Cached streams disabled, navigating to ${settings.openMetadataScreenWhenCacheDisabled ? 'MetadataScreen' : 'StreamsScreen'} for ${item.name}`
+          );
 
-        // Navigate based on the second setting
-        if (settings.openMetadataScreenWhenCacheDisabled) {
-          // Navigate to MetadataScreen
-          if (item.type === 'series' && item.season && item.episode) {
-            const episodeId = `${item.id}:${item.season}:${item.episode}`;
-            navigation.navigate('Metadata', {
-              id: item.id,
-              type: item.type,
-              episodeId: episodeId
-            });
+          // Navigate based on the second setting
+          if (settings.openMetadataScreenWhenCacheDisabled) {
+            // Navigate to MetadataScreen
+            if (item.type === 'series' && item.season && item.episode) {
+              const episodeId = `${item.id}:${item.season}:${item.episode}`;
+              navigation.navigate('Metadata', {
+                id: item.id,
+                type: item.type,
+                episodeId,
+              });
+            } else {
+              navigation.navigate('Metadata', {
+                id: item.id,
+                type: item.type,
+              });
+            }
           } else {
-            navigation.navigate('Metadata', {
-              id: item.id,
-              type: item.type
-            });
+            // Navigate to StreamsScreen
+            if (item.type === 'series' && item.season && item.episode) {
+              const episodeId = `${item.id}:${item.season}:${item.episode}`;
+              navigation.navigate('Streams', {
+                id: item.id,
+                type: item.type,
+                episodeId,
+              });
+            } else {
+              navigation.navigate('Streams', {
+                id: item.id,
+                type: item.type,
+              });
+            }
           }
-        } else {
-          // Navigate to StreamsScreen
-          if (item.type === 'series' && item.season && item.episode) {
-            const episodeId = `${item.id}:${item.season}:${item.episode}`;
-            navigation.navigate('Streams', {
-              id: item.id,
-              type: item.type,
-              episodeId: episodeId
-            });
-          } else {
-            navigation.navigate('Streams', {
-              id: item.id,
-              type: item.type
-            });
-          }
+          return;
         }
-        return;
+
+        // Check if we have a cached stream for this content
+        const episodeId =
+          item.type === 'series' && item.season && item.episode
+            ? `${item.id}:${item.season}:${item.episode}`
+            : undefined;
+
+        logger.log(
+          `🔍 [ContinueWatching] Looking for cached stream with episodeId: ${episodeId || 'none'}`
+        );
+
+        const cachedStream = await streamCacheService.getCachedStream(
+          item.id,
+          item.type,
+          episodeId
+        );
+
+        if (cachedStream) {
+          // We have a valid cached stream, navigate directly to player
+          logger.log(`🚀 [ContinueWatching] Using cached stream for ${item.name}`);
+
+          // Determine the player route based on platform
+          const playerRoute = Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid';
+
+          // Navigate directly to player with cached stream data
+          navigation.navigate(
+            playerRoute as any,
+            {
+              uri: cachedStream.stream.url,
+              title: cachedStream.metadata?.name || item.name,
+              episodeTitle:
+                cachedStream.episodeTitle ||
+                (item.type === 'series' ? `Episode ${item.episode}` : undefined),
+              season: cachedStream.season || item.season,
+              episode: cachedStream.episode || item.episode,
+              quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
+              year: cachedStream.metadata?.year || item.year,
+              streamProvider:
+                cachedStream.stream.addonId ||
+                cachedStream.stream.addonName ||
+                cachedStream.stream.name,
+              streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
+              headers: cachedStream.stream.headers || undefined,
+              forceVlc: false,
+              id: item.id,
+              type: item.type,
+              episodeId,
+              imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || item.imdb_id,
+              backdrop: cachedStream.metadata?.backdrop || item.banner,
+              videoType: undefined, // Let player auto-detect
+            } as any
+          );
+
+          return;
+        }
+
+        // No cached stream or cache failed, navigate to StreamsScreen
+        logger.log(
+          `📺 [ContinueWatching] No cached stream, navigating to StreamsScreen for ${item.name}`
+        );
+
+        if (item.type === 'series' && item.season && item.episode) {
+          // For series, navigate to the specific episode
+          navigation.navigate('Streams', {
+            id: item.id,
+            type: item.type,
+            episodeId,
+          });
+        } else {
+          // For movies or series without specific episode, navigate to main content
+          navigation.navigate('Streams', {
+            id: item.id,
+            type: item.type,
+          });
+        }
+      } catch (error) {
+        logger.warn('[ContinueWatching] Error handling content press:', error);
+        // Fallback to StreamsScreen on any error
+        if (item.type === 'series' && item.season && item.episode) {
+          const episodeId = `${item.id}:${item.season}:${item.episode}`;
+          navigation.navigate('Streams', {
+            id: item.id,
+            type: item.type,
+            episodeId,
+          });
+        } else {
+          navigation.navigate('Streams', {
+            id: item.id,
+            type: item.type,
+          });
+        }
       }
-
-      // Check if we have a cached stream for this content
-      const episodeId = item.type === 'series' && item.season && item.episode
-        ? `${item.id}:${item.season}:${item.episode}`
-        : undefined;
-
-      logger.log(`🔍 [ContinueWatching] Looking for cached stream with episodeId: ${episodeId || 'none'}`);
-
-      const cachedStream = await streamCacheService.getCachedStream(item.id, item.type, episodeId);
-
-      if (cachedStream) {
-        // We have a valid cached stream, navigate directly to player
-        logger.log(`🚀 [ContinueWatching] Using cached stream for ${item.name}`);
-
-        // Determine the player route based on platform
-        const playerRoute = Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid';
-
-        // Navigate directly to player with cached stream data
-        navigation.navigate(playerRoute as any, {
-          uri: cachedStream.stream.url,
-          title: cachedStream.metadata?.name || item.name,
-          episodeTitle: cachedStream.episodeTitle || (item.type === 'series' ? `Episode ${item.episode}` : undefined),
-          season: cachedStream.season || item.season,
-          episode: cachedStream.episode || item.episode,
-          quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
-          year: cachedStream.metadata?.year || item.year,
-          streamProvider: cachedStream.stream.addonId || cachedStream.stream.addonName || cachedStream.stream.name,
-          streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
-          headers: cachedStream.stream.headers || undefined,
-          forceVlc: false,
-          id: item.id,
-          type: item.type,
-          episodeId: episodeId,
-          imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || item.imdb_id,
-          backdrop: cachedStream.metadata?.backdrop || item.banner,
-          videoType: undefined, // Let player auto-detect
-        } as any);
-
-        return;
-      }
-
-      // No cached stream or cache failed, navigate to StreamsScreen
-      logger.log(`📺 [ContinueWatching] No cached stream, navigating to StreamsScreen for ${item.name}`);
-
-      if (item.type === 'series' && item.season && item.episode) {
-        // For series, navigate to the specific episode
-        navigation.navigate('Streams', {
-          id: item.id,
-          type: item.type,
-          episodeId: episodeId
-        });
-      } else {
-        // For movies or series without specific episode, navigate to main content
-        navigation.navigate('Streams', {
-          id: item.id,
-          type: item.type
-        });
-      }
-    } catch (error) {
-      logger.warn('[ContinueWatching] Error handling content press:', error);
-      // Fallback to StreamsScreen on any error
-      if (item.type === 'series' && item.season && item.episode) {
-        const episodeId = `${item.id}:${item.season}:${item.episode}`;
-        navigation.navigate('Streams', {
-          id: item.id,
-          type: item.type,
-          episodeId: episodeId
-        });
-      } else {
-        navigation.navigate('Streams', {
-          id: item.id,
-          type: item.type
-        });
-      }
-    }
-  }, [navigation, settings.useCachedStreams, settings.openMetadataScreenWhenCacheDisabled]);
+    },
+    [navigation, settings.useCachedStreams, settings.openMetadataScreenWhenCacheDisabled]
+  );
 
   // Handle long press to delete (moved before renderContinueWatchingItem)
-  const handleLongPress = useCallback((item: ContinueWatchingItem) => {
-    try {
-      // Trigger haptic feedback
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch (error) {
-      // Ignore haptic errors
-    }
+  const handleLongPress = useCallback(
+    (item: ContinueWatchingItem) => {
+      try {
+        // Trigger haptic feedback
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        // Ignore haptic errors
+      }
 
-    setAlertTitle('Remove from Continue Watching');
-    setAlertMessage(`Remove "${item.name}" from your continue watching list?`);
-    setAlertActions([
-      {
-        label: 'Cancel',
-        style: { color: '#888' },
-        onPress: () => { },
-      },
-      {
-        label: 'Remove',
-        style: { color: currentTheme.colors.error },
-        onPress: async () => {
-          setDeletingItemId(item.id);
-          try {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            await storageService.removeAllWatchProgressForContent(item.id, item.type, { addBaseTombstone: true });
-            const traktService = TraktService.getInstance();
-            const isAuthed = await traktService.isAuthenticated();
-            if (isAuthed) {
-              let traktResult = false;
-              if (item.type === 'movie') {
-                traktResult = await traktService.removeMovieFromHistory(item.id);
-              } else if (item.type === 'series' && item.season !== undefined && item.episode !== undefined) {
-                traktResult = await traktService.removeEpisodeFromHistory(item.id, item.season, item.episode);
-              } else {
-                traktResult = await traktService.removeShowFromHistory(item.id);
-              }
-            }
-            const itemKey = `${item.type}:${item.id}`;
-            recentlyRemovedRef.current.add(itemKey);
-            await storageService.addContinueWatchingRemoved(item.id, item.type);
-            setTimeout(() => {
-              recentlyRemovedRef.current.delete(itemKey);
-            }, REMOVAL_IGNORE_DURATION);
-            setContinueWatchingItems(prev => prev.filter(i => i.id !== item.id));
-          } catch (error) {
-            // Continue even if removal fails
-          } finally {
-            setDeletingItemId(null);
-          }
+      setAlertTitle('Remove from Continue Watching');
+      setAlertMessage(`Remove "${item.name}" from your continue watching list?`);
+      setAlertActions([
+        {
+          label: 'Cancel',
+          style: { color: '#888' },
+          onPress: () => {},
         },
-      },
-    ]);
-    setAlertVisible(true);
-  }, [currentTheme.colors.error]);
+        {
+          label: 'Remove',
+          style: { color: currentTheme.colors.error },
+          onPress: async () => {
+            setDeletingItemId(item.id);
+            try {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              await storageService.removeAllWatchProgressForContent(item.id, item.type, {
+                addBaseTombstone: true,
+              });
+              const traktService = TraktService.getInstance();
+              const isAuthed = await traktService.isAuthenticated();
+              if (isAuthed) {
+                let traktResult = false;
+                if (item.type === 'movie') {
+                  traktResult = await traktService.removeMovieFromHistory(item.id);
+                } else if (
+                  item.type === 'series' &&
+                  item.season !== undefined &&
+                  item.episode !== undefined
+                ) {
+                  traktResult = await traktService.removeEpisodeFromHistory(
+                    item.id,
+                    item.season,
+                    item.episode
+                  );
+                } else {
+                  traktResult = await traktService.removeShowFromHistory(item.id);
+                }
+              }
+              const itemKey = `${item.type}:${item.id}`;
+              recentlyRemovedRef.current.add(itemKey);
+              await storageService.addContinueWatchingRemoved(item.id, item.type);
+              setTimeout(() => {
+                recentlyRemovedRef.current.delete(itemKey);
+              }, REMOVAL_IGNORE_DURATION);
+              setContinueWatchingItems(prev => prev.filter(i => i.id !== item.id));
+            } catch (error) {
+              // Continue even if removal fails
+            } finally {
+              setDeletingItemId(null);
+            }
+          },
+        },
+      ]);
+      setAlertVisible(true);
+    },
+    [currentTheme.colors.error]
+  );
 
   // Memoized render function for continue watching items
-  const renderContinueWatchingItem = useCallback(({ item }: { item: ContinueWatchingItem }) => (
-    <TouchableOpacity
-      style={[
-        styles.wideContentItem,
-        {
-          backgroundColor: currentTheme.colors.elevation1,
-          borderColor: currentTheme.colors.border,
-          shadowColor: currentTheme.colors.black,
-          width: computedItemWidth,
-          height: computedItemHeight
-        }
-      ]}
-      activeOpacity={0.8}
-      onPress={() => handleContentPress(item)}
-      onLongPress={() => handleLongPress(item)}
-      delayLongPress={800}
-    >
-      {/* Poster Image */}
-      <View style={[
-        styles.posterContainer,
-        {
-          width: isTV ? 100 : isLargeTablet ? 90 : isTablet ? 85 : 80
-        }
-      ]}>
-        <FastImage
-          source={{
-            uri: item.poster || 'https://via.placeholder.com/300x450',
-            priority: FastImage.priority.high,
-            cache: FastImage.cacheControl.immutable
-          }}
-          style={styles.continueWatchingPoster}
-          resizeMode={FastImage.resizeMode.cover}
-        />
+  const renderContinueWatchingItem = useCallback(
+    ({ item }: { item: ContinueWatchingItem }) => (
+      <TouchableOpacity
+        style={[
+          styles.wideContentItem,
+          {
+            backgroundColor: currentTheme.colors.elevation1,
+            borderColor: currentTheme.colors.border,
+            shadowColor: currentTheme.colors.black,
+            width: computedItemWidth,
+            height: computedItemHeight,
+          },
+        ]}
+        activeOpacity={0.8}
+        onPress={() => handleContentPress(item)}
+        onLongPress={() => handleLongPress(item)}
+        delayLongPress={800}
+      >
+        {/* Poster Image */}
+        <View
+          style={[
+            styles.posterContainer,
+            {
+              width: isTV ? 100 : isLargeTablet ? 90 : isTablet ? 85 : 80,
+            },
+          ]}
+        >
+          <FastImage
+            source={{
+              uri: item.poster || 'https://via.placeholder.com/300x450',
+              priority: FastImage.priority.high,
+              cache: FastImage.cacheControl.immutable,
+            }}
+            style={styles.continueWatchingPoster}
+            resizeMode={FastImage.resizeMode.cover}
+          />
 
-        {/* Delete Indicator Overlay */}
-        {deletingItemId === item.id && (
-          <View style={styles.deletingOverlay}>
-            <ActivityIndicator size="large" color="#FFFFFF" />
-          </View>
-        )}
-      </View>
-
-      {/* Content Details */}
-      <View style={[
-        styles.contentDetails,
-        {
-          padding: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-        }
-      ]}>
-        <View style={styles.titleRow}>
-          {(() => {
-            const isUpNext = item.type === 'series' && item.progress === 0;
-            return (
-              <View style={styles.titleRow}>
-                <Text
-                  style={[
-                    styles.contentTitle,
-                    {
-                      color: currentTheme.colors.highEmphasis,
-                      fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16
-                    }
-                  ]}
-                  numberOfLines={1}
-                >
-                  {item.name}
-                </Text>
-                {isUpNext && (
-                  <View style={[
-                    styles.progressBadge,
-                    {
-                      backgroundColor: currentTheme.colors.primary,
-                      paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                      paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3
-                    }
-                  ]}>
-                    <Text style={[
-                      styles.progressText,
-                      { fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12 }
-                    ]}>Up Next</Text>
-                  </View>
-                )}
-              </View>
-            );
-          })()}
+          {/* Delete Indicator Overlay */}
+          {deletingItemId === item.id && (
+            <View style={styles.deletingOverlay}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+          )}
         </View>
 
-        {/* Episode Info or Year */}
-        {(() => {
-          if (item.type === 'series' && item.season && item.episode) {
-            return (
-              <View style={styles.episodeRow}>
-                <Text style={[
-                  styles.episodeText,
-                  {
-                    color: currentTheme.colors.mediumEmphasis,
-                    fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 13
-                  }
-                ]}>
-                  Season {item.season}
-                </Text>
-                {item.episodeTitle && (
+        {/* Content Details */}
+        <View
+          style={[
+            styles.contentDetails,
+            {
+              padding: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+            },
+          ]}
+        >
+          <View style={styles.titleRow}>
+            {(() => {
+              const isUpNext = item.type === 'series' && item.progress === 0;
+              return (
+                <View style={styles.titleRow}>
                   <Text
                     style={[
-                      styles.episodeTitle,
+                      styles.contentTitle,
                       {
-                        color: currentTheme.colors.mediumEmphasis,
-                        fontSize: isTV ? 15 : isLargeTablet ? 14 : isTablet ? 13 : 12
-                      }
+                        color: currentTheme.colors.highEmphasis,
+                        fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16,
+                      },
                     ]}
                     numberOfLines={1}
                   >
-                    {item.episodeTitle}
+                    {item.name}
                   </Text>
-                )}
-              </View>
-            );
-          } else {
-            return (
-              <Text style={[
-                styles.yearText,
-                {
-                  color: currentTheme.colors.mediumEmphasis,
-                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 13
-                }
-              ]}>
-                {item.year} • {item.type === 'movie' ? 'Movie' : 'Series'}
-              </Text>
-            );
-          }
-        })()}
+                  {isUpNext && (
+                    <View
+                      style={[
+                        styles.progressBadge,
+                        {
+                          backgroundColor: currentTheme.colors.primary,
+                          paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                          paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 3,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.progressText,
+                          { fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12 },
+                        ]}
+                      >
+                        Up Next
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              );
+            })()}
+          </View>
 
-        {/* Progress Bar */}
-        {item.progress > 0 && (
-          <View style={styles.wideProgressContainer}>
-            <View style={[
-              styles.wideProgressTrack,
-              {
-                height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-              }
-            ]}>
+          {/* Episode Info or Year */}
+          {(() => {
+            if (item.type === 'series' && item.season && item.episode) {
+              return (
+                <View style={styles.episodeRow}>
+                  <Text
+                    style={[
+                      styles.episodeText,
+                      {
+                        color: currentTheme.colors.mediumEmphasis,
+                        fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 13,
+                      },
+                    ]}
+                  >
+                    Season {item.season}
+                  </Text>
+                  {item.episodeTitle && (
+                    <Text
+                      style={[
+                        styles.episodeTitle,
+                        {
+                          color: currentTheme.colors.mediumEmphasis,
+                          fontSize: isTV ? 15 : isLargeTablet ? 14 : isTablet ? 13 : 12,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.episodeTitle}
+                    </Text>
+                  )}
+                </View>
+              );
+            } else {
+              return (
+                <Text
+                  style={[
+                    styles.yearText,
+                    {
+                      color: currentTheme.colors.mediumEmphasis,
+                      fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 13,
+                    },
+                  ]}
+                >
+                  {item.year} • {item.type === 'movie' ? 'Movie' : 'Series'}
+                </Text>
+              );
+            }
+          })()}
+
+          {/* Progress Bar */}
+          {item.progress > 0 && (
+            <View style={styles.wideProgressContainer}>
               <View
                 style={[
-                  styles.wideProgressBar,
+                  styles.wideProgressTrack,
                   {
-                    width: `${item.progress}%`,
-                    backgroundColor: currentTheme.colors.primary
-                  }
+                    height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+                  },
                 ]}
-              />
+              >
+                <View
+                  style={[
+                    styles.wideProgressBar,
+                    {
+                      width: `${item.progress}%`,
+                      backgroundColor: currentTheme.colors.primary,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.progressLabel,
+                  {
+                    color: currentTheme.colors.textMuted,
+                    fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 11,
+                  },
+                ]}
+              >
+                {Math.round(item.progress)}% watched
+              </Text>
             </View>
-            <Text style={[
-              styles.progressLabel,
-              {
-                color: currentTheme.colors.textMuted,
-                fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 11
-              }
-            ]}>
-              {Math.round(item.progress)}% watched
-            </Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  ), [currentTheme.colors, handleContentPress, handleLongPress, deletingItemId, computedItemWidth, computedItemHeight, isTV, isLargeTablet, isTablet]);
+          )}
+        </View>
+      </TouchableOpacity>
+    ),
+    [
+      currentTheme.colors,
+      handleContentPress,
+      handleLongPress,
+      deletingItemId,
+      computedItemWidth,
+      computedItemHeight,
+      isTV,
+      isLargeTablet,
+      isTablet,
+    ]
+  );
 
   // Memoized key extractor
-  const keyExtractor = useCallback((item: ContinueWatchingItem) => `continue-${item.id}-${item.type}`, []);
+  const keyExtractor = useCallback(
+    (item: ContinueWatchingItem) => `continue-${item.id}-${item.type}`,
+    []
+  );
 
   // Memoized item separator
   const ItemSeparator = useCallback(() => <View style={{ width: itemSpacing }} />, [itemSpacing]);
@@ -1287,26 +1414,30 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
   }
 
   return (
-    <View
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <View style={[styles.header, { paddingHorizontal: horizontalPadding }]}>
         <View style={styles.titleContainer}>
-          <Text style={[
-            styles.title,
-            {
-              color: currentTheme.colors.text,
-              fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24
-            }
-          ]}>Continue Watching</Text>
-          <View style={[
-            styles.titleUnderline,
-            {
-              backgroundColor: currentTheme.colors.primary,
-              width: isTV ? 50 : isLargeTablet ? 45 : isTablet ? 40 : 40,
-              height: isTV ? 4 : isLargeTablet ? 3.5 : isTablet ? 3 : 3
-            }
-          ]} />
+          <Text
+            style={[
+              styles.title,
+              {
+                color: currentTheme.colors.text,
+                fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24,
+              },
+            ]}
+          >
+            Continue Watching
+          </Text>
+          <View
+            style={[
+              styles.titleUnderline,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                width: isTV ? 50 : isLargeTablet ? 45 : isTablet ? 40 : 40,
+                height: isTV ? 4 : isLargeTablet ? 3.5 : isTablet ? 3 : 3,
+              },
+            ]}
+          />
         </View>
       </View>
 
@@ -1320,12 +1451,12 @@ const ContinueWatchingSection = React.forwardRef<ContinueWatchingRef>((props, re
           styles.wideList,
           {
             paddingLeft: horizontalPadding,
-            paddingRight: horizontalPadding
-          }
+            paddingRight: horizontalPadding,
+          },
         ]}
         ItemSeparatorComponent={ItemSeparator}
         onEndReachedThreshold={0.7}
-        onEndReached={() => { }}
+        onEndReached={() => {}}
         removeClippedSubviews={true}
       />
 

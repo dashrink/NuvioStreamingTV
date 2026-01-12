@@ -41,6 +41,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import { Platform, BackHandler } from 'react-native';
+
 import { useTVEventHandler, TVRemoteEvent } from './useTVEventHandler';
 
 // =============================================================================
@@ -204,14 +205,9 @@ export function useTVPlayerControls(config: TVPlayerControlsConfig): TVPlayerCon
       lastEventTimeRef.current = now;
 
       // Most events should show controls
-      const shouldShowControls = [
-        'up',
-        'down',
-        'left',
-        'right',
-        'select',
-        'playPause',
-      ].includes(event.eventType);
+      const shouldShowControls = ['up', 'down', 'left', 'right', 'select', 'playPause'].includes(
+        event.eventType
+      );
 
       if (shouldShowControls && !showControls) {
         showControlsNow();
@@ -327,9 +323,7 @@ export function createDefaultVolumeHandler(
   return (direction: 'up' | 'down') => {
     const currentVolume = getCurrentVolume();
     const newVolume =
-      direction === 'up'
-        ? Math.min(1, currentVolume + step)
-        : Math.max(0, currentVolume - step);
+      direction === 'up' ? Math.min(1, currentVolume + step) : Math.max(0, currentVolume - step);
     setVolume(newVolume);
   };
 }

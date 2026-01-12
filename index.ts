@@ -2,7 +2,7 @@ import { registerRootComponent } from 'expo';
 
 // Polyfill for Promise.allSettled (ES2020 feature)
 if (!Promise.allSettled) {
-  Promise.allSettled = function<T>(promises: Promise<T>[]): Promise<PromiseSettledResult<T>[]> {
+  Promise.allSettled = function <T>(promises: Promise<T>[]): Promise<PromiseSettledResult<T>[]> {
     return Promise.all(
       promises.map(promise =>
         Promise.resolve(promise)

@@ -1,5 +1,5 @@
-import { Stream } from '../../types/metadata';
 import { MKV_HEAD_TIMEOUT_MS } from './constants';
+import { Stream } from '../../types/metadata';
 
 /**
  * Language variations for filtering
@@ -27,11 +27,11 @@ const LANGUAGE_VARIATIONS: Record<string, string[]> = {
 const getLanguageVariations = (language: string): string[] => {
   const langLower = language.toLowerCase();
   const variations = [langLower];
-  
+
   if (LANGUAGE_VARIATIONS[langLower]) {
     variations.push(...LANGUAGE_VARIATIONS[langLower]);
   }
-  
+
   return variations;
 };
 

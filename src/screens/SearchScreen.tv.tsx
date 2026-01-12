@@ -23,6 +23,10 @@
  * ```
  */
 
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import debounce from 'lodash/debounce';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
@@ -34,30 +38,32 @@ import {
   Dimensions,
   ScrollView,
   Platform,
+  DeviceEventEmitter,
+  Share,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import { catalogService, StreamingContent, GroupedSearchResults, AddonSearchResults } from '../services/catalogService';
-import FastImage from '@d11/react-native-fast-image';
-import debounce from 'lodash/debounce';
-import { DeviceEventEmitter, Share } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
+
 // Reanimated animations are handled by the Focusable component
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { logger } from '../utils/logger';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ScreenHeader from '../components/common/ScreenHeader';
 
 // TV-specific imports
-import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
-import { useTVEventHandler } from '../hooks/useTVEventHandler';
-import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
 import Focusable, { FocusableRef } from '../components/common/Focusable';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ScreenHeader from '../components/common/ScreenHeader';
 import { useContextMenu } from '../hooks/useContextMenu';
 import TVContextMenu from '../components/tv/TVContextMenu';
+import { useTheme } from '../contexts/ThemeContext';
+import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
+import { useTVEventHandler } from '../hooks/useTVEventHandler';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import {
+  catalogService,
+  StreamingContent,
+  GroupedSearchResults,
+  AddonSearchResults,
+} from '../services/catalogService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { logger } from '../utils/logger';
 
 // =============================================================================
 // Constants
@@ -86,7 +92,13 @@ const isLargeTablet = deviceType === 'largeTablet';
 const isTV = deviceType === 'tv' || Platform.isTV;
 
 // TV-optimized sizes
-const HORIZONTAL_ITEM_WIDTH = isTV ? width * 0.12 : isLargeTablet ? width * 0.16 : isTablet ? width * 0.18 : width * 0.3;
+const HORIZONTAL_ITEM_WIDTH = isTV
+  ? width * 0.12
+  : isLargeTablet
+    ? width * 0.16
+    : isTablet
+      ? width * 0.18
+      : width * 0.3;
 const HORIZONTAL_POSTER_HEIGHT = HORIZONTAL_ITEM_WIDTH * 1.5;
 const RECENT_SEARCHES_KEY = 'recent_searches';
 const MAX_RECENT_SEARCHES = 10;
@@ -113,194 +125,234 @@ interface TVSearchResultItemProps {
 // TV Search Result Item Component
 // =============================================================================
 
-const TVSearchResultItem: React.FC<TVSearchResultItemProps> = React.memo(({
-  item,
-  index,
-  navigation,
-  currentTheme,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-  nextFocusUp,
-  nextFocusDown,
-}) => {
-  const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
-  const [watched, setWatched] = useState(false);
-  const { openContextMenu } = useContextMenu();
+const TVSearchResultItem: React.FC<TVSearchResultItemProps> = React.memo(
+  ({
+    item,
+    index,
+    navigation,
+    currentTheme,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+    nextFocusUp,
+    nextFocusDown,
+  }) => {
+    const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
+    const [watched, setWatched] = useState(false);
+    const { openContextMenu } = useContextMenu();
 
-  // Calculate dimensions based on poster shape
-  const { itemWidth, aspectRatio } = useMemo(() => {
-    const shape = item.posterShape || 'poster';
-    const baseHeight = HORIZONTAL_POSTER_HEIGHT;
+    // Calculate dimensions based on poster shape
+    const { itemWidth, aspectRatio } = useMemo(() => {
+      const shape = item.posterShape || 'poster';
+      const baseHeight = HORIZONTAL_POSTER_HEIGHT;
 
-    let w = HORIZONTAL_ITEM_WIDTH;
-    let r = 2 / 3;
+      let w = HORIZONTAL_ITEM_WIDTH;
+      let r = 2 / 3;
 
-    if (shape === 'landscape') {
-      r = 16 / 9;
-      w = baseHeight * r;
-    } else if (shape === 'square') {
-      r = 1;
-      w = baseHeight;
-    }
-    return { itemWidth: w, aspectRatio: r };
-  }, [item.posterShape]);
+      if (shape === 'landscape') {
+        r = 16 / 9;
+        w = baseHeight * r;
+      } else if (shape === 'square') {
+        r = 1;
+        w = baseHeight;
+      }
+      return { itemWidth: w, aspectRatio: r };
+    }, [item.posterShape]);
 
-  // Watch for library/watched status changes
-  useEffect(() => {
-    const updateWatched = () => {
-      mmkvStorage.getItem(`watched:${item.type}:${item.id}`).then(val => setWatched(val === 'true'));
-    };
-    updateWatched();
-    const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
-    return () => sub.remove();
-  }, [item.id, item.type]);
+    // Watch for library/watched status changes
+    useEffect(() => {
+      const updateWatched = () => {
+        mmkvStorage
+          .getItem(`watched:${item.type}:${item.id}`)
+          .then(val => setWatched(val === 'true'));
+      };
+      updateWatched();
+      const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
+      return () => sub.remove();
+    }, [item.id, item.type]);
 
-  useEffect(() => {
-    const unsubscribe = catalogService.subscribeToLibraryUpdates((items) => {
-      const found = items.find((libItem) => libItem.id === item.id && libItem.type === item.type);
-      setInLibrary(!!found);
-    });
-    return () => unsubscribe();
-  }, [item.id, item.type]);
+    useEffect(() => {
+      const unsubscribe = catalogService.subscribeToLibraryUpdates(items => {
+        const found = items.find(libItem => libItem.id === item.id && libItem.type === item.type);
+        setInLibrary(!!found);
+      });
+      return () => unsubscribe();
+    }, [item.id, item.type]);
 
-  // Handle navigation to detail
-  const handlePress = useCallback(() => {
-    navigation.navigate('Metadata', { id: item.id, type: item.type });
-  }, [navigation, item.id, item.type]);
+    // Handle navigation to detail
+    const handlePress = useCallback(() => {
+      navigation.navigate('Metadata', { id: item.id, type: item.type });
+    }, [navigation, item.id, item.type]);
 
-  // Handle long-press for context menu
-  const handleLongPress = useCallback(() => {
-    openContextMenu({
-      targetId: `search-result-${item.id}`,
-      title: item.name,
-      mediaItem: {
-        id: item.id,
+    // Handle long-press for context menu
+    const handleLongPress = useCallback(() => {
+      openContextMenu({
+        targetId: `search-result-${item.id}`,
         title: item.name,
-        type: item.type as 'movie' | 'series',
-        isInList: inLibrary,
-        isWatched: watched,
-      },
-      actions: inLibrary
-        ? ['removeFromList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info']
-        : ['addToList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info'],
-      onAddToList: async () => {
-        await catalogService.addToLibrary(item);
-        setInLibrary(true);
-      },
-      onRemoveFromList: async () => {
-        await catalogService.removeFromLibrary(item.type, item.id);
-        setInLibrary(false);
-      },
-      onMarkWatched: async () => {
-        await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'true');
-        setWatched(true);
-        DeviceEventEmitter.emit('watchedStatusChanged');
-      },
-      onMarkUnwatched: async () => {
-        await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'false');
-        setWatched(false);
-        DeviceEventEmitter.emit('watchedStatusChanged');
-      },
-      onShare: async () => {
-        const url = item.id ? `https://www.imdb.com/title/${item.id}/` : '';
-        const message = `${item.name}\n${url}`;
-        Share.share({ message, url, title: item.name });
-      },
-      onGetInfo: () => {
-        navigation.navigate('Metadata', { id: item.id, type: item.type });
-      },
-    });
-  }, [openContextMenu, item, inLibrary, watched, navigation]);
+        mediaItem: {
+          id: item.id,
+          title: item.name,
+          type: item.type as 'movie' | 'series',
+          isInList: inLibrary,
+          isWatched: watched,
+        },
+        actions: inLibrary
+          ? ['removeFromList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info']
+          : ['addToList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info'],
+        onAddToList: async () => {
+          await catalogService.addToLibrary(item);
+          setInLibrary(true);
+        },
+        onRemoveFromList: async () => {
+          await catalogService.removeFromLibrary(item.type, item.id);
+          setInLibrary(false);
+        },
+        onMarkWatched: async () => {
+          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'true');
+          setWatched(true);
+          DeviceEventEmitter.emit('watchedStatusChanged');
+        },
+        onMarkUnwatched: async () => {
+          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'false');
+          setWatched(false);
+          DeviceEventEmitter.emit('watchedStatusChanged');
+        },
+        onShare: async () => {
+          const url = item.id ? `https://www.imdb.com/title/${item.id}/` : '';
+          const message = `${item.name}\n${url}`;
+          Share.share({ message, url, title: item.name });
+        },
+        onGetInfo: () => {
+          navigation.navigate('Metadata', { id: item.id, type: item.type });
+        },
+      });
+    }, [openContextMenu, item, inLibrary, watched, navigation]);
 
-  // Handle focus
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
+    // Handle focus
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
 
-  return (
-    <Focusable
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={[styles.horizontalItem, { width: itemWidth }]}
-      animationConfig={{
-        focusScale: 1.05,
-        unfocusedOpacity: 0.85,
-        showFocusBorder: true,
-        focusBorderColor: currentTheme.colors.primary,
-        focusBorderWidth: 3,
-        animateShadow: Platform.OS === 'ios',
-      }}
-      tvParallaxProperties={{
-        enabled: true,
-        shiftDistanceX: 3,
-        shiftDistanceY: 3,
-        tiltAngle: 0.03,
-        magnification: 1.02,
-      }}
-      nextFocus={{
-        nextFocusUp,
-        nextFocusDown,
-      }}
-      accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
-      accessibilityHint={`Press to view details, hold for more options`}
-    >
-      <View style={[styles.horizontalItemPosterContainer, {
-        width: itemWidth,
-        aspectRatio: aspectRatio,
-        backgroundColor: currentTheme.colors.darkBackground,
-        borderColor: 'rgba(255,255,255,0.05)',
-      }]}>
-        <FastImage
-          source={{ uri: item.poster || PLACEHOLDER_POSTER }}
-          style={styles.horizontalItemPoster}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-        {/* Bookmark icon */}
-        {inLibrary && (
-          <View style={[styles.libraryBadge, { position: 'absolute', top: 8, right: 36, backgroundColor: 'transparent', zIndex: 2 }]}>
-            <Feather name="bookmark" size={18} color={currentTheme.colors.white} />
-          </View>
-        )}
-        {/* Watched indicator */}
-        {watched && (
-          <View style={[styles.watchedIndicator, { position: 'absolute', top: 8, right: 8, backgroundColor: 'transparent', zIndex: 2 }]}>
-            <MaterialIcons name="check-circle" size={22} color={currentTheme.colors.success || '#4CAF50'} />
-          </View>
-        )}
-        {/* Rating badge */}
-        {item.imdbRating && (
-          <View style={styles.ratingContainer}>
-            <MaterialIcons name="star" size={14} color="#FFC107" />
-            <Text style={[styles.ratingText, { color: currentTheme.colors.white }]}>
-              {item.imdbRating}
-            </Text>
-          </View>
-        )}
-      </View>
-      <Text
-        style={[
-          styles.horizontalItemTitle,
-          {
-            color: currentTheme.colors.white,
-            fontSize: isTV ? 16 : 14,
-            lineHeight: isTV ? 20 : 18,
-          }
-        ]}
-        numberOfLines={2}
+    return (
+      <Focusable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
+        style={[styles.horizontalItem, { width: itemWidth }]}
+        animationConfig={{
+          focusScale: 1.05,
+          unfocusedOpacity: 0.85,
+          showFocusBorder: true,
+          focusBorderColor: currentTheme.colors.primary,
+          focusBorderWidth: 3,
+          animateShadow: Platform.OS === 'ios',
+        }}
+        tvParallaxProperties={{
+          enabled: true,
+          shiftDistanceX: 3,
+          shiftDistanceY: 3,
+          tiltAngle: 0.03,
+          magnification: 1.02,
+        }}
+        nextFocus={{
+          nextFocusUp,
+          nextFocusDown,
+        }}
+        accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
+        accessibilityHint={`Press to view details, hold for more options`}
       >
-        {item.name}
-      </Text>
-      {item.year && (
-        <Text style={[styles.yearText, { color: currentTheme.colors.mediumGray, fontSize: isTV ? 14 : 12 }]}>
-          {item.year}
+        <View
+          style={[
+            styles.horizontalItemPosterContainer,
+            {
+              width: itemWidth,
+              aspectRatio,
+              backgroundColor: currentTheme.colors.darkBackground,
+              borderColor: 'rgba(255,255,255,0.05)',
+            },
+          ]}
+        >
+          <FastImage
+            source={{ uri: item.poster || PLACEHOLDER_POSTER }}
+            style={styles.horizontalItemPoster}
+            resizeMode={FastImage.resizeMode.cover}
+          />
+          {/* Bookmark icon */}
+          {inLibrary && (
+            <View
+              style={[
+                styles.libraryBadge,
+                {
+                  position: 'absolute',
+                  top: 8,
+                  right: 36,
+                  backgroundColor: 'transparent',
+                  zIndex: 2,
+                },
+              ]}
+            >
+              <Feather name="bookmark" size={18} color={currentTheme.colors.white} />
+            </View>
+          )}
+          {/* Watched indicator */}
+          {watched && (
+            <View
+              style={[
+                styles.watchedIndicator,
+                {
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  backgroundColor: 'transparent',
+                  zIndex: 2,
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="check-circle"
+                size={22}
+                color={currentTheme.colors.success || '#4CAF50'}
+              />
+            </View>
+          )}
+          {/* Rating badge */}
+          {item.imdbRating && (
+            <View style={styles.ratingContainer}>
+              <MaterialIcons name="star" size={14} color="#FFC107" />
+              <Text style={[styles.ratingText, { color: currentTheme.colors.white }]}>
+                {item.imdbRating}
+              </Text>
+            </View>
+          )}
+        </View>
+        <Text
+          style={[
+            styles.horizontalItemTitle,
+            {
+              color: currentTheme.colors.white,
+              fontSize: isTV ? 16 : 14,
+              lineHeight: isTV ? 20 : 18,
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {item.name}
         </Text>
-      )}
-    </Focusable>
-  );
-});
+        {item.year && (
+          <Text
+            style={[
+              styles.yearText,
+              { color: currentTheme.colors.mediumGray, fontSize: isTV ? 14 : 12 },
+            ]}
+          >
+            {item.year}
+          </Text>
+        )}
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // TV Recent Search Item Component
@@ -317,62 +369,66 @@ interface TVRecentSearchItemProps {
   currentTheme: any;
 }
 
-const TVRecentSearchItem: React.FC<TVRecentSearchItemProps> = React.memo(({
-  search,
-  index,
-  onSelect,
-  onDelete,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-  currentTheme,
-}) => {
-  const handlePress = useCallback(() => {
-    onSelect(search);
-  }, [onSelect, search]);
+const TVRecentSearchItem: React.FC<TVRecentSearchItemProps> = React.memo(
+  ({
+    search,
+    index,
+    onSelect,
+    onDelete,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+    currentTheme,
+  }) => {
+    const handlePress = useCallback(() => {
+      onSelect(search);
+    }, [onSelect, search]);
 
-  const handleLongPress = useCallback(() => {
-    onDelete(index);
-  }, [onDelete, index]);
+    const handleLongPress = useCallback(() => {
+      onDelete(index);
+    }, [onDelete, index]);
 
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
 
-  return (
-    <Focusable
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={styles.recentSearchItem}
-      animationConfig={{
-        focusScale: 1.02,
-        unfocusedOpacity: 0.8,
-        showFocusBorder: true,
-        focusBorderColor: currentTheme.colors.primary,
-        focusBorderWidth: 2,
-      }}
-      accessibilityLabel={`Recent search: ${search}`}
-      accessibilityHint="Press to search, hold to delete"
-    >
-      <MaterialIcons
-        name="history"
-        size={22}
-        color={currentTheme.colors.lightGray}
-        style={styles.recentSearchIcon}
-      />
-      <Text style={[styles.recentSearchText, { color: currentTheme.colors.white }]}>
-        {search}
-      </Text>
-      <View style={styles.recentSearchDeleteHint}>
-        <Text style={[styles.recentSearchDeleteHintText, { color: currentTheme.colors.mediumGray }]}>
-          Hold to delete
+    return (
+      <Focusable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
+        style={styles.recentSearchItem}
+        animationConfig={{
+          focusScale: 1.02,
+          unfocusedOpacity: 0.8,
+          showFocusBorder: true,
+          focusBorderColor: currentTheme.colors.primary,
+          focusBorderWidth: 2,
+        }}
+        accessibilityLabel={`Recent search: ${search}`}
+        accessibilityHint="Press to search, hold to delete"
+      >
+        <MaterialIcons
+          name="history"
+          size={22}
+          color={currentTheme.colors.lightGray}
+          style={styles.recentSearchIcon}
+        />
+        <Text style={[styles.recentSearchText, { color: currentTheme.colors.white }]}>
+          {search}
         </Text>
-      </View>
-    </Focusable>
-  );
-});
+        <View style={styles.recentSearchDeleteHint}>
+          <Text
+            style={[styles.recentSearchDeleteHintText, { color: currentTheme.colors.mediumGray }]}
+          >
+            Hold to delete
+          </Text>
+        </View>
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // TV Addon Section Component
@@ -387,136 +443,145 @@ interface TVAddonSectionProps {
   sectionFocusId: string;
 }
 
-const TVAddonSection: React.FC<TVAddonSectionProps> = React.memo(({
-  addonGroup,
-  addonIndex,
-  navigation,
-  currentTheme,
-  onItemFocus,
-  sectionFocusId,
-}) => {
-  const listRef = useRef<FlatList>(null);
-  const [focusedIndex, setFocusedIndex] = useState(0);
-  const tvNav = useTVNavigationOptional();
+const TVAddonSection: React.FC<TVAddonSectionProps> = React.memo(
+  ({ addonGroup, addonIndex, navigation, currentTheme, onItemFocus, sectionFocusId }) => {
+    const listRef = useRef<FlatList>(null);
+    const [focusedIndex, setFocusedIndex] = useState(0);
+    const tvNav = useTVNavigationOptional();
 
-  const movieResults = useMemo(() =>
-    addonGroup.results.filter(item => item.type === 'movie'),
-    [addonGroup.results]
-  );
-  const seriesResults = useMemo(() =>
-    addonGroup.results.filter(item => item.type === 'series'),
-    [addonGroup.results]
-  );
-  const otherResults = useMemo(() =>
-    addonGroup.results.filter(item => item.type !== 'movie' && item.type !== 'series'),
-    [addonGroup.results]
-  );
+    const movieResults = useMemo(
+      () => addonGroup.results.filter(item => item.type === 'movie'),
+      [addonGroup.results]
+    );
+    const seriesResults = useMemo(
+      () => addonGroup.results.filter(item => item.type === 'series'),
+      [addonGroup.results]
+    );
+    const otherResults = useMemo(
+      () => addonGroup.results.filter(item => item.type !== 'movie' && item.type !== 'series'),
+      [addonGroup.results]
+    );
 
-  // Scroll to focused item
-  const handleItemFocus = useCallback((focusId: string, itemIndex: number, listRefToUse: React.RefObject<FlatList>) => {
-    onItemFocus(focusId);
-    setFocusedIndex(itemIndex);
+    // Scroll to focused item
+    const handleItemFocus = useCallback(
+      (focusId: string, itemIndex: number, listRefToUse: React.RefObject<FlatList>) => {
+        onItemFocus(focusId);
+        setFocusedIndex(itemIndex);
 
-    // Scroll to keep item visible
-    if (listRefToUse.current && itemIndex >= 0) {
-      try {
-        listRefToUse.current.scrollToIndex({
-          index: itemIndex,
-          animated: true,
-          viewPosition: 0.3,
-        });
-      } catch (e) {
-        // Fallback for scroll failure
-      }
-    }
+        // Scroll to keep item visible
+        if (listRefToUse.current && itemIndex >= 0) {
+          try {
+            listRefToUse.current.scrollToIndex({
+              index: itemIndex,
+              animated: true,
+              viewPosition: 0.3,
+            });
+          } catch (e) {
+            // Fallback for scroll failure
+          }
+        }
 
-    // Save focus memory
-    if (tvNav) {
-      tvNav.setScreenFocus(`search-${sectionFocusId}`, focusId);
-    }
-  }, [onItemFocus, tvNav, sectionFocusId]);
+        // Save focus memory
+        if (tvNav) {
+          tvNav.setScreenFocus(`search-${sectionFocusId}`, focusId);
+        }
+      },
+      [onItemFocus, tvNav, sectionFocusId]
+    );
 
-  // Render result row with its own list ref
-  const renderResultRow = (results: StreamingContent[], typeKey: string, title: string) => {
-    if (results.length === 0) return null;
+    // Render result row with its own list ref
+    const renderResultRow = (results: StreamingContent[], typeKey: string, title: string) => {
+      if (results.length === 0) return null;
 
-    const rowListRef = useRef<FlatList>(null);
+      const rowListRef = useRef<FlatList>(null);
+
+      return (
+        <View style={[styles.carouselContainer, { marginBottom: isTV ? 48 : 24 }]}>
+          <Text
+            style={[
+              styles.carouselSubtitle,
+              {
+                color: currentTheme.colors.lightGray,
+                fontSize: isTV ? 20 : 14,
+                marginBottom: isTV ? 16 : 8,
+                paddingHorizontal: isTV ? 32 : 16,
+              },
+            ]}
+          >
+            {title} ({results.length})
+          </Text>
+          <FlatList
+            ref={rowListRef}
+            data={results}
+            renderItem={({ item, index }) => (
+              <TVSearchResultItem
+                item={item}
+                index={index}
+                navigation={navigation}
+                currentTheme={currentTheme}
+                focusId={`${sectionFocusId}-${typeKey}-${index}`}
+                onFocus={focusId => handleItemFocus(focusId, index, rowListRef)}
+                hasTVPreferredFocus={addonIndex === 0 && typeKey === 'movie' && index === 0}
+              />
+            )}
+            keyExtractor={item => `${addonGroup.addonId}-${typeKey}-${item.id}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalListContent}
+            getItemLayout={(data, index) => ({
+              length: HORIZONTAL_ITEM_WIDTH + 16,
+              offset: (HORIZONTAL_ITEM_WIDTH + 16) * index,
+              index,
+            })}
+            initialNumToRender={6}
+            maxToRenderPerBatch={4}
+            windowSize={5}
+          />
+        </View>
+      );
+    };
 
     return (
-      <View style={[styles.carouselContainer, { marginBottom: isTV ? 48 : 24 }]}>
-        <Text style={[
-          styles.carouselSubtitle,
-          {
-            color: currentTheme.colors.lightGray,
-            fontSize: isTV ? 20 : 14,
-            marginBottom: isTV ? 16 : 8,
-            paddingHorizontal: isTV ? 32 : 16,
-          }
-        ]}>
-          {title} ({results.length})
-        </Text>
-        <FlatList
-          ref={rowListRef}
-          data={results}
-          renderItem={({ item, index }) => (
-            <TVSearchResultItem
-              item={item}
-              index={index}
-              navigation={navigation}
-              currentTheme={currentTheme}
-              focusId={`${sectionFocusId}-${typeKey}-${index}`}
-              onFocus={(focusId) => handleItemFocus(focusId, index, rowListRef)}
-              hasTVPreferredFocus={addonIndex === 0 && typeKey === 'movie' && index === 0}
-            />
+      <View>
+        {/* Addon Header */}
+        <View style={[styles.addonHeaderContainer, { marginTop: isTV ? 32 : 16 }]}>
+          <Text
+            style={[
+              styles.addonHeaderText,
+              { color: currentTheme.colors.white, fontSize: isTV ? 22 : 16 },
+            ]}
+          >
+            {addonGroup.addonName}
+          </Text>
+          <View
+            style={[styles.addonHeaderBadge, { backgroundColor: currentTheme.colors.elevation2 }]}
+          >
+            <Text style={[styles.addonHeaderBadgeText, { color: currentTheme.colors.lightGray }]}>
+              {addonGroup.results.length}
+            </Text>
+          </View>
+        </View>
+
+        {/* Movies */}
+        {renderResultRow(movieResults, 'movie', 'Movies')}
+
+        {/* TV Shows */}
+        {renderResultRow(seriesResults, 'series', 'TV Shows')}
+
+        {/* Other types */}
+        {otherResults.length > 0 &&
+          renderResultRow(
+            otherResults,
+            'other',
+            otherResults[0].type.charAt(0).toUpperCase() + otherResults[0].type.slice(1)
           )}
-          keyExtractor={item => `${addonGroup.addonId}-${typeKey}-${item.id}`}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalListContent}
-          getItemLayout={(data, index) => ({
-            length: HORIZONTAL_ITEM_WIDTH + 16,
-            offset: (HORIZONTAL_ITEM_WIDTH + 16) * index,
-            index,
-          })}
-          initialNumToRender={6}
-          maxToRenderPerBatch={4}
-          windowSize={5}
-        />
       </View>
     );
-  };
-
-  return (
-    <View>
-      {/* Addon Header */}
-      <View style={[styles.addonHeaderContainer, { marginTop: isTV ? 32 : 16 }]}>
-        <Text style={[styles.addonHeaderText, { color: currentTheme.colors.white, fontSize: isTV ? 22 : 16 }]}>
-          {addonGroup.addonName}
-        </Text>
-        <View style={[styles.addonHeaderBadge, { backgroundColor: currentTheme.colors.elevation2 }]}>
-          <Text style={[styles.addonHeaderBadgeText, { color: currentTheme.colors.lightGray }]}>
-            {addonGroup.results.length}
-          </Text>
-        </View>
-      </View>
-
-      {/* Movies */}
-      {renderResultRow(movieResults, 'movie', 'Movies')}
-
-      {/* TV Shows */}
-      {renderResultRow(seriesResults, 'series', 'TV Shows')}
-
-      {/* Other types */}
-      {otherResults.length > 0 && renderResultRow(
-        otherResults,
-        'other',
-        otherResults[0].type.charAt(0).toUpperCase() + otherResults[0].type.slice(1)
-      )}
-    </View>
-  );
-}, (prev, next) => {
-  return prev.addonGroup === next.addonGroup && prev.addonIndex === next.addonIndex;
-});
+  },
+  (prev, next) => {
+    return prev.addonGroup === next.addonGroup && prev.addonIndex === next.addonIndex;
+  }
+);
 
 // =============================================================================
 // Main SearchScreen Component
@@ -600,12 +665,15 @@ const SearchScreenTV: React.FC = () => {
   // =============================================================================
 
   useTVEventHandler(
-    useCallback((event) => {
-      // Handle voice button to open voice search
-      if (event.eventType === 'playPause' && tvNav) {
-        tvNav.openVoiceSearch();
-      }
-    }, [tvNav]),
+    useCallback(
+      event => {
+        // Handle voice button to open voice search
+        if (event.eventType === 'playPause' && tvNav) {
+          tvNav.openVoiceSearch();
+        }
+      },
+      [tvNav]
+    ),
     { enabled: Platform.isTV }
   );
 
@@ -629,7 +697,7 @@ const SearchScreenTV: React.FC = () => {
       setRecentSearches(prevSearches => {
         const newRecentSearches = [
           searchQuery,
-          ...prevSearches.filter(s => s !== searchQuery)
+          ...prevSearches.filter(s => s !== searchQuery),
         ].slice(0, MAX_RECENT_SEARCHES);
 
         mmkvStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecentSearches));
@@ -679,47 +747,51 @@ const SearchScreenTV: React.FC = () => {
       });
       addonOrderRankRef.current = rank;
 
-      const handle = catalogService.startLiveSearch(searchQuery, async (section: AddonSearchResults) => {
-        if (!isMounted.current) return;
+      const handle = catalogService.startLiveSearch(
+        searchQuery,
+        async (section: AddonSearchResults) => {
+          if (!isMounted.current) return;
 
-        setResults(prev => {
-          if (!isMounted.current) return prev;
+          setResults(prev => {
+            if (!isMounted.current) return prev;
 
-          const getRank = (id: string) => addonOrderRankRef.current[id] ?? Number.MAX_SAFE_INTEGER;
-          const existingIndex = prev.byAddon.findIndex(s => s.addonId === section.addonId);
+            const getRank = (id: string) =>
+              addonOrderRankRef.current[id] ?? Number.MAX_SAFE_INTEGER;
+            const existingIndex = prev.byAddon.findIndex(s => s.addonId === section.addonId);
 
-          if (existingIndex >= 0) {
-            const copy = prev.byAddon.slice();
-            copy[existingIndex] = section;
-            return { byAddon: copy, allResults: prev.allResults };
-          }
-
-          const insertRank = getRank(section.addonId);
-          let insertAt = prev.byAddon.length;
-          for (let i = 0; i < prev.byAddon.length; i++) {
-            if (getRank(prev.byAddon[i].addonId) > insertRank) {
-              insertAt = i;
-              break;
+            if (existingIndex >= 0) {
+              const copy = prev.byAddon.slice();
+              copy[existingIndex] = section;
+              return { byAddon: copy, allResults: prev.allResults };
             }
-          }
 
-          const nextByAddon = [
-            ...prev.byAddon.slice(0, insertAt),
-            section,
-            ...prev.byAddon.slice(insertAt)
-          ];
+            const insertRank = getRank(section.addonId);
+            let insertAt = prev.byAddon.length;
+            for (let i = 0; i < prev.byAddon.length; i++) {
+              if (getRank(prev.byAddon[i].addonId) > insertRank) {
+                insertAt = i;
+                break;
+              }
+            }
 
-          if (prev.byAddon.length === 0) {
-            setSearching(false);
-          }
+            const nextByAddon = [
+              ...prev.byAddon.slice(0, insertAt),
+              section,
+              ...prev.byAddon.slice(insertAt),
+            ];
 
-          return { byAddon: nextByAddon, allResults: prev.allResults };
-        });
+            if (prev.byAddon.length === 0) {
+              setSearching(false);
+            }
 
-        try {
-          await saveRecentSearch(searchQuery);
-        } catch { }
-      });
+            return { byAddon: nextByAddon, allResults: prev.allResults };
+          });
+
+          try {
+            await saveRecentSearch(searchQuery);
+          } catch {}
+        }
+      );
 
       liveSearchHandle.current = handle;
       await handle.done;
@@ -795,12 +867,15 @@ const SearchScreenTV: React.FC = () => {
     }
   }, [tvNav]);
 
-  const handleItemFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNav) {
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNav]);
+  const handleItemFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNav) {
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNav]
+  );
 
   // =============================================================================
   // Computed Values
@@ -819,7 +894,12 @@ const SearchScreenTV: React.FC = () => {
 
     return (
       <View style={styles.recentSearchesContainer}>
-        <Text style={[styles.carouselTitle, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 }]}>
+        <Text
+          style={[
+            styles.carouselTitle,
+            { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 },
+          ]}
+        >
           Recent Searches
         </Text>
         {recentSearches.map((search, index) => (
@@ -844,20 +924,11 @@ const SearchScreenTV: React.FC = () => {
   // =============================================================================
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
-    >
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       {/* Screen Header with Search Bar */}
-      <ScreenHeader
-        title="Search"
-        isTablet={isTV || isLargeTablet || isTablet}
-      >
+      <ScreenHeader title="Search" isTablet={isTV || isLargeTablet || isTablet}>
         {/* Search Bar Container */}
         <View style={styles.searchBarContainer}>
           {/* Voice Search Button */}
@@ -865,10 +936,7 @@ const SearchScreenTV: React.FC = () => {
             ref={voiceButtonRef}
             onPress={handleVoiceSearch}
             onFocus={() => handleItemFocus('voice-button')}
-            style={[
-              styles.voiceButton,
-              { backgroundColor: currentTheme.colors.elevation2 }
-            ]}
+            style={[styles.voiceButton, { backgroundColor: currentTheme.colors.elevation2 }]}
             animationConfig={{
               focusScale: 1.1,
               unfocusedOpacity: 0.8,
@@ -879,18 +947,11 @@ const SearchScreenTV: React.FC = () => {
             accessibilityLabel="Voice search"
             accessibilityHint="Press to search with voice"
           >
-            <MaterialIcons
-              name="mic"
-              size={isTV ? 28 : 24}
-              color={currentTheme.colors.primary}
-            />
+            <MaterialIcons name="mic" size={isTV ? 28 : 24} color={currentTheme.colors.primary} />
           </Focusable>
 
           {/* Search Input */}
-          <View style={[
-            styles.searchBarWrapper,
-            { flex: 1 }
-          ]}>
+          <View style={[styles.searchBarWrapper, { flex: 1 }]}>
             <Focusable
               ref={searchInputRef}
               onFocus={() => {
@@ -904,7 +965,7 @@ const SearchScreenTV: React.FC = () => {
                   backgroundColor: currentTheme.colors.elevation2,
                   borderColor: 'rgba(255,255,255,0.1)',
                   borderWidth: 1,
-                }
+                },
               ]}
               animationConfig={{
                 focusScale: 1.02,
@@ -928,7 +989,7 @@ const SearchScreenTV: React.FC = () => {
                   {
                     color: currentTheme.colors.white,
                     fontSize: isTV ? 20 : 16,
-                  }
+                  },
                 ]}
                 placeholder="Search movies, shows..."
                 placeholderTextColor={currentTheme.colors.lightGray}
@@ -964,13 +1025,12 @@ const SearchScreenTV: React.FC = () => {
       </ScreenHeader>
 
       {/* Content Container */}
-      <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <View
+        style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}
+      >
         {searching ? (
           <View style={styles.loadingOverlay} pointerEvents="none">
-            <LoadingSpinner
-              size="large"
-              offsetY={-60}
-            />
+            <LoadingSpinner size="large" offsetY={-60} />
           </View>
         ) : query.trim().length === 1 ? (
           <View style={styles.emptyContainer}>
@@ -979,10 +1039,20 @@ const SearchScreenTV: React.FC = () => {
               size={isTV ? 80 : 64}
               color={currentTheme.colors.lightGray}
             />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 }]}>
+            <Text
+              style={[
+                styles.emptyText,
+                { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 },
+              ]}
+            >
               Keep typing...
             </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray, fontSize: isTV ? 18 : 14 }]}>
+            <Text
+              style={[
+                styles.emptySubtext,
+                { color: currentTheme.colors.lightGray, fontSize: isTV ? 18 : 14 },
+              ]}
+            >
               Type at least 2 characters to search
             </Text>
           </View>
@@ -993,10 +1063,20 @@ const SearchScreenTV: React.FC = () => {
               size={isTV ? 80 : 64}
               color={currentTheme.colors.lightGray}
             />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 }]}>
+            <Text
+              style={[
+                styles.emptyText,
+                { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18 },
+              ]}
+            >
               No results found
             </Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.lightGray, fontSize: isTV ? 18 : 14 }]}>
+            <Text
+              style={[
+                styles.emptySubtext,
+                { color: currentTheme.colors.lightGray, fontSize: isTV ? 18 : 14 },
+              ]}
+            >
               Try different keywords or check your spelling
             </Text>
           </View>
@@ -1060,7 +1140,7 @@ const styles = StyleSheet.create({
     borderRadius: isTV ? 16 : 12,
     paddingHorizontal: isTV ? 20 : 16,
     height: '100%',
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

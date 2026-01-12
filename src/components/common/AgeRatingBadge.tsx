@@ -1,17 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export type AgeRating = 
-  | 'NC-17' 
-  | 'TV-Y' 
-  | 'TV-Y7' 
-  | 'G' 
-  | 'TV-G' 
-  | 'PG' 
-  | 'TV-PG' 
-  | 'PG-13' 
-  | 'TV-14' 
-  | 'R' 
+export type AgeRating =
+  | 'NC-17'
+  | 'TV-Y'
+  | 'TV-Y7'
+  | 'G'
+  | 'TV-G'
+  | 'PG'
+  | 'TV-PG'
+  | 'PG-13'
+  | 'TV-14'
+  | 'R'
   | 'TV-MA';
 
 interface AgeRatingBadgeProps {

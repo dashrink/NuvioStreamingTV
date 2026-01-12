@@ -1,3 +1,6 @@
+import FastImage from '@d11/react-native-fast-image';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -12,19 +15,16 @@ import {
   Linking,
   RefreshControl,
   FlatList,
-  Alert
+  Alert,
 } from 'react-native';
-import { UnifiedSpinner } from '../components/loading';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import FastImage from '@d11/react-native-fast-image';
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fetchContributors, GitHubContributor } from '../services/githubReleaseService';
-import { RootStackParamList } from '../navigation/AppNavigator';
+
+import { UnifiedSpinner } from '../components/loading';
+import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { fetchContributors, GitHubContributor } from '../services/githubReleaseService';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -33,7 +33,8 @@ const isLargeTablet = width >= 1024;
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
 // Discord API URL from environment
-const DISCORD_USER_API = process.env.EXPO_PUBLIC_DISCORD_USER_API || 'https://pfpfinder.com/api/discord/user';
+const DISCORD_USER_API =
+  process.env.EXPO_PUBLIC_DISCORD_USER_API || 'https://pfpfinder.com/api/discord/user';
 
 // Discord brand color
 const DISCORD_BRAND_COLOR = '#5865F2';
@@ -86,7 +87,12 @@ interface ContributorCardProps {
   isLargeTablet: boolean;
 }
 
-const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentTheme, isTablet, isLargeTablet }) => {
+const ContributorCard: React.FC<ContributorCardProps> = ({
+  contributor,
+  currentTheme,
+  isTablet,
+  isLargeTablet,
+}) => {
   const handlePress = useCallback(() => {
     triggerLight();
     Linking.openURL(contributor.html_url);
@@ -97,32 +103,33 @@ const ContributorCard: React.FC<ContributorCardProps> = ({ contributor, currentT
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
-        isTablet && styles.tabletContributorCard
+        isTablet && styles.tabletContributorCard,
       ]}
       onPress={handlePress}
       activeOpacity={0.7}
     >
       <FastImage
         source={{ uri: contributor.avatar_url }}
-        style={[
-          styles.avatar,
-          isTablet && styles.tabletAvatar
-        ]}
+        style={[styles.avatar, isTablet && styles.tabletAvatar]}
         resizeMode={FastImage.resizeMode.cover}
       />
       <View style={styles.contributorInfo}>
-        <Text style={[
-          styles.username,
-          { color: currentTheme.colors.highEmphasis },
-          isTablet && styles.tabletUsername
-        ]}>
+        <Text
+          style={[
+            styles.username,
+            { color: currentTheme.colors.highEmphasis },
+            isTablet && styles.tabletUsername,
+          ]}
+        >
           {contributor.login}
         </Text>
-        <Text style={[
-          styles.contributions,
-          { color: currentTheme.colors.mediumEmphasis },
-          isTablet && styles.tabletContributions
-        ]}>
+        <Text
+          style={[
+            styles.contributions,
+            { color: currentTheme.colors.mediumEmphasis },
+            isTablet && styles.tabletContributions,
+          ]}
+        >
           {contributor.contributions} contributions
         </Text>
       </View>
@@ -144,12 +151,17 @@ interface SpecialMentionCardProps {
   isLargeTablet: boolean;
 }
 
-const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, currentTheme, isTablet, isLargeTablet }) => {
+const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({
+  mention,
+  currentTheme,
+  isTablet,
+  isLargeTablet,
+}) => {
   const handlePress = useCallback(() => {
     triggerLight();
     // Try to open Discord profile
     const discordUrl = `discord://-/users/${mention.discordId}`;
-    Linking.canOpenURL(discordUrl).then((supported) => {
+    Linking.canOpenURL(discordUrl).then(supported => {
       if (supported) {
         Linking.openURL(discordUrl);
       } else {
@@ -171,7 +183,7 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
       style={[
         styles.contributorCard,
         { backgroundColor: currentTheme.colors.elevation1 },
-        isTablet && styles.tabletContributorCard
+        isTablet && styles.tabletContributorCard,
       ]}
       onPress={handlePress}
       activeOpacity={0.7}
@@ -179,20 +191,23 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
       {/* Avatar with Discord badge */}
       <View style={styles.specialAvatarContainer}>
         {mention.isLoading ? (
-          <View style={[
-            styles.avatar,
-            isTablet && styles.tabletAvatar,
-            { backgroundColor: currentTheme.colors.elevation2, justifyContent: 'center', alignItems: 'center' }
-          ]}>
+          <View
+            style={[
+              styles.avatar,
+              isTablet && styles.tabletAvatar,
+              {
+                backgroundColor: currentTheme.colors.elevation2,
+                justifyContent: 'center',
+                alignItems: 'center',
+              },
+            ]}
+          >
             <UnifiedSpinner size="small" />
           </View>
         ) : (
           <FastImage
             source={{ uri: mention.avatarUrl || defaultAvatar }}
-            style={[
-              styles.avatar,
-              isTablet && styles.tabletAvatar
-            ]}
+            style={[styles.avatar, isTablet && styles.tabletAvatar]}
             resizeMode={FastImage.resizeMode.cover}
           />
         )}
@@ -203,23 +218,29 @@ const SpecialMentionCard: React.FC<SpecialMentionCardProps> = ({ mention, curren
 
       {/* User info */}
       <View style={styles.contributorInfo}>
-        <Text style={[
-          styles.username,
-          { color: currentTheme.colors.highEmphasis },
-          isTablet && styles.tabletUsername
-        ]}>
+        <Text
+          style={[
+            styles.username,
+            { color: currentTheme.colors.highEmphasis },
+            isTablet && styles.tabletUsername,
+          ]}
+        >
           {mention.isLoading ? 'Loading...' : mention.name}
         </Text>
         {!mention.isLoading && mention.username && (
-          <Text style={[
-            styles.contributions,
-            { color: currentTheme.colors.mediumEmphasis },
-            isTablet && styles.tabletContributions
-          ]}>
+          <Text
+            style={[
+              styles.contributions,
+              { color: currentTheme.colors.mediumEmphasis },
+              isTablet && styles.tabletContributions,
+            ]}
+          >
             @{mention.username}
           </Text>
         )}
-        <View style={[styles.roleBadgeSmall, { backgroundColor: currentTheme.colors.primary + '20' }]}>
+        <View
+          style={[styles.roleBadgeSmall, { backgroundColor: `${currentTheme.colors.primary}20` }]}
+        >
           <Text style={[styles.roleBadgeText, { color: currentTheme.colors.primary }]}>
             {mention.role}
           </Text>
@@ -346,7 +367,7 @@ const ContributorsScreen: React.FC = () => {
           try {
             await mmkvStorage.removeItem('github_contributors');
             await mmkvStorage.removeItem('github_contributors_timestamp');
-          } catch { }
+          } catch {}
         }
       }
 
@@ -365,7 +386,7 @@ const ContributorsScreen: React.FC = () => {
         try {
           await mmkvStorage.removeItem('github_contributors');
           await mmkvStorage.removeItem('github_contributors_timestamp');
-        } catch { }
+        } catch {}
         setError('Unable to load contributors. This might be due to GitHub API rate limits.');
       }
     } catch (err) {
@@ -403,25 +424,25 @@ const ContributorsScreen: React.FC = () => {
     loadContributors(true);
   }, [loadContributors]);
 
-  const renderContributor = useCallback(({ item }: { item: GitHubContributor }) => (
-    <ContributorCard
-      contributor={item}
-      currentTheme={currentTheme}
-      isTablet={isTablet}
-      isLargeTablet={isLargeTablet}
-    />
-  ), [currentTheme]);
+  const renderContributor = useCallback(
+    ({ item }: { item: GitHubContributor }) => (
+      <ContributorCard
+        contributor={item}
+        currentTheme={currentTheme}
+        isTablet={isTablet}
+        isLargeTablet={isLargeTablet}
+      />
+    ),
+    [currentTheme]
+  );
 
   const keyExtractor = useCallback((item: GitHubContributor) => item.id.toString(), []);
 
-  const topSpacing = (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top);
+  const topSpacing = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
 
   if (loading && !refreshing) {
     return (
-      <View style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground }
-      ]}>
+      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <StatusBar barStyle={'light-content'} />
         <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
           <View style={styles.header}>
@@ -433,14 +454,18 @@ const ContributorsScreen: React.FC = () => {
               }}
             >
               <Feather name="chevron-left" size={24} color={currentTheme.colors.primary} />
-              <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
+              <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>
+                Settings
+              </Text>
             </TouchableOpacity>
           </View>
-          <Text style={[
-            styles.headerTitle,
-            { color: currentTheme.colors.text },
-            isTablet && styles.tabletHeaderTitle
-          ]}>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: currentTheme.colors.text },
+              isTablet && styles.tabletHeaderTitle,
+            ]}
+          >
             Contributors
           </Text>
         </View>
@@ -452,10 +477,7 @@ const ContributorsScreen: React.FC = () => {
   }
 
   return (
-    <View style={[
-      styles.container,
-      { backgroundColor: currentTheme.colors.darkBackground }
-    ]}>
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <StatusBar barStyle={'light-content'} />
 
       <View style={[styles.headerContainer, { paddingTop: topSpacing }]}>
@@ -471,26 +493,30 @@ const ContributorsScreen: React.FC = () => {
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
           </TouchableOpacity>
         </View>
-        <Text style={[
-          styles.headerTitle,
-          { color: currentTheme.colors.text },
-          isTablet && styles.tabletHeaderTitle
-        ]}>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: currentTheme.colors.text },
+            isTablet && styles.tabletHeaderTitle,
+          ]}
+        >
           Contributors
         </Text>
       </View>
 
       {/* Tab Switcher */}
-      <View style={[
-        styles.tabSwitcher,
-        { backgroundColor: currentTheme.colors.elevation1 },
-        isTablet && styles.tabletTabSwitcher
-      ]}>
+      <View
+        style={[
+          styles.tabSwitcher,
+          { backgroundColor: currentTheme.colors.elevation1 },
+          isTablet && styles.tabletTabSwitcher,
+        ]}
+      >
         <TouchableOpacity
           style={[
             styles.tab,
             activeTab === 'contributors' && { backgroundColor: currentTheme.colors.primary },
-            isTablet && styles.tabletTab
+            isTablet && styles.tabletTab,
           ]}
           onPress={() => {
             triggerLight();
@@ -498,11 +524,18 @@ const ContributorsScreen: React.FC = () => {
           }}
           activeOpacity={0.7}
         >
-          <Text style={[
-            styles.tabText,
-            { color: activeTab === 'contributors' ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis },
-            isTablet && styles.tabletTabText
-          ]}>
+          <Text
+            style={[
+              styles.tabText,
+              {
+                color:
+                  activeTab === 'contributors'
+                    ? currentTheme.colors.white
+                    : currentTheme.colors.mediumEmphasis,
+              },
+              isTablet && styles.tabletTabText,
+            ]}
+          >
             Contributors
           </Text>
         </TouchableOpacity>
@@ -510,7 +543,7 @@ const ContributorsScreen: React.FC = () => {
           style={[
             styles.tab,
             activeTab === 'special' && { backgroundColor: currentTheme.colors.primary },
-            isTablet && styles.tabletTab
+            isTablet && styles.tabletTab,
           ]}
           onPress={() => {
             triggerLight();
@@ -518,11 +551,18 @@ const ContributorsScreen: React.FC = () => {
           }}
           activeOpacity={0.7}
         >
-          <Text style={[
-            styles.tabText,
-            { color: activeTab === 'special' ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis },
-            isTablet && styles.tabletTabText
-          ]}>
+          <Text
+            style={[
+              styles.tabText,
+              {
+                color:
+                  activeTab === 'special'
+                    ? currentTheme.colors.white
+                    : currentTheme.colors.mediumEmphasis,
+              },
+              isTablet && styles.tabletTabText,
+            ]}
+          >
             Special Mentions
           </Text>
         </TouchableOpacity>
@@ -535,11 +575,17 @@ const ContributorsScreen: React.FC = () => {
             <>
               {error ? (
                 <View style={styles.errorContainer}>
-                  <Feather name="alert-circle" size={48} color={currentTheme.colors.mediumEmphasis} />
+                  <Feather
+                    name="alert-circle"
+                    size={48}
+                    color={currentTheme.colors.mediumEmphasis}
+                  />
                   <Text style={[styles.errorText, { color: currentTheme.colors.mediumEmphasis }]}>
                     {error}
                   </Text>
-                  <Text style={[styles.errorSubtext, { color: currentTheme.colors.mediumEmphasis }]}>
+                  <Text
+                    style={[styles.errorSubtext, { color: currentTheme.colors.mediumEmphasis }]}
+                  >
                     GitHub API rate limit exceeded. Please try again later or pull to refresh.
                   </Text>
                   <TouchableOpacity
@@ -564,10 +610,7 @@ const ContributorsScreen: React.FC = () => {
               ) : (
                 <ScrollView
                   style={styles.scrollView}
-                  contentContainerStyle={[
-                    styles.listContent,
-                    isTablet && styles.tabletListContent
-                  ]}
+                  contentContainerStyle={[styles.listContent, isTablet && styles.tabletListContent]}
                   refreshControl={
                     <RefreshControl
                       refreshing={refreshing}
@@ -578,26 +621,37 @@ const ContributorsScreen: React.FC = () => {
                   }
                   showsVerticalScrollIndicator={false}
                 >
-                  <View style={[
-                    styles.gratitudeCard,
-                    { backgroundColor: currentTheme.colors.elevation1 },
-                    isTablet && styles.tabletGratitudeCard
-                  ]}>
+                  <View
+                    style={[
+                      styles.gratitudeCard,
+                      { backgroundColor: currentTheme.colors.elevation1 },
+                      isTablet && styles.tabletGratitudeCard,
+                    ]}
+                  >
                     <View style={styles.gratitudeContent}>
-                      <Feather name="heart" size={isTablet ? 32 : 24} color={currentTheme.colors.primary} />
-                      <Text style={[
-                        styles.gratitudeText,
-                        { color: currentTheme.colors.highEmphasis },
-                        isTablet && styles.tabletGratitudeText
-                      ]}>
+                      <Feather
+                        name="heart"
+                        size={isTablet ? 32 : 24}
+                        color={currentTheme.colors.primary}
+                      />
+                      <Text
+                        style={[
+                          styles.gratitudeText,
+                          { color: currentTheme.colors.highEmphasis },
+                          isTablet && styles.tabletGratitudeText,
+                        ]}
+                      >
                         We're grateful for every contribution
                       </Text>
-                      <Text style={[
-                        styles.gratitudeSubtext,
-                        { color: currentTheme.colors.mediumEmphasis },
-                        isTablet && styles.tabletGratitudeSubtext
-                      ]}>
-                        Each line of code, bug report, and suggestion helps make Nuvio better for everyone
+                      <Text
+                        style={[
+                          styles.gratitudeSubtext,
+                          { color: currentTheme.colors.mediumEmphasis },
+                          isTablet && styles.tabletGratitudeSubtext,
+                        ]}
+                      >
+                        Each line of code, bug report, and suggestion helps make Nuvio better for
+                        everyone
                       </Text>
                     </View>
                   </View>
@@ -619,32 +673,41 @@ const ContributorsScreen: React.FC = () => {
             // Special Mentions Tab
             <ScrollView
               style={styles.scrollView}
-              contentContainerStyle={[
-                styles.listContent,
-                isTablet && styles.tabletListContent
-              ]}
+              contentContainerStyle={[styles.listContent, isTablet && styles.tabletListContent]}
               showsVerticalScrollIndicator={false}
             >
-              <View style={[
-                styles.gratitudeCard,
-                { backgroundColor: currentTheme.colors.elevation1 },
-                isTablet && styles.tabletGratitudeCard
-              ]}>
+              <View
+                style={[
+                  styles.gratitudeCard,
+                  { backgroundColor: currentTheme.colors.elevation1 },
+                  isTablet && styles.tabletGratitudeCard,
+                ]}
+              >
                 <View style={styles.gratitudeContent}>
-                  <FontAwesome5 name="star" size={isTablet ? 32 : 24} color={currentTheme.colors.primary} solid />
-                  <Text style={[
-                    styles.gratitudeText,
-                    { color: currentTheme.colors.highEmphasis },
-                    isTablet && styles.tabletGratitudeText
-                  ]}>
+                  <FontAwesome5
+                    name="star"
+                    size={isTablet ? 32 : 24}
+                    color={currentTheme.colors.primary}
+                    solid
+                  />
+                  <Text
+                    style={[
+                      styles.gratitudeText,
+                      { color: currentTheme.colors.highEmphasis },
+                      isTablet && styles.tabletGratitudeText,
+                    ]}
+                  >
                     Special Thanks
                   </Text>
-                  <Text style={[
-                    styles.gratitudeSubtext,
-                    { color: currentTheme.colors.mediumEmphasis },
-                    isTablet && styles.tabletGratitudeSubtext
-                  ]}>
-                    These amazing people help keep the Nuvio community running and the servers online
+                  <Text
+                    style={[
+                      styles.gratitudeSubtext,
+                      { color: currentTheme.colors.mediumEmphasis },
+                      isTablet && styles.tabletGratitudeSubtext,
+                    ]}
+                  >
+                    These amazing people help keep the Nuvio community running and the servers
+                    online
                   </Text>
                 </View>
               </View>

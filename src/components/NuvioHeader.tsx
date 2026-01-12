@@ -1,12 +1,14 @@
-import React from 'react';
-import { View, TouchableOpacity, Platform, StyleSheet, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/AppNavigator';
 import { BlurView as ExpoBlurView } from 'expo-blur';
+import React from 'react';
+import { View, TouchableOpacity, Platform, StyleSheet, Image } from 'react-native';
+
 import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight } from '../hooks/useHaptics';
+
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for NuvioHeader
 let GlassViewComp: any = null;
@@ -16,7 +18,8 @@ if (Platform.OS === 'ios') {
     // Dynamically require so app still runs if the package isn't installed yet
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     GlassViewComp = null;
     liquidGlassAvailable = false;
@@ -37,10 +40,12 @@ export const NuvioHeader = () => {
 
   return (
     <View style={styles.container}>
-      <View style={[
-        styles.headerContainer,
-        Platform.OS === 'android' && { backgroundColor: currentTheme.colors.darkBackground }
-      ]}>
+      <View
+        style={[
+          styles.headerContainer,
+          Platform.OS === 'android' && { backgroundColor: currentTheme.colors.darkBackground },
+        ]}
+      >
         {Platform.OS === 'ios' ? (
           GlassViewComp && liquidGlassAvailable ? (
             <GlassViewComp style={styles.blurOverlay} glassEffectStyle="regular" />
@@ -49,7 +54,12 @@ export const NuvioHeader = () => {
           )
         ) : (
           // Android: solid themed background instead of blur/transparent overlay
-          <View style={[styles.androidBlurContainer, { backgroundColor: currentTheme.colors.darkBackground }]} />
+          <View
+            style={[
+              styles.androidBlurContainer,
+              { backgroundColor: currentTheme.colors.darkBackground },
+            ]}
+          />
         )}
         <View style={styles.contentContainer}>
           <View style={styles.logoContainer}>
@@ -66,18 +76,16 @@ export const NuvioHeader = () => {
               navigation.navigate('Search');
             }}
           >
-            <View style={[
-              styles.iconWrapper,
-              { 
-                backgroundColor: currentTheme.colors.transparentLight,
-                borderColor: currentTheme.colors.border
-              }
-            ]}>
-              <MaterialCommunityIcons 
-                name="magnify" 
-                size={24} 
-                color={currentTheme.colors.white} 
-              />
+            <View
+              style={[
+                styles.iconWrapper,
+                {
+                  backgroundColor: currentTheme.colors.transparentLight,
+                  borderColor: currentTheme.colors.border,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons name="magnify" size={24} color={currentTheme.colors.white} />
             </View>
           </TouchableOpacity>
         </View>
@@ -151,4 +159,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-}); 
+});

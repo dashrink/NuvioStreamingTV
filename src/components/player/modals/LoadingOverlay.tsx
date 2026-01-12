@@ -1,7 +1,14 @@
-import React, { useEffect } from 'react';
-import { View, TouchableOpacity, Animated, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  Animated,
+  ActivityIndicator,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,10 +16,11 @@ import Reanimated, {
   withRepeat,
   withSequence,
   Easing,
-  withDelay
+  withDelay,
 } from 'react-native-reanimated';
-import { styles } from '../utils/playerStyles';
+
 import { triggerLight } from '../../../hooks/useHaptics';
+import { styles } from '../utils/playerStyles';
 
 interface LoadingOverlayProps {
   visible: boolean;
@@ -45,7 +53,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       // Reset
       logoOpacity.value = 0;
       logoScale.value = 1;
-      
+
       // Start animations after 1 second delay
       logoOpacity.value = withDelay(
         1000,
@@ -54,7 +62,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           easing: Easing.out(Easing.cubic),
         })
       );
-      
+
       logoScale.value = withDelay(
         1000,
         withRepeat(
@@ -83,7 +91,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   if (!visible) return null;
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
         styles.openingOverlay,
         {
@@ -95,12 +103,14 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       ]}
     >
       {backdrop && (
-        <Animated.View style={[
+        <Animated.View
+          style={[
             StyleSheet.absoluteFill,
             {
-              opacity: backdropImageOpacityAnim
-            }
-          ]}>
+              opacity: backdropImageOpacityAnim,
+            },
+          ]}
+        >
           <Image
             source={{ uri: backdrop }}
             style={StyleSheet.absoluteFillObject}
@@ -109,16 +119,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         </Animated.View>
       )}
       <LinearGradient
-        colors={[
-          'rgba(0,0,0,0.3)',
-          'rgba(0,0,0,0.6)',
-          'rgba(0,0,0,0.8)',
-          'rgba(0,0,0,0.9)'
-        ]}
+        colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0.9)']}
         locations={[0, 0.3, 0.7, 1]}
         style={StyleSheet.absoluteFill}
       />
-      
+
       <TouchableOpacity
         style={styles.loadingCloseButton}
         onPress={() => {
@@ -129,15 +134,17 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       >
         <MaterialIcons name="close" size={24} color="#ffffff" />
       </TouchableOpacity>
-      
+
       <View style={styles.openingContent}>
         {hasLogo && logo ? (
-          <Reanimated.View style={[
-            {
-              alignItems: 'center',
-            },
-            logoAnimatedStyle
-          ]}>
+          <Reanimated.View
+            style={[
+              {
+                alignItems: 'center',
+              },
+              logoAnimatedStyle,
+            ]}
+          >
             <Image
               source={{ uri: logo }}
               style={{

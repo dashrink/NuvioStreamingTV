@@ -3,6 +3,7 @@
  * Allows users to reset their profile PIN using the master PIN
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -14,11 +15,11 @@ import {
   Vibration,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
-import { PIN_CONFIG } from '../../types/profile';
 import { masterPinService } from '../../services/MasterPinService';
 import { pinService } from '../../services/PinService';
+import { PIN_CONFIG } from '../../types/profile';
 
 interface ForgotPinModalProps {
   visible: boolean;

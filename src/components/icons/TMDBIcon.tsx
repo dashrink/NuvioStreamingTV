@@ -15,7 +15,14 @@ const TMDBIcon: React.FC<TMDBIconProps> = ({ size = 24, color = '#00b3e5' }) => 
   return (
     <Svg width={width} height={height} viewBox="0 0 185.04 133.4">
       <Defs>
-        <LinearGradient id="tmdb-gradient" x1={0} y1={66.7} x2={185.04} y2={66.7} gradientUnits="userSpaceOnUse">
+        <LinearGradient
+          id="tmdb-gradient"
+          x1={0}
+          y1={66.7}
+          x2={185.04}
+          y2={66.7}
+          gradientUnits="userSpaceOnUse"
+        >
           <Stop offset={0} stopColor={color} />
           <Stop offset={0.56} stopColor={color} />
           <Stop offset={1} stopColor={color} />
@@ -30,6 +37,3 @@ const TMDBIcon: React.FC<TMDBIconProps> = ({ size = 24, color = '#00b3e5' }) => 
 };
 
 export default TMDBIcon;
-
-
-

@@ -86,28 +86,28 @@ export class MemoryManager {
     delayMs: number = 0
   ): Promise<R[]> {
     const results: R[] = [];
-    
+
     for (let i = 0; i < array.length; i += batchSize) {
       const batch = array.slice(i, i + batchSize);
-      
+
       // Process batch
       const batchResults = await Promise.all(
         batch.map((item, batchIndex) => processor(item, i + batchIndex))
       );
-      
+
       results.push(...batchResults);
-      
+
       // Force cleanup between batches for large datasets
       if (i > 0 && i % (batchSize * 5) === 0) {
         this.forceGarbageCollection();
       }
-      
+
       // Optional delay to prevent blocking
       if (delayMs > 0 && i + batchSize < array.length) {
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
     }
-    
+
     return results;
   }
 
@@ -117,14 +117,14 @@ export class MemoryManager {
   public checkMemoryPressure(): boolean {
     const now = Date.now();
     const timeSinceLastCleanup = now - this.lastCleanup;
-    
+
     // Perform cleanup if enough time has passed
     if (timeSinceLastCleanup >= this.CLEANUP_INTERVAL) {
       this.performMemoryCleanup();
       this.lastCleanup = now;
       return true;
     }
-    
+
     return false;
   }
 
@@ -134,13 +134,12 @@ export class MemoryManager {
   private performMemoryCleanup(): void {
     try {
       logger.log('[MemoryManager] Performing memory cleanup');
-      
+
       // Force garbage collection
       this.forceGarbageCollection();
-      
+
       // Clear any global caches if they exist
       this.clearGlobalCaches();
-      
     } catch (error) {
       logger.error('[MemoryManager] Error during memory cleanup:', error);
     }
@@ -155,7 +154,7 @@ export class MemoryManager {
       if (global && (global as any).__IMAGE_CACHE__) {
         (global as any).__IMAGE_CACHE__ = {};
       }
-      
+
       // Clear any other global caches your app might have
       if (global && (global as any).__APP_CACHE__) {
         (global as any).__APP_CACHE__ = {};
@@ -175,18 +174,18 @@ export class MemoryManager {
     yieldEvery: number = 100
   ): Promise<T[]> {
     const result: T[] = [];
-    
+
     for (let i = 0; i < array.length; i++) {
       if (predicate(array[i], i)) {
         result.push(array[i]);
       }
-      
+
       // Yield to event loop periodically to prevent blocking
       if (i > 0 && i % yieldEvery === 0) {
         await new Promise(resolve => setImmediate(resolve));
       }
     }
-    
+
     return result;
   }
 
@@ -200,20 +199,20 @@ export class MemoryManager {
     batchSize: number = 50
   ): Promise<R[]> {
     const results: R[] = [];
-    
+
     for (let i = 0; i < array.length; i += batchSize) {
       const batch = array.slice(i, i + batchSize);
       const batchResults = batch.map((item, batchIndex) => mapper(item, i + batchIndex));
-      
+
       results.push(...batchResults);
-      
+
       // Cleanup between large batches
       if (i > 0 && i % (batchSize * 10) === 0) {
         this.forceGarbageCollection();
         await new Promise(resolve => setImmediate(resolve));
       }
     }
-    
+
     return results;
   }
 
@@ -224,8 +223,10 @@ export class MemoryManager {
     if (array.length <= maxSize) {
       return array;
     }
-    
-    logger.warn(`[MemoryManager] Array size (${array.length}) exceeds limit (${maxSize}), truncating`);
+
+    logger.warn(
+      `[MemoryManager] Array size (${array.length}) exceeds limit (${maxSize}), truncating`
+    );
     return array.slice(0, maxSize);
   }
 
@@ -237,20 +238,18 @@ export class MemoryManager {
     if (currentDepth >= maxDepth || obj === null || typeof obj !== 'object') {
       return obj;
     }
-    
+
     if (Array.isArray(obj)) {
-      return obj.map(item => 
-        this.optimizedClone(item, maxDepth, currentDepth + 1)
-      ) as unknown as T;
+      return obj.map(item => this.optimizedClone(item, maxDepth, currentDepth + 1)) as unknown as T;
     }
-    
+
     const cloned = {} as T;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         cloned[key] = this.optimizedClone(obj[key], maxDepth, currentDepth + 1);
       }
     }
-    
+
     return cloned;
   }
 }

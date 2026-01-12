@@ -1,16 +1,27 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Dimensions 
-} from 'react-native';
-import { InteractionManager } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  isSameDay,
+} from 'date-fns';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  InteractionManager,
+} from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
@@ -38,43 +49,45 @@ interface CalendarSectionProps {
   onSelectDate?: (date: Date) => void;
 }
 
-const DayItem = ({ 
-  date, 
-  isCurrentMonth, 
-  isToday: today, 
+const DayItem = ({
+  date,
+  isCurrentMonth,
+  isToday: today,
   isSelected,
-  hasEvents, 
-  onPress 
+  hasEvents,
+  onPress,
 }: DayItemProps) => {
   const { currentTheme } = useTheme();
   return (
-  <TouchableOpacity 
-    style={[
-        styles.dayButton, 
-      today && styles.todayItem,
-      isSelected && styles.selectedItem,
-      hasEvents && styles.dayWithEvents
-    ]} 
-    onPress={() => onPress(date)}
-  >
-    <Text style={[
-      styles.dayText, 
-        !isCurrentMonth && { color: currentTheme.colors.lightGray + '80' },
-      today && styles.todayText,
-      isSelected && styles.selectedDayText
-    ]}>
-      {date.getDate()}
-    </Text>
-    {hasEvents && (
+    <TouchableOpacity
+      style={[
+        styles.dayButton,
+        today && styles.todayItem,
+        isSelected && styles.selectedItem,
+        hasEvents && styles.dayWithEvents,
+      ]}
+      onPress={() => onPress(date)}
+    >
+      <Text
+        style={[
+          styles.dayText,
+          !isCurrentMonth && { color: `${currentTheme.colors.lightGray}80` },
+          today && styles.todayText,
+          isSelected && styles.selectedDayText,
+        ]}
+      >
+        {date.getDate()}
+      </Text>
+      {hasEvents && (
         <View style={[styles.eventIndicator, { backgroundColor: currentTheme.colors.primary }]} />
-    )}
-  </TouchableOpacity>
-);
+      )}
+    </TouchableOpacity>
+  );
 };
 
-export const CalendarSection: React.FC<CalendarSectionProps> = ({ 
-  episodes = [], 
-  onSelectDate 
+export const CalendarSection: React.FC<CalendarSectionProps> = ({
+  episodes = [],
+  onSelectDate,
 }) => {
   const { currentTheme } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -118,22 +131,25 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     setCurrentDate(prev => addMonths(prev, 1));
   }, []);
 
-  const handleDateSelect = useCallback((date: Date) => {
-    setSelectedDate(date);
-    onSelectDate?.(date);
-  }, [onSelectDate]);
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      setSelectedDate(date);
+      onSelectDate?.(date);
+    },
+    [onSelectDate]
+  );
 
   const renderDays = () => {
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
     const days = eachDayOfInterval({ start, end });
-    
+
     // Get the day of the week for the first day (0-6)
     const firstDayOfWeek = start.getDay();
 
     // Add empty days at the start
     const emptyDays = Array(firstDayOfWeek).fill(null);
-    
+
     // Calculate remaining days to fill the last row
     const totalDays = emptyDays.length + days.length;
     const remainingDays = 7 - (totalDays % 7);
@@ -145,7 +161,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     for (let i = 0; i < allDays.length; i += 7) {
       weeks.push(allDays.slice(i, i + 7));
     }
-    
+
     return weeks.map((week, weekIndex) => (
       <View key={weekIndex} style={styles.weekRow}>
         {week.map((day, dayIndex) => {
@@ -163,9 +179,21 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               key={day.toISOString()}
               style={[
                 styles.dayButton,
-                isCurrentDay && [styles.todayItem, { backgroundColor: currentTheme.colors.primary + '30', borderColor: currentTheme.colors.primary }],
-                isSelected && [styles.selectedItem, { backgroundColor: currentTheme.colors.primary + '60', borderColor: currentTheme.colors.primary }],
-                hasEvents && styles.dayWithEvents
+                isCurrentDay && [
+                  styles.todayItem,
+                  {
+                    backgroundColor: `${currentTheme.colors.primary}30`,
+                    borderColor: currentTheme.colors.primary,
+                  },
+                ],
+                isSelected && [
+                  styles.selectedItem,
+                  {
+                    backgroundColor: `${currentTheme.colors.primary}60`,
+                    borderColor: currentTheme.colors.primary,
+                  },
+                ],
+                hasEvents && styles.dayWithEvents,
               ]}
               onPress={() => handleDateSelect(day)}
             >
@@ -173,9 +201,9 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
                 style={[
                   styles.dayText,
                   { color: currentTheme.colors.text },
-                  !isCurrentMonth && { color: currentTheme.colors.lightGray + '80' },
+                  !isCurrentMonth && { color: `${currentTheme.colors.lightGray}80` },
                   isCurrentDay && [styles.todayText, { color: currentTheme.colors.primary }],
-                  isSelected && [styles.selectedDayText, { color: currentTheme.colors.text }]
+                  isSelected && [styles.selectedDayText, { color: currentTheme.colors.text }],
                 ]}
               >
                 {format(day, 'd')}
@@ -193,40 +221,29 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
-        <TouchableOpacity 
-          onPress={goToPreviousMonth}
-          style={styles.headerButton}
-        >
+        <TouchableOpacity onPress={goToPreviousMonth} style={styles.headerButton}>
           <MaterialIcons name="chevron-left" size={24} color={currentTheme.colors.text} />
         </TouchableOpacity>
-        
+
         <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
           {format(currentDate, 'MMMM yyyy')}
         </Text>
-        
-        <TouchableOpacity 
-          onPress={goToNextMonth}
-          style={styles.headerButton}
-        >
+
+        <TouchableOpacity onPress={goToNextMonth} style={styles.headerButton}>
           <MaterialIcons name="chevron-right" size={24} color={currentTheme.colors.text} />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.weekDaysContainer}>
         {weekDays.map((day, index) => (
-          <Text 
-            key={index} 
-            style={[styles.weekDayText, { color: currentTheme.colors.lightGray }]}
-          >
+          <Text key={index} style={[styles.weekDayText, { color: currentTheme.colors.lightGray }]}>
             {day}
           </Text>
         ))}
       </View>
-      
+
       {uiReady ? (
-        <View style={styles.daysContainer}>
-          {renderDays()}
-        </View>
+        <View style={styles.daysContainer}>{renderDays()}</View>
       ) : (
         <View style={styles.daysContainer} />
       )}
@@ -313,4 +330,4 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
-}); 
+});

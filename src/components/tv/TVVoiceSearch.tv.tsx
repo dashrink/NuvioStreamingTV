@@ -41,13 +41,7 @@
  * ```
  */
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -69,6 +63,7 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from 'react-native-reanimated';
+
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
 import {
   useTVEventHandler,
@@ -77,11 +72,11 @@ import {
   isSelectEvent,
   TVRemoteEvent,
 } from '../../hooks/useTVEventHandler';
-import Focusable, { FocusableRef } from '../common/Focusable';
 import useVoiceAvailability, {
   VoiceUnavailableReason,
   hasRemoteVoiceButton,
 } from '../../hooks/useVoiceAvailability';
+import Focusable, { FocusableRef } from '../common/Focusable';
 
 // =============================================================================
 // Types & Interfaces
@@ -279,17 +274,15 @@ const VoiceIndicator: React.FC<VoiceIndicatorProps> = ({
         {isChecking
           ? 'Checking voice availability...'
           : !isAvailable
-          ? getVoiceUnavailabilityMessage(unavailableReason)
-          : isListening
-          ? 'Listening...'
-          : 'Press to speak'}
+            ? getVoiceUnavailabilityMessage(unavailableReason)
+            : isListening
+              ? 'Listening...'
+              : 'Press to speak'}
       </Text>
 
       {/* Additional hint when unavailable */}
       {!isAvailable && !isChecking && (
-        <Text style={styles.voiceHintText}>
-          Use keyboard to search instead
-        </Text>
+        <Text style={styles.voiceHintText}>Use keyboard to search instead</Text>
       )}
     </View>
   );
@@ -404,7 +397,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
   // Use the voice availability hook for proper platform detection
   const voiceStatus = useVoiceAvailability({
     checkOnMount: true,
-    onAvailabilityChange: (status) => {
+    onAvailabilityChange: status => {
       // Update context when availability changes
       tvNav?.setVoiceAvailable?.(status.isAvailable);
     },
@@ -464,7 +457,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
         ...SPRING_CONFIG,
         damping: 25,
       });
-      modalOpacity.value = withTiming(0, { duration: 150 }, (finished) => {
+      modalOpacity.value = withTiming(0, { duration: 150 }, finished => {
         if (finished) {
           runOnJS(onComplete)();
         }
@@ -635,7 +628,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
 
   const navigateDown = useCallback(() => {
     if (hasResults) {
-      setSelectedIndex((prev) => {
+      setSelectedIndex(prev => {
         const next = prev + 1;
         return next >= searchResults.length ? 0 : next;
       });
@@ -644,7 +637,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
 
   const navigateUp = useCallback(() => {
     if (hasResults) {
-      setSelectedIndex((prev) => {
+      setSelectedIndex(prev => {
         const next = prev - 1;
         return next < 0 ? searchResults.length - 1 : next;
       });
@@ -749,7 +742,9 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
   const modalHeight =
     MODAL_PADDING * 2 +
     (showKeyboard ? INPUT_HEIGHT + 16 : 200) + // Voice indicator or input
-    (hasResults ? Math.min(searchResults.length, MAX_VISIBLE_RESULTS) * RESULT_ITEM_HEIGHT + 16 : 0) +
+    (hasResults
+      ? Math.min(searchResults.length, MAX_VISIBLE_RESULTS) * RESULT_ITEM_HEIGHT + 16
+      : 0) +
     (isSearching ? 50 : 0) +
     60; // Buttons row
 
@@ -776,13 +771,9 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>
-              {voiceAvailable ? 'Voice Search' : 'Search'}
-            </Text>
+            <Text style={styles.title}>{voiceAvailable ? 'Voice Search' : 'Search'}</Text>
             {/* Show error from context if present */}
-            {voiceSearch?.error && (
-              <Text style={styles.errorText}>{voiceSearch.error}</Text>
-            )}
+            {voiceSearch?.error && <Text style={styles.errorText}>{voiceSearch.error}</Text>}
             {/* Show availability status message when voice is unavailable (but not as error) */}
             {!voiceAvailable && !voiceStatus.isChecking && !voiceSearch?.error && (
               <Text style={styles.infoText}>
@@ -834,9 +825,7 @@ const TVVoiceSearch: React.FC<TVVoiceSearchProps> = ({
                 testID="switch-to-keyboard-button"
                 accessibilityLabel="Switch to keyboard input"
               >
-                <Text style={styles.keyboardButtonText}>
-                  {'\u2328'} Type instead
-                </Text>
+                <Text style={styles.keyboardButtonText}>{'\u2328'} Type instead</Text>
               </Focusable>
             </View>
           )}

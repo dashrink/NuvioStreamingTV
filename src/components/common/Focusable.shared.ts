@@ -3,8 +3,8 @@
  * Used by both mobile (Focusable.tsx) and TV (Focusable.tv.tsx) versions
  */
 
-import { StyleProp, ViewStyle, Insets } from 'react-native';
 import React from 'react';
+import { StyleProp, ViewStyle, Insets } from 'react-native';
 
 /**
  * Common props interface for Focusable component

@@ -1,9 +1,9 @@
 import React, { memo, useEffect } from 'react';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
-  withDelay 
+  withDelay,
 } from 'react-native-reanimated';
 
 interface AnimatedTextProps {
@@ -13,12 +13,7 @@ interface AnimatedTextProps {
   numberOfLines?: number;
 }
 
-const AnimatedText = memo(({
-  children,
-  style,
-  delay = 0,
-  numberOfLines
-}: AnimatedTextProps) => {
+const AnimatedText = memo(({ children, style, delay = 0, numberOfLines }: AnimatedTextProps) => {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(20);
 

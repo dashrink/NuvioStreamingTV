@@ -3,6 +3,7 @@
  * Shown to the first admin user when they first set a profile PIN
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -15,10 +16,10 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
-import { PIN_CONFIG } from '../../types/profile';
 import { masterPinService } from '../../services/MasterPinService';
+import { PIN_CONFIG } from '../../types/profile';
 
 interface MasterPinSetupModalProps {
   visible: boolean;

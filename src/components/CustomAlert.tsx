@@ -9,13 +9,10 @@ import {
   useColorScheme,
   Platform,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
-import { useTheme } from '../contexts/ThemeContext';
 import { Portal } from 'react-native-paper';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
+import { useTheme } from '../contexts/ThemeContext';
 
 interface CustomAlertProps {
   visible: boolean;
@@ -34,9 +31,7 @@ export const CustomAlert = ({
   title,
   message,
   onClose,
-  actions = [
-    { label: 'OK', onPress: onClose }
-  ],
+  actions = [{ label: 'OK', onPress: onClose }],
 }: CustomAlertProps) => {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.95);
@@ -65,17 +60,20 @@ export const CustomAlert = ({
   }));
 
   // Safe action handler to prevent crashes
-  const handleActionPress = useCallback((action: { label: string; onPress: () => void; style?: object }) => {
-    try {
-      action.onPress();
-      // Don't auto-close here if the action handles it, or check if we should
-      // Standard behavior is to close
-      onClose();
-    } catch (error) {
-      console.warn('[CustomAlert] Error in action handler:', error);
-      onClose();
-    }
-  }, [onClose]);
+  const handleActionPress = useCallback(
+    (action: { label: string; onPress: () => void; style?: object }) => {
+      try {
+        action.onPress();
+        // Don't auto-close here if the action handles it, or check if we should
+        // Standard behavior is to close
+        onClose();
+      } catch (error) {
+        console.warn('[CustomAlert] Error in action handler:', error);
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   // Use Portal with Modal for proper rendering and animations
   return (
@@ -90,11 +88,7 @@ export const CustomAlert = ({
         supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
       >
         <Animated.View
-          style={[
-            styles.overlay,
-            { backgroundColor: 'rgba(0, 0, 0, 0.85)' },
-            overlayStyle
-          ]}
+          style={[styles.overlay, { backgroundColor: 'rgba(0, 0, 0, 0.85)' }, overlayStyle]}
         >
           <Pressable
             style={styles.overlayPressable}
@@ -105,10 +99,7 @@ export const CustomAlert = ({
           />
           <View style={styles.centered}>
             <Animated.View
-              style={[
-                styles.alertContainer,
-                alertStyle,
-              ]}
+              style={[styles.alertContainer, alertStyle]}
               accessible={true}
               accessibilityRole="alert"
               accessibilityLabel={`${title}. ${message}`}
@@ -120,15 +111,12 @@ export const CustomAlert = ({
               </Text>
 
               {/* Message */}
-              <Text style={styles.message}>
-                {message}
-              </Text>
+              <Text style={styles.message}>{message}</Text>
 
               {/* Actions */}
-              <View style={[
-                styles.actionsRow,
-                actions.length === 1 && { justifyContent: 'center' }
-              ]}>
+              <View
+                style={[styles.actionsRow, actions.length === 1 && { justifyContent: 'center' }]}
+              >
                 {actions.map((action, idx) => {
                   const isPrimary = idx === actions.length - 1;
                   return (
@@ -140,7 +128,7 @@ export const CustomAlert = ({
                           ? { backgroundColor: themeColors.primary }
                           : styles.secondaryButton,
                         action.style,
-                        actions.length === 1 && { minWidth: 120, maxWidth: '100%' }
+                        actions.length === 1 && { minWidth: 120, maxWidth: '100%' },
                       ]}
                       onPress={() => handleActionPress(action)}
                       activeOpacity={0.7}
@@ -148,12 +136,12 @@ export const CustomAlert = ({
                       accessibilityLabel={action.label}
                       accessibilityHint={`Tap to ${action.label.toLowerCase()}`}
                     >
-                      <Text style={[
-                        styles.actionText,
-                        isPrimary
-                          ? { color: '#FFFFFF' }
-                          : { color: '#FFFFFF' }
-                      ]}>
+                      <Text
+                        style={[
+                          styles.actionText,
+                          isPrimary ? { color: '#FFFFFF' } : { color: '#FFFFFF' },
+                        ]}
+                      >
                         {action.label}
                       </Text>
                     </TouchableOpacity>

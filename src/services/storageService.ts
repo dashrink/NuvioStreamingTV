@@ -19,7 +19,8 @@ class StorageService {
   private readonly WP_TOMBSTONES_KEY = '@wp_tombstones';
   private readonly CONTINUE_WATCHING_REMOVED_KEY = '@continue_watching_removed';
   private watchProgressSubscribers: (() => void)[] = [];
-  private watchProgressRemoveListeners: ((id: string, type: string, episodeId?: string) => void)[] = [];
+  private watchProgressRemoveListeners: ((id: string, type: string, episodeId?: string) => void)[] =
+    [];
   private notificationDebounceTimer: NodeJS.Timeout | null = null;
   private lastNotificationTime: number = 0;
   private readonly NOTIFICATION_DEBOUNCE_MS = 1000; // 1 second debounce
@@ -30,7 +31,7 @@ class StorageService {
   private watchProgressCacheTimestamp = 0;
   private readonly WATCH_PROGRESS_CACHE_TTL = 5000; // 5 seconds
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): StorageService {
     if (!StorageService.instance) {
@@ -48,13 +49,22 @@ class StorageService {
     }
   }
 
-  private async getWatchProgressKeyScoped(id: string, type: string, episodeId?: string, profile_id?: string): Promise<string> {
+  private async getWatchProgressKeyScoped(
+    id: string,
+    type: string,
+    episodeId?: string,
+    profile_id?: string
+  ): Promise<string> {
     const scope = await this.getUserScope();
     const profileScope = profile_id ? `:profile:${profile_id}` : '';
     return `@user:${scope}${profileScope}:${this.WATCH_PROGRESS_KEY}${type}:${id}${episodeId ? `:${episodeId}` : ''}`;
   }
 
-  private async getContentDurationKeyScoped(id: string, type: string, episodeId?: string): Promise<string> {
+  private async getContentDurationKeyScoped(
+    id: string,
+    type: string,
+    episodeId?: string
+  ): Promise<string> {
     const scope = await this.getUserScope();
     return `@user:${scope}:${this.CONTENT_DURATION_KEY}${type}:${id}${episodeId ? `:${episodeId}` : ''}`;
   }
@@ -90,7 +100,7 @@ class StorageService {
       const map = JSON.parse(json) as Record<string, number>;
       map[this.buildWpKeyString(id, type, episodeId)] = deletedAtMs || Date.now();
       await mmkvStorage.setItem(key, JSON.stringify(map));
-    } catch { }
+    } catch {}
   }
 
   public async clearWatchProgressTombstone(
@@ -107,7 +117,7 @@ class StorageService {
         delete map[k];
         await mmkvStorage.setItem(key, JSON.stringify(map));
       }
-    } catch { }
+    } catch {}
   }
 
   public async getWatchProgressTombstones(): Promise<Record<string, number>> {
@@ -136,10 +146,7 @@ class StorageService {
     }
   }
 
-  public async removeContinueWatchingRemoved(
-    id: string,
-    type: string
-  ): Promise<void> {
+  public async removeContinueWatchingRemoved(id: string, type: string): Promise<void> {
     try {
       const key = await this.getContinueWatchingRemovedKeyScoped();
       const json = (await mmkvStorage.getItem(key)) || '{}';
@@ -219,10 +226,12 @@ class StorageService {
           ...existingProgress,
           currentTime: (progressPercent / 100) * newDuration,
           duration: newDuration,
-          lastUpdated: Date.now()
+          lastUpdated: Date.now(),
         };
         await this.setWatchProgress(id, type, updatedProgress, episodeId);
-        logger.log(`[StorageService] Updated progress duration from ${(existingProgress.duration / 60).toFixed(0)}min to ${(newDuration / 60).toFixed(0)}min`);
+        logger.log(
+          `[StorageService] Updated progress duration from ${(existingProgress.duration / 60).toFixed(0)}min to ${(newDuration / 60).toFixed(0)}min`
+        );
       }
     } catch (error) {
       logger.error('Error updating progress duration:', error);
@@ -234,7 +243,12 @@ class StorageService {
     type: string,
     progress: WatchProgress,
     episodeId?: string,
-    options?: { preserveTimestamp?: boolean; forceNotify?: boolean; forceWrite?: boolean; profile_id?: string }
+    options?: {
+      preserveTimestamp?: boolean;
+      forceNotify?: boolean;
+      forceWrite?: boolean;
+      profile_id?: string;
+    }
   ): Promise<void> {
     try {
       const key = await this.getWatchProgressKeyScoped(id, type, episodeId, options?.profile_id);
@@ -246,10 +260,13 @@ class StorageService {
         const exactTombAt = tombstones[exactKey];
         const baseTombAt = tombstones[baseKey];
         const newestTombAt = Math.max(exactTombAt || 0, baseTombAt || 0);
-        if (newestTombAt && (progress.lastUpdated == null || progress.lastUpdated <= newestTombAt)) {
+        if (
+          newestTombAt &&
+          (progress.lastUpdated == null || progress.lastUpdated <= newestTombAt)
+        ) {
           return;
         }
-      } catch { }
+      } catch {}
 
       // Check if progress has actually changed significantly, unless forceWrite is requested
       if (!options?.forceWrite) {
@@ -265,10 +282,10 @@ class StorageService {
         }
       }
 
-      const timestamp = (options?.preserveTimestamp && typeof progress.lastUpdated === 'number')
-        ? progress.lastUpdated
-        : Date.now();
-
+      const timestamp =
+        options?.preserveTimestamp && typeof progress.lastUpdated === 'number'
+          ? progress.lastUpdated
+          : Date.now();
 
       try {
         const removedMap = await this.getContinueWatchingRemoved();
@@ -276,7 +293,9 @@ class StorageService {
         const removedAt = removedMap[removedKey];
 
         if (removedAt != null && timestamp > removedAt) {
-          logger.log(`♻️ [StorageService] restoring content to continue watching due to new progress: ${type}:${id}`);
+          logger.log(
+            `♻️ [StorageService] restoring content to continue watching due to new progress: ${type}:${id}`
+          );
           await this.removeContinueWatchingRemoved(id, type);
         }
       } catch (e) {
@@ -342,7 +361,9 @@ class StorageService {
     };
   }
 
-  public onWatchProgressRemoved(listener: (id: string, type: string, episodeId?: string) => void): () => void {
+  public onWatchProgressRemoved(
+    listener: (id: string, type: string, episodeId?: string) => void
+  ): () => void {
     this.watchProgressRemoveListeners.push(listener);
     return () => {
       const index = this.watchProgressRemoveListeners.indexOf(listener);
@@ -383,7 +404,9 @@ class StorageService {
       // Notify subscribers
       this.notifyWatchProgressSubscribers();
       // Emit explicit remove event for sync layer
-      try { this.watchProgressRemoveListeners.forEach(l => l(id, type, episodeId)); } catch { }
+      try {
+        this.watchProgressRemoveListeners.forEach(l => l(id, type, episodeId));
+      } catch {}
     } catch (error) {
       logger.error('Error removing watch progress:', error);
     }
@@ -393,7 +416,10 @@ class StorageService {
     try {
       // Use cache if available and fresh
       const now = Date.now();
-      if (this.watchProgressCache && (now - this.watchProgressCacheTimestamp) < this.WATCH_PROGRESS_CACHE_TTL) {
+      if (
+        this.watchProgressCache &&
+        now - this.watchProgressCacheTimestamp < this.WATCH_PROGRESS_CACHE_TTL
+      ) {
         return this.watchProgressCache;
       }
 
@@ -403,12 +429,15 @@ class StorageService {
       const watchProgressKeys = keys.filter(key => key.startsWith(prefix));
       const pairs = await mmkvStorage.multiGet(watchProgressKeys);
 
-      const result = pairs.reduce((acc, [key, value]) => {
-        if (value) {
-          acc[key.replace(prefix, '')] = JSON.parse(value);
-        }
-        return acc;
-      }, {} as Record<string, WatchProgress>);
+      const result = pairs.reduce(
+        (acc, [key, value]) => {
+          if (value) {
+            acc[key.replace(prefix, '')] = JSON.parse(value);
+          }
+          return acc;
+        },
+        {} as Record<string, WatchProgress>
+      );
 
       // Update cache
       this.watchProgressCache = result;
@@ -469,13 +498,15 @@ class StorageService {
   /**
    * Get all watch progress entries that need Trakt sync
    */
-  public async getUnsyncedProgress(): Promise<Array<{
-    key: string;
-    id: string;
-    type: string;
-    episodeId?: string;
-    progress: WatchProgress;
-  }>> {
+  public async getUnsyncedProgress(): Promise<
+    Array<{
+      key: string;
+      id: string;
+      type: string;
+      episodeId?: string;
+      progress: WatchProgress;
+    }>
+  > {
     try {
       const allProgress = await this.getAllWatchProgress();
       const tombstones = await this.getWatchProgressTombstones();
@@ -494,11 +525,15 @@ class StorageService {
         const exactTombAt = tombstones[key];
         const baseTombAt = tombstones[baseKey];
         const newestTombAt = Math.max(exactTombAt || 0, baseTombAt || 0);
-        if (newestTombAt && (progress.lastUpdated == null || progress.lastUpdated <= newestTombAt)) {
+        if (
+          newestTombAt &&
+          (progress.lastUpdated == null || progress.lastUpdated <= newestTombAt)
+        ) {
           continue;
         }
         // Check if needs sync (either never synced or local progress is newer)
-        const needsSync = !progress.traktSynced ||
+        const needsSync =
+          !progress.traktSynced ||
           (progress.traktLastSynced && progress.lastUpdated > progress.traktLastSynced);
 
         if (needsSync) {
@@ -513,7 +548,7 @@ class StorageService {
             id,
             type,
             episodeId,
-            progress
+            progress,
           });
         }
       }
@@ -541,14 +576,18 @@ class StorageService {
       const prefix = `${type}:${id}`;
       logger.log(`🔍 [StorageService] Looking for keys with prefix: ${prefix}`);
 
-      const matchingKeys = Object.keys(all).filter(key => key === prefix || key.startsWith(`${prefix}:`));
+      const matchingKeys = Object.keys(all).filter(
+        key => key === prefix || key.startsWith(`${prefix}:`)
+      );
       logger.log(`📊 [StorageService] Found ${matchingKeys.length} matching keys:`, matchingKeys);
 
       const removals: Array<Promise<void>> = [];
       for (const key of matchingKeys) {
         // Compute episodeId if present
         const episodeId = key.length > prefix.length + 1 ? key.slice(prefix.length + 1) : undefined;
-        logger.log(`🗑️ [StorageService] Removing progress for key: ${key} (episodeId: ${episodeId})`);
+        logger.log(
+          `🗑️ [StorageService] Removing progress for key: ${key} (episodeId: ${episodeId})`
+        );
         removals.push(this.removeWatchProgress(id, type, episodeId));
       }
 
@@ -561,9 +600,14 @@ class StorageService {
         logger.log(`✅ [StorageService] Tombstone added successfully`);
       }
 
-      logger.log(`✅ [StorageService] removeAllWatchProgressForContent completed for ${type}:${id}`);
+      logger.log(
+        `✅ [StorageService] removeAllWatchProgressForContent completed for ${type}:${id}`
+      );
     } catch (error) {
-      logger.error(`❌ [StorageService] Error removing all watch progress for content ${type}:${id}:`, error);
+      logger.error(
+        `❌ [StorageService] Error removing all watch progress for content ${type}:${id}:`,
+        error
+      );
     }
   }
 
@@ -615,7 +659,7 @@ class StorageService {
           lastUpdated: traktTimestamp,
           traktSynced: true,
           traktLastSynced: Date.now(),
-          traktProgress
+          traktProgress,
         };
         await this.setWatchProgress(id, type, newProgress, episodeId);
 
@@ -640,9 +684,12 @@ class StorageService {
           // If exact time doesn't match the duration well, recalculate duration
           const calculatedDuration = (exactTime / traktProgress) * 100;
           const durationDiff = Math.abs(calculatedDuration - localProgress.duration);
-          if (durationDiff > 300) { // More than 5 minutes difference
+          if (durationDiff > 300) {
+            // More than 5 minutes difference
             duration = calculatedDuration;
-            logger.log(`[StorageService] Updated duration based on exact time: ${(localProgress.duration / 60).toFixed(0)}min → ${(duration / 60).toFixed(0)}min`);
+            logger.log(
+              `[StorageService] Updated duration based on exact time: ${(localProgress.duration / 60).toFixed(0)}min → ${(duration / 60).toFixed(0)}min`
+            );
           }
         } else if (localProgress.duration > 0) {
           // Use percentage calculation with local duration
@@ -679,7 +726,7 @@ class StorageService {
           lastUpdated: traktTimestamp,
           traktSynced: true,
           traktLastSynced: Date.now(),
-          traktProgress
+          traktProgress,
         };
         await this.setWatchProgress(id, type, updatedProgress, episodeId);
 

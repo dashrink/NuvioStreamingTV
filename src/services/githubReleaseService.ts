@@ -8,13 +8,14 @@ export interface GithubReleaseInfo {
   published_at?: string;
 }
 
-const GITHUB_LATEST_RELEASE_URL = 'https://api.github.com/repos/tapframe/NuvioStreaming/releases/latest';
+const GITHUB_LATEST_RELEASE_URL =
+  'https://api.github.com/repos/tapframe/NuvioStreaming/releases/latest';
 
 export async function fetchLatestGithubRelease(): Promise<GithubReleaseInfo | null> {
   try {
     const res = await fetch(GITHUB_LATEST_RELEASE_URL, {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         // Identify app a bit; avoid user agent blocks
         'User-Agent': `Nuvio/${Platform.OS}`,
       },
@@ -34,7 +35,10 @@ export async function fetchLatestGithubRelease(): Promise<GithubReleaseInfo | nu
 }
 
 export function parseSemver(version: string): [number, number, number] | null {
-  const m = version.trim().replace(/^v/, '').match(/^(\d+)\.(\d+)\.(\d+)/);
+  const m = version
+    .trim()
+    .replace(/^v/, '')
+    .match(/^(\d+)\.(\d+)\.(\d+)/);
   if (!m) return null;
   return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
 }
@@ -63,13 +67,13 @@ export async function fetchTotalDownloads(): Promise<number | null> {
   try {
     const res = await fetch('https://api.github.com/repos/tapframe/NuvioStreaming/releases', {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         'User-Agent': `Nuvio/${Platform.OS}`,
       },
     });
     if (!res.ok) return null;
     const releases = await res.json();
-    
+
     let total = 0;
     releases.forEach((release: any) => {
       if (release.assets && Array.isArray(release.assets)) {
@@ -78,7 +82,7 @@ export async function fetchTotalDownloads(): Promise<number | null> {
         });
       }
     });
-    
+
     return total;
   } catch {
     return null;
@@ -98,16 +102,16 @@ export async function fetchContributors(): Promise<GitHubContributor[] | null> {
   try {
     const res = await fetch('https://api.github.com/repos/tapframe/NuvioStreaming/contributors', {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         'User-Agent': `Nuvio/${Platform.OS}`,
       },
     });
-    
+
     if (!res.ok) {
       if (__DEV__) console.error('GitHub API error:', res.status, res.statusText);
       return null;
     }
-    
+
     const contributors = await res.json();
     return contributors;
   } catch (error) {
@@ -115,5 +119,3 @@ export async function fetchContributors(): Promise<GitHubContributor[] | null> {
     return null;
   }
 }
-
-

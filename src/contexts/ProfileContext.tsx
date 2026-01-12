@@ -11,9 +11,9 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { profileService } from '../services/ProfileService';
+
 import { pinService } from '../services/PinService';
-import { logger } from '../utils/logger';
+import { profileService } from '../services/ProfileService';
 import {
   Profile,
   CreateProfileInput,
@@ -22,6 +22,7 @@ import {
   isKidsProfile,
   MAX_PROFILES,
 } from '../types/profile';
+import { logger } from '../utils/logger';
 
 // Re-export Profile type for convenience
 export type { Profile } from '../types/profile';

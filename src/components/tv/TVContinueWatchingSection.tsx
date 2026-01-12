@@ -10,6 +10,7 @@
  * - Scale animations on focus
  */
 
+import { FlashList } from '@shopify/flash-list';
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   View,
@@ -19,18 +20,18 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
-import Focusable from '../common/Focusable';
-import ContentItem from '../home/ContentItem';
 import { StreamingContent } from '../../services/catalogService';
-import { TV_SPACING } from '../../utils/tvStyles/spacing';
-import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
-import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
 import { TV_ANIMATIONS } from '../../utils/tvStyles/animations';
 import { isTV } from '../../utils/tvStyles/deviceDetection';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
 import { scaleForTV } from '../../utils/tvStyles/helpers';
+import { TV_SPACING } from '../../utils/tvStyles/spacing';
+import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
+import Focusable from '../common/Focusable';
+import ContentItem from '../home/ContentItem';
 
 // ============================================================================
 // TYPES
@@ -100,28 +101,25 @@ interface TVContinueWatchingItemProps {
   onFocus: () => void;
 }
 
-const TVContinueWatchingItemComponent = React.memo<TVContinueWatchingItemProps>(({
-  item,
-  index,
-  onPress,
-  onFocus,
-}) => {
-  // Map TVContinueWatchingItem to StreamingContent
-  const contentItem: StreamingContent = {
-    ...item,
-    title: item.name,
-  } as unknown as StreamingContent;
+const TVContinueWatchingItemComponent = React.memo<TVContinueWatchingItemProps>(
+  ({ item, index, onPress, onFocus }) => {
+    // Map TVContinueWatchingItem to StreamingContent
+    const contentItem: StreamingContent = {
+      ...item,
+      title: item.name,
+    } as unknown as StreamingContent;
 
-  return (
-    <ContentItem
-      item={contentItem}
-      index={index}
-      onPress={onPress}
-      onItemFocus={onFocus}
-      hasTVPreferredFocus={false}
-    />
-  );
-});
+    return (
+      <ContentItem
+        item={contentItem}
+        index={index}
+        onPress={onPress}
+        onItemFocus={onFocus}
+        hasTVPreferredFocus={false}
+      />
+    );
+  }
+);
 
 TVContinueWatchingItemComponent.displayName = 'TVContinueWatchingItemComponent';
 
@@ -214,20 +212,14 @@ export const TVContinueWatchingSection: React.FC<TVContinueWatchingSectionProps>
         onFocus={() => handleFocusChange(index)}
       />
     ),
-    [
-      handleItemPress,
-      handleFocusChange,
-    ]
+    [handleItemPress, handleFocusChange]
   );
 
   // Loading state
   if (loading) {
     return (
       <View style={styles.loadingContainer} testID={`${testID}-loading`}>
-        <ActivityIndicator
-          size="large"
-          color={currentTheme.colors.primary}
-        />
+        <ActivityIndicator size="large" color={currentTheme.colors.primary} />
       </View>
     );
   }
@@ -243,16 +235,10 @@ export const TVContinueWatchingSection: React.FC<TVContinueWatchingSectionProps>
       {showHeader && (
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={[
-              styles.sectionTitle,
-              { color: currentTheme.colors.text }
-            ]}>
-              {title}
-            </Text>
-            <View style={[
-              styles.titleUnderline,
-              { backgroundColor: currentTheme.colors.primary }
-            ]} />
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>{title}</Text>
+            <View
+              style={[styles.titleUnderline, { backgroundColor: currentTheme.colors.primary }]}
+            />
           </View>
         </View>
       )}

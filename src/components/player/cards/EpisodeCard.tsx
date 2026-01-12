@@ -1,18 +1,24 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Episode } from '../../../types/metadata';
-import { triggerLight } from '../../../hooks/useHaptics';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 
-const TMDB_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
+import { triggerLight } from '../../../hooks/useHaptics';
+import { Episode } from '../../../types/metadata';
+
+const TMDB_LOGO =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
 const EPISODE_PLACEHOLDER = 'https://via.placeholder.com/500x280/1a1a1a/666666?text=No+Preview';
 
 interface EpisodeCardProps {
   episode: Episode;
   metadata?: { poster?: string; id?: string };
-  tmdbEpisodeOverrides?: { [key: string]: { vote_average?: number; runtime?: number; still_path?: string } };
-  episodeProgress?: { [key: string]: { currentTime: number; duration: number; lastUpdated: number } };
+  tmdbEpisodeOverrides?: {
+    [key: string]: { vote_average?: number; runtime?: number; still_path?: string };
+  };
+  episodeProgress?: {
+    [key: string]: { currentTime: number; duration: number; lastUpdated: number };
+  };
   onPress: () => void;
   currentTheme: any;
   isCurrent?: boolean;
@@ -29,7 +35,7 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
 }) => {
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
-  
+
   // Get episode image
   let episodeImage = EPISODE_PLACEHOLDER;
   if (episode.still_path) {
@@ -43,14 +49,21 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
   } else if (metadata?.poster) {
     episodeImage = metadata.poster;
   }
-  
-  const episodeNumber = typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
-  const seasonNumber = typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
-  const episodeString = seasonNumber && episodeNumber ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}` : '';
-  
+
+  const episodeNumber =
+    typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
+  const seasonNumber =
+    typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
+  const episodeString =
+    seasonNumber && episodeNumber
+      ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}`
+      : '';
+
   // Get episode progress
-  const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-  const tmdbOverride = tmdbEpisodeOverrides?.[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
+  const episodeId =
+    episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+  const tmdbOverride =
+    tmdbEpisodeOverrides?.[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
   const effectiveVote = (tmdbOverride?.vote_average ?? episode.vote_average) || 0;
   const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
   if (!episode.still_path && tmdbOverride?.still_path) {
@@ -61,7 +74,7 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
   const progress = episodeProgress?.[episodeId];
   const progressPercent = progress ? (progress.currentTime / progress.duration) * 100 : 0;
   const showProgress = progress && progressPercent < 85;
-  
+
   const formatRuntime = (runtime: number) => {
     if (!runtime) return null;
     const hours = Math.floor(runtime / 60);
@@ -71,13 +84,13 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
     }
     return `${minutes}m`;
   };
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -86,7 +99,7 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
       key={episode.id}
       style={[
         styles.episodeCard,
-        isCurrent && { borderWidth: 2, borderColor: currentTheme.colors.primary }
+        isCurrent && { borderWidth: 2, borderColor: currentTheme.colors.primary },
       ]}
       onPress={() => {
         triggerLight();
@@ -110,30 +123,28 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
         </View>
         {showProgress && (
           <View style={styles.progressBarContainer}>
-            <View 
+            <View
               style={[
                 styles.progressBar,
-                { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary }
-              ]} 
+                { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary },
+              ]}
             />
           </View>
         )}
         {progressPercent >= 85 && (
-          <View style={[
-            styles.completedBadge,
-            { backgroundColor: currentTheme.colors.primary }
-          ]}>
+          <View style={[styles.completedBadge, { backgroundColor: currentTheme.colors.primary }]}>
             <MaterialIcons name="check" size={12} color={currentTheme.colors.white} />
           </View>
         )}
-        {(!progress || progressPercent === 0) && (
-          <View style={styles.unwatchedBadge} />
-        )}
+        {(!progress || progressPercent === 0) && <View style={styles.unwatchedBadge} />}
       </View>
 
       <View style={styles.episodeInfo}>
         <View style={styles.episodeHeader}>
-          <Text style={[styles.episodeTitle, { color: currentTheme.colors.text }]} numberOfLines={2}>
+          <Text
+            style={[styles.episodeTitle, { color: currentTheme.colors.text }]}
+            numberOfLines={2}
+          >
             {episode.name}
           </Text>
           <View style={styles.episodeMetadata}>
@@ -164,7 +175,10 @@ export const EpisodeCard: React.FC<EpisodeCardProps> = ({
             )}
           </View>
         </View>
-        <Text style={[styles.episodeOverview, { color: currentTheme.colors.mediumEmphasis }]} numberOfLines={2}>
+        <Text
+          style={[styles.episodeOverview, { color: currentTheme.colors.mediumEmphasis }]}
+          numberOfLines={2}
+        >
           {episode.overview || 'No description available'}
         </Text>
       </View>
@@ -314,4 +328,3 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(59, 130, 246, 0.3)',
   },
 });
-

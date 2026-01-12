@@ -1,22 +1,36 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, useWindowDimensions, useColorScheme, FlatList, Modal, Pressable } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+  useWindowDimensions,
+  useColorScheme,
+  FlatList,
+  Modal,
+  Pressable,
+} from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
-import Focusable from '../common/Focusable';
-import { Episode } from '../../types/metadata';
-import { tmdbService, IMDbRatings } from '../../services/tmdbService';
+import { mmkvStorage } from '../../services/mmkvStorage';
 import { storageService } from '../../services/storageService';
-import { useFocusEffect } from '@react-navigation/native';
-import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
+import { tmdbService, IMDbRatings } from '../../services/tmdbService';
 import { TraktService } from '../../services/traktService';
 import { watchedService } from '../../services/watchedService';
+import { Episode } from '../../types/metadata';
 import { logger } from '../../utils/logger';
-import { mmkvStorage } from '../../services/mmkvStorage';
+import Focusable from '../common/Focusable';
 
 // Enhanced responsive breakpoints for Seasons Section
 const BREAKPOINTS = {
@@ -40,8 +54,10 @@ interface SeriesContentProps {
 // Add placeholder constant at the top
 const DEFAULT_PLACEHOLDER = 'https://via.placeholder.com/300x450/1a1a1a/666666?text=No+Image';
 const EPISODE_PLACEHOLDER = 'https://via.placeholder.com/500x280/1a1a1a/666666?text=No+Preview';
-const TMDB_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
-const IMDb_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png';
+const TMDB_LOGO =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
+const IMDb_LOGO =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png';
 
 const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   episodes,
@@ -51,7 +67,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   onSelectEpisode,
   groupedEpisodes = {},
   metadata,
-  imdbId
+  imdbId,
 }) => {
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
@@ -170,11 +186,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     }
   }, [deviceType]);
 
-  const [episodeProgress, setEpisodeProgress] = useState<{ [key: string]: { currentTime: number; duration: number; lastUpdated: number } }>({});
+  const [episodeProgress, setEpisodeProgress] = useState<{
+    [key: string]: { currentTime: number; duration: number; lastUpdated: number };
+  }>({});
   // Delay item entering animations to avoid FlashList initial layout glitches
   const [enableItemAnimations, setEnableItemAnimations] = useState(false);
   // Local TMDB hydration for rating/runtime when addon (Cinemeta) lacks these
-  const [tmdbEpisodeOverrides, setTmdbEpisodeOverrides] = useState<{ [epKey: string]: { vote_average?: number; runtime?: number; still_path?: string } }>({});
+  const [tmdbEpisodeOverrides, setTmdbEpisodeOverrides] = useState<{
+    [epKey: string]: { vote_average?: number; runtime?: number; still_path?: string };
+  }>({});
   // IMDb ratings for episodes - using a map for O(1) lookups instead of array searches
   const [imdbRatingsMap, setImdbRatingsMap] = useState<{ [key: string]: number }>({});
 
@@ -205,7 +225,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           if (__DEV__) console.log('[SeriesContent] Loaded global view mode:', savedMode);
         }
       } catch (error) {
-        if (__DEV__) console.log('[SeriesContent] Error loading global view mode preference:', error);
+        if (__DEV__)
+          console.log('[SeriesContent] Error loading global view mode preference:', error);
       }
     };
 
@@ -223,8 +244,6 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     }
   }, [seasonViewMode]);
 
-
-
   // Update view mode without animations
   const updateViewMode = (newMode: 'posters' | 'text') => {
     setSeasonViewMode(newMode);
@@ -235,22 +254,23 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
   // Add refs for the scroll views
 
-
-
   const loadEpisodesProgress = async () => {
     if (!metadata?.id) return;
 
     const allProgress = await storageService.getAllWatchProgress();
-    const progress: { [key: string]: { currentTime: number; duration: number; lastUpdated: number } } = {};
+    const progress: {
+      [key: string]: { currentTime: number; duration: number; lastUpdated: number };
+    } = {};
 
     episodes.forEach(episode => {
-      const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
       const key = `series:${metadata.id}:${episodeId}`;
       if (allProgress[key]) {
         progress[episodeId] = {
           currentTime: allProgress[key].currentTime,
           duration: allProgress[key].duration,
-          lastUpdated: allProgress[key].lastUpdated
+          lastUpdated: allProgress[key].lastUpdated,
         };
       }
     });
@@ -276,7 +296,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         allHistoryItems.forEach(item => {
           if (item.type !== 'episode') return;
 
-          const showImdb = item.show?.ids?.imdb ? `tt${item.show.ids.imdb.replace(/^tt/, '')}` : null;
+          const showImdb = item.show?.ids?.imdb
+            ? `tt${item.show.ids.imdb.replace(/^tt/, '')}`
+            : null;
           if (!showImdb || showImdb !== metadata.id) return;
 
           const season = item.episode?.season;
@@ -311,7 +333,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
   // Function to find and scroll to the most recently watched episode
   const scrollToMostRecentEpisode = () => {
-    if (!metadata?.id || !settings?.episodeLayoutStyle || settings.episodeLayoutStyle !== 'horizontal') {
+    if (
+      !metadata?.id ||
+      !settings?.episodeLayoutStyle ||
+      settings.episodeLayoutStyle !== 'horizontal'
+    ) {
       return;
     }
 
@@ -326,7 +352,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     let mostRecentEpisodeName = '';
 
     currentSeasonEpisodes.forEach((episode, index) => {
-      const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
       const progress = episodeProgress[episodeId];
 
       if (progress && progress.lastUpdated > mostRecentTimestamp && progress.currentTime > 0) {
@@ -344,7 +371,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           horizontalEpisodeScrollViewRef.current.scrollToIndex({
             index: mostRecentEpisodeIndex,
             animated: true,
-            viewPosition: 0 // Align to start of card for precise positioning
+            viewPosition: 0, // Align to start of card for precise positioning
           });
         }
       }, 500); // Delay to ensure the season has loaded
@@ -381,7 +408,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         }
 
         if (!tmdbShowId) {
-          logger.warn('[SeriesContent] Could not resolve TMDB show ID, skipping IMDb ratings fetch');
+          logger.warn(
+            '[SeriesContent] Could not resolve TMDB show ID, skipping IMDb ratings fetch'
+          );
           return;
         }
 
@@ -405,7 +434,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             }
           });
 
-          logger.log('[SeriesContent] IMDb ratings map created with', Object.keys(ratingsMap).length, 'episodes');
+          logger.log(
+            '[SeriesContent] IMDb ratings map created with',
+            Object.keys(ratingsMap).length,
+            'episodes'
+          );
           setImdbRatingsMap(ratingsMap);
         } else {
           logger.warn('[SeriesContent] IMDb ratings fetch returned null/undefined');
@@ -429,7 +462,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         if (currentSeasonEpisodes.length === 0) return;
 
         // Check if hydration is needed
-        const needsHydration = currentSeasonEpisodes.some(ep => !(ep as any).runtime || !(ep as any).vote_average);
+        const needsHydration = currentSeasonEpisodes.some(
+          ep => !(ep as any).runtime || !(ep as any).vote_average
+        );
         if (!needsHydration) return;
 
         // Resolve TMDB show id
@@ -443,7 +478,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
         // Fetch all episodes from TMDB and build override map for the current season
         const all = await tmdbService.getAllEpisodes(tmdbShowId);
-        const overrides: { [k: string]: { vote_average?: number; runtime?: number; still_path?: string } } = {};
+        const overrides: {
+          [k: string]: { vote_average?: number; runtime?: number; still_path?: string };
+        } = {};
         const seasonEpisodes = all?.[selectedSeason] || [];
         seasonEpisodes.forEach((tmdbEp: any) => {
           const key = `${metadata.id}:${tmdbEp.season_number}:${tmdbEp.episode_number}`;
@@ -494,16 +531,21 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   useEffect(() => {
     if (selectedSeason && seasonScrollViewRef.current && Object.keys(groupedEpisodes).length > 0) {
       // Find the index of the selected season
-      const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => a - b);
+      const seasons = Object.keys(groupedEpisodes)
+        .map(Number)
+        .sort((a, b) => a - b);
       const selectedIndex = seasons.findIndex(season => season === selectedSeason);
 
       if (selectedIndex !== -1) {
         // Wait a small amount of time for layout to be ready
         setTimeout(() => {
-          if (seasonScrollViewRef.current && typeof (seasonScrollViewRef.current as any).scrollToOffset === 'function') {
+          if (
+            seasonScrollViewRef.current &&
+            typeof (seasonScrollViewRef.current as any).scrollToOffset === 'function'
+          ) {
             (seasonScrollViewRef.current as any).scrollToOffset({
               offset: selectedIndex * 116, // 100px width + 16px margin
-              animated: true
+              animated: true,
             });
           }
         }, 300);
@@ -518,14 +560,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     }
   }, [selectedSeason, episodeProgress, settings?.episodeLayoutStyle, groupedEpisodes]);
 
-
-
   // Helper function to get IMDb rating for an episode - O(1) lookup using map
-  const getIMDbRating = useCallback((seasonNumber: number, episodeNumber: number): number | null => {
-    const key = `${seasonNumber}:${episodeNumber}`;
-    const rating = imdbRatingsMap[key];
-    return rating ?? null;
-  }, [imdbRatingsMap]);
+  const getIMDbRating = useCallback(
+    (seasonNumber: number, episodeNumber: number): number | null => {
+      const key = `${seasonNumber}:${episodeNumber}`;
+      const rating = imdbRatingsMap[key];
+      return rating ?? null;
+    },
+    [imdbRatingsMap]
+  );
 
   // Handle long press on episode to show action menu
   const handleEpisodeLongPress = useCallback((episode: Episode) => {
@@ -535,25 +578,30 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   }, []);
 
   // Check if an episode is watched (>= 85% progress)
-  const isEpisodeWatched = useCallback((episode: Episode): boolean => {
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const progress = episodeProgress[episodeId];
-    if (!progress) return false;
-    const progressPercent = (progress.currentTime / progress.duration) * 100;
-    return progressPercent >= 85;
-  }, [episodeProgress, metadata?.id]);
+  const isEpisodeWatched = useCallback(
+    (episode: Episode): boolean => {
+      const episodeId =
+        episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+      const progress = episodeProgress[episodeId];
+      if (!progress) return false;
+      const progressPercent = (progress.currentTime / progress.duration) * 100;
+      return progressPercent >= 85;
+    },
+    [episodeProgress, metadata?.id]
+  );
 
   // Mark episode as watched
   const handleMarkAsWatched = useCallback(async () => {
     if (!selectedEpisodeForAction || !metadata?.id) return;
 
     const episode = selectedEpisodeForAction; // Capture for closure
-    const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+    const episodeId =
+      episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
 
     // 1. Optimistic UI Update
     setEpisodeProgress(prev => ({
       ...prev,
-      [episodeId]: { currentTime: 1, duration: 1, lastUpdated: Date.now() } // 100% progress
+      [episodeId]: { currentTime: 1, duration: 1, lastUpdated: Date.now() }, // 100% progress
     }));
 
     // 2. Instant Feedback
@@ -588,7 +636,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     if (!selectedEpisodeForAction || !metadata?.id) return;
 
     const episode = selectedEpisodeForAction;
-    const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+    const episodeId =
+      episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
 
     // 1. Optimistic UI Update - Remove from progress map
     setEpisodeProgress(prev => {
@@ -732,7 +781,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>Loading episodes...</Text>
+        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>
+          Loading episodes...
+        </Text>
       </View>
     );
   }
@@ -741,7 +792,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <View style={styles.centeredContainer}>
         <MaterialIcons name="error-outline" size={48} color={currentTheme.colors.textMuted} />
-        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>No episodes available</Text>
+        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>
+          No episodes available
+        </Text>
       </View>
     );
   }
@@ -752,32 +805,35 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
       return null;
     }
 
-
-
-    const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => {
-      if (a === 0) return 1;
-      if (b === 0) return -1;
-      return a - b;
-    });
+    const seasons = Object.keys(groupedEpisodes)
+      .map(Number)
+      .sort((a, b) => {
+        if (a === 0) return 1;
+        if (b === 0) return -1;
+        return a - b;
+      });
 
     return (
-      <View style={[
-        styles.seasonSelectorWrapper,
-        { paddingHorizontal: horizontalPadding }
-      ]}>
-        <View style={[
-          styles.seasonSelectorHeader,
-          {
-            marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-          }
-        ]}>
-          <Text style={[
-            styles.seasonSelectorTitle,
+      <View style={[styles.seasonSelectorWrapper, { paddingHorizontal: horizontalPadding }]}>
+        <View
+          style={[
+            styles.seasonSelectorHeader,
             {
-              color: currentTheme.colors.highEmphasis,
-              fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 18
-            }
-          ]}>Seasons</Text>
+              marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.seasonSelectorTitle,
+              {
+                color: currentTheme.colors.highEmphasis,
+                fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 18,
+              },
+            ]}
+          >
+            Seasons
+          </Text>
 
           {/* Dropdown Toggle Button */}
           <Focusable
@@ -788,35 +844,44 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             style={[
               styles.seasonViewToggle,
               {
-                backgroundColor: seasonViewMode === 'posters'
-                  ? currentTheme.colors.elevation2
-                  : currentTheme.colors.elevation3,
-                borderColor: seasonViewMode === 'posters'
-                  ? 'rgba(255,255,255,0.2)'
-                  : 'rgba(255,255,255,0.3)',
+                backgroundColor:
+                  seasonViewMode === 'posters'
+                    ? currentTheme.colors.elevation2
+                    : currentTheme.colors.elevation3,
+                borderColor:
+                  seasonViewMode === 'posters' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.3)',
                 paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
                 paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
-                borderRadius: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6
-              }
+                borderRadius: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6,
+              },
             ]}
             onPress={() => {
               const newMode = seasonViewMode === 'posters' ? 'text' : 'posters';
               updateViewMode(newMode);
-              if (__DEV__) console.log('[SeriesContent] View mode changed to:', newMode, 'Current ref value:', seasonViewMode);
+              if (__DEV__)
+                console.log(
+                  '[SeriesContent] View mode changed to:',
+                  newMode,
+                  'Current ref value:',
+                  seasonViewMode
+                );
             }}
             activeOpacity={0.7}
             accessibilityLabel={`Season view mode: ${seasonViewMode}`}
             accessibilityHint="Double tap to toggle between poster and text view"
           >
-            <Text style={[
-              styles.seasonViewToggleText,
-              {
-                color: seasonViewMode === 'posters'
-                  ? currentTheme.colors.mediumEmphasis
-                  : currentTheme.colors.highEmphasis,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 12
-              }
-            ]}>
+            <Text
+              style={[
+                styles.seasonViewToggleText,
+                {
+                  color:
+                    seasonViewMode === 'posters'
+                      ? currentTheme.colors.mediumEmphasis
+                      : currentTheme.colors.highEmphasis,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 12,
+                },
+              ]}
+            >
               {seasonViewMode === 'posters' ? 'Posters' : 'Text'}
             </Text>
           </Focusable>
@@ -831,8 +896,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           contentContainerStyle={[
             styles.seasonSelectorContent,
             {
-              paddingBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8
-            }
+              paddingBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+            },
           ]}
           initialNumToRender={5}
           maxToRenderPerBatch={5}
@@ -843,7 +908,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             // Get season poster URL (needed for both views)
             let seasonPoster = DEFAULT_PLACEHOLDER;
             if (seasonEpisodes[0]?.season_poster_path) {
-              const tmdbUrl = tmdbService.getImageUrl(seasonEpisodes[0].season_poster_path, 'original');
+              const tmdbUrl = tmdbService.getImageUrl(
+                seasonEpisodes[0].season_poster_path,
+                'original'
+              );
               if (tmdbUrl) seasonPoster = tmdbUrl;
             } else if (metadata?.poster) {
               seasonPoster = metadata.poster;
@@ -853,10 +921,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               // Text-only view
 
               return (
-                <View
-                  key={season}
-                  style={{ opacity: textViewVisible ? 1 : 0 }}
-                >
+                <View key={season} style={{ opacity: textViewVisible ? 1 : 0 }}>
                   <Focusable
                     variant="button"
                     borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12}
@@ -870,24 +935,27 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                         width: isTV ? 150 : isLargeTablet ? 140 : isTablet ? 130 : 110,
                         paddingVertical: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
                         paddingHorizontal: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
+                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
                       },
-                      selectedSeason === season && styles.selectedSeasonTextButton
+                      selectedSeason === season && styles.selectedSeasonTextButton,
                     ]}
                     onPress={() => onSeasonChange(season)}
                     accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
                     accessibilityHint="Double tap to view episodes"
                   >
-                    <Text style={[
-                      styles.seasonTextButtonText,
-                      isTablet && styles.seasonTextButtonTextTablet,
-                      { color: currentTheme.colors.highEmphasis },
-                      selectedSeason === season && [
-                        styles.selectedSeasonTextButtonText,
-                        isTablet && styles.selectedSeasonTextButtonTextTablet,
-                        { color: currentTheme.colors.highEmphasis }
-                      ]
-                    ]} numberOfLines={1}>
+                    <Text
+                      style={[
+                        styles.seasonTextButtonText,
+                        isTablet && styles.seasonTextButtonTextTablet,
+                        { color: currentTheme.colors.highEmphasis },
+                        selectedSeason === season && [
+                          styles.selectedSeasonTextButtonText,
+                          isTablet && styles.selectedSeasonTextButtonTextTablet,
+                          { color: currentTheme.colors.highEmphasis },
+                        ],
+                      ]}
+                      numberOfLines={1}
+                    >
                       {season === 0 ? 'Specials' : `Season ${season}`}
                     </Text>
                   </Focusable>
@@ -898,10 +966,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             // Poster view (current implementation)
 
             return (
-              <View
-                key={season}
-                style={{ opacity: posterViewVisible ? 1 : 0 }}
-              >
+              <View key={season} style={{ opacity: posterViewVisible ? 1 : 0 }}>
                 <Focusable
                   variant="card"
                   borderRadius={isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8}
@@ -912,50 +977,56 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     styles.seasonButton,
                     {
                       marginRight: seasonButtonSpacing,
-                      width: seasonPosterWidth
+                      width: seasonPosterWidth,
                     },
-                    selectedSeason === season && [styles.selectedSeasonButton, { borderColor: currentTheme.colors.primary }]
+                    selectedSeason === season && [
+                      styles.selectedSeasonButton,
+                      { borderColor: currentTheme.colors.primary },
+                    ],
                   ]}
                   onPress={() => onSeasonChange(season)}
                   accessibilityLabel={season === 0 ? 'Specials season' : `Season ${season}`}
                   accessibilityHint="Double tap to view episodes"
                 >
-                  <View style={[
-                    styles.seasonPosterContainer,
-                    {
-                      width: seasonPosterWidth,
-                      height: seasonPosterHeight,
-                      borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8,
-                      marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8
-                    }
-                  ]}>
+                  <View
+                    style={[
+                      styles.seasonPosterContainer,
+                      {
+                        width: seasonPosterWidth,
+                        height: seasonPosterHeight,
+                        borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8,
+                        marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                      },
+                    ]}
+                  >
                     <FastImage
                       source={{ uri: seasonPoster }}
                       style={styles.seasonPoster}
                       resizeMode={FastImage.resizeMode.cover}
                     />
                     {selectedSeason === season && (
-                      <View style={[
-                        styles.selectedSeasonIndicator,
-                        {
-                          backgroundColor: currentTheme.colors.primary,
-                          height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-                        }
-                      ]} />
+                      <View
+                        style={[
+                          styles.selectedSeasonIndicator,
+                          {
+                            backgroundColor: currentTheme.colors.primary,
+                            height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+                          },
+                        ]}
+                      />
                     )}
-
                   </View>
                   <Text
                     style={[
                       styles.seasonButtonText,
                       {
                         color: currentTheme.colors.mediumEmphasis,
-                        fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 14
+                        fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 14,
                       },
                       selectedSeason === season && [
                         styles.selectedSeasonButtonText,
-                        { color: currentTheme.colors.primary }
-                      ]
+                        { color: currentTheme.colors.primary },
+                      ],
                     ]}
                   >
                     {season === 0 ? 'Specials' : `Season ${season}`}
@@ -985,7 +1056,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
       for (const cand of candidates) {
         if (!cand) continue;
-        if (typeof cand === 'string' && (cand.startsWith('http://') || cand.startsWith('https://'))) {
+        if (
+          typeof cand === 'string' &&
+          (cand.startsWith('http://') || cand.startsWith('https://'))
+        ) {
           return cand;
         }
         // TMDB relative paths only when enrichment is enabled
@@ -999,16 +1073,21 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
     let episodeImage = resolveEpisodeImage();
 
-    const episodeNumber = typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
-    const seasonNumber = typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
-    const episodeString = seasonNumber && episodeNumber ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}` : '';
+    const episodeNumber =
+      typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
+    const seasonNumber =
+      typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
+    const episodeString =
+      seasonNumber && episodeNumber
+        ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}`
+        : '';
 
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
       });
     };
 
@@ -1023,15 +1102,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     };
 
     // Get episode progress
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const tmdbOverride = tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
+    const episodeId =
+      episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+    const tmdbOverride =
+      tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
     // Prioritize IMDb rating, fallback to TMDB
     const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
     const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
     const effectiveVote = imdbRating ?? tmdbRating ?? 0;
     const isImdbRating = imdbRating !== null;
-
-
 
     const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
     if (!episode.still_path && tmdbOverride?.still_path) {
@@ -1057,8 +1136,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             backgroundColor: currentTheme.colors.elevation2,
             borderRadius: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
             marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-            height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120
-          }
+            height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
+          },
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
@@ -1066,115 +1145,146 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         accessibilityLabel={`${episodeString} ${episode.name}`}
         accessibilityHint="Double tap to play episode, long press for more options"
       >
-        <View style={[
-          styles.episodeImageContainer,
-          {
-            width: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
-            height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120
-          }
-        ]}>
+        <View
+          style={[
+            styles.episodeImageContainer,
+            {
+              width: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
+              height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
+            },
+          ]}
+        >
           <FastImage
             source={{ uri: episodeImage }}
             style={styles.episodeImage}
             resizeMode={FastImage.resizeMode.cover}
           />
-          <View style={[
-            styles.episodeNumberBadge,
-            {
-              paddingHorizontal: isTV ? 8 : isLargeTablet ? 7 : isTablet ? 6 : 6,
-              paddingVertical: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2,
-              borderRadius: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-            }
-          ]}>
-            <Text style={[
-              styles.episodeNumberText,
+          <View
+            style={[
+              styles.episodeNumberBadge,
               {
-                fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
-                fontWeight: '600'
-              }
-            ]}>{episodeString}</Text>
+                paddingHorizontal: isTV ? 8 : isLargeTablet ? 7 : isTablet ? 6 : 6,
+                paddingVertical: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2,
+                borderRadius: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.episodeNumberText,
+                {
+                  fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                  fontWeight: '600',
+                },
+              ]}
+            >
+              {episodeString}
+            </Text>
           </View>
           {showProgress && (
             <View style={styles.progressBarContainer}>
               <View
                 style={[
                   styles.progressBar,
-                  { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary }
+                  { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary },
                 ]}
               />
             </View>
           )}
           {progressPercent >= 85 && (
-            <View style={[
-              styles.completedBadge,
-              {
-                backgroundColor: currentTheme.colors.primary,
-                width: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-                height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-                borderRadius: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10
-              }
-            ]}>
-              <MaterialIcons name="check" size={isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12} color={currentTheme.colors.white} />
+            <View
+              style={[
+                styles.completedBadge,
+                {
+                  backgroundColor: currentTheme.colors.primary,
+                  width: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                  height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                  borderRadius: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="check"
+                size={isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12}
+                color={currentTheme.colors.white}
+              />
             </View>
           )}
           {(!progress || progressPercent === 0) && (
-            <View style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              width: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-              height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-              borderRadius: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
-              borderWidth: 2,
-              borderStyle: 'dashed',
-              borderColor: currentTheme.colors.textMuted,
-              opacity: 0.85,
-            }} />
+            <View
+              style={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                width: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                borderRadius: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
+                borderWidth: 2,
+                borderStyle: 'dashed',
+                borderColor: currentTheme.colors.textMuted,
+                opacity: 0.85,
+              }}
+            />
           )}
         </View>
 
-        <View style={[
-          styles.episodeInfo,
-          {
-            paddingLeft: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12,
-            flex: 1,
-            justifyContent: 'center'
-          }
-        ]}>
-          <View style={[
-            styles.episodeHeader,
+        <View
+          style={[
+            styles.episodeInfo,
             {
-              marginBottom: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 4
-            }
-          ]}>
-            <Text style={[
-              styles.episodeTitle,
+              paddingLeft: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12,
+              flex: 1,
+              justifyContent: 'center',
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.episodeHeader,
               {
-                color: currentTheme.colors.text,
-                fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
-                lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18,
-                marginBottom: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2
-              }
-            ]} numberOfLines={isLargeScreen ? 3 : 2}>
+                marginBottom: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 4,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.episodeTitle,
+                {
+                  color: currentTheme.colors.text,
+                  fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
+                  lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18,
+                  marginBottom: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2,
+                },
+              ]}
+              numberOfLines={isLargeScreen ? 3 : 2}
+            >
               {episode.name}
             </Text>
-            <View style={[
-              styles.episodeMetadata,
-              {
-                gap: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                flexWrap: 'wrap'
-              }
-            ]}>
+            <View
+              style={[
+                styles.episodeMetadata,
+                {
+                  gap: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                  flexWrap: 'wrap',
+                },
+              ]}
+            >
               {effectiveRuntime && (
                 <View style={styles.runtimeContainer}>
-                  <MaterialIcons name="schedule" size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14} color={currentTheme.colors.textMuted} />
-                  <Text style={[
-                    styles.runtimeText,
-                    {
-                      color: currentTheme.colors.textMuted,
-                      fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13
-                    }
-                  ]}>
+                  <MaterialIcons
+                    name="schedule"
+                    size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14}
+                    color={currentTheme.colors.textMuted}
+                  />
+                  <Text
+                    style={[
+                      styles.runtimeText,
+                      {
+                        color: currentTheme.colors.textMuted,
+                        fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
+                      },
+                    ]}
+                  >
                     {formatRuntime(effectiveRuntime)}
                   </Text>
                 </View>
@@ -1189,19 +1299,21 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                           styles.imdbLogo,
                           {
                             width: isTV ? 32 : isLargeTablet ? 30 : isTablet ? 28 : 28,
-                            height: isTV ? 17 : isLargeTablet ? 16 : isTablet ? 15 : 15
-                          }
+                            height: isTV ? 17 : isLargeTablet ? 16 : isTablet ? 15 : 15,
+                          },
                         ]}
                         resizeMode={FastImage.resizeMode.contain}
                       />
-                      <Text style={[
-                        styles.ratingText,
-                        {
-                          color: '#F5C518',
-                          fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
-                          fontWeight: '600'
-                        }
-                      ]}>
+                      <Text
+                        style={[
+                          styles.ratingText,
+                          {
+                            color: '#F5C518',
+                            fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
+                            fontWeight: '600',
+                          },
+                        ]}
+                      >
                         {effectiveVote.toFixed(1)}
                       </Text>
                     </>
@@ -1213,18 +1325,20 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                           styles.tmdbLogo,
                           {
                             width: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
-                            height: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14
-                          }
+                            height: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                          },
                         ]}
                         resizeMode={FastImage.resizeMode.contain}
                       />
-                      <Text style={[
-                        styles.ratingText,
-                        {
-                          color: currentTheme.colors.textMuted,
-                          fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13
-                        }
-                      ]}>
+                      <Text
+                        style={[
+                          styles.ratingText,
+                          {
+                            color: currentTheme.colors.textMuted,
+                            fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
+                          },
+                        ]}
+                      >
                         {effectiveVote.toFixed(1)}
                       </Text>
                     </>
@@ -1232,27 +1346,36 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 </View>
               )}
               {episode.air_date && (
-                <Text style={[
-                  styles.airDateText,
-                  {
-                    color: currentTheme.colors.textMuted,
-                    fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12
-                  }
-                ]}>
+                <Text
+                  style={[
+                    styles.airDateText,
+                    {
+                      color: currentTheme.colors.textMuted,
+                      fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12,
+                    },
+                  ]}
+                >
                   {formatDate(episode.air_date)}
                 </Text>
               )}
             </View>
           </View>
-          <Text style={[
-            styles.episodeOverview,
-            {
-              color: currentTheme.colors.mediumEmphasis,
-              fontSize: isTV ? 15 : isLargeTablet ? 14 : isTablet ? 14 : 13,
-              lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 18
-            }
-          ]} numberOfLines={isLargeScreen ? 4 : isTablet ? 3 : 2}>
-            {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
+          <Text
+            style={[
+              styles.episodeOverview,
+              {
+                color: currentTheme.colors.mediumEmphasis,
+                fontSize: isTV ? 15 : isLargeTablet ? 14 : isTablet ? 14 : 13,
+                lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 18,
+              },
+            ]}
+            numberOfLines={isLargeScreen ? 4 : isTablet ? 3 : 2}
+          >
+            {episode.overview ||
+              (episode as any).description ||
+              (episode as any).plot ||
+              (episode as any).synopsis ||
+              'No description available'}
           </Text>
         </View>
       </Focusable>
@@ -1272,7 +1395,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
       for (const cand of candidates) {
         if (!cand) continue;
-        if (typeof cand === 'string' && (cand.startsWith('http://') || cand.startsWith('https://'))) {
+        if (
+          typeof cand === 'string' &&
+          (cand.startsWith('http://') || cand.startsWith('https://'))
+        ) {
           return cand;
         }
         if (typeof cand === 'string' && cand.startsWith('/') && settings?.enrichMetadataWithTMDB) {
@@ -1283,10 +1409,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
       return metadata?.poster || EPISODE_PLACEHOLDER;
     };
 
-    let episodeImage = resolveEpisodeImage();
+    const episodeImage = resolveEpisodeImage();
 
-    const episodeNumber = typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
-    const seasonNumber = typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
+    const episodeNumber =
+      typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
+    const seasonNumber =
+      typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
     const episodeString = seasonNumber && episodeNumber ? `EPISODE ${episodeNumber}` : '';
 
     const formatRuntime = (runtime: number) => {
@@ -1300,8 +1428,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     };
 
     // Get episode progress
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const tmdbOverride = tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
+    const episodeId =
+      episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+    const tmdbOverride =
+      tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
     // Prioritize IMDb rating, fallback to TMDB
     const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
     const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
@@ -1314,7 +1444,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
       return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
       });
     };
 
@@ -1338,7 +1468,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             height: horizontalCardHeight,
             elevation: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8,
             shadowOpacity: isTV ? 0.4 : isLargeTablet ? 0.35 : isTablet ? 0.3 : 0.3,
-            shadowRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8
+            shadowRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 8,
           },
           // Gradient border styling
           {
@@ -1346,7 +1476,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             borderColor: 'rgba(255,255,255,0.12)',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
-          }
+          },
         ]}
         onPress={() => onSelectEpisode(episode)}
         onLongPress={() => handleEpisodeLongPress(episode)}
@@ -1370,82 +1500,108 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             'rgba(0,0,0,0.2)',
             'rgba(0,0,0,0.6)',
             'rgba(0,0,0,0.85)',
-            'rgba(0,0,0,0.95)'
+            'rgba(0,0,0,0.95)',
           ]}
           locations={[0, 0.2, 0.5, 0.8, 1]}
           style={styles.episodeGradient}
         >
           {/* Content Container */}
-          <View style={[
-            styles.episodeContent,
-            {
-              padding: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12,
-              paddingBottom: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 16
-            }
-          ]}>
-            {/* Episode Number Badge */}
-            <View style={[
-              styles.episodeNumberBadgeHorizontal,
+          <View
+            style={[
+              styles.episodeContent,
               {
-                paddingHorizontal: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6,
-                paddingVertical: isTV ? 5 : isLargeTablet ? 4 : isTablet ? 3 : 3,
-                borderRadius: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 4 : 4,
-                marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6
-              }
-            ]}>
-              <Text style={[
-                styles.episodeNumberHorizontal,
+                padding: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12,
+                paddingBottom: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 16,
+              },
+            ]}
+          >
+            {/* Episode Number Badge */}
+            <View
+              style={[
+                styles.episodeNumberBadgeHorizontal,
                 {
-                  fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 10,
-                  fontWeight: isTV ? '700' : isLargeTablet ? '700' : isTablet ? '600' : '600'
-                }
-              ]}>{episodeString}</Text>
+                  paddingHorizontal: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6,
+                  paddingVertical: isTV ? 5 : isLargeTablet ? 4 : isTablet ? 3 : 3,
+                  borderRadius: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 4 : 4,
+                  marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.episodeNumberHorizontal,
+                  {
+                    fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 10,
+                    fontWeight: isTV ? '700' : isLargeTablet ? '700' : isTablet ? '600' : '600',
+                  },
+                ]}
+              >
+                {episodeString}
+              </Text>
             </View>
 
             {/* Episode Title */}
-            <Text style={[
-              styles.episodeTitleHorizontal,
-              {
-                fontSize: isTV ? 20 : isLargeTablet ? 19 : isTablet ? 18 : 15,
-                fontWeight: isTV ? '800' : isLargeTablet ? '800' : isTablet ? '700' : '700',
-                lineHeight: isTV ? 26 : isLargeTablet ? 24 : isTablet ? 22 : 18,
-                marginBottom: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 4 : 4
-              }
-            ]} numberOfLines={2}>
+            <Text
+              style={[
+                styles.episodeTitleHorizontal,
+                {
+                  fontSize: isTV ? 20 : isLargeTablet ? 19 : isTablet ? 18 : 15,
+                  fontWeight: isTV ? '800' : isLargeTablet ? '800' : isTablet ? '700' : '700',
+                  lineHeight: isTV ? 26 : isLargeTablet ? 24 : isTablet ? 22 : 18,
+                  marginBottom: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 4 : 4,
+                },
+              ]}
+              numberOfLines={2}
+            >
               {episode.name}
             </Text>
 
             {/* Episode Description */}
-            <Text style={[
-              styles.episodeDescriptionHorizontal,
-              {
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 12,
-                lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 16,
-                marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                opacity: isTV ? 0.95 : isLargeTablet ? 0.9 : isTablet ? 0.9 : 0.9
-              }
-            ]} numberOfLines={isLargeScreen ? 4 : 3}>
-              {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
+            <Text
+              style={[
+                styles.episodeDescriptionHorizontal,
+                {
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 12,
+                  lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 16,
+                  marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                  opacity: isTV ? 0.95 : isLargeTablet ? 0.9 : isTablet ? 0.9 : 0.9,
+                },
+              ]}
+              numberOfLines={isLargeScreen ? 4 : 3}
+            >
+              {episode.overview ||
+                (episode as any).description ||
+                (episode as any).plot ||
+                (episode as any).synopsis ||
+                'No description available'}
             </Text>
 
             {/* Metadata Row */}
-            <View style={[
-              styles.episodeMetadataRowHorizontal,
-              {
-                gap: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-              }
-            ]}>
+            <View
+              style={[
+                styles.episodeMetadataRowHorizontal,
+                {
+                  gap: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                },
+              ]}
+            >
               {effectiveRuntime && (
                 <View style={styles.runtimeContainerHorizontal}>
-                  <MaterialIcons name="schedule" size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14} color={currentTheme.colors.mediumEmphasis} />
-                  <Text style={[
-                    styles.runtimeTextHorizontal,
-                    {
-                      fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
-                      fontWeight: isTV ? '600' : isLargeTablet ? '500' : isTablet ? '500' : '500',
-                      color: currentTheme.colors.mediumEmphasis
-                    }
-                  ]}>
+                  <MaterialIcons
+                    name="schedule"
+                    size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14}
+                    color={currentTheme.colors.mediumEmphasis}
+                  />
+                  <Text
+                    style={[
+                      styles.runtimeTextHorizontal,
+                      {
+                        fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                        fontWeight: isTV ? '600' : isLargeTablet ? '500' : isTablet ? '500' : '500',
+                        color: currentTheme.colors.mediumEmphasis,
+                      },
+                    ]}
+                  >
                     {formatRuntime(effectiveRuntime)}
                   </Text>
                 </View>
@@ -1460,32 +1616,52 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                           styles.imdbLogoHorizontal,
                           {
                             width: isTV ? 32 : isLargeTablet ? 30 : isTablet ? 28 : 28,
-                            height: isTV ? 17 : isLargeTablet ? 16 : isTablet ? 15 : 15
-                          }
+                            height: isTV ? 17 : isLargeTablet ? 16 : isTablet ? 15 : 15,
+                          },
                         ]}
                         resizeMode={FastImage.resizeMode.contain}
                       />
-                      <Text style={[
-                        styles.ratingTextHorizontal,
-                        {
-                          fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
-                          fontWeight: isTV ? '600' : isLargeTablet ? '600' : isTablet ? '600' : '600',
-                          color: '#F5C518'
-                        }
-                      ]}>
+                      <Text
+                        style={[
+                          styles.ratingTextHorizontal,
+                          {
+                            fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                            fontWeight: isTV
+                              ? '600'
+                              : isLargeTablet
+                                ? '600'
+                                : isTablet
+                                  ? '600'
+                                  : '600',
+                            color: '#F5C518',
+                          },
+                        ]}
+                      >
                         {effectiveVote.toFixed(1)}
                       </Text>
                     </>
                   ) : (
                     <>
-                      <MaterialIcons name="star" size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14} color="#FFD700" />
-                      <Text style={[
-                        styles.ratingTextHorizontal,
-                        {
-                          fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
-                          fontWeight: isTV ? '600' : isLargeTablet ? '600' : isTablet ? '600' : '600'
-                        }
-                      ]}>
+                      <MaterialIcons
+                        name="star"
+                        size={isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14}
+                        color="#FFD700"
+                      />
+                      <Text
+                        style={[
+                          styles.ratingTextHorizontal,
+                          {
+                            fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                            fontWeight: isTV
+                              ? '600'
+                              : isLargeTablet
+                                ? '600'
+                                : isTablet
+                                  ? '600'
+                                  : '600',
+                          },
+                        ]}
+                      >
                         {effectiveVote.toFixed(1)}
                       </Text>
                     </>
@@ -1493,13 +1669,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 </View>
               )}
               {episode.air_date && (
-                <Text style={[
-                  styles.airDateTextHorizontal,
-                  {
-                    color: currentTheme.colors.mediumEmphasis,
-                    fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11
-                  }
-                ]}>
+                <Text
+                  style={[
+                    styles.airDateTextHorizontal,
+                    {
+                      color: currentTheme.colors.mediumEmphasis,
+                      fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                    },
+                  ]}
+                >
                   {formatDate(episode.air_date)}
                 </Text>
               )}
@@ -1515,7 +1693,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   {
                     width: `${progressPercent}%`,
                     backgroundColor: currentTheme.colors.primary,
-                  }
+                  },
                 ]}
               />
             </View>
@@ -1523,35 +1701,42 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
           {/* Completed Badge */}
           {progressPercent >= 85 && (
-            <View style={[
-              styles.completedBadgeHorizontal,
-              {
-                backgroundColor: currentTheme.colors.primary,
-                width: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
-                height: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
-                borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-                top: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-                left: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-              }
-            ]}>
-              <MaterialIcons name="check" size={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16} color="#fff" />
+            <View
+              style={[
+                styles.completedBadgeHorizontal,
+                {
+                  backgroundColor: currentTheme.colors.primary,
+                  width: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
+                  height: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
+                  borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                  top: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                  left: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="check"
+                size={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+                color="#fff"
+              />
             </View>
           )}
           {(!progress || progressPercent === 0) && (
-            <View style={{
-              position: 'absolute',
-              top: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-              left: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-              width: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
-              height: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
-              borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-              borderWidth: 2,
-              borderStyle: 'dashed',
-              borderColor: currentTheme.colors.textMuted,
-              opacity: 0.9,
-            }} />
+            <View
+              style={{
+                position: 'absolute',
+                top: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                left: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                width: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
+                height: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 24,
+                borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                borderWidth: 2,
+                borderStyle: 'dashed',
+                borderColor: currentTheme.colors.textMuted,
+                opacity: 0.9,
+              }}
+            />
           )}
-
         </LinearGradient>
       </Focusable>
     );
@@ -1561,25 +1746,24 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
   return (
     <View style={styles.container}>
-      <Animated.View
-        entering={FadeIn.duration(300).delay(50)}
-      >
+      <Animated.View entering={FadeIn.duration(300).delay(50)}>
         {renderSeasonSelector()}
       </Animated.View>
 
-      <Animated.View
-        entering={FadeIn.duration(300).delay(100)}
-      >
-        <Text style={[
-          styles.sectionTitle,
-          {
-            color: currentTheme.colors.highEmphasis,
-            fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-            marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-            paddingHorizontal: horizontalPadding
-          }
-        ]}>
-          {currentSeasonEpisodes.length} {currentSeasonEpisodes.length === 1 ? 'Episode' : 'Episodes'}
+      <Animated.View entering={FadeIn.duration(300).delay(100)}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            {
+              color: currentTheme.colors.highEmphasis,
+              fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+              marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+              paddingHorizontal: horizontalPadding,
+            },
+          ]}
+        >
+          {currentSeasonEpisodes.length}{' '}
+          {currentSeasonEpisodes.length === 1 ? 'Episode' : 'Episodes'}
         </Text>
 
         {/* Show message when no episodes are available for selected season */}
@@ -1596,8 +1780,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         )}
 
         {/* Only render episode list if there are episodes */}
-        {currentSeasonEpisodes.length > 0 && (
-          (settings?.episodeLayoutStyle === 'horizontal') ? (
+        {currentSeasonEpisodes.length > 0 &&
+          (settings?.episodeLayoutStyle === 'horizontal' ? (
             // Horizontal Layout (Netflix-style) - Using FlatList
             <FlatList
               key={`episodes-${settings?.episodeLayoutStyle}-${selectedSeason}`}
@@ -1605,13 +1789,17 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               data={currentSeasonEpisodes}
               renderItem={({ item: episode, index }) => (
                 <Animated.View
-                  entering={enableItemAnimations ? FadeIn.duration(300).delay(100 + index * 30) : undefined as any}
+                  entering={
+                    enableItemAnimations
+                      ? FadeIn.duration(300).delay(100 + index * 30)
+                      : (undefined as any)
+                  }
                   style={[
                     styles.episodeCardWrapperHorizontal,
                     {
                       width: horizontalCardWidth,
-                      marginRight: horizontalItemSpacing
-                    }
+                      marginRight: horizontalItemSpacing,
+                    },
                   ]}
                 >
                   {renderHorizontalEpisodeCard(episode)}
@@ -1624,8 +1812,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 styles.episodeListContentHorizontal,
                 {
                   paddingLeft: horizontalPadding,
-                  paddingRight: horizontalPadding
-                }
+                  paddingRight: horizontalPadding,
+                },
               ]}
               removeClippedSubviews
               initialNumToRender={3}
@@ -1638,20 +1826,20 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 const length = horizontalCardWidth + horizontalItemSpacing;
                 return {
                   length,
-                  offset: horizontalPadding + (length * index), // Account for left padding
+                  offset: horizontalPadding + length * index, // Account for left padding
                   index,
                 };
               }}
-              onScrollToIndexFailed={(info) => {
+              onScrollToIndexFailed={info => {
                 // Fallback if scrollToIndex fails - use scrollToOffset with calculated position
                 const wait = new Promise(resolve => setTimeout(resolve, 500));
                 wait.then(() => {
                   if (horizontalEpisodeScrollViewRef.current) {
                     const length = horizontalCardWidth + horizontalItemSpacing;
-                    const offset = horizontalPadding + (length * info.index);
+                    const offset = horizontalPadding + length * info.index;
                     horizontalEpisodeScrollViewRef.current.scrollToOffset({
-                      offset: offset,
-                      animated: true
+                      offset,
+                      animated: true,
                     });
                   }
                 });
@@ -1665,7 +1853,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               data={currentSeasonEpisodes}
               renderItem={({ item: episode, index }) => (
                 <Animated.View
-                  entering={enableItemAnimations ? FadeIn.duration(300).delay(100 + index * 30) : undefined as any}
+                  entering={
+                    enableItemAnimations
+                      ? FadeIn.duration(300).delay(100 + index * 30)
+                      : (undefined as any)
+                  }
                 >
                   {renderVerticalEpisodeCard(episode)}
                 </Animated.View>
@@ -1675,13 +1867,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 styles.episodeListContentVertical,
                 {
                   paddingHorizontal: horizontalPadding,
-                  paddingBottom: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 8
-                }
+                  paddingBottom: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 8,
+                },
               ]}
               removeClippedSubviews
             />
-          )
-        )}
+          ))}
       </Animated.View>
 
       {/* Episode Action Menu Modal */}
@@ -1713,7 +1904,7 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               alignSelf: 'center',
               borderWidth: 1,
               borderColor: 'rgba(255, 255, 255, 0.1)', // Subtle border
-              shadowColor: "#000",
+              shadowColor: '#000',
               shadowOffset: {
                 width: 0,
                 height: 10,
@@ -1722,22 +1913,30 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               shadowRadius: 13.16,
               elevation: 20,
             }}
-            onPress={(e) => e.stopPropagation()}
+            onPress={e => e.stopPropagation()}
           >
             {/* Header */}
             <View style={{ marginBottom: isTV ? 20 : 16 }}>
-              <Text style={{
-                color: '#FFFFFF', // High contrast text
-                fontSize: isTV ? 20 : 18,
-                fontWeight: '700',
-                marginBottom: 4,
-              }}>
-                {selectedEpisodeForAction ? `S${selectedEpisodeForAction.season_number}E${selectedEpisodeForAction.episode_number}` : ''}
+              <Text
+                style={{
+                  color: '#FFFFFF', // High contrast text
+                  fontSize: isTV ? 20 : 18,
+                  fontWeight: '700',
+                  marginBottom: 4,
+                }}
+              >
+                {selectedEpisodeForAction
+                  ? `S${selectedEpisodeForAction.season_number}E${selectedEpisodeForAction.episode_number}`
+                  : ''}
               </Text>
-              <Text style={{
-                color: '#AAAAAA', // Medium emphasis text
-                fontSize: isTV ? 16 : 14,
-              }} numberOfLines={1} ellipsizeMode="tail">
+              <Text
+                style={{
+                  color: '#AAAAAA', // Medium emphasis text
+                  fontSize: isTV ? 16 : 14,
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {selectedEpisodeForAction?.name || ''}
               </Text>
             </View>
@@ -1745,8 +1944,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             {/* Action buttons */}
             <View style={{ gap: isTV ? 12 : 10 }}>
               {/* Mark as Watched / Unwatched */}
-              {selectedEpisodeForAction && (
-                isEpisodeWatched(selectedEpisodeForAction) ? (
+              {selectedEpisodeForAction &&
+                (isEpisodeWatched(selectedEpisodeForAction) ? (
                   <TouchableOpacity
                     style={{
                       flexDirection: 'row',
@@ -1765,11 +1964,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                       color="#FFFFFF"
                       style={{ marginRight: 12 }}
                     />
-                    <Text style={{
-                      color: '#FFFFFF',
-                      fontSize: isTV ? 16 : 15,
-                      fontWeight: '500',
-                    }}>
+                    <Text
+                      style={{
+                        color: '#FFFFFF',
+                        fontSize: isTV ? 16 : 15,
+                        fontWeight: '500',
+                      }}
+                    >
                       {markingAsWatched ? 'Removing...' : 'Mark as Unwatched'}
                     </Text>
                   </TouchableOpacity>
@@ -1792,16 +1993,17 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                       color="#FFFFFF"
                       style={{ marginRight: 12 }}
                     />
-                    <Text style={{
-                      color: '#FFFFFF',
-                      fontSize: isTV ? 16 : 15,
-                      fontWeight: '600',
-                    }}>
+                    <Text
+                      style={{
+                        color: '#FFFFFF',
+                        fontSize: isTV ? 16 : 15,
+                        fontWeight: '600',
+                      }}
+                    >
                       {markingAsWatched ? 'Marking...' : 'Mark as Watched'}
                     </Text>
                   </TouchableOpacity>
-                )
-              )}
+                ))}
 
               {/* Mark Season as Watched / Unwatched */}
               {isSeasonWatched() ? (
@@ -1823,12 +2025,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     color="#FFFFFF"
                     style={{ marginRight: 12 }}
                   />
-                  <Text style={{
-                    color: '#FFFFFF',
-                    fontSize: isTV ? 16 : 15,
-                    fontWeight: '500',
-                    flex: 1, // Allow text to take up space
-                  }} numberOfLines={1}>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: isTV ? 16 : 15,
+                      fontWeight: '500',
+                      flex: 1, // Allow text to take up space
+                    }}
+                    numberOfLines={1}
+                  >
                     {markingAsWatched ? 'Removing...' : `Unmark Season ${selectedSeason}`}
                   </Text>
                 </TouchableOpacity>
@@ -1851,12 +2056,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     color="#FFFFFF"
                     style={{ marginRight: 12 }}
                   />
-                  <Text style={{
-                    color: '#FFFFFF',
-                    fontSize: isTV ? 16 : 15,
-                    fontWeight: '500',
-                    flex: 1,
-                  }} numberOfLines={1}>
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: isTV ? 16 : 15,
+                      fontWeight: '500',
+                      flex: 1,
+                    }}
+                    numberOfLines={1}
+                  >
                     {markingAsWatched ? 'Marking...' : `Mark Season ${selectedSeason}`}
                   </Text>
                 </TouchableOpacity>
@@ -1871,11 +2079,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 }}
                 onPress={closeEpisodeActionMenu}
               >
-                <Text style={{
-                  color: '#999999',
-                  fontSize: isTV ? 15 : 14,
-                  fontWeight: '500',
-                }}>
+                <Text
+                  style={{
+                    color: '#999999',
+                    fontSize: isTV ? 15 : 14,
+                    fontWeight: '500',
+                  }}
+                >
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -2364,5 +2574,4 @@ const styles = StyleSheet.create({
   selectedSeasonTextButtonTextTablet: {
     fontWeight: '800',
   },
-
 });

@@ -5,12 +5,13 @@
  */
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
+
+import { BLUR_CONFIG } from './constants';
 import {
   HERO_HEIGHT,
   SCREEN_WIDTH as width,
   IS_TABLET as isTablet,
 } from '../../../constants/dimensions';
-import { BLUR_CONFIG } from './constants';
 
 // =============================================================================
 // Common Layout Styles

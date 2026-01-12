@@ -1,20 +1,30 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useToast } from '../../contexts/ToastContext';
-import { DeviceEventEmitter } from 'react-native';
-import { View, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions, Platform, Text, Share } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  DeviceEventEmitter,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  Text,
+  Share,
+} from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+
+import { DropUpMenu } from './DropUpMenu';
+import { Top10Badge, BadgeStyle } from './Top10Badge';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useTraktContext } from '../../contexts/TraktContext';
+import { triggerLight } from '../../hooks/useHaptics';
 import { useSettings } from '../../hooks/useSettings';
 import { catalogService, StreamingContent } from '../../services/catalogService';
-import { DropUpMenu } from './DropUpMenu';
 import { mmkvStorage } from '../../services/mmkvStorage';
 import { storageService } from '../../services/storageService';
 import { TraktService } from '../../services/traktService';
-import { useTraktContext } from '../../contexts/TraktContext';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { triggerLight } from '../../hooks/useHaptics';
-import { Top10Badge, BadgeStyle } from './Top10Badge';
 
 interface ContentItemProps {
   item: StreamingContent;
@@ -47,10 +57,32 @@ const calculatePosterLayout = (screenWidth: number) => {
   const deviceType = getDeviceType(screenWidth);
 
   // Responsive sizing based on device type
-  const MIN_POSTER_WIDTH = deviceType === 'tv' ? 180 : deviceType === 'largeTablet' ? 160 : deviceType === 'tablet' ? 140 : 100;
-  const MAX_POSTER_WIDTH = deviceType === 'tv' ? 220 : deviceType === 'largeTablet' ? 200 : deviceType === 'tablet' ? 180 : 130;
-  const LEFT_PADDING = deviceType === 'tv' ? 32 : deviceType === 'largeTablet' ? 28 : deviceType === 'tablet' ? 24 : 16;
-  const SPACING = deviceType === 'tv' ? 12 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
+  const MIN_POSTER_WIDTH =
+    deviceType === 'tv'
+      ? 180
+      : deviceType === 'largeTablet'
+        ? 160
+        : deviceType === 'tablet'
+          ? 140
+          : 100;
+  const MAX_POSTER_WIDTH =
+    deviceType === 'tv'
+      ? 220
+      : deviceType === 'largeTablet'
+        ? 200
+        : deviceType === 'tablet'
+          ? 180
+          : 130;
+  const LEFT_PADDING =
+    deviceType === 'tv'
+      ? 32
+      : deviceType === 'largeTablet'
+        ? 28
+        : deviceType === 'tablet'
+          ? 24
+          : 16;
+  const SPACING =
+    deviceType === 'tv' ? 12 : deviceType === 'largeTablet' ? 10 : deviceType === 'tablet' ? 8 : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
@@ -58,7 +90,14 @@ const calculatePosterLayout = (screenWidth: number) => {
   // Try different numbers of full posters to find the best fit
   let bestLayout = {
     numFullPosters: 3,
-    posterWidth: deviceType === 'tv' ? 200 : deviceType === 'largeTablet' ? 180 : deviceType === 'tablet' ? 160 : 120
+    posterWidth:
+      deviceType === 'tv'
+        ? 200
+        : deviceType === 'largeTablet'
+          ? 180
+          : deviceType === 'tablet'
+            ? 160
+            : 120,
   };
 
   for (let n = 3; n <= 6; n++) {
@@ -78,24 +117,31 @@ const calculatePosterLayout = (screenWidth: number) => {
     numFullPosters: bestLayout.numFullPosters,
     posterWidth: bestLayout.posterWidth,
     spacing: SPACING,
-    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+    partialPosterWidth: bestLayout.posterWidth * 0.25, // 1/4 of next poster
   };
 };
 
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
-const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, deferMs = 0, rank, badgeStyle = 'disney' }: ContentItemProps) => {
+const ContentItem = ({
+  item,
+  onPress,
+  shouldLoadImage: shouldLoadImageProp,
+  deferMs = 0,
+  rank,
+  badgeStyle = 'disney',
+}: ContentItemProps) => {
   // Track inLibrary status locally to force re-render
   const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
 
   useEffect(() => {
     // Subscribe to library updates and update local state if this item's status changes
-    const unsubscribe = catalogService.subscribeToLibraryUpdates((items) => {
-      const found = items.find((libItem) => libItem.id === item.id && libItem.type === item.type);
+    const unsubscribe = catalogService.subscribeToLibraryUpdates(items => {
+      const found = items.find(libItem => libItem.id === item.id && libItem.type === item.type);
       const newInLibrary = !!found;
       // Only update state if the value actually changed to prevent unnecessary re-renders
-      setInLibrary(prev => prev !== newInLibrary ? newInLibrary : prev);
+      setInLibrary(prev => (prev !== newInLibrary ? newInLibrary : prev));
     });
     return () => unsubscribe();
   }, [item.id, item.type]);
@@ -103,7 +149,9 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   // Load watched state from AsyncStorage when item changes
   useEffect(() => {
     const updateWatched = () => {
-      mmkvStorage.getItem(`watched:${item.type}:${item.id}`).then((val: string | null) => setIsWatched(val === 'true'));
+      mmkvStorage
+        .getItem(`watched:${item.type}:${item.id}`)
+        .then((val: string | null) => setIsWatched(val === 'true'));
     };
     updateWatched();
     const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
@@ -115,7 +163,15 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const [imageError, setImageError] = useState(false);
 
   // Trakt integration
-  const { isAuthenticated, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection } = useTraktContext();
+  const {
+    isAuthenticated,
+    isInWatchlist,
+    isInCollection,
+    addToWatchlist,
+    removeFromWatchlist,
+    addToCollection,
+    removeFromCollection,
+  } = useTraktContext();
 
   useEffect(() => {
     // Reset image error state when item changes, allowing for retry on re-render
@@ -125,11 +181,19 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
   const { currentTheme } = useTheme();
   const { settings, isLoaded } = useSettings();
   const { showSuccess, showInfo } = useToast();
-  const posterRadius = typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12;
+  const posterRadius =
+    typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12;
   // Memoize poster width calculation to avoid recalculating on every render
   const posterWidth = React.useMemo(() => {
     const deviceType = getDeviceType(width);
-    const sizeMultiplier = deviceType === 'tv' ? 1.2 : deviceType === 'largeTablet' ? 1.1 : deviceType === 'tablet' ? 1.0 : 0.9;
+    const sizeMultiplier =
+      deviceType === 'tv'
+        ? 1.2
+        : deviceType === 'largeTablet'
+          ? 1.1
+          : deviceType === 'tablet'
+            ? 1.0
+            : 0.9;
 
     switch (settings.posterSize) {
       case 'small':
@@ -163,7 +227,8 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
     return {
       finalWidth: w,
       finalAspectRatio: ratio,
-      borderRadius: typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12
+      borderRadius:
+        typeof settings.posterBorderRadius === 'number' ? settings.posterBorderRadius : 12,
     };
   }, [posterWidth, item.posterShape, settings.posterBorderRadius]);
 
@@ -183,90 +248,111 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
     }
   }, [item.id, item.type, onPress]);
 
-  const handleOptionSelect = useCallback(async (option: string) => {
-    switch (option) {
-      case 'library':
-        if (inLibrary) {
-          catalogService.removeFromLibrary(item.type, item.id);
-          showInfo('Removed from Library', 'Removed from your local library');
-        } else {
-          catalogService.addToLibrary(item);
-          showSuccess('Added to Library', 'Added to your local library');
-        }
-        break;
-      case 'watched': {
-        const targetWatched = !isWatched;
-        setIsWatched(targetWatched);
-        try {
-          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, targetWatched ? 'true' : 'false');
-        } catch { }
-        showInfo(targetWatched ? 'Marked as Watched' : 'Marked as Unwatched', targetWatched ? 'Item marked as watched' : 'Item marked as unwatched');
-        setTimeout(() => {
-          DeviceEventEmitter.emit('watchedStatusChanged');
-        }, 100);
-
-        // Best-effort sync: record local progress and push to Trakt if available
-        if (targetWatched) {
-          try {
-            await storageService.setWatchProgress(
-              item.id,
-              item.type,
-              { currentTime: 1, duration: 1, lastUpdated: Date.now() },
-              undefined,
-              { forceNotify: true, forceWrite: true }
-            );
-          } catch { }
-
-          if (item.type === 'movie') {
-            try {
-              const trakt = TraktService.getInstance();
-              if (await trakt.isAuthenticated()) {
-                await trakt.addToWatchedMovies(item.id);
-                try {
-                  await storageService.updateTraktSyncStatus(item.id, item.type, true, 100);
-                } catch { }
-              }
-            } catch { }
+  const handleOptionSelect = useCallback(
+    async (option: string) => {
+      switch (option) {
+        case 'library':
+          if (inLibrary) {
+            catalogService.removeFromLibrary(item.type, item.id);
+            showInfo('Removed from Library', 'Removed from your local library');
+          } else {
+            catalogService.addToLibrary(item);
+            showSuccess('Added to Library', 'Added to your local library');
           }
+          break;
+        case 'watched': {
+          const targetWatched = !isWatched;
+          setIsWatched(targetWatched);
+          try {
+            await mmkvStorage.setItem(
+              `watched:${item.type}:${item.id}`,
+              targetWatched ? 'true' : 'false'
+            );
+          } catch {}
+          showInfo(
+            targetWatched ? 'Marked as Watched' : 'Marked as Unwatched',
+            targetWatched ? 'Item marked as watched' : 'Item marked as unwatched'
+          );
+          setTimeout(() => {
+            DeviceEventEmitter.emit('watchedStatusChanged');
+          }, 100);
+
+          // Best-effort sync: record local progress and push to Trakt if available
+          if (targetWatched) {
+            try {
+              await storageService.setWatchProgress(
+                item.id,
+                item.type,
+                { currentTime: 1, duration: 1, lastUpdated: Date.now() },
+                undefined,
+                { forceNotify: true, forceWrite: true }
+              );
+            } catch {}
+
+            if (item.type === 'movie') {
+              try {
+                const trakt = TraktService.getInstance();
+                if (await trakt.isAuthenticated()) {
+                  await trakt.addToWatchedMovies(item.id);
+                  try {
+                    await storageService.updateTraktSyncStatus(item.id, item.type, true, 100);
+                  } catch {}
+                }
+              } catch {}
+            }
+          }
+          setMenuVisible(false);
+          break;
         }
-        setMenuVisible(false);
-        break;
-      }
-      case 'playlist':
-        break;
-      case 'share': {
-        let url = '';
-        if (item.id) {
-          url = `https://www.imdb.com/title/${item.id}/`;
+        case 'playlist':
+          break;
+        case 'share': {
+          let url = '';
+          if (item.id) {
+            url = `https://www.imdb.com/title/${item.id}/`;
+          }
+          const message = `${item.name}\n${url}`;
+          Share.share({ message, url, title: item.name });
+          break;
         }
-        const message = `${item.name}\n${url}`;
-        Share.share({ message, url, title: item.name });
-        break;
-      }
-      case 'trakt-watchlist': {
-        if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
-          await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
-          showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
-        } else {
-          await addToWatchlist(item.id, item.type as 'movie' | 'show');
-          showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
+        case 'trakt-watchlist': {
+          if (isInWatchlist(item.id, item.type as 'movie' | 'show')) {
+            await removeFromWatchlist(item.id, item.type as 'movie' | 'show');
+            showInfo('Removed from Watchlist', 'Removed from your Trakt watchlist');
+          } else {
+            await addToWatchlist(item.id, item.type as 'movie' | 'show');
+            showSuccess('Added to Watchlist', 'Added to your Trakt watchlist');
+          }
+          setMenuVisible(false);
+          break;
         }
-        setMenuVisible(false);
-        break;
-      }
-      case 'trakt-collection': {
-        if (isInCollection(item.id, item.type as 'movie' | 'show')) {
-          await removeFromCollection(item.id, item.type as 'movie' | 'show');
-          showInfo('Removed from Collection', 'Removed from your Trakt collection');
-        } else {
-          await addToCollection(item.id, item.type as 'movie' | 'show');
-          showSuccess('Added to Collection', 'Added to your Trakt collection');
+        case 'trakt-collection': {
+          if (isInCollection(item.id, item.type as 'movie' | 'show')) {
+            await removeFromCollection(item.id, item.type as 'movie' | 'show');
+            showInfo('Removed from Collection', 'Removed from your Trakt collection');
+          } else {
+            await addToCollection(item.id, item.type as 'movie' | 'show');
+            showSuccess('Added to Collection', 'Added to your Trakt collection');
+          }
+          setMenuVisible(false);
+          break;
         }
-        setMenuVisible(false);
-        break;
       }
-    }
-  }, [item, inLibrary, isWatched, isInWatchlist, isInCollection, addToWatchlist, removeFromWatchlist, addToCollection, removeFromCollection, showSuccess, showInfo]);
+    },
+    [
+      item,
+      inLibrary,
+      isWatched,
+      isInWatchlist,
+      isInCollection,
+      addToWatchlist,
+      removeFromWatchlist,
+      addToCollection,
+      removeFromCollection,
+      showSuccess,
+      showInfo,
+    ]
+  );
 
   const handleMenuClose = useCallback(() => {
     setMenuVisible(false);
@@ -307,9 +393,15 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
 
   return (
     <>
-      <Animated.View style={[styles.itemContainer, { width: finalWidth }]} entering={FadeIn.duration(300)}>
+      <Animated.View
+        style={[styles.itemContainer, { width: finalWidth }]}
+        entering={FadeIn.duration(300)}
+      >
         <TouchableOpacity
-          style={[styles.contentItem, { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius }]}
+          style={[
+            styles.contentItem,
+            { width: finalWidth, aspectRatio: finalAspectRatio, borderRadius },
+          ]}
           activeOpacity={0.7}
           onPress={handlePress}
           onLongPress={handleLongPress}
@@ -322,9 +414,12 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 source={{
                   uri: optimizedPosterUrl,
                   priority: FastImage.priority.normal,
-                  cache: FastImage.cacheControl.immutable
+                  cache: FastImage.cacheControl.immutable,
                 }}
-                style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, borderRadius }]}
+                style={[
+                  styles.poster,
+                  { backgroundColor: currentTheme.colors.elevation1, borderRadius },
+                ]}
                 resizeMode={FastImage.resizeMode.cover}
                 onLoad={() => {
                   setImageError(false);
@@ -336,15 +431,37 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
               />
             ) : (
               // Show placeholder for items without posters
-              <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center', borderRadius: posterRadius }]}>
-                <Text style={{ color: currentTheme.colors.textMuted, fontSize: 10, textAlign: 'center' }}>
+              <View
+                style={[
+                  styles.poster,
+                  {
+                    backgroundColor: currentTheme.colors.elevation1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: posterRadius,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: currentTheme.colors.textMuted,
+                    fontSize: 10,
+                    textAlign: 'center',
+                  }}
+                >
                   {item.name.substring(0, 20)}...
                 </Text>
               </View>
             )}
             {imageError && (
-              <View style={[styles.loadingOverlay, { backgroundColor: currentTheme.colors.elevation1 }]}>
-                <MaterialIcons name="broken-image" size={24} color={currentTheme.colors.textMuted} />
+              <View
+                style={[styles.loadingOverlay, { backgroundColor: currentTheme.colors.elevation1 }]}
+              >
+                <MaterialIcons
+                  name="broken-image"
+                  size={24}
+                  color={currentTheme.colors.textMuted}
+                />
               </View>
             )}
             {isWatched && (
@@ -367,9 +484,7 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
             )}
-            {rank && rank >= 1 && rank <= 10 && (
-              <Top10Badge rank={rank} style={badgeStyle} />
-            )}
+            {rank && rank >= 1 && rank <= 10 && <Top10Badge rank={rank} style={badgeStyle} />}
           </View>
         </TouchableOpacity>
         {settings.showPosterTitles && (
@@ -378,8 +493,15 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
               styles.title,
               {
                 color: currentTheme.colors.mediumEmphasis,
-                fontSize: getDeviceType(width) === 'tv' ? 16 : getDeviceType(width) === 'largeTablet' ? 15 : getDeviceType(width) === 'tablet' ? 14 : 13
-              }
+                fontSize:
+                  getDeviceType(width) === 'tv'
+                    ? 16
+                    : getDeviceType(width) === 'largeTablet'
+                      ? 15
+                      : getDeviceType(width) === 'tablet'
+                        ? 14
+                        : 13,
+              },
             ]}
             numberOfLines={2}
           >
@@ -473,7 +595,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 4,
     textAlign: 'center',
-  }
+  },
 });
 
 export default React.memo(ContentItem, (prev, next) => {

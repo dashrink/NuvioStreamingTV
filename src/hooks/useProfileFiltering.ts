@@ -4,7 +4,9 @@
  */
 
 import { useMemo, useCallback } from 'react';
+
 import { useProfile } from '../contexts/ProfileContext';
+import { Profile } from '../types/profile';
 import {
   filterContentForProfile,
   isContentAllowed,
@@ -14,7 +16,6 @@ import {
   createContentFilter,
   normalizeRating,
 } from '../utils/contentFilter';
-import { Profile } from '../types/profile';
 
 interface ContentItem {
   certification?: string;
@@ -72,9 +73,7 @@ export function useContentAllowed<T extends ContentItem>(content: T | null | und
 /**
  * Hook for checking if content should show a warning
  */
-export function useContentWarning<T extends ContentItem>(
-  content: T | null | undefined
-): boolean {
+export function useContentWarning<T extends ContentItem>(content: T | null | undefined): boolean {
   const { activeProfile } = useProfile();
 
   return useMemo(() => {

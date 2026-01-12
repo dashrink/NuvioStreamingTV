@@ -16,7 +16,7 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
   OS: 'ios',
   isTV: true,
   isTesting: true,
-  select: jest.fn((obj) => obj.ios || obj.default),
+  select: jest.fn(obj => obj.ios || obj.default),
   constants: {
     reactNativeVersion: { major: 0, minor: 81, patch: 4 },
   },
@@ -181,16 +181,14 @@ jest.mock('react-native', () => {
 // ============================================================================
 
 jest.mock('react-native-reanimated', () => {
-  const Reanimated = jest.requireActual(
-    'react-native-reanimated/mock'
-  );
+  const Reanimated = jest.requireActual('react-native-reanimated/mock');
 
   // Override specific functions that need custom behavior
-  Reanimated.useSharedValue = jest.fn((initial) => ({
+  Reanimated.useSharedValue = jest.fn(initial => ({
     value: initial,
   }));
 
-  Reanimated.useAnimatedStyle = jest.fn((styleFactory) => {
+  Reanimated.useAnimatedStyle = jest.fn(styleFactory => {
     // Return static style for tests
     return {};
   });
@@ -211,14 +209,14 @@ jest.mock('react-native-reanimated', () => {
 
   Reanimated.withSequence = jest.fn((...animations) => animations[animations.length - 1]);
   Reanimated.withDelay = jest.fn((_, animation) => animation);
-  Reanimated.withRepeat = jest.fn((animation) => animation);
+  Reanimated.withRepeat = jest.fn(animation => animation);
 
-  Reanimated.runOnJS = jest.fn((fn) => fn);
-  Reanimated.runOnUI = jest.fn((fn) => fn);
+  Reanimated.runOnJS = jest.fn(fn => fn);
+  Reanimated.runOnUI = jest.fn(fn => fn);
 
   Reanimated.cancelAnimation = jest.fn();
 
-  Reanimated.interpolate = jest.fn((value) => value);
+  Reanimated.interpolate = jest.fn(value => value);
   Reanimated.Extrapolate = { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' };
 
   return Reanimated;
@@ -257,7 +255,7 @@ jest.mock('@react-navigation/native', () => {
     ...actual,
     useNavigation: jest.fn(() => mockNavigation),
     useRoute: jest.fn(() => mockRoute),
-    useFocusEffect: jest.fn((callback) => {
+    useFocusEffect: jest.fn(callback => {
       // Execute the callback immediately in tests
       if (typeof callback === 'function') {
         const cleanup = callback();
@@ -452,7 +450,7 @@ export const getNavigationMock = () => mockNavigation;
 
 // Helper to reset navigation mock
 export const resetNavigationMock = () => {
-  Object.values(mockNavigation).forEach((fn) => {
+  Object.values(mockNavigation).forEach(fn => {
     if (typeof fn === 'function' && 'mockClear' in fn) {
       (fn as jest.Mock).mockClear();
     }

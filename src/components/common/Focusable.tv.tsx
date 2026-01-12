@@ -54,7 +54,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import { useLongPress, AnimationAwareConfig } from '../../hooks/useLongPress';
+
 import {
   useDevicePerformance,
   PerformanceTier,
@@ -62,6 +62,7 @@ import {
   getSpringConfig,
   getAnimationConfig,
 } from '../../hooks/useDevicePerformance';
+import { useLongPress, AnimationAwareConfig } from '../../hooks/useLongPress';
 
 // =============================================================================
 // Types & Interfaces
@@ -326,11 +327,14 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
     ref
   ) => {
     // Get device performance tier for animation optimization
-    const { performanceTier: detectedTier, animationConfig: perfAnimConfig } = useDevicePerformance();
-    const performanceTier = forcePerformanceTier ?? (usePerformanceOptimization ? detectedTier : PerformanceTier.HIGH);
+    const { performanceTier: detectedTier, animationConfig: perfAnimConfig } =
+      useDevicePerformance();
+    const performanceTier =
+      forcePerformanceTier ?? (usePerformanceOptimization ? detectedTier : PerformanceTier.HIGH);
 
     // Check if we should reduce animations based on performance tier
-    const shouldReduceAnimations = performanceTier === PerformanceTier.LOW || performanceTier === PerformanceTier.MEDIUM;
+    const shouldReduceAnimations =
+      performanceTier === PerformanceTier.LOW || performanceTier === PerformanceTier.MEDIUM;
     const isLowEndDevice = performanceTier === PerformanceTier.LOW;
 
     // Merge default animation config with provided config and performance optimizations
@@ -342,9 +346,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
 
       // Apply performance-based overrides if optimization is enabled
       if (usePerformanceOptimization) {
-        const perfConfig = forcePerformanceTier
-          ? getAnimationConfig()
-          : perfAnimConfig;
+        const perfConfig = forcePerformanceTier ? getAnimationConfig() : perfAnimConfig;
 
         return {
           focusScale: perfConfig.enableScaleAnimation ? baseConfig.focusScale : 1.0,
@@ -365,9 +367,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         return SPRING_CONFIG;
       }
 
-      const perfConfig = forcePerformanceTier
-        ? getAnimationConfig()
-        : perfAnimConfig;
+      const perfConfig = forcePerformanceTier ? getAnimationConfig() : perfAnimConfig;
 
       return {
         damping: perfConfig.springDamping,
@@ -408,13 +408,16 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
     }, []);
 
     // Animation-aware config for long-press hook
-    const animationAwareConfig = useMemo((): AnimationAwareConfig => ({
-      enabled: animationAwareLongPress.enabled ?? true,
-      isAnimating: isAnimatingCallback,
-      maxQueueWaitMs: animationAwareLongPress.maxQueueWaitMs ?? 500,
-      onActionQueued: animationAwareLongPress.onActionQueued,
-      onQueuedActionExecuted: animationAwareLongPress.onQueuedActionExecuted,
-    }), [animationAwareLongPress, isAnimatingCallback]);
+    const animationAwareConfig = useMemo(
+      (): AnimationAwareConfig => ({
+        enabled: animationAwareLongPress.enabled ?? true,
+        isAnimating: isAnimatingCallback,
+        maxQueueWaitMs: animationAwareLongPress.maxQueueWaitMs ?? 500,
+        onActionQueued: animationAwareLongPress.onActionQueued,
+        onQueuedActionExecuted: animationAwareLongPress.onQueuedActionExecuted,
+      }),
+      [animationAwareLongPress, isAnimatingCallback]
+    );
 
     // Long press hook integration with animation-aware queuing
     const {
@@ -437,26 +440,20 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
      * Main animated style for focus/blur transitions
      */
     const animatedFocusStyle = useAnimatedStyle(() => {
-      const scale = interpolate(
-        focusProgress.value,
-        [0, 1],
-        [1, config.focusScale]
-      );
+      const scale = interpolate(focusProgress.value, [0, 1], [1, config.focusScale]);
 
-      const opacity = interpolate(
-        focusProgress.value,
-        [0, 1],
-        [config.unfocusedOpacity, 1]
-      );
+      const opacity = interpolate(focusProgress.value, [0, 1], [config.unfocusedOpacity, 1]);
 
       // Shadow animation for Apple TV
-      const shadowOpacity = Platform.OS === 'ios' && config.animateShadow
-        ? interpolate(focusProgress.value, [0, 1], [0, 0.3])
-        : 0;
+      const shadowOpacity =
+        Platform.OS === 'ios' && config.animateShadow
+          ? interpolate(focusProgress.value, [0, 1], [0, 0.3])
+          : 0;
 
-      const shadowRadius = Platform.OS === 'ios' && config.animateShadow
-        ? interpolate(focusProgress.value, [0, 1], [0, 10])
-        : 0;
+      const shadowRadius =
+        Platform.OS === 'ios' && config.animateShadow
+          ? interpolate(focusProgress.value, [0, 1], [0, 10])
+          : 0;
 
       return {
         transform: [{ scale }],
@@ -476,11 +473,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         return {};
       }
 
-      const borderWidth = interpolate(
-        focusProgress.value,
-        [0, 1],
-        [0, config.focusBorderWidth]
-      );
+      const borderWidth = interpolate(focusProgress.value, [0, 1], [0, config.focusBorderWidth]);
 
       // For border color animation, we use interpolateColor
       const borderColor = interpolateColor(
@@ -499,11 +492,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
      * Press feedback style
      */
     const animatedPressStyle = useAnimatedStyle(() => {
-      const scale = interpolate(
-        pressProgress.value,
-        [0, 1],
-        [1, 0.98]
-      );
+      const scale = interpolate(pressProgress.value, [0, 1], [1, 0.98]);
 
       return {
         transform: [{ scale }],
@@ -559,7 +548,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       // Start the animation with performance-appropriate method
       if (isLowEndDevice) {
         // Use timing for immediate response on low-end devices
-        focusProgress.value = withTiming(1, IMMEDIATE_TIMING_CONFIG, (finished) => {
+        focusProgress.value = withTiming(1, IMMEDIATE_TIMING_CONFIG, finished => {
           'worklet';
           if (finished) {
             runOnJS(handleAnimationComplete)();
@@ -567,7 +556,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         });
       } else {
         // Use spring animation for smooth feel on capable devices
-        focusProgress.value = withSpring(1, springConfig, (finished) => {
+        focusProgress.value = withSpring(1, springConfig, finished => {
           'worklet';
           if (finished) {
             runOnJS(handleAnimationComplete)();
@@ -578,7 +567,14 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       // Clear any pending focus callback and call the current one
       pendingFocusCallbackRef.current = null;
       onFocus?.();
-    }, [focusProgress, onFocus, rapidConfig, handleAnimationComplete, isLowEndDevice, springConfig]);
+    }, [
+      focusProgress,
+      onFocus,
+      rapidConfig,
+      handleAnimationComplete,
+      isLowEndDevice,
+      springConfig,
+    ]);
 
     /**
      * Handle blur event with rapid input protection and animation tracking
@@ -605,7 +601,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
       // Start the animation with performance-appropriate method
       if (isLowEndDevice) {
         // Use timing for immediate response on low-end devices
-        focusProgress.value = withTiming(0, IMMEDIATE_TIMING_CONFIG, (finished) => {
+        focusProgress.value = withTiming(0, IMMEDIATE_TIMING_CONFIG, finished => {
           'worklet';
           if (finished) {
             runOnJS(handleAnimationComplete)();
@@ -613,7 +609,7 @@ const Focusable = forwardRef<FocusableRef, FocusableProps>(
         });
       } else {
         // Use spring animation for smooth feel on capable devices
-        focusProgress.value = withSpring(0, springConfig, (finished) => {
+        focusProgress.value = withSpring(0, springConfig, finished => {
           'worklet';
           if (finished) {
             runOnJS(handleAnimationComplete)();

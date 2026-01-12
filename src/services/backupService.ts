@@ -1,10 +1,11 @@
-import { mmkvStorage } from './mmkvStorage';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
-import { logger } from '../utils/logger';
-import { AppSettings, DEFAULT_SETTINGS } from '../hooks/useSettings';
+
 import { StreamingContent } from './catalogService';
+import { mmkvStorage } from './mmkvStorage';
 import { DownloadItem } from '../contexts/DownloadsContext';
+import { AppSettings, DEFAULT_SETTINGS } from '../hooks/useSettings';
+import { logger } from '../utils/logger';
 
 export interface BackupData {
   version: string;
@@ -96,7 +97,7 @@ export class BackupService {
   private readonly BACKUP_VERSION = '1.0.0';
   private readonly BACKUP_FILENAME_PREFIX = 'nuvio_backup_';
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): BackupService {
     if (!BackupService.instance) {
@@ -126,7 +127,8 @@ export class BackupService {
         data: {
           settings: options.includeSettings !== false ? await this.getSettings() : DEFAULT_SETTINGS,
           library: options.includeLibrary !== false ? await this.getLibrary() : [],
-          watchProgress: options.includeWatchProgress !== false ? await this.getWatchProgress() : {},
+          watchProgress:
+            options.includeWatchProgress !== false ? await this.getWatchProgress() : {},
           addons: options.includeAddons !== false ? await this.getAddons() : [],
           downloads: options.includeDownloads !== false ? await this.getDownloads() : [],
           subtitles: await this.getSubtitleSettings(),
@@ -134,17 +136,33 @@ export class BackupService {
           continueWatchingRemoved: await this.getContinueWatchingRemoved(),
           contentDuration: await this.getContentDuration(),
           syncQueue: await this.getSyncQueue(),
-          traktSettings: options.includeTraktData !== false ? await this.getTraktSettings() : undefined,
-          localScrapers: options.includeLocalScrapers !== false ? await this.getLocalScrapers() : undefined,
+          traktSettings:
+            options.includeTraktData !== false ? await this.getTraktSettings() : undefined,
+          localScrapers:
+            options.includeLocalScrapers !== false ? await this.getLocalScrapers() : undefined,
           apiKeys: options.includeApiKeys !== false ? await this.getApiKeys() : undefined,
-          catalogSettings: options.includeCatalogSettings !== false ? await this.getCatalogSettings() : undefined,
-          addonOrder: options.includeUserPreferences !== false ? await this.getAddonOrder() : undefined,
-          removedAddons: options.includeUserPreferences !== false ? await this.getRemovedAddons() : undefined,
-          globalSeasonViewMode: options.includeUserPreferences !== false ? await this.getGlobalSeasonViewMode() : undefined,
-          hasCompletedOnboarding: options.includeUserPreferences !== false ? await this.getHasCompletedOnboarding() : undefined,
-          showLoginHintToastOnce: options.includeUserPreferences !== false ? await this.getShowLoginHintToastOnce() : undefined,
-          watchedStatus: options.includeWatchProgress !== false ? await this.getWatchedStatus() : undefined,
-          catalogUiPreferences: options.includeSettings !== false ? await this.getCatalogUiPreferences() : undefined,
+          catalogSettings:
+            options.includeCatalogSettings !== false ? await this.getCatalogSettings() : undefined,
+          addonOrder:
+            options.includeUserPreferences !== false ? await this.getAddonOrder() : undefined,
+          removedAddons:
+            options.includeUserPreferences !== false ? await this.getRemovedAddons() : undefined,
+          globalSeasonViewMode:
+            options.includeUserPreferences !== false
+              ? await this.getGlobalSeasonViewMode()
+              : undefined,
+          hasCompletedOnboarding:
+            options.includeUserPreferences !== false
+              ? await this.getHasCompletedOnboarding()
+              : undefined,
+          showLoginHintToastOnce:
+            options.includeUserPreferences !== false
+              ? await this.getShowLoginHintToastOnce()
+              : undefined,
+          watchedStatus:
+            options.includeWatchProgress !== false ? await this.getWatchedStatus() : undefined,
+          catalogUiPreferences:
+            options.includeSettings !== false ? await this.getCatalogUiPreferences() : undefined,
         },
         metadata: {
           totalItems: 0,
@@ -152,7 +170,7 @@ export class BackupService {
           watchProgressCount: 0,
           downloadsCount: 0,
           addonsCount: 0,
-        }
+        },
       };
 
       // Calculate metadata
@@ -162,8 +180,9 @@ export class BackupService {
       backupData.metadata.addonsCount = backupData.data.addons.length;
 
       // Count scraper items if available
-      const scraperCount = backupData.data.localScrapers?.scrapers ?
-        Object.keys(backupData.data.localScrapers.scrapers).length : 0;
+      const scraperCount = backupData.data.localScrapers?.scrapers
+        ? Object.keys(backupData.data.localScrapers.scrapers).length
+        : 0;
       backupData.metadata.scrapersCount = scraperCount;
 
       backupData.metadata.totalItems =
@@ -183,7 +202,9 @@ export class BackupService {
       return fileUri;
     } catch (error) {
       logger.error('[BackupService] Failed to create backup:', error);
-      throw new Error(`Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -206,14 +227,14 @@ export class BackupService {
         addonsData,
         downloadsData,
         scrapersData,
-        watchedStatusData
+        watchedStatusData,
       ] = await Promise.all([
         this.getLibrary(),
         this.getWatchProgress(),
         this.getAddons(),
         this.getDownloads(),
         this.getLocalScrapers(),
-        this.getWatchedStatus()
+        this.getWatchedStatus(),
       ]);
 
       const libraryCount = Array.isArray(libraryData) ? libraryData.length : 0;
@@ -230,11 +251,25 @@ export class BackupService {
         downloads: downloadsCount,
         scrapers: scrapersCount,
         watchedStatus: watchedStatusCount,
-        total: libraryCount + watchProgressCount + addonsCount + downloadsCount + scrapersCount + watchedStatusCount
+        total:
+          libraryCount +
+          watchProgressCount +
+          addonsCount +
+          downloadsCount +
+          scrapersCount +
+          watchedStatusCount,
       };
     } catch (error) {
       logger.error('[BackupService] Failed to get backup preview:', error);
-      return { library: 0, watchProgress: 0, addons: 0, downloads: 0, scrapers: 0, watchedStatus: 0, total: 0 };
+      return {
+        library: 0,
+        watchProgress: 0,
+        addons: 0,
+        downloads: 0,
+        scrapers: 0,
+        watchedStatus: 0,
+        total: 0,
+      };
     }
   }
 
@@ -336,7 +371,9 @@ export class BackupService {
       logger.info('[BackupService] Backup restore completed successfully');
     } catch (error) {
       logger.error('[BackupService] Failed to restore backup:', error);
-      throw new Error(`Failed to restore backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to restore backup: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -354,11 +391,13 @@ export class BackupService {
         appVersion: backupData.appVersion,
         platform: backupData.platform,
         userScope: backupData.userScope,
-        metadata: backupData.metadata
+        metadata: backupData.metadata,
       };
     } catch (error) {
       logger.error('[BackupService] Failed to read backup info:', error);
-      throw new Error(`Invalid backup file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Invalid backup file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -367,7 +406,9 @@ export class BackupService {
    */
   public async listBackups(): Promise<string[]> {
     try {
-      const files = await FileSystem.readDirectoryAsync((FileSystem as any).documentDirectory || '/tmp/');
+      const files = await FileSystem.readDirectoryAsync(
+        (FileSystem as any).documentDirectory || '/tmp/'
+      );
       return files
         .filter(file => file.startsWith(this.BACKUP_FILENAME_PREFIX) && file.endsWith('.json'))
         .sort((a, b) => b.localeCompare(a)); // Sort by filename (newest first)
@@ -386,7 +427,9 @@ export class BackupService {
       logger.info('[BackupService] Backup file deleted:', fileUri);
     } catch (error) {
       logger.error('[BackupService] Failed to delete backup:', error);
-      throw new Error(`Failed to delete backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete backup: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -479,7 +522,7 @@ export class BackupService {
       const scope = await this.getUserScope();
       const scopedKey = `@user:${scope}:@subtitle_settings`;
       const subtitlesJson = await mmkvStorage.getItem(scopedKey);
-      let subtitleSettings = subtitlesJson ? JSON.parse(subtitlesJson) : {};
+      const subtitleSettings = subtitlesJson ? JSON.parse(subtitlesJson) : {};
 
       // Also check for legacy subtitle size preference
       const legacySubtitleSize = await mmkvStorage.getItem('@subtitle_size_preference');
@@ -568,14 +611,14 @@ export class BackupService {
         tokenExpiry,
         autosyncEnabled,
         syncFrequency,
-        completionThreshold
+        completionThreshold,
       ] = await Promise.all([
         mmkvStorage.getItem('trakt_access_token'),
         mmkvStorage.getItem('trakt_refresh_token'),
         mmkvStorage.getItem('trakt_token_expiry'),
         mmkvStorage.getItem('trakt_autosync_enabled'),
         mmkvStorage.getItem('trakt_sync_frequency'),
-        mmkvStorage.getItem('trakt_completion_threshold')
+        mmkvStorage.getItem('trakt_completion_threshold'),
       ]);
 
       return {
@@ -583,16 +626,21 @@ export class BackupService {
         authentication: {
           accessToken,
           refreshToken,
-          tokenExpiry: tokenExpiry ? parseInt(tokenExpiry, 10) : null
+          tokenExpiry: tokenExpiry ? parseInt(tokenExpiry, 10) : null,
         },
         autosync: {
-          enabled: autosyncEnabled ? (() => {
-            try { return JSON.parse(autosyncEnabled); }
-            catch { return true; }
-          })() : true,
+          enabled: autosyncEnabled
+            ? (() => {
+                try {
+                  return JSON.parse(autosyncEnabled);
+                } catch {
+                  return true;
+                }
+              })()
+            : true,
           frequency: syncFrequency ? parseInt(syncFrequency, 10) : 60000,
-          completionThreshold: completionThreshold ? parseInt(completionThreshold, 10) : 95
-        }
+          completionThreshold: completionThreshold ? parseInt(completionThreshold, 10) : 95,
+        },
       };
     } catch (error) {
       logger.error('[BackupService] Failed to get Trakt settings:', error);
@@ -631,7 +679,7 @@ export class BackupService {
         repositories: repositories ? JSON.parse(repositories) : {},
         currentRepository: currentRepo,
         scraperSettings: scraperSettings ? JSON.parse(scraperSettings) : {},
-        scraperCode: scraperCode
+        scraperCode,
       };
     } catch (error) {
       logger.error('[BackupService] Failed to get local scrapers:', error);
@@ -643,12 +691,12 @@ export class BackupService {
     try {
       const [mdblistKey, openRouterKey] = await Promise.all([
         mmkvStorage.getItem('mdblist_api_key'),
-        mmkvStorage.getItem('openrouter_api_key')
+        mmkvStorage.getItem('openrouter_api_key'),
       ]);
 
       return {
         mdblistApiKey: mdblistKey || undefined,
-        openRouterApiKey: openRouterKey || undefined
+        openRouterApiKey: openRouterKey || undefined,
       };
     } catch (error) {
       logger.error('[BackupService] Failed to get API keys:', error);
@@ -675,7 +723,7 @@ export class BackupService {
       const [scopedOrder, legacyOrder, localOrder] = await Promise.all([
         mmkvStorage.getItem(scopedKey),
         mmkvStorage.getItem('stremio-addon-order'),
-        mmkvStorage.getItem('@user:local:stremio-addon-order')
+        mmkvStorage.getItem('@user:local:stremio-addon-order'),
       ]);
 
       const orderJson = scopedOrder || legacyOrder || localOrder;
@@ -751,7 +799,10 @@ export class BackupService {
 
   private async restoreWatchProgress(watchProgress: Record<string, any>): Promise<void> {
     try {
-      const pairs: [string, string][] = Object.entries(watchProgress).map(([key, value]) => [key, JSON.stringify(value)]);
+      const pairs: [string, string][] = Object.entries(watchProgress).map(([key, value]) => [
+        key,
+        JSON.stringify(value),
+      ]);
       await mmkvStorage.multiSet(pairs);
       logger.info('[BackupService] Watch progress restored');
     } catch (error) {
@@ -820,7 +871,10 @@ export class BackupService {
 
   private async restoreContentDuration(contentDuration: Record<string, number>): Promise<void> {
     try {
-      const pairs: [string, string][] = Object.entries(contentDuration).map(([key, value]) => [key, JSON.stringify(value)]);
+      const pairs: [string, string][] = Object.entries(contentDuration).map(([key, value]) => [
+        key,
+        JSON.stringify(value),
+      ]);
       await mmkvStorage.multiSet(pairs);
       logger.info('[BackupService] Content duration restored');
     } catch (error) {
@@ -851,15 +905,21 @@ export class BackupService {
           const tokenPromises = [];
 
           if (authentication.accessToken) {
-            tokenPromises.push(mmkvStorage.setItem('trakt_access_token', authentication.accessToken));
+            tokenPromises.push(
+              mmkvStorage.setItem('trakt_access_token', authentication.accessToken)
+            );
           }
 
           if (authentication.refreshToken) {
-            tokenPromises.push(mmkvStorage.setItem('trakt_refresh_token', authentication.refreshToken));
+            tokenPromises.push(
+              mmkvStorage.setItem('trakt_refresh_token', authentication.refreshToken)
+            );
           }
 
           if (authentication.tokenExpiry) {
-            tokenPromises.push(mmkvStorage.setItem('trakt_token_expiry', authentication.tokenExpiry.toString()));
+            tokenPromises.push(
+              mmkvStorage.setItem('trakt_token_expiry', authentication.tokenExpiry.toString())
+            );
           }
 
           await Promise.all(tokenPromises);
@@ -870,15 +930,24 @@ export class BackupService {
           const autosyncPromises = [];
 
           if (autosync.enabled !== undefined) {
-            autosyncPromises.push(mmkvStorage.setItem('trakt_autosync_enabled', JSON.stringify(autosync.enabled)));
+            autosyncPromises.push(
+              mmkvStorage.setItem('trakt_autosync_enabled', JSON.stringify(autosync.enabled))
+            );
           }
 
           if (autosync.frequency !== undefined) {
-            autosyncPromises.push(mmkvStorage.setItem('trakt_sync_frequency', autosync.frequency.toString()));
+            autosyncPromises.push(
+              mmkvStorage.setItem('trakt_sync_frequency', autosync.frequency.toString())
+            );
           }
 
           if (autosync.completionThreshold !== undefined) {
-            autosyncPromises.push(mmkvStorage.setItem('trakt_completion_threshold', autosync.completionThreshold.toString()));
+            autosyncPromises.push(
+              mmkvStorage.setItem(
+                'trakt_completion_threshold',
+                autosync.completionThreshold.toString()
+              )
+            );
           }
 
           await Promise.all(autosyncPromises);
@@ -904,7 +973,10 @@ export class BackupService {
       }
 
       if (localScrapers.repositories) {
-        await mmkvStorage.setItem('scraper-repositories', JSON.stringify(localScrapers.repositories));
+        await mmkvStorage.setItem(
+          'scraper-repositories',
+          JSON.stringify(localScrapers.repositories)
+        );
       }
 
       if (localScrapers.currentRepository) {
@@ -912,12 +984,17 @@ export class BackupService {
       }
 
       if (localScrapers.scraperSettings) {
-        await mmkvStorage.setItem('scraper-settings', JSON.stringify(localScrapers.scraperSettings));
+        await mmkvStorage.setItem(
+          'scraper-settings',
+          JSON.stringify(localScrapers.scraperSettings)
+        );
       }
 
       // Restore scraper code cache
       if (localScrapers.scraperCode && typeof localScrapers.scraperCode === 'object') {
-        const codePairs: [string, string][] = Object.entries(localScrapers.scraperCode).map(([key, value]) => [key, value as string]);
+        const codePairs: [string, string][] = Object.entries(localScrapers.scraperCode).map(
+          ([key, value]) => [key, value as string]
+        );
         if (codePairs.length > 0) {
           await mmkvStorage.multiSet(codePairs);
         }
@@ -929,7 +1006,10 @@ export class BackupService {
     }
   }
 
-  private async restoreApiKeys(apiKeys: { mdblistApiKey?: string; openRouterApiKey?: string }): Promise<void> {
+  private async restoreApiKeys(apiKeys: {
+    mdblistApiKey?: string;
+    openRouterApiKey?: string;
+  }): Promise<void> {
     try {
       const setPromises: Promise<void>[] = [];
 
@@ -965,7 +1045,7 @@ export class BackupService {
       // Restore to both scoped and legacy keys for compatibility
       await Promise.all([
         mmkvStorage.setItem(scopedKey, JSON.stringify(addonOrder)),
-        mmkvStorage.setItem('stremio-addon-order', JSON.stringify(addonOrder))
+        mmkvStorage.setItem('stremio-addon-order', JSON.stringify(addonOrder)),
       ]);
 
       logger.info('[BackupService] Addon order restored');
@@ -1014,8 +1094,11 @@ export class BackupService {
   private async getWatchedStatus(): Promise<Record<string, boolean>> {
     try {
       const allKeys = await mmkvStorage.getAllKeys();
-      const watchedKeys = allKeys.filter(key =>
-        key.startsWith('watched:movie:') || key.startsWith('watched:series:') || key.startsWith('watched:')
+      const watchedKeys = allKeys.filter(
+        key =>
+          key.startsWith('watched:movie:') ||
+          key.startsWith('watched:series:') ||
+          key.startsWith('watched:')
       );
 
       const watchedStatus: Record<string, boolean> = {};
@@ -1027,7 +1110,9 @@ export class BackupService {
           }
         }
       }
-      logger.info(`[BackupService] Found ${Object.keys(watchedStatus).length} watched status markers`);
+      logger.info(
+        `[BackupService] Found ${Object.keys(watchedStatus).length} watched status markers`
+      );
       return watchedStatus;
     } catch (error) {
       logger.error('[BackupService] Failed to get watched status:', error);
@@ -1036,16 +1121,19 @@ export class BackupService {
   }
 
   // Get catalog UI preferences (column count, show titles)
-  private async getCatalogUiPreferences(): Promise<{ mobileColumns?: string; showTitles?: string }> {
+  private async getCatalogUiPreferences(): Promise<{
+    mobileColumns?: string;
+    showTitles?: string;
+  }> {
     try {
       const [mobileColumns, showTitles] = await Promise.all([
         mmkvStorage.getItem('catalog_mobile_columns'),
-        mmkvStorage.getItem('catalog_show_titles')
+        mmkvStorage.getItem('catalog_show_titles'),
       ]);
 
       return {
         mobileColumns: mobileColumns || undefined,
-        showTitles: showTitles || undefined
+        showTitles: showTitles || undefined,
       };
     } catch (error) {
       logger.error('[BackupService] Failed to get catalog UI preferences:', error);
@@ -1056,7 +1144,10 @@ export class BackupService {
   // Restore watched status markers
   private async restoreWatchedStatus(watchedStatus: Record<string, boolean>): Promise<void> {
     try {
-      const pairs: [string, string][] = Object.entries(watchedStatus).map(([key, value]) => [key, value ? 'true' : 'false']);
+      const pairs: [string, string][] = Object.entries(watchedStatus).map(([key, value]) => [
+        key,
+        value ? 'true' : 'false',
+      ]);
       if (pairs.length > 0) {
         await mmkvStorage.multiSet(pairs);
       }
@@ -1067,7 +1158,10 @@ export class BackupService {
   }
 
   // Restore catalog UI preferences
-  private async restoreCatalogUiPreferences(prefs: { mobileColumns?: string; showTitles?: string }): Promise<void> {
+  private async restoreCatalogUiPreferences(prefs: {
+    mobileColumns?: string;
+    showTitles?: string;
+  }): Promise<void> {
     try {
       const setPromises: Promise<void>[] = [];
 

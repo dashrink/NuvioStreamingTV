@@ -11,6 +11,7 @@
 
 import { renderHook, act } from '@testing-library/react-native';
 import { Platform } from 'react-native';
+
 import {
   useLongPress,
   useLongPressWithTVEvents,
@@ -21,10 +22,7 @@ import {
   LONG_PRESS_THRESHOLD_MS,
   DEFAULT_ANIMATION_QUEUE_WAIT_MS,
 } from '../../src/hooks/useLongPress';
-import {
-  getTVEventHandlerMock,
-  advanceTimersAndFlush,
-} from '../setup';
+import { getTVEventHandlerMock, advanceTimersAndFlush } from '../setup';
 
 // Get reference to the mock
 const mockTVEventHandler = getTVEventHandlerMock();
@@ -90,9 +88,7 @@ describe('useLongPress', () => {
       const onShortPress = jest.fn();
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onShortPress, onLongPress })
-      );
+      const { result } = renderHook(() => useLongPress({ onShortPress, onLongPress }));
 
       // Press in
       act(() => {
@@ -174,9 +170,7 @@ describe('useLongPress', () => {
     it('should use custom threshold when provided', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onLongPress, threshold: 500 })
-      );
+      const { result } = renderHook(() => useLongPress({ onLongPress, threshold: 500 }));
 
       act(() => {
         result.current.handlers.onPressIn();
@@ -206,9 +200,7 @@ describe('useLongPress', () => {
     it('should clear timer on unmount', async () => {
       const onLongPress = jest.fn();
 
-      const { result, unmount } = renderHook(() =>
-        useLongPress({ onLongPress })
-      );
+      const { result, unmount } = renderHook(() => useLongPress({ onLongPress }));
 
       // Press in - starts timer
       act(() => {
@@ -230,9 +222,7 @@ describe('useLongPress', () => {
     it('should clear timer on press out before threshold', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPress({ onLongPress }));
 
       // Press in
       act(() => {
@@ -260,9 +250,7 @@ describe('useLongPress', () => {
     it('should clear timer on reset', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPress({ onLongPress }));
 
       // Press in
       act(() => {
@@ -312,9 +300,7 @@ describe('useLongPress', () => {
     it('should respond to press when enabled is true', () => {
       const onPressStart = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onPressStart, enabled: true })
-      );
+      const { result } = renderHook(() => useLongPress({ onPressStart, enabled: true }));
 
       act(() => {
         result.current.handlers.onPressIn();
@@ -329,9 +315,7 @@ describe('useLongPress', () => {
     it('should call onPressStart when press begins', () => {
       const onPressStart = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onPressStart })
-      );
+      const { result } = renderHook(() => useLongPress({ onPressStart }));
 
       act(() => {
         result.current.handlers.onPressIn();
@@ -343,9 +327,7 @@ describe('useLongPress', () => {
     it('should call onPressEnd when press ends', () => {
       const onPressEnd = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPress({ onPressEnd })
-      );
+      const { result } = renderHook(() => useLongPress({ onPressEnd }));
 
       act(() => {
         result.current.handlers.onPressIn();
@@ -413,7 +395,7 @@ describe('useLongPress', () => {
 
   describe('animation-aware queuing', () => {
     it('should queue long press action when animation is in progress', async () => {
-      let animating = true;
+      const animating = true;
       const onLongPress = jest.fn();
       const onActionQueued = jest.fn();
 
@@ -780,9 +762,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should not process events when not focused', () => {
       const onShortPress = jest.fn();
 
-      renderHook(() =>
-        useLongPressWithTVEvents({ onShortPress })
-      );
+      renderHook(() => useLongPressWithTVEvents({ onShortPress }));
 
       const enableCalls = mockTVEventHandler.enable.mock.calls;
       const internalCallback = enableCalls[enableCalls.length - 1][1];
@@ -804,9 +784,7 @@ describe('useLongPressWithTVEvents', () => {
     it.skip('should handle longSelect event for long press (requires Platform.OS=android at import time)', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onLongPress }));
 
       // Focus the element
       act(() => {
@@ -833,9 +811,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should not handle longSelect on Apple TV (where Platform.OS=ios)', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onLongPress }));
 
       act(() => {
         result.current.setFocused(true);
@@ -865,9 +841,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should detect long press via timer on select event', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onLongPress }));
 
       act(() => {
         result.current.setFocused(true);
@@ -896,9 +870,7 @@ describe('useLongPressWithTVEvents', () => {
       const onShortPress = jest.fn();
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onShortPress, onLongPress })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onShortPress, onLongPress }));
 
       act(() => {
         result.current.setFocused(true);
@@ -934,9 +906,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should reset state on blur event', async () => {
       const onLongPress = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onLongPress })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onLongPress }));
 
       act(() => {
         result.current.setFocused(true);
@@ -966,9 +936,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should not enable TVEventHandler when disabled', () => {
       jest.clearAllMocks();
 
-      renderHook(() =>
-        useLongPressWithTVEvents({ enabled: false })
-      );
+      renderHook(() => useLongPressWithTVEvents({ enabled: false }));
 
       // TVEventHandler should still be enabled due to internal check
       // but events should not be processed
@@ -1045,9 +1013,7 @@ describe('useLongPressWithTVEvents', () => {
     it('should call onPressStart on select event', () => {
       const onPressStart = jest.fn();
 
-      const { result } = renderHook(() =>
-        useLongPressWithTVEvents({ onPressStart })
-      );
+      const { result } = renderHook(() => useLongPressWithTVEvents({ onPressStart }));
 
       act(() => {
         result.current.setFocused(true);
@@ -1082,9 +1048,7 @@ describe('useLongPressHandlers', () => {
     const onShortPress = jest.fn();
     const onLongPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPressHandlers(onShortPress, onLongPress)
-    );
+    const { result } = renderHook(() => useLongPressHandlers(onShortPress, onLongPress));
 
     expect(typeof result.current.onPressIn).toBe('function');
     expect(typeof result.current.onPressOut).toBe('function');
@@ -1094,9 +1058,7 @@ describe('useLongPressHandlers', () => {
     const onShortPress = jest.fn();
     const onLongPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPressHandlers(onShortPress, onLongPress)
-    );
+    const { result } = renderHook(() => useLongPressHandlers(onShortPress, onLongPress));
 
     act(() => {
       result.current.onPressIn();
@@ -1118,9 +1080,7 @@ describe('useLongPressHandlers', () => {
     const onShortPress = jest.fn();
     const onLongPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPressHandlers(onShortPress, onLongPress)
-    );
+    const { result } = renderHook(() => useLongPressHandlers(onShortPress, onLongPress));
 
     act(() => {
       result.current.onPressIn();
@@ -1135,9 +1095,7 @@ describe('useLongPressHandlers', () => {
   });
 
   it('should handle undefined callbacks', async () => {
-    const { result } = renderHook(() =>
-      useLongPressHandlers(undefined, undefined)
-    );
+    const { result } = renderHook(() => useLongPressHandlers(undefined, undefined));
 
     // Should not throw
     act(() => {
@@ -1231,9 +1189,7 @@ describe('edge cases', () => {
     const onShortPress = jest.fn();
     const onLongPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPress({ onShortPress, onLongPress })
-    );
+    const { result } = renderHook(() => useLongPress({ onShortPress, onLongPress }));
 
     // Rapid sequence
     for (let i = 0; i < 5; i++) {
@@ -1257,9 +1213,7 @@ describe('edge cases', () => {
   it('should handle press in without press out', async () => {
     const onLongPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPress({ onLongPress })
-    );
+    const { result } = renderHook(() => useLongPress({ onLongPress }));
 
     act(() => {
       result.current.handlers.onPressIn();
@@ -1277,9 +1231,7 @@ describe('edge cases', () => {
   it('should handle press out without press in', () => {
     const onShortPress = jest.fn();
 
-    const { result } = renderHook(() =>
-      useLongPress({ onShortPress })
-    );
+    const { result } = renderHook(() => useLongPress({ onShortPress }));
 
     // Press out without press in - should handle gracefully
     act(() => {
@@ -1296,18 +1248,18 @@ describe('edge cases', () => {
       throw new Error('Test error');
     });
 
-    const { result } = renderHook(() =>
-      useLongPress({ onLongPress: errorCallback })
-    );
+    const { result } = renderHook(() => useLongPress({ onLongPress: errorCallback }));
 
     act(() => {
       result.current.handlers.onPressIn();
     });
 
     // This will throw, but we want to verify it doesn't break the hook state
-    await expect(act(async () => {
-      await advanceTimersAndFlush(300);
-    })).rejects.toThrow('Test error');
+    await expect(
+      act(async () => {
+        await advanceTimersAndFlush(300);
+      })
+    ).rejects.toThrow('Test error');
 
     expect(errorCallback).toHaveBeenCalledTimes(1);
   });

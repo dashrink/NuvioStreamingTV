@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import FastImage from '@d11/react-native-fast-image';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { memo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
 import AnimatedImage from '../../../components/AnimatedImage';
 import AnimatedText from '../../../components/AnimatedText';
@@ -43,7 +43,10 @@ const EpisodeHero = memo(
 
     return (
       <View
-        style={[styles.container, !enableStreamsBackdrop && { backgroundColor: colors.darkBackground }]}
+        style={[
+          styles.container,
+          !enableStreamsBackdrop && { backgroundColor: colors.darkBackground },
+        ]}
       >
         <View style={StyleSheet.absoluteFill}>
           <View style={StyleSheet.absoluteFill}>

@@ -1,15 +1,26 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Animated, Easing, TextInput } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
-import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAccount } from '../contexts/AccountContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Platform,
+  Animated,
+  Easing,
+  TextInput,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import CustomAlert from '../components/CustomAlert';
 import { UnifiedSpinner } from '../components/loading';
+import { useAccount } from '../contexts/AccountContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const AccountManageScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -24,14 +35,36 @@ const AccountManageScreen: React.FC = () => {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(headerOpacity, { toValue: 1, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(headerTranslateY, { toValue: 0, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(contentOpacity, { toValue: 1, duration: 320, delay: 80, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(contentTranslateY, { toValue: 0, duration: 320, delay: 80, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(headerOpacity, {
+        toValue: 1,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(headerTranslateY, {
+        toValue: 0,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 320,
+        delay: 80,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentTranslateY, {
+        toValue: 0,
+        duration: 320,
+        delay: 80,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [headerOpacity, headerTranslateY, contentOpacity, contentTranslateY]);
 
-  const initial = useMemo(() => (user?.email?.[0]?.toUpperCase() || 'U'), [user?.email]);
+  const initial = useMemo(() => user?.email?.[0]?.toUpperCase() || 'U', [user?.email]);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [saving, setSaving] = useState(false);
@@ -49,7 +82,10 @@ const AccountManageScreen: React.FC = () => {
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
-    const err = await updateProfile({ displayName: displayName.trim() || undefined, avatarUrl: avatarUrl.trim() || undefined });
+    const err = await updateProfile({
+      displayName: displayName.trim() || undefined,
+      avatarUrl: avatarUrl.trim() || undefined,
+    });
     if (err) {
       setAlertTitle('Error');
       setAlertMessage(err);
@@ -88,7 +124,8 @@ const AccountManageScreen: React.FC = () => {
         style={[
           styles.header,
           {
-            paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top) + 12,
+            paddingTop:
+              (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top) + 12,
             opacity: headerOpacity,
             transform: [{ translateY: headerTranslateY }],
           },
@@ -98,7 +135,11 @@ const AccountManageScreen: React.FC = () => {
           colors={[currentTheme.colors.darkBackground, '#111318']}
           style={StyleSheet.absoluteFill}
         />
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBack} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.headerBack}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <MaterialIcons name="arrow-back" size={22} color={currentTheme.colors.white} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: currentTheme.colors.white }]}>Account</Text>
@@ -106,11 +147,16 @@ const AccountManageScreen: React.FC = () => {
       </Animated.View>
 
       {/* Content */}
-      <Animated.View style={[styles.content, { opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] }]}>
+      <Animated.View
+        style={[
+          styles.content,
+          { opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] },
+        ]}
+      >
         {/* Profile Badge */}
         <View style={styles.profileContainer}>
           {avatarUrl && !avatarError ? (
-            <View style={[styles.avatar, { overflow: 'hidden' }]}> 
+            <View style={[styles.avatar, { overflow: 'hidden' }]}>
               <FastImage
                 source={{ uri: avatarUrl }}
                 style={styles.avatarImage}
@@ -120,17 +166,27 @@ const AccountManageScreen: React.FC = () => {
             </View>
           ) : (
             <View style={[styles.avatar, { backgroundColor: currentTheme.colors.elevation2 }]}>
-              <Text style={styles.avatarText}>{(displayName?.[0] || initial)}</Text>
+              <Text style={styles.avatarText}>{displayName?.[0] || initial}</Text>
             </View>
           )}
         </View>
 
         {/* Account details card */}
-        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1, borderColor: currentTheme.colors.elevation2 }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: currentTheme.colors.elevation1,
+              borderColor: currentTheme.colors.elevation2,
+            },
+          ]}
+        >
           <View style={styles.itemRow}>
             <View style={styles.itemLeft}>
               <MaterialIcons name="badge" size={20} color={currentTheme.colors.primary} />
-              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>Display name</Text>
+              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>
+                Display name
+              </Text>
             </View>
             <TextInput
               placeholder="Add a display name"
@@ -147,7 +203,9 @@ const AccountManageScreen: React.FC = () => {
           <View style={[styles.itemRow, Platform.OS === 'android' && styles.itemRowCompact]}>
             <View style={styles.itemLeft}>
               <MaterialIcons name="image" size={20} color={currentTheme.colors.primary} />
-              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>Avatar URL</Text>
+              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>
+                Avatar URL
+              </Text>
             </View>
             <TextInput
               placeholder="https://..."
@@ -165,9 +223,14 @@ const AccountManageScreen: React.FC = () => {
           <View style={styles.itemRow}>
             <View style={styles.itemLeft}>
               <MaterialIcons name="account-circle" size={20} color={currentTheme.colors.primary} />
-              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>Email</Text>
+              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>
+                Email
+              </Text>
             </View>
-            <Text style={[styles.itemValue, { color: currentTheme.colors.mediumEmphasis }]} numberOfLines={1}>
+            <Text
+              style={[styles.itemValue, { color: currentTheme.colors.mediumEmphasis }]}
+              numberOfLines={1}
+            >
               {user?.email || '—'}
             </Text>
           </View>
@@ -177,9 +240,14 @@ const AccountManageScreen: React.FC = () => {
           <View style={styles.itemRow}>
             <View style={styles.itemLeft}>
               <MaterialIcons name="fingerprint" size={20} color={currentTheme.colors.primary} />
-              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>User ID</Text>
+              <Text style={[styles.itemTitle, { color: currentTheme.colors.highEmphasis }]}>
+                User ID
+              </Text>
             </View>
-            <Text style={[styles.itemValue, { color: currentTheme.colors.mediumEmphasis }]} numberOfLines={1}>
+            <Text
+              style={[styles.itemValue, { color: currentTheme.colors.mediumEmphasis }]}
+              numberOfLines={1}
+            >
               {user?.id}
             </Text>
           </View>
@@ -188,7 +256,13 @@ const AccountManageScreen: React.FC = () => {
         {/* Save and Sign out */}
         <TouchableOpacity
           activeOpacity={0.85}
-          style={[styles.saveButton, { backgroundColor: currentTheme.colors.elevation2, borderColor: currentTheme.colors.elevation2 }]}
+          style={[
+            styles.saveButton,
+            {
+              backgroundColor: currentTheme.colors.elevation2,
+              borderColor: currentTheme.colors.elevation2,
+            },
+          ]}
           onPress={handleSave}
           disabled={saving}
         >
@@ -196,7 +270,12 @@ const AccountManageScreen: React.FC = () => {
             <UnifiedSpinner size="small" color={currentTheme.colors.white} />
           ) : (
             <>
-              <MaterialIcons name="save-alt" size={18} color={currentTheme.colors.white} style={{ marginRight: 8 }} />
+              <MaterialIcons
+                name="save-alt"
+                size={18}
+                color={currentTheme.colors.white}
+                style={{ marginRight: 8 }}
+              />
               <Text style={styles.saveText}>Save changes</Text>
             </>
           )}
@@ -204,10 +283,7 @@ const AccountManageScreen: React.FC = () => {
 
         <TouchableOpacity
           activeOpacity={0.85}
-          style={[
-            styles.signOutButton,
-            { backgroundColor: currentTheme.colors.primary },
-          ]}
+          style={[styles.signOutButton, { backgroundColor: currentTheme.colors.primary }]}
           onPress={handleSignOut}
         >
           <MaterialIcons name="logout" size={18} color="#fff" style={{ marginRight: 8 }} />
@@ -334,5 +410,3 @@ const styles = StyleSheet.create({
 });
 
 export default AccountManageScreen;
-
-

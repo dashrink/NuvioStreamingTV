@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -9,15 +11,14 @@ import {
   Platform,
   SafeAreaView,
   TextInput,
-  Modal
+  Modal,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+
+import CustomAlert from '../components/CustomAlert';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTraktContext } from '../contexts/TraktContext';
-import { mmkvStorage } from '../services/mmkvStorage';
-import CustomAlert from '../components/CustomAlert';
 import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 const PROFILE_STORAGE_KEY = 'user_profiles';
@@ -44,7 +45,9 @@ const ProfilesScreen: React.FC = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([]);
 
   const openAlert = (
     title: string,
@@ -53,7 +56,7 @@ const ProfilesScreen: React.FC = () => {
   ) => {
     setAlertTitle(title);
     setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
+    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]);
     setAlertVisible(true);
   };
 
@@ -70,7 +73,7 @@ const ProfilesScreen: React.FC = () => {
           id: new Date().getTime().toString(),
           name: userProfile?.username || 'Default',
           isActive: true,
-          createdAt: new Date().getTime()
+          createdAt: new Date().getTime(),
         };
         setProfiles([defaultProfile]);
         await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify([defaultProfile]));
@@ -129,7 +132,7 @@ const ProfilesScreen: React.FC = () => {
       id: new Date().getTime().toString(),
       name: newProfileName.trim(),
       isActive: false,
-      createdAt: new Date().getTime()
+      createdAt: new Date().getTime(),
     };
 
     const updatedProfiles = [...profiles, newProfile];
@@ -139,50 +142,56 @@ const ProfilesScreen: React.FC = () => {
     setShowAddModal(false);
   }, [newProfileName, profiles, saveProfiles]);
 
-  const handleSelectProfile = useCallback((id: string) => {
-    triggerMedium(); // Profile selection (theme/profile selection pattern)
+  const handleSelectProfile = useCallback(
+    (id: string) => {
+      triggerMedium(); // Profile selection (theme/profile selection pattern)
 
-    const updatedProfiles = profiles.map(profile => ({
-      ...profile,
-      isActive: profile.id === id
-    }));
+      const updatedProfiles = profiles.map(profile => ({
+        ...profile,
+        isActive: profile.id === id,
+      }));
 
-    setProfiles(updatedProfiles);
-    saveProfiles(updatedProfiles);
-  }, [profiles, saveProfiles]);
+      setProfiles(updatedProfiles);
+      saveProfiles(updatedProfiles);
+    },
+    [profiles, saveProfiles]
+  );
 
-  const handleDeleteProfile = useCallback((id: string) => {
-    triggerHeavy(); // Destructive action
+  const handleDeleteProfile = useCallback(
+    (id: string) => {
+      triggerHeavy(); // Destructive action
 
-    // Prevent deleting the active profile
-    const isActiveProfile = profiles.find(p => p.id === id)?.isActive;
-    if (isActiveProfile) {
-      openAlert('Error', 'Cannot delete the active profile. Switch to another profile first.');
-      return;
-    }
+      // Prevent deleting the active profile
+      const isActiveProfile = profiles.find(p => p.id === id)?.isActive;
+      if (isActiveProfile) {
+        openAlert('Error', 'Cannot delete the active profile. Switch to another profile first.');
+        return;
+      }
 
-    // Prevent deleting the last profile
-    if (profiles.length <= 1) {
-      openAlert('Error', 'Cannot delete the only profile');
-      return;
-    }
+      // Prevent deleting the last profile
+      if (profiles.length <= 1) {
+        openAlert('Error', 'Cannot delete the only profile');
+        return;
+      }
 
-    openAlert(
-      'Delete Profile',
-      'Are you sure you want to delete this profile? This action cannot be undone.',
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Delete',
-          onPress: () => {
-            const updatedProfiles = profiles.filter(profile => profile.id !== id);
-            setProfiles(updatedProfiles);
-            saveProfiles(updatedProfiles);
-          }
-        }
-      ]
-    );
-  }, [profiles, saveProfiles]);
+      openAlert(
+        'Delete Profile',
+        'Are you sure you want to delete this profile? This action cannot be undone.',
+        [
+          { label: 'Cancel', onPress: () => {} },
+          {
+            label: 'Delete',
+            onPress: () => {
+              const updatedProfiles = profiles.filter(profile => profile.id !== id);
+              setProfiles(updatedProfiles);
+              saveProfiles(updatedProfiles);
+            },
+          },
+        ]
+      );
+    },
+    [profiles, saveProfiles]
+  );
 
   const handleBack = () => {
     triggerLight(); // Navigation
@@ -196,8 +205,8 @@ const ProfilesScreen: React.FC = () => {
           styles.profileContent,
           item.isActive && {
             backgroundColor: `${currentTheme.colors.primary}30`,
-            borderColor: currentTheme.colors.primary
-          }
+            borderColor: currentTheme.colors.primary,
+          },
         ]}
         onPress={() => handleSelectProfile(item.id)}
       >
@@ -209,13 +218,9 @@ const ProfilesScreen: React.FC = () => {
           />
         </View>
         <View style={styles.profileInfo}>
-          <Text style={[styles.profileName, { color: currentTheme.colors.text }]}>
-            {item.name}
-          </Text>
+          <Text style={[styles.profileName, { color: currentTheme.colors.text }]}>{item.name}</Text>
           {item.isActive && (
-            <Text style={[styles.activeLabel, { color: currentTheme.colors.primary }]}>
-              Active
-            </Text>
+            <Text style={[styles.activeLabel, { color: currentTheme.colors.primary }]}>Active</Text>
           )}
         </View>
         {!item.isActive && (
@@ -231,36 +236,23 @@ const ProfilesScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handleBack}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={currentTheme.colors.text}
-          />
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
         </TouchableOpacity>
-        <Text
-          style={[
-            styles.headerTitle,
-            { color: currentTheme.colors.text },
-          ]}
-        >
-          Profiles
-        </Text>
+        <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Profiles</Text>
       </View>
 
       <View style={styles.content}>
         <FlatList
           data={profiles}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
@@ -269,10 +261,7 @@ const ProfilesScreen: React.FC = () => {
           }
           ListFooterComponent={
             <TouchableOpacity
-              style={[
-                styles.addButton,
-                { backgroundColor: currentTheme.colors.elevation2 }
-              ]}
+              style={[styles.addButton, { backgroundColor: currentTheme.colors.elevation2 }]}
               onPress={() => {
                 triggerLight(); // Modal open
                 setShowAddModal(true);
@@ -307,8 +296,8 @@ const ProfilesScreen: React.FC = () => {
                 {
                   backgroundColor: `${currentTheme.colors.textMuted}20`,
                   color: currentTheme.colors.text,
-                  borderColor: currentTheme.colors.border
-                }
+                  borderColor: currentTheme.colors.border,
+                },
               ]}
               placeholder="Profile Name"
               placeholderTextColor={currentTheme.colors.textMuted}
@@ -332,7 +321,7 @@ const ProfilesScreen: React.FC = () => {
                 style={[
                   styles.modalButton,
                   styles.createButton,
-                  { backgroundColor: currentTheme.colors.primary }
+                  { backgroundColor: currentTheme.colors.primary },
                 ]}
                 onPress={handleAddProfile}
               >
@@ -475,4 +464,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfilesScreen; 
+export default ProfilesScreen;

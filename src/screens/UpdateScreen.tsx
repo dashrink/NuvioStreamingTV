@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -10,22 +12,20 @@ import {
   Platform,
   Dimensions,
   Linking,
-  Switch
+  Switch,
 } from 'react-native';
-import { useToast } from '../contexts/ToastContext';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import UpdateService from '../services/updateService';
+
 import CustomAlert from '../components/CustomAlert';
-import { mmkvStorage } from '../services/mmkvStorage';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
 import { useGithubMajorUpdate } from '../hooks/useGithubMajorUpdate';
-import { getDisplayedAppVersion } from '../utils/version';
-import { isAnyUpgrade } from '../services/githubReleaseService';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { isAnyUpgrade } from '../services/githubReleaseService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import UpdateService from '../services/updateService';
+import { getDisplayedAppVersion } from '../utils/version';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -41,26 +41,25 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ children, title, isTablet =
   const { currentTheme } = useTheme();
 
   return (
-    <View
-      style={[
-        styles.cardContainer,
-        isTablet && styles.tabletCardContainer
-      ]}
-    >
+    <View style={[styles.cardContainer, isTablet && styles.tabletCardContainer]}>
       {title && (
-        <Text style={[
-          styles.cardTitle,
-          { color: currentTheme.colors.mediumEmphasis },
-          isTablet && styles.tabletCardTitle
-        ]}>
+        <Text
+          style={[
+            styles.cardTitle,
+            { color: currentTheme.colors.mediumEmphasis },
+            isTablet && styles.tabletCardTitle,
+          ]}
+        >
           {title}
         </Text>
       )}
-      <View style={[
-        styles.card,
-        { backgroundColor: currentTheme.colors.elevation1 },
-        isTablet && styles.tabletCard
-      ]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: currentTheme.colors.elevation1 },
+          isTablet && styles.tabletCard,
+        ]}
+      >
         {children}
       </View>
     </View>
@@ -78,9 +77,9 @@ const UpdateScreen: React.FC = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
-    { label: 'OK', onPress: () => setAlertVisible(false) },
-  ]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
 
   const openAlert = (
     title: string,
@@ -94,7 +93,9 @@ const UpdateScreen: React.FC = () => {
         actions.map(a => ({
           label: a.label,
           style: a.style,
-          onPress: () => { a.onPress?.(); },
+          onPress: () => {
+            a.onPress?.();
+          },
         }))
       );
     } else {
@@ -111,7 +112,9 @@ const UpdateScreen: React.FC = () => {
   // Logs removed
   const [lastOperation, setLastOperation] = useState<string>('');
   const [updateProgress, setUpdateProgress] = useState<number>(0);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'installing' | 'success' | 'error'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<
+    'idle' | 'checking' | 'available' | 'downloading' | 'installing' | 'success' | 'error'
+  >('idle');
 
   // Update notification settings
   const [otaAlertsEnabled, setOtaAlertsEnabled] = useState(true);
@@ -126,7 +129,7 @@ const UpdateScreen: React.FC = () => {
         // Default to true if not set
         setOtaAlertsEnabled(otaSetting !== 'false');
         setMajorAlertsEnabled(majorSetting !== 'false');
-      } catch { }
+      } catch {}
     })();
   }, []);
 
@@ -145,8 +148,8 @@ const UpdateScreen: React.FC = () => {
               await mmkvStorage.setItem('@ota_updates_alerts_enabled', 'false');
               setOtaAlertsEnabled(false);
               setAlertVisible(false);
-            }
-          }
+            },
+          },
         ]
       );
     } else {
@@ -170,8 +173,8 @@ const UpdateScreen: React.FC = () => {
               await mmkvStorage.setItem('@major_updates_alerts_enabled', 'false');
               setMajorAlertsEnabled(false);
               setAlertVisible(false);
-            }
-          }
+            },
+          },
         ]
       );
     } else {
@@ -215,12 +218,16 @@ const UpdateScreen: React.FC = () => {
     if (Platform.OS === 'android') {
       // ensure badge clears when entering this screen
       (async () => {
-        try { await mmkvStorage.removeItem('@update_badge_pending'); } catch { }
+        try {
+          await mmkvStorage.removeItem('@update_badge_pending');
+        } catch {}
       })();
     }
     checkForUpdates();
     // Also refresh GitHub section on mount (works in dev and prod)
-    try { github.refresh(); } catch { }
+    try {
+      github.refresh();
+    } catch {}
     if (Platform.OS === 'android') {
       showInfo('Checking for Updates', 'Checking for updates…');
     }
@@ -262,7 +269,9 @@ const UpdateScreen: React.FC = () => {
     } catch (error) {
       if (__DEV__) console.error('Error installing update:', error);
       setUpdateStatus('error');
-      setLastOperation(`Installation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setLastOperation(
+        `Installation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       openAlert('Error', 'Failed to install update');
     } finally {
       setIsInstalling(false);
@@ -313,7 +322,9 @@ const UpdateScreen: React.FC = () => {
       }
     } catch (error) {
       if (__DEV__) console.error('Error testing connectivity:', error);
-      setLastOperation(`Connectivity test error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setLastOperation(
+        `Connectivity test error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       // Logs disabled
     }
   };
@@ -325,7 +336,9 @@ const UpdateScreen: React.FC = () => {
       setLastOperation('Asset URL testing completed');
     } catch (error) {
       if (__DEV__) console.error('Error testing asset URLs:', error);
-      setLastOperation(`Asset URL test error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setLastOperation(
+        `Asset URL test error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       // Logs disabled
     }
   };
@@ -347,17 +360,41 @@ const UpdateScreen: React.FC = () => {
       case 'checking':
         return <MaterialIcons name="refresh" size={20} color={currentTheme.colors.primary} />;
       case 'available':
-        return <MaterialIcons name="new-releases" size={20} color={currentTheme.colors.success || '#4CAF50'} />;
+        return (
+          <MaterialIcons
+            name="new-releases"
+            size={20}
+            color={currentTheme.colors.success || '#4CAF50'}
+          />
+        );
       case 'downloading':
-        return <MaterialIcons name="cloud-download" size={20} color={currentTheme.colors.primary} />;
+        return (
+          <MaterialIcons name="cloud-download" size={20} color={currentTheme.colors.primary} />
+        );
       case 'installing':
-        return <MaterialIcons name="install-mobile" size={20} color={currentTheme.colors.primary} />;
+        return (
+          <MaterialIcons name="install-mobile" size={20} color={currentTheme.colors.primary} />
+        );
       case 'success':
-        return <MaterialIcons name="check-circle" size={20} color={currentTheme.colors.success || '#4CAF50'} />;
+        return (
+          <MaterialIcons
+            name="check-circle"
+            size={20}
+            color={currentTheme.colors.success || '#4CAF50'}
+          />
+        );
       case 'error':
-        return <MaterialIcons name="error" size={20} color={currentTheme.colors.error || '#ff4444'} />;
+        return (
+          <MaterialIcons name="error" size={20} color={currentTheme.colors.error || '#ff4444'} />
+        );
       default:
-        return <MaterialIcons name="system-update" size={20} color={currentTheme.colors.mediumEmphasis} />;
+        return (
+          <MaterialIcons
+            name="system-update"
+            size={20}
+            color={currentTheme.colors.mediumEmphasis}
+          />
+        );
     }
   };
 
@@ -396,12 +433,10 @@ const UpdateScreen: React.FC = () => {
     }
   };
 
-
   return (
-    <SafeAreaView style={[
-      styles.container,
-      { backgroundColor: currentTheme.colors.darkBackground }
-    ]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
@@ -424,9 +459,7 @@ const UpdateScreen: React.FC = () => {
         </View>
       </View>
 
-      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-        App Updates
-      </Text>
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>App Updates</Text>
 
       <View style={styles.contentContainer}>
         <ScrollView
@@ -439,14 +472,20 @@ const UpdateScreen: React.FC = () => {
             <View style={styles.updateMainCard}>
               {/* Status Section */}
               <View style={styles.updateStatusSection}>
-                <View style={[styles.statusIndicator, { backgroundColor: `${getStatusColor()}20` }]}>
+                <View
+                  style={[styles.statusIndicator, { backgroundColor: `${getStatusColor()}20` }]}
+                >
                   {getStatusIcon()}
                 </View>
                 <View style={styles.statusContent}>
-                  <Text style={[styles.statusMainText, { color: currentTheme.colors.highEmphasis }]}>
+                  <Text
+                    style={[styles.statusMainText, { color: currentTheme.colors.highEmphasis }]}
+                  >
                     {getStatusText()}
                   </Text>
-                  <Text style={[styles.statusDetailText, { color: currentTheme.colors.mediumEmphasis }]}>
+                  <Text
+                    style={[styles.statusDetailText, { color: currentTheme.colors.mediumEmphasis }]}
+                  >
                     {lastOperation || 'Ready to check for updates'}
                   </Text>
                 </View>
@@ -456,21 +495,30 @@ const UpdateScreen: React.FC = () => {
               {(updateStatus === 'downloading' || updateStatus === 'installing') && (
                 <View style={styles.progressSection}>
                   <View style={styles.progressHeader}>
-                    <Text style={[styles.progressLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                    <Text
+                      style={[styles.progressLabel, { color: currentTheme.colors.mediumEmphasis }]}
+                    >
                       {updateStatus === 'downloading' ? 'Downloading' : 'Installing'}
                     </Text>
-                    <Text style={[styles.progressPercentage, { color: currentTheme.colors.primary }]}>
+                    <Text
+                      style={[styles.progressPercentage, { color: currentTheme.colors.primary }]}
+                    >
                       {Math.round(updateProgress)}%
                     </Text>
                   </View>
-                  <View style={[styles.modernProgressBar, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                  <View
+                    style={[
+                      styles.modernProgressBar,
+                      { backgroundColor: `${currentTheme.colors.primary}15` },
+                    ]}
+                  >
                     <View
                       style={[
                         styles.modernProgressFill,
                         {
                           backgroundColor: currentTheme.colors.primary,
-                          width: `${updateProgress}%`
-                        }
+                          width: `${updateProgress}%`,
+                        },
                       ]}
                     />
                   </View>
@@ -484,7 +532,7 @@ const UpdateScreen: React.FC = () => {
                     styles.modernButton,
                     styles.primaryAction,
                     { backgroundColor: currentTheme.colors.primary },
-                    (isChecking || isInstalling) && styles.disabledAction
+                    (isChecking || isInstalling) && styles.disabledAction,
                   ]}
                   onPress={() => {
                     triggerMedium();
@@ -509,7 +557,7 @@ const UpdateScreen: React.FC = () => {
                       styles.modernButton,
                       styles.installAction,
                       { backgroundColor: currentTheme.colors.success || '#34C759' },
-                      (isInstalling) && styles.disabledAction
+                      isInstalling && styles.disabledAction,
                     ]}
                     onPress={() => {
                       triggerMedium();
@@ -528,7 +576,6 @@ const UpdateScreen: React.FC = () => {
                     </Text>
                   </TouchableOpacity>
                 )}
-
               </View>
             </View>
 
@@ -536,33 +583,59 @@ const UpdateScreen: React.FC = () => {
             {updateInfo?.isAvailable && !!getReleaseNotes() && (
               <View style={styles.infoSection}>
                 <View style={styles.infoItem}>
-                  <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                  <View
+                    style={[
+                      styles.infoIcon,
+                      { backgroundColor: `${currentTheme.colors.primary}15` },
+                    ]}
+                  >
                     <MaterialIcons name="notes" size={14} color={currentTheme.colors.primary} />
                   </View>
-                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Release notes:</Text>
+                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                    Release notes:
+                  </Text>
                 </View>
-                <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>{getReleaseNotes()}</Text>
+                <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
+                  {getReleaseNotes()}
+                </Text>
               </View>
             )}
 
             {/* Info Section */}
             <View style={styles.infoSection}>
               <View style={styles.infoItem}>
-                <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
-                  <MaterialIcons name="info-outline" size={14} color={currentTheme.colors.primary} />
+                <View
+                  style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}
+                >
+                  <MaterialIcons
+                    name="info-outline"
+                    size={14}
+                    color={currentTheme.colors.primary}
+                  />
                 </View>
-                <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Version:</Text>
+                <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                  Version:
+                </Text>
                 <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
-                  {updateInfo?.manifest?.id ? `${updateInfo.manifest.id.substring(0, 8)}...` : 'Unknown'}
+                  {updateInfo?.manifest?.id
+                    ? `${updateInfo.manifest.id.substring(0, 8)}...`
+                    : 'Unknown'}
                 </Text>
               </View>
 
               {lastChecked && (
                 <View style={styles.infoItem}>
-                  <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                  <View
+                    style={[
+                      styles.infoIcon,
+                      { backgroundColor: `${currentTheme.colors.primary}15` },
+                    ]}
+                  >
                     <MaterialIcons name="schedule" size={14} color={currentTheme.colors.primary} />
                   </View>
-                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Last checked:</Text>
+                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                    Last checked:
+                  </Text>
                   <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
                     {formatDate(lastChecked)}
                   </Text>
@@ -573,23 +646,37 @@ const UpdateScreen: React.FC = () => {
             {/* Current Version Section */}
             <View style={styles.infoSection}>
               <View style={styles.infoItem}>
-                <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                <View
+                  style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}
+                >
                   <MaterialIcons name="verified" size={14} color={currentTheme.colors.primary} />
                 </View>
-                <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Current version:</Text>
-                <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}
-                  selectable>
-                  {currentInfo?.manifest?.id || (currentInfo?.isEmbeddedLaunch === false ? 'Unknown' : 'Embedded')}
+                <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                  Current version:
+                </Text>
+                <Text
+                  style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}
+                  selectable
+                >
+                  {currentInfo?.manifest?.id ||
+                    (currentInfo?.isEmbeddedLaunch === false ? 'Unknown' : 'Embedded')}
                 </Text>
               </View>
 
               {!!getCurrentReleaseNotes() && (
                 <View style={{ marginTop: 8 }}>
                   <View style={[styles.infoItem, { alignItems: 'flex-start' }]}>
-                    <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                    <View
+                      style={[
+                        styles.infoIcon,
+                        { backgroundColor: `${currentTheme.colors.primary}15` },
+                      ]}
+                    >
                       <MaterialIcons name="notes" size={14} color={currentTheme.colors.primary} />
                     </View>
-                    <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Current release notes:</Text>
+                    <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                      Current release notes:
+                    </Text>
                   </View>
                   <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
                     {getCurrentReleaseNotes()}
@@ -606,20 +693,38 @@ const UpdateScreen: React.FC = () => {
             <SettingsCard title="GITHUB RELEASE" isTablet={isTablet}>
               <View style={styles.infoSection}>
                 <View style={styles.infoItem}>
-                  <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
-                    <MaterialIcons name="new-releases" size={14} color={currentTheme.colors.primary} />
+                  <View
+                    style={[
+                      styles.infoIcon,
+                      { backgroundColor: `${currentTheme.colors.primary}15` },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="new-releases"
+                      size={14}
+                      color={currentTheme.colors.primary}
+                    />
                   </View>
-                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Current:</Text>
+                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                    Current:
+                  </Text>
                   <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
                     {getDisplayedAppVersion()}
                   </Text>
                 </View>
 
                 <View style={styles.infoItem}>
-                  <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.primary}15` }]}>
+                  <View
+                    style={[
+                      styles.infoIcon,
+                      { backgroundColor: `${currentTheme.colors.primary}15` },
+                    ]}
+                  >
                     <MaterialIcons name="tag" size={14} color={currentTheme.colors.primary} />
                   </View>
-                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Latest:</Text>
+                  <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                    Latest:
+                  </Text>
                   <Text style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}>
                     {github.latestTag}
                   </Text>
@@ -627,7 +732,9 @@ const UpdateScreen: React.FC = () => {
 
                 {github.releaseNotes ? (
                   <View style={{ marginTop: 4 }}>
-                    <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>Notes:</Text>
+                    <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                      Notes:
+                    </Text>
                     <Text
                       numberOfLines={3}
                       style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}
@@ -640,7 +747,10 @@ const UpdateScreen: React.FC = () => {
                 <View style={[styles.actionSection, { marginTop: 8 }]}>
                   <View style={{ flexDirection: 'row', gap: 10 }}>
                     <TouchableOpacity
-                      style={[styles.modernButton, { backgroundColor: currentTheme.colors.primary, flex: 1 }]}
+                      style={[
+                        styles.modernButton,
+                        { backgroundColor: currentTheme.colors.primary, flex: 1 },
+                      ]}
                       onPress={() => {
                         triggerLight();
                         github.releaseUrl ? Linking.openURL(github.releaseUrl as string) : null;
@@ -664,7 +774,9 @@ const UpdateScreen: React.FC = () => {
                 <Text style={[styles.settingLabel, { color: currentTheme.colors.highEmphasis }]}>
                   OTA Update Alerts
                 </Text>
-                <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+                <Text
+                  style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
+                >
                   Show notifications for over-the-air updates
                 </Text>
               </View>
@@ -683,7 +795,9 @@ const UpdateScreen: React.FC = () => {
                 <Text style={[styles.settingLabel, { color: currentTheme.colors.highEmphasis }]}>
                   Major Update Alerts
                 </Text>
-                <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+                <Text
+                  style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
+                >
                   Show notifications for new app versions on GitHub
                 </Text>
               </View>
@@ -698,11 +812,26 @@ const UpdateScreen: React.FC = () => {
 
             {/* Warning note */}
             <View style={[styles.infoItem, { paddingHorizontal: 16, paddingBottom: 12 }]}>
-              <View style={[styles.infoIcon, { backgroundColor: `${currentTheme.colors.warning || '#FFA500'}20` }]}>
-                <MaterialIcons name="info-outline" size={14} color={currentTheme.colors.warning || '#FFA500'} />
+              <View
+                style={[
+                  styles.infoIcon,
+                  { backgroundColor: `${currentTheme.colors.warning || '#FFA500'}20` },
+                ]}
+              >
+                <MaterialIcons
+                  name="info-outline"
+                  size={14}
+                  color={currentTheme.colors.warning || '#FFA500'}
+                />
               </View>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis, flex: 1 }]}>
-                Keeping alerts enabled ensures you receive bug fixes and can provide accurate crash reports.
+              <Text
+                style={[
+                  styles.settingDescription,
+                  { color: currentTheme.colors.mediumEmphasis, flex: 1 },
+                ]}
+              >
+                Keeping alerts enabled ensures you receive bug fixes and can provide accurate crash
+                reports.
               </Text>
             </View>
           </SettingsCard>
@@ -711,19 +840,27 @@ const UpdateScreen: React.FC = () => {
             <SettingsCard title="UPDATE LOGS" isTablet={isTablet}>
               <View style={styles.logsContainer}>
                 <View style={styles.logsHeader}>
-                  <Text style={[styles.logsHeaderText, { color: currentTheme.colors.highEmphasis }]}>
+                  <Text
+                    style={[styles.logsHeaderText, { color: currentTheme.colors.highEmphasis }]}
+                  >
                     Update Service Logs
                   </Text>
                   <View style={styles.logsActions}>
                     <TouchableOpacity
-                      style={[styles.logActionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
+                      style={[
+                        styles.logActionButton,
+                        { backgroundColor: currentTheme.colors.elevation2 },
+                      ]}
                       onPress={testConnectivity}
                       activeOpacity={0.7}
                     >
                       <MaterialIcons name="wifi" size={16} color={currentTheme.colors.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.logActionButton, { backgroundColor: currentTheme.colors.elevation2 }]}
+                      style={[
+                        styles.logActionButton,
+                        { backgroundColor: currentTheme.colors.elevation2 },
+                      ]}
                       onPress={testAssetUrls}
                       activeOpacity={0.7}
                     >
@@ -737,12 +874,19 @@ const UpdateScreen: React.FC = () => {
                 </View>
 
                 <ScrollView
-                  style={[styles.logsScrollView, { backgroundColor: currentTheme.colors.elevation2 }]}
+                  style={[
+                    styles.logsScrollView,
+                    { backgroundColor: currentTheme.colors.elevation2 },
+                  ]}
                   showsVerticalScrollIndicator={true}
                   nestedScrollEnabled={true}
                 >
                   {false ? (
-                    <Text style={[styles.noLogsText, { color: currentTheme.colors.mediumEmphasis }]}>No logs available</Text>
+                    <Text
+                      style={[styles.noLogsText, { color: currentTheme.colors.mediumEmphasis }]}
+                    >
+                      No logs available
+                    </Text>
                   ) : (
                     ([] as string[]).map((log, index) => {
                       const isError = log.indexOf('[ERROR]') !== -1;
@@ -751,24 +895,23 @@ const UpdateScreen: React.FC = () => {
                       return (
                         <TouchableOpacity
                           key={index}
-                          style={[
-                            styles.logEntry,
-                            { backgroundColor: 'rgba(255,255,255,0.05)' }
-                          ]}
-                          onPress={() => { }}
+                          style={[styles.logEntry, { backgroundColor: 'rgba(255,255,255,0.05)' }]}
+                          onPress={() => {}}
                           activeOpacity={0.7}
                         >
                           <View style={styles.logEntryContent}>
-                            <Text style={[
-                              styles.logText,
-                              {
-                                color: isError
-                                  ? (currentTheme.colors.error || '#ff4444')
-                                  : isWarning
-                                    ? (currentTheme.colors.warning || '#ffaa00')
-                                    : currentTheme.colors.mediumEmphasis
-                              }
-                            ]}>
+                            <Text
+                              style={[
+                                styles.logText,
+                                {
+                                  color: isError
+                                    ? currentTheme.colors.error || '#ff4444'
+                                    : isWarning
+                                      ? currentTheme.colors.warning || '#ffaa00'
+                                      : currentTheme.colors.mediumEmphasis,
+                                },
+                              ]}
+                            >
                               {log}
                             </Text>
                             <MaterialIcons

@@ -6,6 +6,7 @@
  */
 
 import { Platform } from 'react-native';
+
 import {
   mockTVEventHandler,
   mockNavigation,

@@ -11,22 +11,17 @@
  * @see LoadingSpinner - Legacy wrapper (deprecated)
  */
 
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
 import LottieView from 'lottie-react-native';
-import { useTheme } from '../../contexts/ThemeContext';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+
 import {
   SpinnerLoadingProps,
   LOADING_SIZE_DIMENSIONS,
   LOTTIE_SIZE_DIMENSIONS,
   LOADING_TEXT_SIZES,
 } from './types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * UnifiedSpinner - A theme-aware loading spinner component
@@ -189,11 +184,7 @@ const UnifiedSpinner: React.FC<SpinnerLoadingProps> = ({
 
   return (
     <View
-      style={[
-        styles.container,
-        { transform: [{ translateY: offsetY }] },
-        style,
-      ]}
+      style={[styles.container, { transform: [{ translateY: offsetY }] }, style]}
       testID={testID}
       accessibilityRole="progressbar"
       accessibilityLabel={text || 'Loading'}

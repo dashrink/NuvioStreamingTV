@@ -72,7 +72,7 @@ export class PINProtectionTester {
       name: 'PIN Test Profile A (Protected)',
       avatar: 'protected-avatar',
       isActive: false,
-      createdAt: timestamp
+      createdAt: timestamp,
     };
 
     this.profileB = {
@@ -80,12 +80,14 @@ export class PINProtectionTester {
       name: 'PIN Test Profile B (Unprotected)',
       avatar: 'unprotected-avatar',
       isActive: false,
-      createdAt: timestamp + 1
+      createdAt: timestamp + 1,
     };
 
     // Load existing profiles and add test profiles
     const existingProfilesJson = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
-    const existingProfiles: Profile[] = existingProfilesJson ? JSON.parse(existingProfilesJson) : [];
+    const existingProfiles: Profile[] = existingProfilesJson
+      ? JSON.parse(existingProfilesJson)
+      : [];
 
     // Set profileB as active (we want to switch TO profileA which is protected)
     this.profileB.isActive = true;
@@ -93,7 +95,11 @@ export class PINProtectionTester {
     const updatedProfiles = [...existingProfiles, this.profileA, this.profileB];
     await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
 
-    logger.log('[PINProtectionTest] Created test profiles:', this.profileA.name, this.profileB.name);
+    logger.log(
+      '[PINProtectionTest] Created test profiles:',
+      this.profileA.name,
+      this.profileB.name
+    );
 
     return { profileA: this.profileA, profileB: this.profileB };
   }
@@ -106,7 +112,7 @@ export class PINProtectionTester {
       return {
         testName: 'Enable PIN on Profile A',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -131,14 +137,14 @@ export class PINProtectionTester {
           profileId: this.profileA.id,
           pinKeyUsed: pinKey,
           hashLength: pinHash.length,
-        }
+        },
       };
     } catch (error: any) {
       return {
         testName: 'Enable PIN on Profile A',
         passed: false,
         message: `Error enabling PIN: ${error.message}`,
-        details: { error: error.stack }
+        details: { error: error.stack },
       };
     }
   }
@@ -151,7 +157,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN Enabled',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -168,7 +174,7 @@ export class PINProtectionTester {
       details: {
         pinKeyChecked: pinKey,
         hasStoredHash: hasPinEnabled,
-      }
+      },
     };
   }
 
@@ -180,7 +186,7 @@ export class PINProtectionTester {
       return {
         testName: 'Switch to Profile B',
         passed: false,
-        message: 'Profile B not created'
+        message: 'Profile B not created',
       };
     }
 
@@ -204,14 +210,14 @@ export class PINProtectionTester {
         details: {
           activeProfileId: activeProfile?.id,
           expectedProfileId: this.profileB.id,
-        }
+        },
       };
     } catch (error: any) {
       return {
         testName: 'Switch to Profile B',
         passed: false,
         message: `Error switching to Profile B: ${error.message}`,
-        details: { error: error.stack }
+        details: { error: error.stack },
       };
     }
   }
@@ -225,7 +231,7 @@ export class PINProtectionTester {
       const parsedProfiles: Profile[] = JSON.parse(storedProfiles);
       const updatedProfiles = parsedProfiles.map(profile => ({
         ...profile,
-        isActive: profile.id === profileId
+        isActive: profile.id === profileId,
       }));
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
     }
@@ -239,7 +245,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN Required',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -256,7 +262,7 @@ export class PINProtectionTester {
       details: {
         profileAId: this.profileA.id,
         hasPinHash: pinIsRequired,
-      }
+      },
     };
   }
 
@@ -268,7 +274,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify Incorrect PIN Rejected',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -279,7 +285,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify Incorrect PIN Rejected',
         passed: false,
-        message: 'No PIN hash stored for Profile A'
+        message: 'No PIN hash stored for Profile A',
       };
     }
 
@@ -299,7 +305,7 @@ export class PINProtectionTester {
         wrongPinUsed: this.wrongPin,
         correctPin: this.testPin,
         hashesMatch: !incorrectPinRejected,
-      }
+      },
     };
   }
 
@@ -311,7 +317,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify Correct PIN Accepted',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -322,7 +328,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify Correct PIN Accepted',
         passed: false,
-        message: 'No PIN hash stored for Profile A'
+        message: 'No PIN hash stored for Profile A',
       };
     }
 
@@ -341,22 +347,28 @@ export class PINProtectionTester {
     const activeProfile = profiles.find(p => p.isActive);
     const profileSwitched = activeProfile?.id === this.profileA.id;
 
-    logger.log('[PINProtectionTest] Correct PIN test - accepted:', correctPinAccepted, 'switched:', profileSwitched);
+    logger.log(
+      '[PINProtectionTest] Correct PIN test - accepted:',
+      correctPinAccepted,
+      'switched:',
+      profileSwitched
+    );
 
     return {
       testName: 'Verify Correct PIN Accepted',
       passed: correctPinAccepted && profileSwitched,
-      message: correctPinAccepted && profileSwitched
-        ? 'Correct PIN accepted and profile switch successful'
-        : correctPinAccepted
-          ? 'PIN accepted but profile switch failed'
-          : 'Correct PIN was NOT accepted (unexpected)',
+      message:
+        correctPinAccepted && profileSwitched
+          ? 'Correct PIN accepted and profile switch successful'
+          : correctPinAccepted
+            ? 'PIN accepted but profile switch failed'
+            : 'Correct PIN was NOT accepted (unexpected)',
       details: {
         pinAccepted: correctPinAccepted,
         profileSwitched,
         activeProfileId: activeProfile?.id,
         expectedProfileId: this.profileA.id,
-      }
+      },
     };
   }
 
@@ -368,7 +380,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN is Hashed',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -379,7 +391,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN is Hashed',
         passed: false,
-        message: 'No PIN hash stored'
+        message: 'No PIN hash stored',
       };
     }
 
@@ -403,8 +415,8 @@ export class PINProtectionTester {
         hasReasonableLength,
         notSimpleEncoding,
         hashLength: storedHash.length,
-        storedValuePreview: storedHash.substring(0, 10) + '...',
-      }
+        storedValuePreview: `${storedHash.substring(0, 10)}...`,
+      },
     };
   }
 
@@ -416,7 +428,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN Can Be Disabled',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -428,7 +440,7 @@ export class PINProtectionTester {
       return {
         testName: 'Verify PIN Can Be Disabled',
         passed: false,
-        message: 'No PIN to disable'
+        message: 'No PIN to disable',
       };
     }
 
@@ -447,13 +459,11 @@ export class PINProtectionTester {
     return {
       testName: 'Verify PIN Can Be Disabled',
       passed: pinRemoved,
-      message: pinRemoved
-        ? 'PIN can be disabled (removed from storage)'
-        : 'Failed to disable PIN',
+      message: pinRemoved ? 'PIN can be disabled (removed from storage)' : 'Failed to disable PIN',
       details: {
         pinExistedBefore: !!storedHashBefore,
         pinRemovedSuccessfully: pinRemoved,
-      }
+      },
     };
   }
 
@@ -467,8 +477,8 @@ export class PINProtectionTester {
     const storedProfiles = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
     if (storedProfiles) {
       const profiles: Profile[] = JSON.parse(storedProfiles);
-      const cleanedProfiles = profiles.filter(p =>
-        p.id !== this.profileA?.id && p.id !== this.profileB?.id
+      const cleanedProfiles = profiles.filter(
+        p => p.id !== this.profileA?.id && p.id !== this.profileB?.id
       );
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(cleanedProfiles));
     }
@@ -499,7 +509,7 @@ export class PINProtectionTester {
       results.push({
         testName: 'Create Test Profiles',
         passed: true,
-        message: 'Test profiles created successfully'
+        message: 'Test profiles created successfully',
       });
 
       // Step 2: Enable PIN on Profile A
@@ -525,13 +535,12 @@ export class PINProtectionTester {
 
       // Step 9: Verify PIN can be disabled
       results.push(await this.verifyPinCanBeDisabled());
-
     } catch (error: any) {
       results.push({
         testName: 'Test Suite Error',
         passed: false,
         message: `Error during test execution: ${error.message}`,
-        details: { error: error.stack }
+        details: { error: error.stack },
       });
     } finally {
       // Clean up test data
@@ -543,13 +552,15 @@ export class PINProtectionTester {
     const testSuite: PINTestSuite = {
       allPassed,
       results,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Log summary
     logger.log('[PINProtectionTest] Test Suite Complete');
     logger.log(`[PINProtectionTest] Overall Result: ${allPassed ? 'PASSED' : 'FAILED'}`);
-    logger.log(`[PINProtectionTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`);
+    logger.log(
+      `[PINProtectionTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`
+    );
 
     return testSuite;
   }

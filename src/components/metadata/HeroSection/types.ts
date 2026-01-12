@@ -3,8 +3,8 @@
  * Extracted from the original HeroSection.tsx to enable composition and reuse.
  */
 
-import type { SharedValue, AnimatedStyleProp } from 'react-native-reanimated';
 import type { ViewStyle } from 'react-native';
+import type { SharedValue, AnimatedStyleProp } from 'react-native-reanimated';
 
 /**
  * Content type for media items

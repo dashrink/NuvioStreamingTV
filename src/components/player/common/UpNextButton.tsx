@@ -1,10 +1,18 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Image, Platform } from 'react-native';
-import { Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { logger } from '../../../utils/logger';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  Platform,
+  Animated,
+} from 'react-native';
+
 import { triggerMedium } from '../../../hooks/useHaptics';
+import { logger } from '../../../utils/logger';
 
 export interface Insets {
   top: number;
@@ -68,7 +76,7 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
           const { tmdbService } = require('../../../services/tmdbService');
           const url = tmdbService.getImageUrl(anyEpisode.still_path, 'w500');
           if (url) imageUri = url;
-        } catch { }
+        } catch {}
       }
     }
   }
@@ -87,14 +95,18 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
 
   useEffect(() => {
     if (shouldShow && !visible) {
-      try { logger.log('[UpNextButton] showing with animation'); } catch { }
+      try {
+        logger.log('[UpNextButton] showing with animation');
+      } catch {}
       setVisible(true);
       Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 400, useNativeDriver: true }),
         Animated.spring(scale, { toValue: 1, tension: 100, friction: 8, useNativeDriver: true }),
       ]).start();
     } else if (!shouldShow && visible) {
-      try { logger.log('[UpNextButton] hiding with animation'); } catch { }
+      try {
+        logger.log('[UpNextButton] hiding with animation');
+      } catch {}
       Animated.parallel([
         Animated.timing(opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
         Animated.timing(scale, { toValue: 0.8, duration: 200, useNativeDriver: true }),
@@ -153,18 +165,33 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
         {imageUri ? (
           <Image
             source={{ uri: imageUri }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100%',
+              height: '100%',
+            }}
             resizeMode="cover"
           />
         ) : (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#2a2a2a' }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#2a2a2a',
+            }}
+          >
             <MaterialIcons name="movie" size={44} color="#9aa0a6" />
           </View>
         )}
 
         {/* Bottom overlay text */}
         <LinearGradient
-          colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.65)", "rgba(0,0,0,0.98)"]}
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.65)', 'rgba(0,0,0,0.98)']}
           locations={[0, 0.5, 1]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
@@ -180,11 +207,23 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
             {isLoading ? (
-              <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 6, transform: [{ scale: 0.85 }] }} />
+              <ActivityIndicator
+                size="small"
+                color="#ffffff"
+                style={{ marginRight: 6, transform: [{ scale: 0.85 }] }}
+              />
             ) : (
-              <MaterialIcons name="skip-next" size={18} color="#ffffff" style={{ marginRight: 6 }} />
+              <MaterialIcons
+                name="skip-next"
+                size={18}
+                color="#ffffff"
+                style={{ marginRight: 6 }}
+              />
             )}
-            <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '700', opacity: 0.9 }} numberOfLines={1}>
+            <Text
+              style={{ color: '#ffffff', fontSize: 11, fontWeight: '700', opacity: 0.9 }}
+              numberOfLines={1}
+            >
               {isLoading ? 'Loading next…' : 'Up next'}
             </Text>
           </View>
@@ -203,6 +242,6 @@ const UpNextButton: React.FC<UpNextButtonProps> = ({
       </TouchableOpacity>
     </Animated.View>
   );
-}
+};
 
 export default UpNextButton;

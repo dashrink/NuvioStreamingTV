@@ -28,6 +28,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSharedValue, withTiming, SharedValue } from 'react-native-reanimated';
+
 import { LOGO_CONFIG, UI_TIMING } from '../constants';
 
 // =============================================================================
@@ -308,24 +309,27 @@ export function useStableLogo({
    * Manually set the stable logo URI.
    * Useful for external logo sources or testing.
    */
-  const setStableLogoUriExternal = useCallback((uri: string | null) => {
-    clearGraceTimer();
+  const setStableLogoUriExternal = useCallback(
+    (uri: string | null) => {
+      clearGraceTimer();
 
-    if (uri) {
-      setStableLogoUri(uri);
-      setLogoHasLoadedSuccessfully(false);
-      logoLoadOpacity.value = 0;
-      setShouldShowTextFallback(false);
-      setFallbackLevel(uri === logo ? 'primary' : uri === addonLogo ? 'addon' : 'primary');
-    } else {
-      setStableLogoUri(null);
-      setLogoHasLoadedSuccessfully(false);
-      setShouldShowTextFallback(true);
-      setFallbackLevel('text');
-    }
+      if (uri) {
+        setStableLogoUri(uri);
+        setLogoHasLoadedSuccessfully(false);
+        logoLoadOpacity.value = 0;
+        setShouldShowTextFallback(false);
+        setFallbackLevel(uri === logo ? 'primary' : uri === addonLogo ? 'addon' : 'primary');
+      } else {
+        setStableLogoUri(null);
+        setLogoHasLoadedSuccessfully(false);
+        setShouldShowTextFallback(true);
+        setFallbackLevel('text');
+      }
 
-    onStableLogoUriChange?.(uri);
-  }, [logo, addonLogo, logoLoadOpacity, onStableLogoUriChange, clearGraceTimer]);
+      onStableLogoUriChange?.(uri);
+    },
+    [logo, addonLogo, logoLoadOpacity, onStableLogoUriChange, clearGraceTimer]
+  );
 
   // ---------------------------------------------------------------------------
   // Cleanup on Unmount

@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Platform,
-} from 'react-native';
-import { UnifiedSpinner } from '../loading';
-import { MaterialIcons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for CastDetailsModal
 let GlassViewComp: any = null;
@@ -20,7 +14,8 @@ if (Platform.OS === 'ios') {
     // Dynamically require so app still runs if the package isn't installed yet
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     GlassViewComp = null;
     liquidGlassAvailable = false;
@@ -35,14 +30,13 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { useTheme } from '../../contexts/ThemeContext';
-import { Cast } from '../../types/cast';
-import { tmdbService } from '../../services/tmdbService';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
 import { triggerLight } from '../../hooks/useHaptics';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { tmdbService } from '../../services/tmdbService';
+import { Cast } from '../../types/cast';
+import { UnifiedSpinner } from '../loading';
 
 interface CastDetailsModalProps {
   visible: boolean;
@@ -83,14 +77,14 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
     if (visible && castMember) {
       modalOpacity.value = withTiming(1, { duration: 250 });
       modalScale.value = withSpring(1, { damping: 20, stiffness: 200 });
-      
+
       if (!hasFetched || personDetails?.id !== castMember.id) {
         fetchPersonDetails();
       }
     } else {
       modalOpacity.value = withTiming(0, { duration: 200 });
       modalScale.value = withTiming(0.9, { duration: 200 });
-      
+
       if (!visible) {
         setHasFetched(false);
         setPersonDetails(null);
@@ -100,7 +94,7 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
 
   const fetchPersonDetails = async () => {
     if (!castMember || loading) return;
-    
+
     setLoading(true);
     try {
       const details = await tmdbService.getPersonDetails(castMember.id);
@@ -152,11 +146,11 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
     const birthDate = new Date(birthday);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age;
   };
 
@@ -198,9 +192,7 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
             height: MODAL_HEIGHT,
             overflow: 'hidden',
             borderRadius: isTablet ? 32 : 24,
-            backgroundColor: Platform.OS === 'android' 
-              ? 'rgba(20, 20, 20, 0.95)' 
-              : 'transparent',
+            backgroundColor: Platform.OS === 'android' ? 'rgba(20, 20, 20, 0.95)' : 'transparent',
           },
           modalStyle,
         ]}
@@ -241,22 +233,26 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
     return (
       <>
         {/* Header */}
-        <View style={{
-          padding: isTablet ? 24 : 20,
-          paddingTop: isTablet ? 28 : 24,
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          borderBottomWidth: 1,
-          borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-        }}>
+        <View
+          style={{
+            padding: isTablet ? 24 : 20,
+            paddingTop: isTablet ? 28 : 24,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{
-              width: isTablet ? 72 : 56,
-              height: isTablet ? 72 : 56,
-              borderRadius: isTablet ? 36 : 28,
-              overflow: 'hidden',
-              marginRight: isTablet ? 16 : 12,
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
-            }}>
+            <View
+              style={{
+                width: isTablet ? 72 : 56,
+                height: isTablet ? 72 : 56,
+                borderRadius: isTablet ? 36 : 28,
+                overflow: 'hidden',
+                marginRight: isTablet ? 16 : 12,
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              }}
+            >
               {castMember?.profile_path ? (
                 <FastImage
                   source={{
@@ -266,38 +262,51 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
                   resizeMode={FastImage.resizeMode.cover}
                 />
               ) : (
-                <View style={{
-                  width: '100%',
-                  height: '100%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    fontSize: isTablet ? 20 : 16,
-                    fontWeight: '600',
-                  }}>
-                    {castMember?.name?.split(' ').reduce((prev: string, current: string) => prev + current[0], '').substring(0, 2)}
+                <View
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      fontSize: isTablet ? 20 : 16,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {castMember?.name
+                      ?.split(' ')
+                      .reduce((prev: string, current: string) => prev + current[0], '')
+                      .substring(0, 2)}
                   </Text>
                 </View>
               )}
             </View>
-            
+
             <View style={{ flex: 1 }}>
-              <Text style={{
-                color: '#fff',
-                fontSize: isTablet ? 20 : 17,
-                fontWeight: '700',
-                marginBottom: 3,
-              }} numberOfLines={2}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: isTablet ? 20 : 17,
+                  fontWeight: '700',
+                  marginBottom: 3,
+                }}
+                numberOfLines={2}
+              >
                 {castMember?.name}
               </Text>
               {castMember?.character && (
-                <Text style={{
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  fontSize: isTablet ? 14 : 13,
-                  fontWeight: '500',
-                }} numberOfLines={2}>
+                <Text
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: isTablet ? 14 : 13,
+                    fontWeight: '500',
+                  }}
+                  numberOfLines={2}
+                >
                   as {castMember.character}
                 </Text>
               )}
@@ -315,7 +324,11 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
               onPress={handleClose}
               activeOpacity={0.7}
             >
-              <MaterialIcons name="close" size={isTablet ? 20 : 18} color="rgba(255, 255, 255, 0.8)" />
+              <MaterialIcons
+                name="close"
+                size={isTablet ? 20 : 18}
+                color="rgba(255, 255, 255, 0.8)"
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -327,43 +340,53 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
           showsVerticalScrollIndicator={false}
         >
           {loading ? (
-            <View style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 40,
-            }}>
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 40,
+              }}
+            >
               <UnifiedSpinner size="large" text="Loading details..." />
             </View>
           ) : (
             <View>
               {/* Basic Info */}
               {(personDetails?.birthday || personDetails?.place_of_birth) && (
-                <View style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 20,
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.06)',
-                }}>
+                <View
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 20,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.06)',
+                  }}
+                >
                   {personDetails?.birthday && (
-                    <View style={{ 
-                      flexDirection: 'row', 
-                      alignItems: 'center',
-                      marginBottom: personDetails?.place_of_birth ? 10 : 0
-                    }}>
-                      <View style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                        marginRight: 12,
-                      }} />
-                      <Text style={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        fontSize: 13,
-                        fontWeight: '500',
-                      }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: personDetails?.place_of_birth ? 10 : 0,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                          marginRight: 12,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: 13,
+                          fontWeight: '500',
+                        }}
+                      >
                         {calculateAge(personDetails.birthday)} years old
                       </Text>
                     </View>
@@ -371,19 +394,23 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
 
                   {personDetails?.place_of_birth && (
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                        marginRight: 12,
-                      }} />
-                      <Text style={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        fontSize: 13,
-                        fontWeight: '500',
-                        flex: 1,
-                      }}>
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                          marginRight: 12,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: 13,
+                          fontWeight: '500',
+                          flex: 1,
+                        }}
+                      >
                         Born in {personDetails.place_of_birth}
                       </Text>
                     </View>
@@ -408,13 +435,20 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
                 onPress={handleViewMovies}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="movie" size={18} color="rgba(255, 255, 255, 0.9)" style={{ marginRight: 8 }} />
-                <Text style={{
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  fontSize: 15,
-                  fontWeight: '600',
-                  letterSpacing: 0.3,
-                }}>
+                <MaterialIcons
+                  name="movie"
+                  size={18}
+                  color="rgba(255, 255, 255, 0.9)"
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: 15,
+                    fontWeight: '600',
+                    letterSpacing: 0.3,
+                  }}
+                >
                   View Filmography
                 </Text>
               </TouchableOpacity>
@@ -422,12 +456,14 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
               {/* Biography */}
               {personDetails?.biography && (
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    fontSize: isTablet ? 15 : 14,
-                    lineHeight: isTablet ? 22 : 20,
-                    fontWeight: '400',
-                  }}>
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: isTablet ? 15 : 14,
+                      lineHeight: isTablet ? 22 : 20,
+                      fontWeight: '400',
+                    }}
+                  >
                     {personDetails.biography}
                   </Text>
                 </View>
@@ -435,50 +471,64 @@ export const CastDetailsModal: React.FC<CastDetailsModalProps> = ({
 
               {/* Also Known As - Minimalistic */}
               {personDetails?.also_known_as && personDetails.also_known_as.length > 0 && (
-                <View style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: 8,
-                  padding: 12,
-                  marginBottom: 16,
-                }}>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    fontSize: 11,
-                    fontWeight: '600',
-                    marginBottom: 6,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                  }}>
+                <View
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: 8,
+                    padding: 12,
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontSize: 11,
+                      fontWeight: '600',
+                      marginBottom: 6,
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                    }}
+                  >
                     Also Known As
                   </Text>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: isTablet ? 14 : 13,
-                    lineHeight: isTablet ? 20 : 18,
-                    fontWeight: '500',
-                  }}>
+                  <Text
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: isTablet ? 14 : 13,
+                      lineHeight: isTablet ? 20 : 18,
+                      fontWeight: '500',
+                    }}
+                  >
                     {personDetails.also_known_as.slice(0, 3).join(' • ')}
                   </Text>
                 </View>
               )}
 
               {/* No details available */}
-              {!loading && !personDetails?.biography && !personDetails?.birthday && !personDetails?.place_of_birth && !personDetails?.also_known_as?.length && (
-                <View style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 32,
-                }}>
-                  <Text style={{
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    fontSize: 13,
-                    textAlign: 'center',
-                    fontWeight: '500',
-                  }}>
-                    No additional information available
-                  </Text>
-                </View>
-              )}
+              {!loading &&
+                !personDetails?.biography &&
+                !personDetails?.birthday &&
+                !personDetails?.place_of_birth &&
+                !personDetails?.also_known_as?.length && (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 32,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontSize: 13,
+                        textAlign: 'center',
+                        fontWeight: '500',
+                      }}
+                    >
+                      No additional information available
+                    </Text>
+                  </View>
+                )}
             </View>
           )}
         </ScrollView>

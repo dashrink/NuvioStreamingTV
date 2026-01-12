@@ -1,3 +1,5 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
 import {
   View,
@@ -8,12 +10,9 @@ import {
   TouchableOpacity,
   useColorScheme,
   Dimensions,
-  Platform
+  Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import FastImage from '@d11/react-native-fast-image';
-import { useTraktContext } from '../../contexts/TraktContext';
-import { colors } from '../../styles/colors';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -22,13 +21,11 @@ import Animated, {
   Extrapolate,
   runOnJS,
 } from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
-import { StreamingContent } from '../../services/catalogService';
+
+import { useTraktContext } from '../../contexts/TraktContext';
 import { triggerLight } from '../../hooks/useHaptics';
+import { StreamingContent } from '../../services/catalogService';
+import { colors } from '../../styles/colors';
 
 interface DropUpMenuProps {
   visible: boolean;
@@ -39,7 +36,14 @@ interface DropUpMenuProps {
   isWatched?: boolean; // allow parent to pass watched status directly
 }
 
-export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: isSavedProp, isWatched: isWatchedProp }: DropUpMenuProps) => {
+export const DropUpMenu = ({
+  visible,
+  onClose,
+  item,
+  onOptionSelect,
+  isSaved: isSavedProp,
+  isWatched: isWatchedProp,
+}: DropUpMenuProps) => {
   const translateY = useSharedValue(300);
   const opacity = useSharedValue(0);
   const isDarkMode = useColorScheme() === 'dark';
@@ -62,18 +66,14 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
     .onStart(() => {
       // Store initial position if needed
     })
-    .onUpdate((event) => {
-      if (event.translationY > 0) { // Only allow dragging downwards
+    .onUpdate(event => {
+      if (event.translationY > 0) {
+        // Only allow dragging downwards
         translateY.value = event.translationY;
-        opacity.value = interpolate(
-          event.translationY,
-          [0, 300],
-          [1, 0],
-          Extrapolate.CLAMP
-        );
+        opacity.value = interpolate(event.translationY, [0, 300], [1, 0], Extrapolate.CLAMP);
       }
     })
-    .onEnd((event) => {
+    .onEnd(event => {
       if (event.translationY > SNAP_THRESHOLD || event.velocityY > 500) {
         translateY.value = withTiming(300, { duration: 300 });
         opacity.value = withTiming(0, { duration: 200 });
@@ -99,18 +99,19 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
   const isSaved = typeof isSavedProp === 'boolean' ? isSavedProp : !!item.inLibrary;
   const isWatched = !!isWatchedProp;
   const inTraktWatchlist = isAuthenticated && isInWatchlist(item.id, item.type as 'movie' | 'show');
-  const inTraktCollection = isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show');
+  const inTraktCollection =
+    isAuthenticated && isInCollection(item.id, item.type as 'movie' | 'show');
 
   let menuOptions = [
     {
       icon: 'bookmark',
       label: isSaved ? 'Remove from Library' : 'Add to Library',
-      action: 'library'
+      action: 'library',
     },
     {
       icon: 'check-circle',
       label: isWatched ? 'Mark as Unwatched' : 'Mark as Watched',
-      action: 'watched'
+      action: 'watched',
     },
     /*
     {
@@ -122,8 +123,8 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
     {
       icon: 'share',
       label: 'Share',
-      action: 'share'
-    }
+      action: 'share',
+    },
   ];
 
   // Add Trakt options if authenticated
@@ -132,12 +133,12 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
       {
         icon: 'playlist-add-check',
         label: inTraktWatchlist ? 'Remove from Trakt Watchlist' : 'Add to Trakt Watchlist',
-        action: 'trakt-watchlist'
+        action: 'trakt-watchlist',
       },
       {
         icon: 'video-library',
         label: inTraktCollection ? 'Remove from Trakt Collection' : 'Add to Trakt Collection',
-        action: 'trakt-collection'
+        action: 'trakt-collection',
       }
     );
   }
@@ -159,10 +160,13 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Animated.View style={[styles.modalOverlay, overlayStyle]}>
-          <Pressable style={styles.modalOverlayPressable} onPress={() => {
-            triggerLight();
-            onClose();
-          }} />
+          <Pressable
+            style={styles.modalOverlayPressable}
+            onPress={() => {
+              triggerLight();
+              onClose();
+            }}
+          />
           <GestureDetector gesture={gesture}>
             <Animated.View style={[styles.menuContainer, menuStyle, { backgroundColor }]}>
               <View style={styles.dragHandle} />
@@ -171,7 +175,7 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
                   source={{
                     uri: item.poster,
                     priority: FastImage.priority.high,
-                    cache: FastImage.cacheControl.immutable
+                    cache: FastImage.cacheControl.immutable,
                   }}
                   style={styles.menuPoster}
                   resizeMode={FastImage.resizeMode.cover}
@@ -193,8 +197,10 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
                     key={option.action}
                     style={[
                       styles.menuOption,
-                      { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
-                      index === menuOptions.length - 1 && styles.lastMenuOption
+                      {
+                        borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                      },
+                      index === menuOptions.length - 1 && styles.lastMenuOption,
                     ]}
                     onPress={() => {
                       triggerLight();
@@ -203,14 +209,20 @@ export const DropUpMenu = ({ visible, onClose, item, onOptionSelect, isSaved: is
                     }}
                   >
                     <MaterialIcons
-                      name={option.icon as "bookmark" | "check-circle" | "playlist-add" | "share" | "bookmark-border"}
+                      name={
+                        option.icon as
+                          | 'bookmark'
+                          | 'check-circle'
+                          | 'playlist-add'
+                          | 'share'
+                          | 'bookmark-border'
+                      }
                       size={24}
                       color={colors.primary}
                     />
-                    <Text style={[
-                      styles.menuOptionText,
-                      { color: isDarkMode ? '#FFFFFF' : '#000000' }
-                    ]}>
+                    <Text
+                      style={[styles.menuOptionText, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}
+                    >
                       {option.label}
                     </Text>
                   </TouchableOpacity>
@@ -300,4 +312,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DropUpMenu; 
+export default DropUpMenu;

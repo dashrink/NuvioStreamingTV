@@ -1,6 +1,7 @@
+import FastImage from '@d11/react-native-fast-image';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import FastImage from '@d11/react-native-fast-image';
+
 import { logger } from '../../utils/logger';
 
 interface OptimizedImageProps {
@@ -19,7 +20,11 @@ interface OptimizedImageProps {
 const { width: screenWidth } = Dimensions.get('window');
 
 // Image size optimization based on container size
-const getOptimizedImageUrl = (originalUrl: string, containerWidth?: number, containerHeight?: number): string => {
+const getOptimizedImageUrl = (
+  originalUrl: string,
+  containerWidth?: number,
+  containerHeight?: number
+): string => {
   if (!originalUrl || originalUrl.includes('placeholder')) {
     return originalUrl;
   }
@@ -28,7 +33,7 @@ const getOptimizedImageUrl = (originalUrl: string, containerWidth?: number, cont
   if (originalUrl.includes('image.tmdb.org')) {
     const width = containerWidth || 300;
     let size = 'w300';
-    
+
     if (width <= 92) size = 'w92';
     else if (width <= 154) size = 'w154';
     else if (width <= 185) size = 'w185';
@@ -36,7 +41,7 @@ const getOptimizedImageUrl = (originalUrl: string, containerWidth?: number, cont
     else if (width <= 500) size = 'w500';
     else if (width <= 780) size = 'w780';
     else size = 'w1280';
-    
+
     // Replace the size in the URL
     return originalUrl.replace(/\/w\d+\//, `/${size}/`);
   }
@@ -59,7 +64,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onError,
   contentFit = 'cover',
   transition = 0,
-  cachePolicy = 'memory'
+  cachePolicy = 'memory',
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -72,7 +77,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Calculate container dimensions from style
   const containerWidth = style?.width || (style?.aspectRatio ? screenWidth * 0.3 : 300);
-  const containerHeight = style?.height || (containerWidth / (style?.aspectRatio || 0.67));
+  const containerHeight = style?.height || containerWidth / (style?.aspectRatio || 0.67);
 
   useEffect(() => {
     return () => {
@@ -91,11 +96,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Lazy loading intersection observer simulation
   useEffect(() => {
     if (lazy && !isVisible) {
-      const timer = setTimeout(() => {
-        if (mountedRef.current) {
-          setIsVisible(true);
-        }
-      }, priority === 'high' ? 200 : priority === 'normal' ? 500 : 1000);
+      const timer = setTimeout(
+        () => {
+          if (mountedRef.current) {
+            setIsVisible(true);
+          }
+        },
+        priority === 'high' ? 200 : priority === 'normal' ? 500 : 1000
+      );
 
       return () => clearTimeout(timer);
     }
@@ -112,7 +120,10 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       onLoad?.();
     } catch (error) {
       if (!mountedRef.current) return;
-      logger.error(`[OptimizedImage] Failed to preload: ${optimizedUrl.substring(0, 50)}...`, error);
+      logger.error(
+        `[OptimizedImage] Failed to preload: ${optimizedUrl.substring(0, 50)}...`,
+        error
+      );
       setHasError(true);
       onError?.(error);
     }
@@ -142,18 +153,29 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   return (
     <FastImage
-      source={{ 
+      source={{
         uri: optimizedUrl,
-        priority: priority === 'high' ? FastImage.priority.high : priority === 'low' ? FastImage.priority.low : FastImage.priority.normal,
-        cache: FastImage.cacheControl.immutable
+        priority:
+          priority === 'high'
+            ? FastImage.priority.high
+            : priority === 'low'
+              ? FastImage.priority.low
+              : FastImage.priority.normal,
+        cache: FastImage.cacheControl.immutable,
       }}
       style={style}
-      resizeMode={contentFit === 'contain' ? FastImage.resizeMode.contain : contentFit === 'cover' ? FastImage.resizeMode.cover : FastImage.resizeMode.cover}
+      resizeMode={
+        contentFit === 'contain'
+          ? FastImage.resizeMode.contain
+          : contentFit === 'cover'
+            ? FastImage.resizeMode.cover
+            : FastImage.resizeMode.cover
+      }
       onLoad={() => {
         setIsLoaded(true);
         onLoad?.();
       }}
-      onError={(error) => {
+      onError={error => {
         setHasError(true);
         onError?.(error);
       }}

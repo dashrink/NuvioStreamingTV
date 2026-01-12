@@ -25,6 +25,8 @@
  * ```
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -35,14 +37,13 @@ import {
   FlatList,
   findNodeHandle,
 } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { CatalogContent, StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import ContentItem from './ContentItem';
-import Focusable from '../common/Focusable';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { CatalogContent, StreamingContent } from '../../services/catalogService';
+import Focusable from '../common/Focusable';
 
 // =============================================================================
 // Types & Interfaces
@@ -98,10 +99,14 @@ const calculatePosterLayout = (screenWidth: number) => {
   const device = getDeviceType(screenWidth);
 
   // Responsive sizing based on device type
-  const MIN_POSTER_WIDTH = device === 'tv' ? 180 : device === 'largeTablet' ? 160 : device === 'tablet' ? 140 : 100;
-  const MAX_POSTER_WIDTH = device === 'tv' ? 220 : device === 'largeTablet' ? 200 : device === 'tablet' ? 180 : 130;
-  const LEFT_PADDING = device === 'tv' ? 32 : device === 'largeTablet' ? 28 : device === 'tablet' ? 24 : 16;
-  const SPACING = device === 'tv' ? 12 : device === 'largeTablet' ? 10 : device === 'tablet' ? 8 : 8;
+  const MIN_POSTER_WIDTH =
+    device === 'tv' ? 180 : device === 'largeTablet' ? 160 : device === 'tablet' ? 140 : 100;
+  const MAX_POSTER_WIDTH =
+    device === 'tv' ? 220 : device === 'largeTablet' ? 200 : device === 'tablet' ? 180 : 130;
+  const LEFT_PADDING =
+    device === 'tv' ? 32 : device === 'largeTablet' ? 28 : device === 'tablet' ? 24 : 16;
+  const SPACING =
+    device === 'tv' ? 12 : device === 'largeTablet' ? 10 : device === 'tablet' ? 8 : 8;
 
   // Calculate available width for posters (reserve space for left padding)
   const availableWidth = screenWidth - LEFT_PADDING;
@@ -109,7 +114,8 @@ const calculatePosterLayout = (screenWidth: number) => {
   // Try different numbers of full posters to find the best fit
   let bestLayout = {
     numFullPosters: 3,
-    posterWidth: device === 'tv' ? 200 : device === 'largeTablet' ? 180 : device === 'tablet' ? 160 : 120
+    posterWidth:
+      device === 'tv' ? 200 : device === 'largeTablet' ? 180 : device === 'tablet' ? 160 : 120,
   };
 
   for (let n = 3; n <= 6; n++) {
@@ -125,7 +131,7 @@ const calculatePosterLayout = (screenWidth: number) => {
     numFullPosters: bestLayout.numFullPosters,
     posterWidth: bestLayout.posterWidth,
     spacing: SPACING,
-    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+    partialPosterWidth: bestLayout.posterWidth * 0.25, // 1/4 of next poster
   };
 };
 
@@ -182,13 +188,16 @@ const CatalogSection = ({
   /**
    * Save focus state to TV navigation context
    */
-  const saveFocusState = useCallback((index: number) => {
-    if (tvNav && index >= 0) {
-      const focusId = `${uniqueSectionId}-item-${index}`;
-      tvNav.setScreenFocus(uniqueSectionId, focusId);
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [tvNav, uniqueSectionId]);
+  const saveFocusState = useCallback(
+    (index: number) => {
+      if (tvNav && index >= 0) {
+        const focusId = `${uniqueSectionId}-item-${index}`;
+        tvNav.setScreenFocus(uniqueSectionId, focusId);
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [tvNav, uniqueSectionId]
+  );
 
   /**
    * Get saved focus index from memory
@@ -213,22 +222,25 @@ const CatalogSection = ({
   /**
    * Scroll to make the focused item visible
    */
-  const scrollToFocusedItem = useCallback((index: number, animated: boolean = true) => {
-    if (flatListRef.current && index >= 0 && index < catalog.items.length) {
-      try {
-        flatListRef.current.scrollToIndex({
-          index,
-          animated,
-          viewPosition: 0.3, // Position focused item slightly left of center
-        });
-      } catch (error) {
-        // Fallback: scroll to offset if scrollToIndex fails
-        const itemWidth = posterLayout.posterWidth + posterLayout.spacing;
-        const offset = Math.max(0, index * itemWidth - width * 0.2);
-        flatListRef.current.scrollToOffset({ offset, animated });
+  const scrollToFocusedItem = useCallback(
+    (index: number, animated: boolean = true) => {
+      if (flatListRef.current && index >= 0 && index < catalog.items.length) {
+        try {
+          flatListRef.current.scrollToIndex({
+            index,
+            animated,
+            viewPosition: 0.3, // Position focused item slightly left of center
+          });
+        } catch (error) {
+          // Fallback: scroll to offset if scrollToIndex fails
+          const itemWidth = posterLayout.posterWidth + posterLayout.spacing;
+          const offset = Math.max(0, index * itemWidth - width * 0.2);
+          flatListRef.current.scrollToOffset({ offset, animated });
+        }
       }
-    }
-  }, [catalog.items.length]);
+    },
+    [catalog.items.length]
+  );
 
   // =============================================================================
   // Focus Handlers
@@ -237,11 +249,14 @@ const CatalogSection = ({
   /**
    * Handle content item press
    */
-  const handleContentPress = useCallback((id: string, type: string) => {
-    // Save focus state before navigation
-    saveFocusState(focusedIndex);
-    navigation.navigate('Metadata', { id, type, addonId: catalog.addon });
-  }, [navigation, catalog.addon, saveFocusState, focusedIndex]);
+  const handleContentPress = useCallback(
+    (id: string, type: string) => {
+      // Save focus state before navigation
+      saveFocusState(focusedIndex);
+      navigation.navigate('Metadata', { id, type, addonId: catalog.addon });
+    },
+    [navigation, catalog.addon, saveFocusState, focusedIndex]
+  );
 
   /**
    * Handle View All button press
@@ -250,7 +265,7 @@ const CatalogSection = ({
     navigation.navigate('Catalog', {
       id: catalog.id,
       type: catalog.type,
-      addonId: catalog.addon
+      addonId: catalog.addon,
     });
   }, [navigation, catalog]);
 
@@ -272,13 +287,16 @@ const CatalogSection = ({
   /**
    * Handle item focus
    */
-  const handleItemFocus = useCallback((index: number) => {
-    setFocusedIndex(index);
-    setIsRowFocused(true);
-    saveFocusState(index);
-    scrollToFocusedItem(index);
-    onFocusSection?.(sectionIndex);
-  }, [saveFocusState, scrollToFocusedItem, sectionIndex, onFocusSection]);
+  const handleItemFocus = useCallback(
+    (index: number) => {
+      setFocusedIndex(index);
+      setIsRowFocused(true);
+      saveFocusState(index);
+      scrollToFocusedItem(index);
+      onFocusSection?.(sectionIndex);
+    },
+    [saveFocusState, scrollToFocusedItem, sectionIndex, onFocusSection]
+  );
 
   /**
    * Handle item blur
@@ -294,57 +312,63 @@ const CatalogSection = ({
   /**
    * Resolve a ref or number to a node handle
    */
-  const resolveNodeHandle = useCallback((value: number | React.RefObject<any> | undefined): number | undefined => {
-    if (value === undefined) return undefined;
-    if (typeof value === 'number') return value;
-    if (value.current) {
-      try {
-        return findNodeHandle(value.current) ?? undefined;
-      } catch {
-        return undefined;
+  const resolveNodeHandle = useCallback(
+    (value: number | React.RefObject<any> | undefined): number | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value === 'number') return value;
+      if (value.current) {
+        try {
+          return findNodeHandle(value.current) ?? undefined;
+        } catch {
+          return undefined;
+        }
       }
-    }
-    return undefined;
-  }, []);
+      return undefined;
+    },
+    []
+  );
 
   /**
    * Get next focus props for an item at a given index
    */
-  const getItemNextFocusProps = useCallback((index: number) => {
-    const props: Record<string, number | undefined> = {};
+  const getItemNextFocusProps = useCallback(
+    (index: number) => {
+      const props: Record<string, number | undefined> = {};
 
-    // Left navigation: previous item, or View All button if at first item
-    if (index > 0) {
-      const prevRef = itemRefs.current.get(index - 1);
-      if (prevRef?.current) {
-        props.nextFocusLeft = findNodeHandle(prevRef.current) ?? undefined;
+      // Left navigation: previous item, or View All button if at first item
+      if (index > 0) {
+        const prevRef = itemRefs.current.get(index - 1);
+        if (prevRef?.current) {
+          props.nextFocusLeft = findNodeHandle(prevRef.current) ?? undefined;
+        }
+      } else if (viewAllButtonRef.current) {
+        // At first item, left goes to View All
+        props.nextFocusLeft = findNodeHandle(viewAllButtonRef.current) ?? undefined;
       }
-    } else if (viewAllButtonRef.current) {
-      // At first item, left goes to View All
-      props.nextFocusLeft = findNodeHandle(viewAllButtonRef.current) ?? undefined;
-    }
 
-    // Right navigation: next item
-    if (index < catalog.items.length - 1) {
-      const nextRef = itemRefs.current.get(index + 1);
-      if (nextRef?.current) {
-        props.nextFocusRight = findNodeHandle(nextRef.current) ?? undefined;
+      // Right navigation: next item
+      if (index < catalog.items.length - 1) {
+        const nextRef = itemRefs.current.get(index + 1);
+        if (nextRef?.current) {
+          props.nextFocusRight = findNodeHandle(nextRef.current) ?? undefined;
+        }
       }
-    }
 
-    // Up/Down navigation: passed from parent for inter-row navigation
-    const upHandle = resolveNodeHandle(nextFocusUp);
-    if (upHandle !== undefined) {
-      props.nextFocusUp = upHandle;
-    }
+      // Up/Down navigation: passed from parent for inter-row navigation
+      const upHandle = resolveNodeHandle(nextFocusUp);
+      if (upHandle !== undefined) {
+        props.nextFocusUp = upHandle;
+      }
 
-    const downHandle = resolveNodeHandle(nextFocusDown);
-    if (downHandle !== undefined) {
-      props.nextFocusDown = downHandle;
-    }
+      const downHandle = resolveNodeHandle(nextFocusDown);
+      if (downHandle !== undefined) {
+        props.nextFocusDown = downHandle;
+      }
 
-    return props;
-  }, [catalog.items.length, nextFocusUp, nextFocusDown, resolveNodeHandle]);
+      return props;
+    },
+    [catalog.items.length, nextFocusUp, nextFocusDown, resolveNodeHandle]
+  );
 
   // =============================================================================
   // Render Callbacks
@@ -353,54 +377,78 @@ const CatalogSection = ({
   /**
    * Render a content item
    */
-  const renderContentItem = useCallback(({ item, index }: { item: StreamingContent; index: number }) => {
-    const itemFocusId = `${uniqueSectionId}-item-${index}`;
-    const shouldHaveFocus = hasTVPreferredFocus && index === 0 && sectionIndex === 0;
+  const renderContentItem = useCallback(
+    ({ item, index }: { item: StreamingContent; index: number }) => {
+      const itemFocusId = `${uniqueSectionId}-item-${index}`;
+      const shouldHaveFocus = hasTVPreferredFocus && index === 0 && sectionIndex === 0;
 
-    return (
-      <ContentItem
-        item={item}
-        onPress={handleContentPress}
-        focusId={itemFocusId}
-        hasTVPreferredFocus={shouldHaveFocus}
-        onFocus={() => handleItemFocus(index)}
-        onBlur={handleItemBlur}
-      />
-    );
-  }, [uniqueSectionId, handleContentPress, handleItemFocus, handleItemBlur, hasTVPreferredFocus, sectionIndex]);
+      return (
+        <ContentItem
+          item={item}
+          onPress={handleContentPress}
+          focusId={itemFocusId}
+          hasTVPreferredFocus={shouldHaveFocus}
+          onFocus={() => handleItemFocus(index)}
+          onBlur={handleItemBlur}
+        />
+      );
+    },
+    [
+      uniqueSectionId,
+      handleContentPress,
+      handleItemFocus,
+      handleItemBlur,
+      hasTVPreferredFocus,
+      sectionIndex,
+    ]
+  );
 
   /**
    * Item separator component
    */
   const separatorWidth = isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8;
-  const ItemSeparator = useCallback(() => <View style={{ width: separatorWidth }} />, [separatorWidth]);
+  const ItemSeparator = useCallback(
+    () => <View style={{ width: separatorWidth }} />,
+    [separatorWidth]
+  );
 
   /**
    * Key extractor for FlatList
    */
-  const keyExtractor = useCallback((item: StreamingContent, index: number) => `${item.id}-${item.type}-${index}`, []);
+  const keyExtractor = useCallback(
+    (item: StreamingContent, index: number) => `${item.id}-${item.type}-${index}`,
+    []
+  );
 
   /**
    * Handle scroll to index failure (fallback)
    */
-  const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
-    // Wait for layout then try again
-    setTimeout(() => {
-      scrollToFocusedItem(info.index, false);
-    }, 100);
-  }, [scrollToFocusedItem]);
+  const onScrollToIndexFailed = useCallback(
+    (info: { index: number; averageItemLength: number }) => {
+      // Wait for layout then try again
+      setTimeout(() => {
+        scrollToFocusedItem(info.index, false);
+      }, 100);
+    },
+    [scrollToFocusedItem]
+  );
 
   // =============================================================================
   // Memoized Styles
   // =============================================================================
 
-  const contentContainerStyle = useMemo(() => StyleSheet.flatten([
-    styles.catalogList,
-    {
-      paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16,
-      paddingRight: (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) - posterLayout.partialPosterWidth,
-    }
-  ]), []);
+  const contentContainerStyle = useMemo(
+    () =>
+      StyleSheet.flatten([
+        styles.catalogList,
+        {
+          paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16,
+          paddingRight:
+            (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) - posterLayout.partialPosterWidth,
+        },
+      ]),
+    []
+  );
 
   const headerPadding = isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16;
 
@@ -419,7 +467,7 @@ const CatalogSection = ({
               {
                 color: currentTheme.colors.text,
                 fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 22,
-              }
+              },
             ]}
             numberOfLines={1}
           >
@@ -432,7 +480,7 @@ const CatalogSection = ({
                 backgroundColor: currentTheme.colors.primary,
                 width: isTV ? 64 : isLargeTablet ? 56 : isTablet ? 48 : 40,
                 height: isTV ? 4 : isLargeTablet ? 3 : 3,
-              }
+              },
             ]}
           />
         </View>
@@ -451,7 +499,7 @@ const CatalogSection = ({
               paddingVertical: isTV ? 10 : isLargeTablet ? 9 : isTablet ? 8 : 8,
               paddingHorizontal: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
               borderRadius: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
-            }
+            },
           ]}
           animationConfig={{
             focusScale: 1.05,
@@ -465,14 +513,18 @@ const CatalogSection = ({
           accessibilityHint="Opens full catalog view"
           testID={`view-all-${catalog.id}`}
         >
-          <Text style={[
-            styles.viewAllText,
-            {
-              color: currentTheme.colors.textMuted,
-              fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-              marginRight: isTV ? 6 : isLargeTablet ? 5 : 4,
-            }
-          ]}>View All</Text>
+          <Text
+            style={[
+              styles.viewAllText,
+              {
+                color: currentTheme.colors.textMuted,
+                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                marginRight: isTV ? 6 : isLargeTablet ? 5 : 4,
+              },
+            ]}
+          >
+            View All
+          </Text>
           <MaterialIcons
             name="chevron-right"
             size={isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20}
@@ -539,7 +591,7 @@ const styles = StyleSheet.create({
     bottom: -2,
     left: 0,
     width: 40, // overridden responsively
-    height: 3,  // overridden responsively
+    height: 3, // overridden responsively
     borderRadius: 2,
     opacity: 0.8,
   },
@@ -575,10 +627,13 @@ export default React.memo(CatalogSection, (prevProps, nextProps) => {
     prevProps.sectionIndex === nextProps.sectionIndex &&
     prevProps.hasTVPreferredFocus === nextProps.hasTVPreferredFocus &&
     // Deep compare the first few items to detect changes
-    prevProps.catalog.items.slice(0, 3).every((item, index) =>
-      nextProps.catalog.items[index] &&
-      item.id === nextProps.catalog.items[index].id &&
-      item.poster === nextProps.catalog.items[index].poster
-    )
+    prevProps.catalog.items
+      .slice(0, 3)
+      .every(
+        (item, index) =>
+          nextProps.catalog.items[index] &&
+          item.id === nextProps.catalog.items[index].id &&
+          item.poster === nextProps.catalog.items[index].poster
+      )
   );
 });

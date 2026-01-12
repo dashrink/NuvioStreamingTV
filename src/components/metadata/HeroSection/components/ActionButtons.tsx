@@ -16,6 +16,8 @@
  * @module HeroSection/components/ActionButtons
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
+import { BlurView as ExpoBlurView } from 'expo-blur';
 import React, { memo, useMemo, useCallback } from 'react';
 import {
   View,
@@ -26,18 +28,16 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { BlurView as ExpoBlurView } from 'expo-blur';
 import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useToast } from '../../../../contexts/ToastContext';
 import { TMDBService } from '../../../../services/tmdbService';
 import { logger } from '../../../../utils/logger';
-
-import type { ActionButtonsProps } from '../types';
 import { isTablet } from '../styles';
 import { isLiquidGlassAvailable, getGlassViewComponent } from './GlassBlurBackground';
+
+import type { ActionButtonsProps } from '../types';
 
 // Get GlassView component from shared utility
 const GlassViewComp = getGlassViewComponent();
@@ -99,429 +99,404 @@ const liquidGlassAvailable = isLiquidGlassAvailable();
  * />
  * ```
  */
-const ActionButtons = memo(function ActionButtons({
-  handleShowStreams,
-  toggleLibrary,
-  inLibrary,
-  type,
-  id,
-  navigation,
-  playButtonText,
-  animatedStyle,
-  isWatched,
-  watchProgress,
-  groupedEpisodes,
-  metadata,
-  settings,
-  // Trakt integration props
-  isAuthenticated,
-  isInWatchlist,
-  isInCollection,
-  onToggleWatchlist,
-  onToggleCollection,
-}: ActionButtonsProps) {
-  const { currentTheme } = useTheme();
-  const { showSaved, showTraktSaved, showRemoved, showTraktRemoved, showSuccess, showInfo } = useToast();
-
-  // Performance optimization: Cache theme colors
-  const themeColors = useMemo(
-    () => ({
-      white: currentTheme.colors.white,
-      black: '#000',
-      primary: currentTheme.colors.primary,
-    }),
-    [currentTheme.colors.white, currentTheme.colors.primary]
-  );
-
-  // =============================================================================
-  // Event Handlers
-  // =============================================================================
-
-  /**
-   * Handles navigation to the ratings screen.
-   * Converts IMDb IDs to TMDB IDs if needed.
-   */
-  const handleRatingsPress = useCallback(async () => {
-    // Early return if no ID
-    if (!id) return;
-
-    let finalTmdbId: number | null = null;
-
-    if (id.startsWith('tmdb:')) {
-      const numericPart = id.split(':')[1];
-      const parsedId = parseInt(numericPart, 10);
-      if (!isNaN(parsedId)) {
-        finalTmdbId = parsedId;
-      }
-    } else if (id.startsWith('tt') && settings.enrichMetadataWithTMDB) {
-      try {
-        const tmdbService = TMDBService.getInstance();
-        const convertedId = await tmdbService.findTMDBIdByIMDB(id);
-        if (convertedId) {
-          finalTmdbId = convertedId;
-        }
-      } catch (error) {
-        logger.error(`[ActionButtons] Error converting IMDb ID ${id}:`, error);
-      }
-    } else {
-      const parsedId = parseInt(id, 10);
-      if (!isNaN(parsedId)) {
-        finalTmdbId = parsedId;
-      }
-    }
-
-    if (finalTmdbId !== null) {
-      // Use requestAnimationFrame for smoother navigation
-      requestAnimationFrame(() => {
-        navigation.navigate('ShowRatings', { showId: finalTmdbId });
-      });
-    }
-  }, [id, navigation, settings.enrichMetadataWithTMDB]);
-
-  /**
-   * Handles save action - combines local library + Trakt watchlist.
-   * Shows appropriate toast notification based on auth state.
-   */
-  const handleSaveAction = useCallback(async () => {
-    const wasInLibrary = inLibrary;
-
-    // Always toggle local library first
-    toggleLibrary();
-
-    // If authenticated, also toggle Trakt watchlist
-    if (isAuthenticated && onToggleWatchlist) {
-      await onToggleWatchlist();
-    }
-
-    // Show appropriate toast
-    if (isAuthenticated) {
-      if (wasInLibrary) {
-        showTraktRemoved();
-      } else {
-        showTraktSaved();
-      }
-    } else {
-      if (wasInLibrary) {
-        showRemoved();
-      } else {
-        showSaved();
-      }
-    }
-  }, [
+const ActionButtons = memo(
+  ({
+    handleShowStreams,
     toggleLibrary,
-    isAuthenticated,
-    onToggleWatchlist,
     inLibrary,
-    showSaved,
-    showTraktSaved,
-    showRemoved,
-    showTraktRemoved,
-  ]);
+    type,
+    id,
+    navigation,
+    playButtonText,
+    animatedStyle,
+    isWatched,
+    watchProgress,
+    groupedEpisodes,
+    metadata,
+    settings,
+    // Trakt integration props
+    isAuthenticated,
+    isInWatchlist,
+    isInCollection,
+    onToggleWatchlist,
+    onToggleCollection,
+  }: ActionButtonsProps) => {
+    const { currentTheme } = useTheme();
+    const { showSaved, showTraktSaved, showRemoved, showTraktRemoved, showSuccess, showInfo } =
+      useToast();
 
-  /**
-   * Handles Trakt collection toggle with toast notifications.
-   */
-  const handleCollectionAction = useCallback(async () => {
-    const wasInCollection = isInCollection;
+    // Performance optimization: Cache theme colors
+    const themeColors = useMemo(
+      () => ({
+        white: currentTheme.colors.white,
+        black: '#000',
+        primary: currentTheme.colors.primary,
+      }),
+      [currentTheme.colors.white, currentTheme.colors.primary]
+    );
 
-    // Toggle collection
-    if (onToggleCollection) {
-      await onToggleCollection();
-    }
+    // =============================================================================
+    // Event Handlers
+    // =============================================================================
 
-    // Show appropriate toast
-    if (wasInCollection) {
-      showInfo('Removed from Collection', 'Removed from your Trakt collection');
-    } else {
-      showSuccess('Added to Collection', 'Added to your Trakt collection');
-    }
-  }, [onToggleCollection, isInCollection, showSuccess, showInfo]);
+    /**
+     * Handles navigation to the ratings screen.
+     * Converts IMDb IDs to TMDB IDs if needed.
+     */
+    const handleRatingsPress = useCallback(async () => {
+      // Early return if no ID
+      if (!id) return;
 
-  // =============================================================================
-  // Computed Styles
-  // =============================================================================
+      let finalTmdbId: number | null = null;
 
-  /**
-   * Play button style based on watched state.
-   * Movies get dark style when watched ("Watch Again").
-   */
-  const playButtonStyle = useMemo(() => {
-    if (isWatched && type === 'movie') {
-      // Only movies get the dark watched style for "Watch Again"
-      return [styles.actionButton, styles.playButton, styles.watchedPlayButton];
-    }
-    // All other buttons (Resume, Play SxxEyy, regular Play) get white background
-    return [styles.actionButton, styles.playButton];
-  }, [isWatched, type]);
-
-  /**
-   * Play button text style based on watched state.
-   */
-  const playButtonTextStyle = useMemo(() => {
-    if (isWatched && type === 'movie') {
-      // Only movies get white text for "Watch Again"
-      return [styles.playButtonText, styles.watchedPlayButtonText];
-    }
-    // All other buttons get black text
-    return styles.playButtonText;
-  }, [isWatched, type]);
-
-  /**
-   * Computed play button text based on content type and watch state.
-   * Handles special cases like "Watch Again", "Resume", and next episode.
-   */
-  const finalPlayButtonText = useMemo(() => {
-    // For movies, handle watched state
-    if (type === 'movie') {
-      return isWatched ? 'Watch Again' : playButtonText;
-    }
-
-    // For series, validate next episode existence for both watched and resume cases
-    if (type === 'series' && watchProgress?.episodeId && groupedEpisodes) {
-      let seasonNum: number | null = null;
-      let episodeNum: number | null = null;
-
-      const parts = watchProgress.episodeId.split(':');
-
-      if (parts.length === 3) {
-        // Format: showId:season:episode
-        seasonNum = parseInt(parts[1], 10);
-        episodeNum = parseInt(parts[2], 10);
-      } else if (parts.length === 2) {
-        // Format: season:episode (no show id)
-        seasonNum = parseInt(parts[0], 10);
-        episodeNum = parseInt(parts[1], 10);
+      if (id.startsWith('tmdb:')) {
+        const numericPart = id.split(':')[1];
+        const parsedId = parseInt(numericPart, 10);
+        if (!isNaN(parsedId)) {
+          finalTmdbId = parsedId;
+        }
+      } else if (id.startsWith('tt') && settings.enrichMetadataWithTMDB) {
+        try {
+          const tmdbService = TMDBService.getInstance();
+          const convertedId = await tmdbService.findTMDBIdByIMDB(id);
+          if (convertedId) {
+            finalTmdbId = convertedId;
+          }
+        } catch (error) {
+          logger.error(`[ActionButtons] Error converting IMDb ID ${id}:`, error);
+        }
       } else {
-        // Try pattern s1e2
-        const match = watchProgress.episodeId.match(/s(\d+)e(\d+)/i);
-        if (match) {
-          seasonNum = parseInt(match[1], 10);
-          episodeNum = parseInt(match[2], 10);
+        const parsedId = parseInt(id, 10);
+        if (!isNaN(parsedId)) {
+          finalTmdbId = parsedId;
         }
       }
 
-      if (
-        seasonNum !== null &&
-        episodeNum !== null &&
-        !isNaN(seasonNum) &&
-        !isNaN(episodeNum)
-      ) {
-        if (isWatched) {
-          // For watched episodes, check if next episode exists
-          const nextEpisode = episodeNum + 1;
-          const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
-          const nextEpisodeExists = currentSeasonEpisodes.some(
-            (ep) => ep.episode_number === nextEpisode
-          );
+      if (finalTmdbId !== null) {
+        // Use requestAnimationFrame for smoother navigation
+        requestAnimationFrame(() => {
+          navigation.navigate('ShowRatings', { showId: finalTmdbId });
+        });
+      }
+    }, [id, navigation, settings.enrichMetadataWithTMDB]);
 
-          if (nextEpisodeExists) {
-            // Show the NEXT episode number only if it exists
-            const seasonStr = seasonNum.toString().padStart(2, '0');
-            const episodeStr = nextEpisode.toString().padStart(2, '0');
-            return `Play S${seasonStr}E${episodeStr}`;
-          } else {
-            // If next episode doesn't exist, show generic text
-            return 'Completed';
-          }
+    /**
+     * Handles save action - combines local library + Trakt watchlist.
+     * Shows appropriate toast notification based on auth state.
+     */
+    const handleSaveAction = useCallback(async () => {
+      const wasInLibrary = inLibrary;
+
+      // Always toggle local library first
+      toggleLibrary();
+
+      // If authenticated, also toggle Trakt watchlist
+      if (isAuthenticated && onToggleWatchlist) {
+        await onToggleWatchlist();
+      }
+
+      // Show appropriate toast
+      if (isAuthenticated) {
+        if (wasInLibrary) {
+          showTraktRemoved();
         } else {
-          // For non-watched episodes, check if current episode exists
-          const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
-          const currentEpisodeExists = currentSeasonEpisodes.some(
-            (ep) => ep.episode_number === episodeNum
-          );
-
-          if (currentEpisodeExists) {
-            // Current episode exists, use original button text
-            return playButtonText;
-          } else {
-            // Current episode doesn't exist, fallback to generic play
-            return 'Play';
-          }
+          showTraktSaved();
+        }
+      } else {
+        if (wasInLibrary) {
+          showRemoved();
+        } else {
+          showSaved();
         }
       }
+    }, [
+      toggleLibrary,
+      isAuthenticated,
+      onToggleWatchlist,
+      inLibrary,
+      showSaved,
+      showTraktSaved,
+      showRemoved,
+      showTraktRemoved,
+    ]);
 
-      // Fallback label if parsing fails
-      return isWatched ? 'Play Next Episode' : playButtonText;
-    }
+    /**
+     * Handles Trakt collection toggle with toast notifications.
+     */
+    const handleCollectionAction = useCallback(async () => {
+      const wasInCollection = isInCollection;
 
-    // Default fallback for non-series or missing data
-    return isWatched ? 'Play' : playButtonText;
-  }, [isWatched, playButtonText, type, watchProgress, groupedEpisodes]);
+      // Toggle collection
+      if (onToggleCollection) {
+        await onToggleCollection();
+      }
 
-  // =============================================================================
-  // Button Visibility Logic
-  // =============================================================================
+      // Show appropriate toast
+      if (wasInCollection) {
+        showInfo('Removed from Collection', 'Removed from your Trakt collection');
+      } else {
+        showSuccess('Added to Collection', 'Added to your Trakt collection');
+      }
+    }, [onToggleCollection, isInCollection, showSuccess, showInfo]);
 
-  // Count additional buttons (excluding Play and Save)
-  const hasTraktCollection = isAuthenticated;
-  const hasRatings = type === 'series';
+    // =============================================================================
+    // Computed Styles
+    // =============================================================================
 
-  // Count additional buttons (AI Chat removed - now in top right corner)
-  const additionalButtonCount =
-    (hasTraktCollection ? 1 : 0) + (hasRatings ? 1 : 0);
+    /**
+     * Play button style based on watched state.
+     * Movies get dark style when watched ("Watch Again").
+     */
+    const playButtonStyle = useMemo(() => {
+      if (isWatched && type === 'movie') {
+        // Only movies get the dark watched style for "Watch Again"
+        return [styles.actionButton, styles.playButton, styles.watchedPlayButton];
+      }
+      // All other buttons (Resume, Play SxxEyy, regular Play) get white background
+      return [styles.actionButton, styles.playButton];
+    }, [isWatched, type]);
 
-  // =============================================================================
-  // Render Helpers
-  // =============================================================================
+    /**
+     * Play button text style based on watched state.
+     */
+    const playButtonTextStyle = useMemo(() => {
+      if (isWatched && type === 'movie') {
+        // Only movies get white text for "Watch Again"
+        return [styles.playButtonText, styles.watchedPlayButtonText];
+      }
+      // All other buttons get black text
+      return styles.playButtonText;
+    }, [isWatched, type]);
 
-  /**
-   * Renders platform-specific blur background for buttons.
-   */
-  const renderBlurBackground = useCallback(
-    (style: ViewStyle) => {
+    /**
+     * Computed play button text based on content type and watch state.
+     * Handles special cases like "Watch Again", "Resume", and next episode.
+     */
+    const finalPlayButtonText = useMemo(() => {
+      // For movies, handle watched state
+      if (type === 'movie') {
+        return isWatched ? 'Watch Again' : playButtonText;
+      }
+
+      // For series, validate next episode existence for both watched and resume cases
+      if (type === 'series' && watchProgress?.episodeId && groupedEpisodes) {
+        let seasonNum: number | null = null;
+        let episodeNum: number | null = null;
+
+        const parts = watchProgress.episodeId.split(':');
+
+        if (parts.length === 3) {
+          // Format: showId:season:episode
+          seasonNum = parseInt(parts[1], 10);
+          episodeNum = parseInt(parts[2], 10);
+        } else if (parts.length === 2) {
+          // Format: season:episode (no show id)
+          seasonNum = parseInt(parts[0], 10);
+          episodeNum = parseInt(parts[1], 10);
+        } else {
+          // Try pattern s1e2
+          const match = watchProgress.episodeId.match(/s(\d+)e(\d+)/i);
+          if (match) {
+            seasonNum = parseInt(match[1], 10);
+            episodeNum = parseInt(match[2], 10);
+          }
+        }
+
+        if (seasonNum !== null && episodeNum !== null && !isNaN(seasonNum) && !isNaN(episodeNum)) {
+          if (isWatched) {
+            // For watched episodes, check if next episode exists
+            const nextEpisode = episodeNum + 1;
+            const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
+            const nextEpisodeExists = currentSeasonEpisodes.some(
+              ep => ep.episode_number === nextEpisode
+            );
+
+            if (nextEpisodeExists) {
+              // Show the NEXT episode number only if it exists
+              const seasonStr = seasonNum.toString().padStart(2, '0');
+              const episodeStr = nextEpisode.toString().padStart(2, '0');
+              return `Play S${seasonStr}E${episodeStr}`;
+            } else {
+              // If next episode doesn't exist, show generic text
+              return 'Completed';
+            }
+          } else {
+            // For non-watched episodes, check if current episode exists
+            const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
+            const currentEpisodeExists = currentSeasonEpisodes.some(
+              ep => ep.episode_number === episodeNum
+            );
+
+            if (currentEpisodeExists) {
+              // Current episode exists, use original button text
+              return playButtonText;
+            } else {
+              // Current episode doesn't exist, fallback to generic play
+              return 'Play';
+            }
+          }
+        }
+
+        // Fallback label if parsing fails
+        return isWatched ? 'Play Next Episode' : playButtonText;
+      }
+
+      // Default fallback for non-series or missing data
+      return isWatched ? 'Play' : playButtonText;
+    }, [isWatched, playButtonText, type, watchProgress, groupedEpisodes]);
+
+    // =============================================================================
+    // Button Visibility Logic
+    // =============================================================================
+
+    // Count additional buttons (excluding Play and Save)
+    const hasTraktCollection = isAuthenticated;
+    const hasRatings = type === 'series';
+
+    // Count additional buttons (AI Chat removed - now in top right corner)
+    const additionalButtonCount = (hasTraktCollection ? 1 : 0) + (hasRatings ? 1 : 0);
+
+    // =============================================================================
+    // Render Helpers
+    // =============================================================================
+
+    /**
+     * Renders platform-specific blur background for buttons.
+     */
+    const renderBlurBackground = useCallback((style: ViewStyle) => {
       if (Platform.OS === 'ios') {
         if (GlassViewComp && liquidGlassAvailable) {
           return <GlassViewComp style={style} glassEffectStyle="regular" />;
         }
         return <ExpoBlurView intensity={80} style={style} tint="dark" />;
       }
-      return (
-        <View
-          style={[
-            style,
-            { backgroundColor: 'rgba(255,255,255,0.15)' },
-          ]}
-        />
-      );
-    },
-    []
-  );
+      return <View style={[style, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />;
+    }, []);
 
-  /**
-   * Gets the appropriate icon name for the play button.
-   */
-  const getPlayIconName = useCallback(() => {
-    if (isWatched) {
-      return type === 'movie' ? 'replay' : 'play-arrow';
-    }
-    return playButtonText === 'Resume' ? 'play-circle-outline' : 'play-arrow';
-  }, [isWatched, type, playButtonText]);
+    /**
+     * Gets the appropriate icon name for the play button.
+     */
+    const getPlayIconName = useCallback(() => {
+      if (isWatched) {
+        return type === 'movie' ? 'replay' : 'play-arrow';
+      }
+      return playButtonText === 'Resume' ? 'play-circle-outline' : 'play-arrow';
+    }, [isWatched, type, playButtonText]);
 
-  // =============================================================================
-  // Render
-  // =============================================================================
+    // =============================================================================
+    // Render
+    // =============================================================================
 
-  return (
-    <Animated.View
-      style={[
-        isTablet ? styles.tabletActionButtons : styles.actionButtons,
-        animatedStyle,
-      ]}
-    >
-      {/* Single Row Layout - Play, Save, and optionally Collection/Ratings */}
-      <View style={styles.singleRowLayout}>
-        {/* Play Button */}
-        <TouchableOpacity
-          style={[
-            playButtonStyle,
-            isTablet && styles.tabletPlayButton,
-            additionalButtonCount === 0
-              ? styles.singleRowPlayButtonFullWidth
-              : styles.primaryActionButton,
-          ]}
-          onPress={handleShowStreams}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel={finalPlayButtonText}
-        >
-          <MaterialIcons
-            name={getPlayIconName()}
-            size={isTablet ? 28 : 24}
-            color={isWatched && type === 'movie' ? '#fff' : '#000'}
-          />
-          <Text
+    return (
+      <Animated.View
+        style={[isTablet ? styles.tabletActionButtons : styles.actionButtons, animatedStyle]}
+      >
+        {/* Single Row Layout - Play, Save, and optionally Collection/Ratings */}
+        <View style={styles.singleRowLayout}>
+          {/* Play Button */}
+          <TouchableOpacity
             style={[
-              playButtonTextStyle,
-              isTablet && styles.tabletPlayButtonText,
+              playButtonStyle,
+              isTablet && styles.tabletPlayButton,
+              additionalButtonCount === 0
+                ? styles.singleRowPlayButtonFullWidth
+                : styles.primaryActionButton,
             ]}
+            onPress={handleShowStreams}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={finalPlayButtonText}
           >
-            {finalPlayButtonText}
-          </Text>
-        </TouchableOpacity>
+            <MaterialIcons
+              name={getPlayIconName()}
+              size={isTablet ? 28 : 24}
+              color={isWatched && type === 'movie' ? '#fff' : '#000'}
+            />
+            <Text style={[playButtonTextStyle, isTablet && styles.tabletPlayButtonText]}>
+              {finalPlayButtonText}
+            </Text>
+          </TouchableOpacity>
 
-        {/* Save Button */}
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            styles.infoButton,
-            isTablet && styles.tabletInfoButton,
-            additionalButtonCount === 0
-              ? styles.singleRowSaveButtonFullWidth
-              : styles.primaryActionButton,
-          ]}
-          onPress={handleSaveAction}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel={inLibrary ? 'Saved' : 'Save'}
-        >
-          {renderBlurBackground(styles.blurBackground)}
-          <MaterialIcons
-            name={inLibrary ? 'bookmark' : 'bookmark-outline'}
-            size={isTablet ? 28 : 24}
-            color={
-              inLibrary
-                ? isAuthenticated && isInWatchlist
-                  ? '#E74C3C'
+          {/* Save Button */}
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              styles.infoButton,
+              isTablet && styles.tabletInfoButton,
+              additionalButtonCount === 0
+                ? styles.singleRowSaveButtonFullWidth
+                : styles.primaryActionButton,
+            ]}
+            onPress={handleSaveAction}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={inLibrary ? 'Saved' : 'Save'}
+          >
+            {renderBlurBackground(styles.blurBackground)}
+            <MaterialIcons
+              name={inLibrary ? 'bookmark' : 'bookmark-outline'}
+              size={isTablet ? 28 : 24}
+              color={
+                inLibrary
+                  ? isAuthenticated && isInWatchlist
+                    ? '#E74C3C'
+                    : currentTheme.colors.white
                   : currentTheme.colors.white
-                : currentTheme.colors.white
-            }
-          />
-          <Text
-            style={[styles.infoButtonText, isTablet && styles.tabletInfoButtonText]}
-          >
-            {inLibrary ? 'Saved' : 'Save'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Trakt Collection Button */}
-        {hasTraktCollection && (
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              isTablet && styles.tabletIconButton,
-              styles.singleRowIconButton,
-            ]}
-            onPress={handleCollectionAction}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel={
-              isInCollection ? 'Remove from Collection' : 'Add to Collection'
-            }
-          >
-            {renderBlurBackground(styles.blurBackgroundRound)}
-            <MaterialIcons
-              name="video-library"
-              size={isTablet ? 28 : 24}
-              color={isInCollection ? '#3498DB' : currentTheme.colors.white}
+              }
             />
+            <Text style={[styles.infoButtonText, isTablet && styles.tabletInfoButtonText]}>
+              {inLibrary ? 'Saved' : 'Save'}
+            </Text>
           </TouchableOpacity>
-        )}
 
-        {/* Ratings Button (for series) */}
-        {hasRatings && (
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              isTablet && styles.tabletIconButton,
-              styles.singleRowIconButton,
-            ]}
-            onPress={handleRatingsPress}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel="View Ratings"
-          >
-            {renderBlurBackground(styles.blurBackgroundRound)}
-            <MaterialIcons
-              name="assessment"
-              size={isTablet ? 28 : 24}
-              color={currentTheme.colors.white}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-    </Animated.View>
-  );
-});
+          {/* Trakt Collection Button */}
+          {hasTraktCollection && (
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                isTablet && styles.tabletIconButton,
+                styles.singleRowIconButton,
+              ]}
+              onPress={handleCollectionAction}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={isInCollection ? 'Remove from Collection' : 'Add to Collection'}
+            >
+              {renderBlurBackground(styles.blurBackgroundRound)}
+              <MaterialIcons
+                name="video-library"
+                size={isTablet ? 28 : 24}
+                color={isInCollection ? '#3498DB' : currentTheme.colors.white}
+              />
+            </TouchableOpacity>
+          )}
+
+          {/* Ratings Button (for series) */}
+          {hasRatings && (
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                isTablet && styles.tabletIconButton,
+                styles.singleRowIconButton,
+              ]}
+              onPress={handleRatingsPress}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="View Ratings"
+            >
+              {renderBlurBackground(styles.blurBackgroundRound)}
+              <MaterialIcons
+                name="assessment"
+                size={isTablet ? 28 : 24}
+                color={currentTheme.colors.white}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </Animated.View>
+    );
+  }
+);
 
 // =============================================================================
 // Styles

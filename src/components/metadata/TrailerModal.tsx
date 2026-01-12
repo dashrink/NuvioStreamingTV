@@ -10,12 +10,13 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import Video, { VideoRef, OnLoadData, OnProgressData } from 'react-native-video';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTrailer } from '../../contexts/TrailerContext';
-import { logger } from '../../utils/logger';
-import TrailerService from '../../services/trailerService';
-import Video, { VideoRef, OnLoadData, OnProgressData } from 'react-native-video';
 import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
+import TrailerService from '../../services/trailerService';
+import { logger } from '../../utils/logger';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -56,268 +57,280 @@ interface TrailerModalProps {
   contentTitle: string;
 }
 
-const TrailerModal: React.FC<TrailerModalProps> = memo(({
-  visible,
-  onClose,
-  trailer,
-  contentTitle
-}) => {
-  const { currentTheme } = useTheme();
-  const { pauseTrailer, resumeTrailer } = useTrailer();
-  const videoRef = React.useRef<VideoRef>(null);
-  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+const TrailerModal: React.FC<TrailerModalProps> = memo(
+  ({ visible, onClose, trailer, contentTitle }) => {
+    const { currentTheme } = useTheme();
+    const { pauseTrailer, resumeTrailer } = useTrailer();
+    const videoRef = React.useRef<VideoRef>(null);
+    const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
 
-  // Load trailer when modal opens or trailer changes
-  useEffect(() => {
-    if (visible && trailer) {
-      loadTrailer();
-    } else {
-      // Reset state when modal closes
-      setTrailerUrl(null);
-      setLoading(false);
-      setError(null);
-      setIsPlaying(false);
-      setRetryCount(0);
-    }
-  }, [visible, trailer]);
-
-  const loadTrailer = useCallback(async () => {
-    if (!trailer) return;
-
-    // Pause hero section trailer when modal opens
-    try {
-      pauseTrailer();
-      logger.info('TrailerModal', 'Paused hero section trailer');
-    } catch (error) {
-      logger.warn('TrailerModal', 'Error pausing hero trailer:', error);
-    }
-
-    setLoading(true);
-    setError(null);
-    setTrailerUrl(null);
-    setRetryCount(0); // Reset retry count when starting fresh load
-
-    try {
-      const youtubeUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
-
-      logger.info('TrailerModal', `Loading trailer: ${trailer.name} (${youtubeUrl})`);
-
-      // Use the direct YouTube URL method - much more efficient!
-      const directUrl = await TrailerService.getTrailerFromYouTubeUrl(
-        youtubeUrl,
-        `${contentTitle} - ${trailer.name}`,
-        new Date(trailer.published_at).getFullYear().toString()
-      );
-
-      if (directUrl) {
-        setTrailerUrl(directUrl);
-        setIsPlaying(true);
-        logger.info('TrailerModal', `Successfully loaded direct trailer URL for: ${trailer.name}`);
+    // Load trailer when modal opens or trailer changes
+    useEffect(() => {
+      if (visible && trailer) {
+        loadTrailer();
       } else {
-        throw new Error('No streaming URL available');
+        // Reset state when modal closes
+        setTrailerUrl(null);
+        setLoading(false);
+        setError(null);
+        setIsPlaying(false);
+        setRetryCount(0);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load trailer';
-      setError(errorMessage);
-      setLoading(false);
-      logger.error('TrailerModal', 'Error loading trailer:', err);
+    }, [visible, trailer]);
 
-      Alert.alert(
-        'Trailer Unavailable',
-        'This trailer could not be loaded at this time. Please try again later.',
-        [{ text: 'OK', style: 'default' }]
-      );
-    }
-  }, [trailer, contentTitle, pauseTrailer]);
+    const loadTrailer = useCallback(async () => {
+      if (!trailer) return;
 
-  const handleClose = useCallback(() => {
-    triggerLight(); // Haptic feedback for modal close
-    setIsPlaying(false);
+      // Pause hero section trailer when modal opens
+      try {
+        pauseTrailer();
+        logger.info('TrailerModal', 'Paused hero section trailer');
+      } catch (error) {
+        logger.warn('TrailerModal', 'Error pausing hero trailer:', error);
+      }
 
-    // Resume hero section trailer when modal closes
-    try {
-      resumeTrailer();
-      logger.info('TrailerModal', 'Resumed hero section trailer');
-    } catch (error) {
-      logger.warn('TrailerModal', 'Error resuming hero trailer:', error);
-    }
+      setLoading(true);
+      setError(null);
+      setTrailerUrl(null);
+      setRetryCount(0); // Reset retry count when starting fresh load
 
-    onClose();
-  }, [onClose, resumeTrailer]);
+      try {
+        const youtubeUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
 
-  const handleTrailerError = useCallback(() => {
-    setError('Failed to play trailer');
-    setIsPlaying(false);
-  }, []);
+        logger.info('TrailerModal', `Loading trailer: ${trailer.name} (${youtubeUrl})`);
 
-  // Handle video playback errors with retry logic
-  const handleVideoError = useCallback((error: any) => {
-    logger.error('TrailerModal', 'Video error:', error);
+        // Use the direct YouTube URL method - much more efficient!
+        const directUrl = await TrailerService.getTrailerFromYouTubeUrl(
+          youtubeUrl,
+          `${contentTitle} - ${trailer.name}`,
+          new Date(trailer.published_at).getFullYear().toString()
+        );
 
-    // Check if this is a permission/network error that might benefit from retry
-    const errorCode = error?.error?.code;
-    const isRetryableError = errorCode === -1102 || errorCode === -1009 || errorCode === -1005;
-
-    if (isRetryableError && retryCount < 2) {
-      // Silent retry - increment count and try again
-      logger.info('TrailerModal', `Retrying video load (attempt ${retryCount + 1}/2)`);
-      setRetryCount(prev => prev + 1);
-
-      // Small delay before retry to avoid rapid-fire attempts
-      setTimeout(() => {
-        if (videoRef.current) {
-          // Force video to reload by changing the source briefly
-          setTrailerUrl(null);
-          setTimeout(() => {
-            if (trailerUrl) {
-              setTrailerUrl(trailerUrl);
-            }
-          }, 100);
+        if (directUrl) {
+          setTrailerUrl(directUrl);
+          setIsPlaying(true);
+          logger.info(
+            'TrailerModal',
+            `Successfully loaded direct trailer URL for: ${trailer.name}`
+          );
+        } else {
+          throw new Error('No streaming URL available');
         }
-      }, 1000);
-      return;
-    }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load trailer';
+        setError(errorMessage);
+        setLoading(false);
+        logger.error('TrailerModal', 'Error loading trailer:', err);
 
-    // After 2 retries or for non-retryable errors, show the error
-    logger.error('TrailerModal', 'Video error after retries or non-retryable:', error);
-    setError('Unable to play trailer. Please try again.');
-    setLoading(false);
-  }, [retryCount, trailerUrl]);
+        Alert.alert(
+          'Trailer Unavailable',
+          'This trailer could not be loaded at this time. Please try again later.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    }, [trailer, contentTitle, pauseTrailer]);
 
-  const handleTrailerEnd = useCallback(() => {
-    setIsPlaying(false);
-  }, []);
+    const handleClose = useCallback(() => {
+      triggerLight(); // Haptic feedback for modal close
+      setIsPlaying(false);
 
-  if (!visible || !trailer) return null;
+      // Resume hero section trailer when modal closes
+      try {
+        resumeTrailer();
+        logger.info('TrailerModal', 'Resumed hero section trailer');
+      } catch (error) {
+        logger.warn('TrailerModal', 'Error resuming hero trailer:', error);
+      }
 
-  const modalHeight = isTablet ? height * 0.8 : height * 0.7;
-  const modalWidth = isTablet ? width * 0.8 : width * 0.95;
+      onClose();
+    }, [onClose, resumeTrailer]);
 
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={handleClose}
-      supportedOrientations={['portrait', 'landscape']}
-    >
-      <View style={styles.overlay}>
-        <View style={[styles.modal, {
-          width: modalWidth,
-          maxHeight: modalHeight,
-          backgroundColor: currentTheme.colors.background
-        }]}>
-          {/* Enhanced Header */}
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <View style={styles.headerTextContainer}>
-                <Text
-                  style={[styles.title, { color: currentTheme.colors.highEmphasis }]}
-                  numberOfLines={2}
-                >
-                  {trailer.name}
-                </Text>
-                <View style={styles.headerMeta}>
-                  <Text style={[styles.meta, { color: currentTheme.colors.textMuted }]}>
-                    {formatTrailerType(trailer.type)} • {new Date(trailer.published_at).getFullYear()}
+    const handleTrailerError = useCallback(() => {
+      setError('Failed to play trailer');
+      setIsPlaying(false);
+    }, []);
+
+    // Handle video playback errors with retry logic
+    const handleVideoError = useCallback(
+      (error: any) => {
+        logger.error('TrailerModal', 'Video error:', error);
+
+        // Check if this is a permission/network error that might benefit from retry
+        const errorCode = error?.error?.code;
+        const isRetryableError = errorCode === -1102 || errorCode === -1009 || errorCode === -1005;
+
+        if (isRetryableError && retryCount < 2) {
+          // Silent retry - increment count and try again
+          logger.info('TrailerModal', `Retrying video load (attempt ${retryCount + 1}/2)`);
+          setRetryCount(prev => prev + 1);
+
+          // Small delay before retry to avoid rapid-fire attempts
+          setTimeout(() => {
+            if (videoRef.current) {
+              // Force video to reload by changing the source briefly
+              setTrailerUrl(null);
+              setTimeout(() => {
+                if (trailerUrl) {
+                  setTrailerUrl(trailerUrl);
+                }
+              }, 100);
+            }
+          }, 1000);
+          return;
+        }
+
+        // After 2 retries or for non-retryable errors, show the error
+        logger.error('TrailerModal', 'Video error after retries or non-retryable:', error);
+        setError('Unable to play trailer. Please try again.');
+        setLoading(false);
+      },
+      [retryCount, trailerUrl]
+    );
+
+    const handleTrailerEnd = useCallback(() => {
+      setIsPlaying(false);
+    }, []);
+
+    if (!visible || !trailer) return null;
+
+    const modalHeight = isTablet ? height * 0.8 : height * 0.7;
+    const modalWidth = isTablet ? width * 0.8 : width * 0.95;
+
+    return (
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleClose}
+        supportedOrientations={['portrait', 'landscape']}
+      >
+        <View style={styles.overlay}>
+          <View
+            style={[
+              styles.modal,
+              {
+                width: modalWidth,
+                maxHeight: modalHeight,
+                backgroundColor: currentTheme.colors.background,
+              },
+            ]}
+          >
+            {/* Enhanced Header */}
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                <View style={styles.headerTextContainer}>
+                  <Text
+                    style={[styles.title, { color: currentTheme.colors.highEmphasis }]}
+                    numberOfLines={2}
+                  >
+                    {trailer.name}
                   </Text>
+                  <View style={styles.headerMeta}>
+                    <Text style={[styles.meta, { color: currentTheme.colors.textMuted }]}>
+                      {formatTrailerType(trailer.type)} •{' '}
+                      {new Date(trailer.published_at).getFullYear()}
+                    </Text>
+                  </View>
                 </View>
               </View>
+              <TouchableOpacity
+                onPress={handleClose}
+                style={[styles.closeButton, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
+                hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }}
+              >
+                <Text style={[styles.closeButtonText, { color: currentTheme.colors.highEmphasis }]}>
+                  Close
+                </Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={handleClose}
-              style={[styles.closeButton, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
-              hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }}
-            >
-              <Text style={[styles.closeButtonText, { color: currentTheme.colors.highEmphasis }]}>
-                Close
-              </Text>
-            </TouchableOpacity>
-          </View>
 
-          {/* Player Container */}
-          <View style={styles.playerContainer}>
-            {loading && (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-                <Text style={[styles.loadingText, { color: currentTheme.colors.textMuted }]}>
-                  Loading trailer...
+            {/* Player Container */}
+            <View style={styles.playerContainer}>
+              {loading && (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+                  <Text style={[styles.loadingText, { color: currentTheme.colors.textMuted }]}>
+                    Loading trailer...
+                  </Text>
+                </View>
+              )}
+
+              {error && !loading && (
+                <View style={styles.errorContainer}>
+                  <Text style={[styles.errorText, { color: currentTheme.colors.textMuted }]}>
+                    {error}
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
+                    onPress={() => {
+                      triggerMedium();
+                      loadTrailer();
+                    }}
+                  >
+                    <Text style={styles.retryButtonText}>Try Again</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Render the Video as soon as we have a URL; keep spinner overlay until onLoad */}
+              {trailerUrl && !error && (
+                <View style={styles.playerWrapper}>
+                  <Video
+                    ref={videoRef}
+                    source={{ uri: trailerUrl }}
+                    style={styles.player}
+                    controls={true}
+                    paused={!isPlaying}
+                    resizeMode="contain"
+                    volume={1.0}
+                    rate={1.0}
+                    playInBackground={false}
+                    playWhenInactive={false}
+                    ignoreSilentSwitch="ignore"
+                    onLoad={(data: OnLoadData) => {
+                      logger.info('TrailerModal', 'Trailer loaded successfully', data);
+                      setLoading(false);
+                      setError(null);
+                      setIsPlaying(true);
+                    }}
+                    onError={handleVideoError}
+                    onEnd={() => {
+                      logger.info('TrailerModal', 'Trailer ended');
+                      handleTrailerEnd();
+                    }}
+                    onProgress={(data: OnProgressData) => {
+                      // Handle progress if needed
+                    }}
+                    onLoadStart={() => {
+                      logger.info('TrailerModal', 'Video load started');
+                      setLoading(true);
+                    }}
+                    onReadyForDisplay={() => {
+                      logger.info('TrailerModal', 'Video ready for display');
+                    }}
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Enhanced Footer */}
+            <View style={styles.footer}>
+              <View style={styles.footerContent}>
+                <Text style={[styles.footerText, { color: currentTheme.colors.textMuted }]}>
+                  {contentTitle}
                 </Text>
               </View>
-            )}
-
-            {error && !loading && (
-              <View style={styles.errorContainer}>
-                <Text style={[styles.errorText, { color: currentTheme.colors.textMuted }]}>
-                  {error}
-                </Text>
-                <TouchableOpacity
-                  style={[styles.retryButton, { backgroundColor: currentTheme.colors.primary }]}
-                  onPress={() => { triggerMedium(); loadTrailer(); }}
-                >
-                  <Text style={styles.retryButtonText}>Try Again</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Render the Video as soon as we have a URL; keep spinner overlay until onLoad */}
-            {trailerUrl && !error && (
-              <View style={styles.playerWrapper}>
-                <Video
-                  ref={videoRef}
-                  source={{ uri: trailerUrl }}
-                  style={styles.player}
-                  controls={true}
-                  paused={!isPlaying}
-                  resizeMode="contain"
-                  volume={1.0}
-                  rate={1.0}
-                  playInBackground={false}
-                  playWhenInactive={false}
-                  ignoreSilentSwitch="ignore"
-                  onLoad={(data: OnLoadData) => {
-                    logger.info('TrailerModal', 'Trailer loaded successfully', data);
-                    setLoading(false);
-                    setError(null);
-                    setIsPlaying(true);
-                  }}
-                  onError={handleVideoError}
-                  onEnd={() => {
-                    logger.info('TrailerModal', 'Trailer ended');
-                    handleTrailerEnd();
-                  }}
-                  onProgress={(data: OnProgressData) => {
-                    // Handle progress if needed
-                  }}
-                  onLoadStart={() => {
-                    logger.info('TrailerModal', 'Video load started');
-                    setLoading(true);
-                  }}
-                  onReadyForDisplay={() => {
-                    logger.info('TrailerModal', 'Video ready for display');
-                  }}
-                />
-              </View>
-            )}
-          </View>
-
-          {/* Enhanced Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerContent}>
-              <Text style={[styles.footerText, { color: currentTheme.colors.textMuted }]}>
-                {contentTitle}
-              </Text>
             </View>
           </View>
         </View>
-      </View>
-    </Modal>
-  );
-});
+      </Modal>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   overlay: {

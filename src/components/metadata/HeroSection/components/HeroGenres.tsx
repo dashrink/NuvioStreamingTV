@@ -12,13 +12,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useTheme } from '../../../../contexts/ThemeContext';
-import type { HeroGenresProps } from '../types';
 import { LOGO_CONFIG } from '../constants';
-import {
-  textStyles,
-  containerStyles,
-  isTablet,
-} from '../styles';
+import { textStyles, containerStyles, isTablet } from '../styles';
+
+import type { HeroGenresProps } from '../types';
 
 /**
  * Genre display component showing genre labels with dot separators.
@@ -39,10 +36,7 @@ import {
  * />
  * ```
  */
-const HeroGenres = memo(function HeroGenres({
-  genres,
-  animatedStyle,
-}: HeroGenresProps) {
+const HeroGenres = memo(({ genres, animatedStyle }: HeroGenresProps) => {
   const { currentTheme } = useTheme();
 
   // Theme color for genre text
@@ -65,10 +59,7 @@ const HeroGenres = memo(function HeroGenres({
       elements.push(
         <Text
           key={`genre-${index}`}
-          style={[
-            isTablet ? styles.tabletGenreText : styles.genreText,
-            { color: textColor },
-          ]}
+          style={[isTablet ? styles.tabletGenreText : styles.genreText, { color: textColor }]}
           accessibilityRole="text"
         >
           {genreName}
@@ -80,10 +71,7 @@ const HeroGenres = memo(function HeroGenres({
         elements.push(
           <Text
             key={`dot-${index}`}
-            style={[
-              isTablet ? styles.tabletGenreDot : styles.genreDot,
-              { color: textColor },
-            ]}
+            style={[isTablet ? styles.tabletGenreDot : styles.genreDot, { color: textColor }]}
             accessibilityLabel=""
             accessibilityElementsHidden
           >
@@ -107,9 +95,7 @@ const HeroGenres = memo(function HeroGenres({
       accessibilityRole="text"
       accessibilityLabel={`Genres: ${genres?.slice(0, LOGO_CONFIG.MAX_GENRES_DISPLAY).join(', ')}`}
     >
-      <View style={styles.genreRow}>
-        {genreElements}
-      </View>
+      <View style={styles.genreRow}>{genreElements}</View>
     </Animated.View>
   );
 });
@@ -119,9 +105,7 @@ const styles = StyleSheet.create({
    * Outer genre container with responsive styling
    */
   genreContainer: {
-    ...(isTablet
-      ? containerStyles.tabletGenreContainer
-      : containerStyles.genreContainer),
+    ...(isTablet ? containerStyles.tabletGenreContainer : containerStyles.genreContainer),
   },
 
   /**

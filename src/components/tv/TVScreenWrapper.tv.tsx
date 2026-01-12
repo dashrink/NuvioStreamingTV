@@ -28,16 +28,10 @@
  * ```
  */
 
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
-import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import React, { ReactNode, createContext, useContext, useCallback, useRef, useMemo } from 'react';
+import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
+
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
 
 // =============================================================================

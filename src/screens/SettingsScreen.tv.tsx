@@ -14,6 +14,12 @@
  * This file is automatically loaded when APP_VARIANT=tv (Metro file resolution).
  */
 
+import FastImage from '@d11/react-native-fast-image';
+import { Feather } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import * as WebBrowser from 'expo-web-browser';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -28,22 +34,19 @@ import {
   Linking,
   FlatList,
 } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import FastImage from '@d11/react-native-fast-image';
-import LottieView from 'lottie-react-native';
-import { Feather } from '@expo/vector-icons';
+
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCatalogContext } from '../contexts/CatalogContext';
 import { useSettings, DEFAULT_SETTINGS } from '../hooks/useSettings';
+import { mmkvStorage } from '../services/mmkvStorage';
+
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { stremioService } from '../services/stremioService';
-import { useCatalogContext } from '../contexts/CatalogContext';
 import { useTraktContext } from '../contexts/TraktContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { fetchTotalDownloads } from '../services/githubReleaseService';
-import * as WebBrowser from 'expo-web-browser';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Sentry from '@sentry/react-native';
+
+
 import { getDisplayedAppVersion } from '../utils/version';
 import CustomAlert from '../components/CustomAlert';
 import ScreenHeader from '../components/common/ScreenHeader';
@@ -86,30 +89,29 @@ const SettingsCard: React.FC<SettingsCardProps> = ({ children, title, isTablet =
   const { currentTheme } = useTheme();
 
   return (
-    <View
-      style={[
-        styles.cardContainer,
-        isTablet && styles.tabletCardContainer
-      ]}
-    >
+    <View style={[styles.cardContainer, isTablet && styles.tabletCardContainer]}>
       {title && (
-        <Text style={[
-          styles.cardTitle,
-          { color: currentTheme.colors.mediumEmphasis },
-          isTablet && styles.tabletCardTitle
-        ]}>
+        <Text
+          style={[
+            styles.cardTitle,
+            { color: currentTheme.colors.mediumEmphasis },
+            isTablet && styles.tabletCardTitle,
+          ]}
+        >
           {title}
         </Text>
       )}
-      <View style={[
-        styles.card,
-        {
-          backgroundColor: currentTheme.colors.elevation1,
-          borderWidth: 1,
-          borderColor: currentTheme.colors.elevation2,
-        },
-        isTablet && styles.tabletCard
-      ]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentTheme.colors.elevation1,
+            borderWidth: 1,
+            borderColor: currentTheme.colors.elevation2,
+          },
+          isTablet && styles.tabletCard,
+        ]}
+      >
         {children}
       </View>
     </View>
@@ -175,7 +177,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
         styles.settingItem,
         !isLast && styles.settingItemBorder,
         { borderBottomColor: currentTheme.colors.elevation2 },
-        isTablet && styles.tabletSettingItem
+        isTablet && styles.tabletSettingItem,
       ]}
       focusStyle={styles.focusedSettingItem}
       animationConfig={{
@@ -189,13 +191,15 @@ const SettingItem: React.FC<SettingItemProps> = ({
       accessibilityHint={description || (isToggle ? 'Press to toggle' : 'Press to open')}
     >
       <View style={styles.settingItemContent}>
-        <View style={[
-          styles.settingIconContainer,
-          {
-            backgroundColor: currentTheme.colors.primary + '12',
-          },
-          isTablet && styles.tabletSettingIconContainer
-        ]}>
+        <View
+          style={[
+            styles.settingIconContainer,
+            {
+              backgroundColor: `${currentTheme.colors.primary}12`,
+            },
+            isTablet && styles.tabletSettingIconContainer,
+          ]}
+        >
           {customIcon ? (
             customIcon
           ) : (
@@ -208,34 +212,37 @@ const SettingItem: React.FC<SettingItemProps> = ({
         </View>
         <View style={styles.settingContent}>
           <View style={styles.settingTextContainer}>
-            <Text style={[
-              styles.settingTitle,
-              { color: currentTheme.colors.highEmphasis },
-              isTablet && styles.tabletSettingTitle
-            ]}>
+            <Text
+              style={[
+                styles.settingTitle,
+                { color: currentTheme.colors.highEmphasis },
+                isTablet && styles.tabletSettingTitle,
+              ]}
+            >
               {title}
             </Text>
             {description && (
-              <Text style={[
-                styles.settingDescription,
-                { color: currentTheme.colors.mediumEmphasis },
-                isTablet && styles.tabletSettingDescription
-              ]} numberOfLines={1}>
+              <Text
+                style={[
+                  styles.settingDescription,
+                  { color: currentTheme.colors.mediumEmphasis },
+                  isTablet && styles.tabletSettingDescription,
+                ]}
+                numberOfLines={1}
+              >
                 {description}
               </Text>
             )}
           </View>
           {badge && (
             <View style={[styles.badge, { backgroundColor: `${currentTheme.colors.primary}20` }]}>
-              <Text style={[styles.badgeText, { color: currentTheme.colors.primary }]}>{String(badge)}</Text>
+              <Text style={[styles.badgeText, { color: currentTheme.colors.primary }]}>
+                {String(badge)}
+              </Text>
             </View>
           )}
         </View>
-        {renderControl && (
-          <View style={styles.settingControl}>
-            {renderControl()}
-          </View>
-        )}
+        {renderControl && <View style={styles.settingControl}>{renderControl()}</View>}
       </View>
     </Focusable>
   );
@@ -255,25 +262,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   onCategorySelect,
   currentTheme,
   categories,
-  extraTopPadding = 0
+  extraTopPadding = 0,
 }) => {
   const tvNavigation = useTVNavigationOptional();
 
   return (
-    <View style={[
-      styles.sidebar,
-      {
-        backgroundColor: currentTheme.colors.elevation1,
-        borderRightColor: currentTheme.colors.elevation2,
-      }
-    ]}>
-      <View style={[
-        styles.sidebarHeader,
+    <View
+      style={[
+        styles.sidebar,
         {
-          paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + extraTopPadding,
-          borderBottomColor: currentTheme.colors.elevation2,
-        }
-      ]}>
+          backgroundColor: currentTheme.colors.elevation1,
+          borderRightColor: currentTheme.colors.elevation2,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.sidebarHeader,
+          {
+            paddingTop:
+              (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) +
+              extraTopPadding,
+            borderBottomColor: currentTheme.colors.elevation2,
+          },
+        ]}
+      >
         <Text style={[styles.sidebarTitle, { color: currentTheme.colors.highEmphasis }]}>
           Settings
         </Text>
@@ -294,8 +307,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               styles.sidebarItem,
               selectedCategory === category.id && [
                 styles.sidebarItemActive,
-                { backgroundColor: currentTheme.colors.primary + '10' }
-              ]
+                { backgroundColor: `${currentTheme.colors.primary}10` },
+              ],
             ]}
             animationConfig={{
               focusScale: 1.02,
@@ -306,14 +319,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             }}
             accessibilityLabel={category.title}
           >
-            <View style={[
-              styles.sidebarItemIconContainer,
-              {
-                backgroundColor: selectedCategory === category.id
-                  ? currentTheme.colors.primary + '15'
-                  : 'transparent',
-              }
-            ]}>
+            <View
+              style={[
+                styles.sidebarItemIconContainer,
+                {
+                  backgroundColor:
+                    selectedCategory === category.id
+                      ? `${currentTheme.colors.primary}15`
+                      : 'transparent',
+                },
+              ]}
+            >
               <Feather
                 name={category.icon as any}
                 size={20}
@@ -324,15 +340,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
               />
             </View>
-            <Text style={[
-              styles.sidebarItemText,
-              {
-                color: selectedCategory === category.id
-                  ? currentTheme.colors.highEmphasis
-                  : currentTheme.colors.mediumEmphasis,
-                fontWeight: selectedCategory === category.id ? '600' : '500',
-              }
-            ]}>
+            <Text
+              style={[
+                styles.sidebarItemText,
+                {
+                  color:
+                    selectedCategory === category.id
+                      ? currentTheme.colors.highEmphasis
+                      : currentTheme.colors.mediumEmphasis,
+                  fontWeight: selectedCategory === category.id ? '600' : '500',
+                },
+              ]}
+            >
               {category.title}
             </Text>
           </Focusable>
@@ -342,7 +361,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-
 const SettingsScreen: React.FC = () => {
   const { settings, updateSetting } = useSettings();
   const [hasUpdateBadge, setHasUpdateBadge] = useState(false);
@@ -350,7 +368,9 @@ const SettingsScreen: React.FC = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([]);
 
   // Spatial navigation for TV
   const spatialNav = useSpatialNavigation('SettingsScreen', {
@@ -367,7 +387,7 @@ const SettingsScreen: React.FC = () => {
   ) => {
     setAlertTitle(title);
     setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
+    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]);
     setAlertVisible(true);
   };
 
@@ -378,9 +398,11 @@ const SettingsScreen: React.FC = () => {
       try {
         const flag = await mmkvStorage.getItem('@update_badge_pending');
         if (mounted) setHasUpdateBadge(flag === 'true');
-      } catch { }
+      } catch {}
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { lastUpdate } = useCatalogContext();
@@ -429,9 +451,9 @@ const SettingsScreen: React.FC = () => {
       const catalogSettingsJson = await mmkvStorage.getItem('catalog_settings');
       if (catalogSettingsJson) {
         const catalogSettings = JSON.parse(catalogSettingsJson);
-        const disabledCount = Object.entries(catalogSettings)
-          .filter(([key, value]) => key !== '_lastUpdate' && value === false)
-          .length;
+        const disabledCount = Object.entries(catalogSettings).filter(
+          ([key, value]) => key !== '_lastUpdate' && value === false
+        ).length;
         setCatalogCount(totalCatalogs - disabledCount);
       } else {
         setCatalogCount(totalCatalogs);
@@ -451,7 +473,6 @@ const SettingsScreen: React.FC = () => {
         setTotalDownloads(downloads);
         setDisplayDownloads(downloads);
       }
-
     } catch (error) {
       // Handle error silently
     }
@@ -520,21 +541,17 @@ const SettingsScreen: React.FC = () => {
   }, [totalDownloads]);
 
   const handleResetSettings = useCallback(() => {
-    openAlert(
-      'Reset Settings',
-      'Are you sure you want to reset all settings to default values?',
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Reset',
-          onPress: () => {
-            (Object.keys(DEFAULT_SETTINGS) as Array<keyof typeof DEFAULT_SETTINGS>).forEach(key => {
-              updateSetting(key, DEFAULT_SETTINGS[key]);
-            });
-          }
-        }
-      ]
-    );
+    openAlert('Reset Settings', 'Are you sure you want to reset all settings to default values?', [
+      { label: 'Cancel', onPress: () => {} },
+      {
+        label: 'Reset',
+        onPress: () => {
+          (Object.keys(DEFAULT_SETTINGS) as Array<keyof typeof DEFAULT_SETTINGS>).forEach(key => {
+            updateSetting(key, DEFAULT_SETTINGS[key]);
+          });
+        },
+      },
+    ]);
   }, [updateSetting]);
 
   const handleClearMDBListCache = () => {
@@ -542,7 +559,7 @@ const SettingsScreen: React.FC = () => {
       'Clear MDBList Cache',
       'Are you sure you want to clear all cached MDBList data? This cannot be undone.',
       [
-        { label: 'Cancel', onPress: () => { } },
+        { label: 'Cancel', onPress: () => {} },
         {
           label: 'Clear',
           onPress: async () => {
@@ -552,13 +569,19 @@ const SettingsScreen: React.FC = () => {
             } catch (error) {
               openAlert('Error', 'Could not clear MDBList cache.');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
-  const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
+  const CustomSwitch = ({
+    value,
+    onValueChange,
+  }: {
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+  }) => (
     <Switch
       value={value}
       onValueChange={onValueChange}
@@ -584,14 +607,15 @@ const SettingsScreen: React.FC = () => {
   });
 
   // Track focus for each setting item
-  const handleSettingFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNavigation) {
-      tvNavigation.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNavigation]);
-
-
+  const handleSettingFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNavigation) {
+        tvNavigation.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNavigation]
+  );
 
   const renderCategoryContent = (categoryId: string) => {
     switch (categoryId) {
@@ -600,8 +624,12 @@ const SettingsScreen: React.FC = () => {
           <SettingsCard title="ACCOUNT" isTablet={isTablet}>
             <SettingItem
               title="Trakt"
-              description={isAuthenticated ? `@${userProfile?.username || 'User'}` : "Sign in to sync"}
-              customIcon={<TraktIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />}
+              description={
+                isAuthenticated ? `@${userProfile?.username || 'User'}` : 'Sign in to sync'
+              }
+              customIcon={
+                <TraktIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
+              }
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('TraktSettings')}
               isLast={true}
@@ -639,7 +667,9 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               title="Plugins"
               description="Manage plugins and repositories"
-              customIcon={<PluginIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />}
+              customIcon={
+                <PluginIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
+              }
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('ScraperSettings')}
               isTablet={isTablet}
@@ -695,15 +725,21 @@ const SettingsScreen: React.FC = () => {
             />
             <SettingItem
               title="Episode Layout"
-              description={settings?.episodeLayoutStyle === 'horizontal' ? 'Horizontal' : 'Vertical'}
+              description={
+                settings?.episodeLayoutStyle === 'horizontal' ? 'Horizontal' : 'Vertical'
+              }
               icon="grid"
               isToggle={true}
               toggleValue={settings?.episodeLayoutStyle === 'horizontal'}
-              onToggleChange={(value) => updateSetting('episodeLayoutStyle', value ? 'horizontal' : 'vertical')}
+              onToggleChange={value =>
+                updateSetting('episodeLayoutStyle', value ? 'horizontal' : 'vertical')
+              }
               renderControl={() => (
                 <CustomSwitch
                   value={settings?.episodeLayoutStyle === 'horizontal'}
-                  onValueChange={(value) => updateSetting('episodeLayoutStyle', value ? 'horizontal' : 'vertical')}
+                  onValueChange={value =>
+                    updateSetting('episodeLayoutStyle', value ? 'horizontal' : 'vertical')
+                  }
                 />
               )}
               isLast={isTablet}
@@ -718,11 +754,11 @@ const SettingsScreen: React.FC = () => {
                 icon="image"
                 isToggle={true}
                 toggleValue={settings?.enableStreamsBackdrop ?? true}
-                onToggleChange={(value) => updateSetting('enableStreamsBackdrop', value)}
+                onToggleChange={value => updateSetting('enableStreamsBackdrop', value)}
                 renderControl={() => (
                   <CustomSwitch
                     value={settings?.enableStreamsBackdrop ?? true}
-                    onValueChange={(value) => updateSetting('enableStreamsBackdrop', value)}
+                    onValueChange={value => updateSetting('enableStreamsBackdrop', value)}
                   />
                 )}
                 isLast={true}
@@ -739,8 +775,14 @@ const SettingsScreen: React.FC = () => {
           <SettingsCard title="INTEGRATIONS" isTablet={isTablet}>
             <SettingItem
               title="MDBList"
-              description={mdblistKeySet ? "Connected" : "Enable to add ratings & reviews"}
-              customIcon={<MDBListIcon size={isTablet ? 24 : 20} colorPrimary={currentTheme.colors.primary} colorSecondary={currentTheme.colors.white} />}
+              description={mdblistKeySet ? 'Connected' : 'Enable to add ratings & reviews'}
+              customIcon={
+                <MDBListIcon
+                  size={isTablet ? 24 : 20}
+                  colorPrimary={currentTheme.colors.primary}
+                  colorSecondary={currentTheme.colors.white}
+                />
+              }
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('MDBListSettings')}
               isTablet={isTablet}
@@ -750,7 +792,9 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               title="TMDB"
               description="Metadata & logo source provider"
-              customIcon={<TMDBIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />}
+              customIcon={
+                <TMDBIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
+              }
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('TMDBSettings')}
               isLast={true}
@@ -766,7 +810,7 @@ const SettingsScreen: React.FC = () => {
           <SettingsCard title="AI ASSISTANT" isTablet={isTablet}>
             <SettingItem
               title="OpenRouter API"
-              description={openRouterKeySet ? "Connected" : "Add your API key to enable AI chat"}
+              description={openRouterKeySet ? 'Connected' : 'Add your API key to enable AI chat'}
               icon="cpu"
               renderControl={ChevronRight}
               onPress={() => navigation.navigate('AISettings')}
@@ -783,9 +827,14 @@ const SettingsScreen: React.FC = () => {
           <SettingsCard title="PLAYBACK" isTablet={isTablet}>
             <SettingItem
               title="Video Player"
-              description={Platform.OS === 'ios'
-                ? (settings?.preferredPlayer === 'internal' ? 'Built-in' : settings?.preferredPlayer?.toUpperCase() || 'Built-in')
-                : (settings?.useExternalPlayer ? 'External' : 'Built-in')
+              description={
+                Platform.OS === 'ios'
+                  ? settings?.preferredPlayer === 'internal'
+                    ? 'Built-in'
+                    : settings?.preferredPlayer?.toUpperCase() || 'Built-in'
+                  : settings?.useExternalPlayer
+                    ? 'External'
+                    : 'Built-in'
               }
               icon="play-circle"
               renderControl={ChevronRight}
@@ -800,11 +849,11 @@ const SettingsScreen: React.FC = () => {
               icon="film"
               isToggle={true}
               toggleValue={settings?.showTrailers ?? true}
-              onToggleChange={(value) => updateSetting('showTrailers', value)}
+              onToggleChange={value => updateSetting('showTrailers', value)}
               renderControl={() => (
                 <Switch
                   value={settings?.showTrailers ?? true}
-                  onValueChange={(value) => updateSetting('showTrailers', value)}
+                  onValueChange={value => updateSetting('showTrailers', value)}
                   trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
                   thumbColor={settings?.showTrailers ? '#fff' : '#f4f3f4'}
                 />
@@ -819,11 +868,11 @@ const SettingsScreen: React.FC = () => {
               icon="download"
               isToggle={true}
               toggleValue={settings?.enableDownloads ?? false}
-              onToggleChange={(value) => updateSetting('enableDownloads', value)}
+              onToggleChange={value => updateSetting('enableDownloads', value)}
               renderControl={() => (
                 <Switch
                   value={settings?.enableDownloads ?? false}
-                  onValueChange={(value) => updateSetting('enableDownloads', value)}
+                  onValueChange={value => updateSetting('enableDownloads', value)}
                   trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
                   thumbColor={settings?.enableDownloads ? '#fff' : '#f4f3f4'}
                 />
@@ -852,7 +901,9 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               title="Privacy Policy"
               icon="lock"
-              onPress={() => Linking.openURL('https://tapframe.github.io/NuvioStreaming/#privacy-policy')}
+              onPress={() =>
+                Linking.openURL('https://tapframe.github.io/NuvioStreaming/#privacy-policy')
+              }
               renderControl={ChevronRight}
               isTablet={isTablet}
               focusId="setting-privacy"
@@ -907,7 +958,10 @@ const SettingsScreen: React.FC = () => {
               onPress={async () => {
                 try {
                   await mmkvStorage.removeItem('hasCompletedOnboarding');
-                  openAlert('Success', 'Onboarding has been reset. Restart the app to see the onboarding flow.');
+                  openAlert(
+                    'Success',
+                    'Onboarding has been reset. Restart the app to see the onboarding flow.'
+                  );
                 } catch (error) {
                   openAlert('Error', 'Failed to reset onboarding.');
                 }
@@ -924,7 +978,10 @@ const SettingsScreen: React.FC = () => {
               onPress={async () => {
                 try {
                   await mmkvStorage.removeItem('announcement_v1.0.0_shown');
-                  openAlert('Success', 'Announcement reset. Restart the app to see the announcement overlay.');
+                  openAlert(
+                    'Success',
+                    'Announcement reset. Restart the app to see the announcement overlay.'
+                  );
                 } catch (error) {
                   openAlert('Error', 'Failed to reset announcement.');
                 }
@@ -942,7 +999,7 @@ const SettingsScreen: React.FC = () => {
                   'Clear All Data',
                   'This will reset all settings and clear all cached data. Are you sure?',
                   [
-                    { label: 'Cancel', onPress: () => { } },
+                    { label: 'Cancel', onPress: () => {} },
                     {
                       label: 'Clear',
                       onPress: async () => {
@@ -952,8 +1009,8 @@ const SettingsScreen: React.FC = () => {
                         } catch (error) {
                           openAlert('Error', 'Failed to clear data.');
                         }
-                      }
-                    }
+                      },
+                    },
                   ]
                 );
               }}
@@ -1008,7 +1065,9 @@ const SettingsScreen: React.FC = () => {
               badge={Platform.OS === 'android' && hasUpdateBadge ? 1 : undefined}
               onPress={async () => {
                 if (Platform.OS === 'android') {
-                  try { await mmkvStorage.removeItem('@update_badge_pending'); } catch { }
+                  try {
+                    await mmkvStorage.removeItem('@update_badge_pending');
+                  } catch {}
                   setHasUpdateBadge(false);
                 }
                 navigation.navigate('Update');
@@ -1031,10 +1090,7 @@ const SettingsScreen: React.FC = () => {
 
   if (isTablet) {
     return (
-      <View style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground }
-      ]}>
+      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
         <StatusBar barStyle={'light-content'} />
         <View style={styles.tabletContainer}>
           <Sidebar
@@ -1045,12 +1101,16 @@ const SettingsScreen: React.FC = () => {
             extraTopPadding={tabletNavOffset}
           />
 
-          <View style={[
-            styles.tabletContent,
-            {
-              paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) + tabletNavOffset,
-            }
-          ]}>
+          <View
+            style={[
+              styles.tabletContent,
+              {
+                paddingTop:
+                  (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) +
+                  tabletNavOffset,
+              },
+            ]}
+          >
             <ScrollView
               style={styles.tabletScrollView}
               showsVerticalScrollIndicator={false}
@@ -1062,10 +1122,17 @@ const SettingsScreen: React.FC = () => {
                 <>
                   {displayDownloads !== null && (
                     <View style={styles.downloadsContainer}>
-                      <Text style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}>
+                      <Text
+                        style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}
+                      >
                         {displayDownloads.toLocaleString()}
                       </Text>
-                      <Text style={[styles.downloadsLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                      <Text
+                        style={[
+                          styles.downloadsLabel,
+                          { color: currentTheme.colors.mediumEmphasis },
+                        ]}
+                      >
                         downloads and counting
                       </Text>
                     </View>
@@ -1073,10 +1140,23 @@ const SettingsScreen: React.FC = () => {
 
                   <View style={styles.discordContainer}>
                     <Focusable
-                      style={[styles.discordButton, { backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, marginBottom: 8 }]}
-                      onPress={() => WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                        presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                      })}
+                      style={[
+                        styles.discordButton,
+                        {
+                          backgroundColor: 'transparent',
+                          paddingVertical: 0,
+                          paddingHorizontal: 0,
+                          marginBottom: 8,
+                        },
+                      ]}
+                      onPress={() =>
+                        WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
+                          presentationStyle:
+                            Platform.OS === 'ios'
+                              ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
+                              : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
+                        })
+                      }
                       animationConfig={{
                         focusScale: 1.05,
                         showFocusBorder: true,
@@ -1093,9 +1173,19 @@ const SettingsScreen: React.FC = () => {
                       />
                     </Focusable>
 
-                    <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 12,
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                      }}
+                    >
                       <Focusable
-                        style={[styles.discordButton, { backgroundColor: currentTheme.colors.elevation1 }]}
+                        style={[
+                          styles.discordButton,
+                          { backgroundColor: currentTheme.colors.elevation1 },
+                        ]}
                         onPress={() => Linking.openURL('https://discord.gg/6w8dr3TSDN')}
                         animationConfig={{
                           focusScale: 1.05,
@@ -1112,7 +1202,12 @@ const SettingsScreen: React.FC = () => {
                             style={styles.discordLogo}
                             resizeMode={FastImage.resizeMode.contain}
                           />
-                          <Text style={[styles.discordButtonText, { color: currentTheme.colors.highEmphasis }]}>
+                          <Text
+                            style={[
+                              styles.discordButtonText,
+                              { color: currentTheme.colors.highEmphasis },
+                            ]}
+                          >
                             Discord
                           </Text>
                         </View>
@@ -1132,7 +1227,9 @@ const SettingsScreen: React.FC = () => {
                       >
                         <View style={styles.discordButtonContent}>
                           <FastImage
-                            source={{ uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png' }}
+                            source={{
+                              uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png',
+                            }}
                             style={styles.discordLogo}
                             resizeMode={FastImage.resizeMode.contain}
                           />
@@ -1156,7 +1253,9 @@ const SettingsScreen: React.FC = () => {
                   </View>
 
                   <View style={styles.footer}>
-                    <Text style={[styles.footerText, { color: currentTheme.colors.mediumEmphasis }]}>
+                    <Text
+                      style={[styles.footerText, { color: currentTheme.colors.mediumEmphasis }]}
+                    >
                       Made with ❤️ by Tapframe and Friends
                     </Text>
                   </View>
@@ -1178,16 +1277,10 @@ const SettingsScreen: React.FC = () => {
 
   // Mobile Layout
   return (
-    <View style={[
-      styles.container,
-      { backgroundColor: currentTheme.colors.darkBackground }
-    ]}>
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <StatusBar barStyle={'light-content'} />
-      <ScreenHeader
-        title="Settings"
-      />
+      <ScreenHeader title="Settings" />
       <View style={{ flex: 1 }}>
-
         <View style={styles.contentContainer}>
           <ScrollView
             style={styles.scrollView}
@@ -1211,7 +1304,9 @@ const SettingsScreen: React.FC = () => {
                 <Text style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}>
                   {displayDownloads.toLocaleString()}
                 </Text>
-                <Text style={[styles.downloadsLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                <Text
+                  style={[styles.downloadsLabel, { color: currentTheme.colors.mediumEmphasis }]}
+                >
                   downloads and counting
                 </Text>
               </View>
@@ -1220,10 +1315,23 @@ const SettingsScreen: React.FC = () => {
             {/* Support & Community Buttons */}
             <View style={styles.discordContainer}>
               <Focusable
-                style={[styles.discordButton, { backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, marginBottom: 8 }]}
-                onPress={() => WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                  presentationStyle: Platform.OS === 'ios' ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                })}
+                style={[
+                  styles.discordButton,
+                  {
+                    backgroundColor: 'transparent',
+                    paddingVertical: 0,
+                    paddingHorizontal: 0,
+                    marginBottom: 8,
+                  },
+                ]}
+                onPress={() =>
+                  WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
+                    presentationStyle:
+                      Platform.OS === 'ios'
+                        ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
+                        : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
+                  })
+                }
                 animationConfig={{
                   focusScale: 1.05,
                   showFocusBorder: true,
@@ -1240,9 +1348,19 @@ const SettingsScreen: React.FC = () => {
                 />
               </Focusable>
 
-              <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 12,
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}
+              >
                 <Focusable
-                  style={[styles.discordButton, { backgroundColor: currentTheme.colors.elevation1 }]}
+                  style={[
+                    styles.discordButton,
+                    { backgroundColor: currentTheme.colors.elevation1 },
+                  ]}
                   onPress={() => Linking.openURL('https://discord.gg/6w8dr3TSDN')}
                   animationConfig={{
                     focusScale: 1.05,
@@ -1259,7 +1377,12 @@ const SettingsScreen: React.FC = () => {
                       style={styles.discordLogo}
                       resizeMode={FastImage.resizeMode.contain}
                     />
-                    <Text style={[styles.discordButtonText, { color: currentTheme.colors.highEmphasis }]}>
+                    <Text
+                      style={[
+                        styles.discordButtonText,
+                        { color: currentTheme.colors.highEmphasis },
+                      ]}
+                    >
                       Discord
                     </Text>
                   </View>
@@ -1279,13 +1402,13 @@ const SettingsScreen: React.FC = () => {
                 >
                   <View style={styles.discordButtonContent}>
                     <FastImage
-                      source={{ uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png' }}
+                      source={{
+                        uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png',
+                      }}
                       style={styles.discordLogo}
                       resizeMode={FastImage.resizeMode.contain}
                     />
-                    <Text style={[styles.discordButtonText, { color: '#FF4500' }]}>
-                      Reddit
-                    </Text>
+                    <Text style={[styles.discordButtonText, { color: '#FF4500' }]}>Reddit</Text>
                   </View>
                 </Focusable>
               </View>

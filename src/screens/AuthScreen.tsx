@@ -1,15 +1,29 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, Dimensions, Animated, Easing, Keyboard } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
-import { UnifiedSpinner } from '../components/loading';
-import { useAccount } from '../contexts/AccountContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { useToast } from '../contexts/ToastContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Animated,
+  Easing,
+  Keyboard,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { UnifiedSpinner } from '../components/loading';
+import { useAccount } from '../contexts/AccountContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -140,13 +154,20 @@ const AuthScreen: React.FC = () => {
 
   const isEmailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
   const isPasswordValid = useMemo(() => password.length >= 6, [password]);
-  const isConfirmValid = useMemo(() => (mode === 'signin') || confirmPassword.length >= 6, [confirmPassword, mode]);
-  const passwordsMatch = useMemo(() => (mode === 'signin') || confirmPassword === password, [confirmPassword, password, mode]);
-  const canSubmit = isEmailValid && isPasswordValid && (mode === 'signin' || (isConfirmValid && passwordsMatch));
+  const isConfirmValid = useMemo(
+    () => mode === 'signin' || confirmPassword.length >= 6,
+    [confirmPassword, mode]
+  );
+  const passwordsMatch = useMemo(
+    () => mode === 'signin' || confirmPassword === password,
+    [confirmPassword, password, mode]
+  );
+  const canSubmit =
+    isEmailValid && isPasswordValid && (mode === 'signin' || (isConfirmValid && passwordsMatch));
 
   const handleSubmit = async () => {
     if (loading) return;
-    
+
     // Prevent signup if disabled
     if (mode === 'signup' && signupDisabled) {
       const msg = 'Sign up is currently disabled due to upcoming system changes';
@@ -155,7 +176,7 @@ const AuthScreen: React.FC = () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
-    
+
     if (!isEmailValid) {
       const msg = 'Enter a valid email address';
       setError(msg);
@@ -173,13 +194,16 @@ const AuthScreen: React.FC = () => {
     if (mode === 'signup' && !passwordsMatch) {
       const msg = 'Passwords do not match';
       setError(msg);
-      showError('Passwords Don\'t Match', 'Passwords do not match');
+      showError("Passwords Don't Match", 'Passwords do not match');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
     setLoading(true);
     setError(null);
-    const err = mode === 'signin' ? await signIn(email.trim(), password) : await signUp(email.trim(), password);
+    const err =
+      mode === 'signin'
+        ? await signIn(email.trim(), password)
+        : await signUp(email.trim(), password);
     if (err) {
       setError(err);
       showError('Authentication Failed', err);
@@ -240,7 +264,7 @@ const AuthScreen: React.FC = () => {
       {Platform.OS !== 'android' && (
         <View style={styles.backgroundPattern}>
           {Array.from({ length: 20 }).map((_, i) => (
-            <View 
+            <View
               key={i}
               style={[
                 styles.patternDot,
@@ -248,7 +272,7 @@ const AuthScreen: React.FC = () => {
                   left: (i % 5) * (width / 4),
                   top: Math.floor(i / 5) * (height / 4),
                   opacity: 0.03 + (i % 3) * 0.02,
-                }
+                },
               ]}
             />
           ))}
@@ -258,7 +282,7 @@ const AuthScreen: React.FC = () => {
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header outside KeyboardAvoidingView to avoid being overlapped */}
         <Animated.View
-          onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+          onLayout={e => setHeaderHeight(e.nativeEvent.layout.height)}
           style={[
             styles.header,
             {
@@ -278,14 +302,30 @@ const AuthScreen: React.FC = () => {
           ]}
         >
           {navigation.canGoBack() && (
-            <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backButton, Platform.OS === 'android' ? { top: Math.max(insets.top + 6, 18) } : null]} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={[
+                styles.backButton,
+                Platform.OS === 'android' ? { top: Math.max(insets.top + 6, 18) } : null,
+              ]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <MaterialIcons name="arrow-back" size={22} color={currentTheme.colors.white} />
             </TouchableOpacity>
           )}
-          <Animated.Text style={[styles.heading, { color: currentTheme.colors.white, opacity: titleOpacity, transform: [{ translateY: titleTranslateY }] }]}>
+          <Animated.Text
+            style={[
+              styles.heading,
+              {
+                color: currentTheme.colors.white,
+                opacity: titleOpacity,
+                transform: [{ translateY: titleTranslateY }],
+              },
+            ]}
+          >
             {mode === 'signin' ? 'Welcome back' : 'Create your account'}
           </Animated.Text>
-          <Text style={[styles.subheading, { color: currentTheme.colors.textMuted }] }>
+          <Text style={[styles.subheading, { color: currentTheme.colors.textMuted }]}>
             Sync your addons, progress and settings across devices
           </Text>
         </Animated.View>
@@ -301,47 +341,55 @@ const AuthScreen: React.FC = () => {
           ]}
         >
           <TouchableOpacity
-            style={[styles.warningCard, { backgroundColor: 'rgba(255, 193, 7, 0.1)', borderColor: 'rgba(255, 193, 7, 0.3)' }]}
+            style={[
+              styles.warningCard,
+              { backgroundColor: 'rgba(255, 193, 7, 0.1)', borderColor: 'rgba(255, 193, 7, 0.3)' },
+            ]}
             onPress={toggleWarningDetails}
             activeOpacity={0.8}
           >
             <MaterialIcons name="warning" size={20} color="#FFC107" style={styles.warningIcon} />
             <View style={styles.warningContent}>
-              <Text style={[styles.warningTitle, { color: '#FFC107' }]}>
-                Important Notice
-              </Text>
+              <Text style={[styles.warningTitle, { color: '#FFC107' }]}>Important Notice</Text>
               <Text style={[styles.warningText, { color: currentTheme.colors.white }]}>
-                This authentication system will be completely replaced by local backup/restore functionality by October 8th. Please create backup files as your cloud data will be permanently destroyed.
+                This authentication system will be completely replaced by local backup/restore
+                functionality by October 8th. Please create backup files as your cloud data will be
+                permanently destroyed.
               </Text>
               <Text style={[styles.readMoreText, { color: '#FFC107' }]}>
                 Read more {showWarningDetails ? '▼' : '▶'}
               </Text>
             </View>
           </TouchableOpacity>
-          
+
           {/* Expanded Details */}
           {showWarningDetails && (
-            <Animated.View style={[styles.warningDetails, { backgroundColor: 'rgba(255, 193, 7, 0.05)', borderColor: 'rgba(255, 193, 7, 0.2)' }]}>
+            <Animated.View
+              style={[
+                styles.warningDetails,
+                {
+                  backgroundColor: 'rgba(255, 193, 7, 0.05)',
+                  borderColor: 'rgba(255, 193, 7, 0.2)',
+                },
+              ]}
+            >
               <View style={styles.detailsContent}>
                 <Text style={[styles.detailsTitle, { color: '#FFC107' }]}>
                   Why is this system being discontinued?
                 </Text>
                 <Text style={[styles.detailsText, { color: currentTheme.colors.white }]}>
-                  • Lack of real-time support for addon synchronization{'\n'}
-                  • Database synchronization issues with addons and settings{'\n'}
-                  • Unreliable cloud data management{'\n'}
-                  • Performance problems with remote data access
+                  • Lack of real-time support for addon synchronization{'\n'}• Database
+                  synchronization issues with addons and settings{'\n'}• Unreliable cloud data
+                  management{'\n'}• Performance problems with remote data access
                 </Text>
-                
+
                 <Text style={[styles.detailsTitle, { color: '#FFC107', marginTop: 16 }]}>
                   Benefits of Local Backup System:
                 </Text>
                 <Text style={[styles.detailsText, { color: currentTheme.colors.white }]}>
-                  • Instant addon synchronization across devices{'\n'}
-                  • Reliable offline access to all your data{'\n'}
-                  • Complete control over your backup files{'\n'}
-                  • Faster performance with local data storage{'\n'}
-                  • No dependency on external servers{'\n'}
+                  • Instant addon synchronization across devices{'\n'}• Reliable offline access to
+                  all your data{'\n'}• Complete control over your backup files{'\n'}• Faster
+                  performance with local data storage{'\n'}• No dependency on external servers{'\n'}
                   • Easy migration between devices
                 </Text>
               </View>
@@ -356,23 +404,35 @@ const AuthScreen: React.FC = () => {
         >
           {/* Main Card - Hide when warning details are expanded */}
           <Animated.View style={[styles.centerContainer, { opacity: authCardOpacity }]}>
-            <Animated.View style={[styles.card, { 
-              backgroundColor: Platform.OS === 'android' ? '#121212' : 'rgba(255,255,255,0.02)',
-              borderColor: Platform.OS === 'android' ? '#1f1f1f' : 'rgba(255,255,255,0.06)',
-              ...(Platform.OS !== 'android' ? {
-                shadowColor: currentTheme.colors.primary,
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.1,
-                shadowRadius: 20,
-              } : {}),
-              opacity: cardOpacity,
-              transform: [{ translateY: cardTranslateY }],
-            }]}>                
-              
+            <Animated.View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: Platform.OS === 'android' ? '#121212' : 'rgba(255,255,255,0.02)',
+                  borderColor: Platform.OS === 'android' ? '#1f1f1f' : 'rgba(255,255,255,0.06)',
+                  ...(Platform.OS !== 'android'
+                    ? {
+                        shadowColor: currentTheme.colors.primary,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 20,
+                      }
+                    : {}),
+                  opacity: cardOpacity,
+                  transform: [{ translateY: cardTranslateY }],
+                },
+              ]}
+            >
               {/* Mode Toggle */}
               <View
-                onLayout={(e) => setSwitchWidth(e.nativeEvent.layout.width)}
-                style={[styles.switchRow, { backgroundColor: Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.04)' }]}
+                onLayout={e => setSwitchWidth(e.nativeEvent.layout.width)}
+                style={[
+                  styles.switchRow,
+                  {
+                    backgroundColor:
+                      Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.04)',
+                  },
+                ]}
               >
                 {/* Animated indicator */}
                 <Animated.View
@@ -381,7 +441,8 @@ const AuthScreen: React.FC = () => {
                     styles.switchIndicator,
                     {
                       width: Math.max(0, (switchWidth - 6) / 2),
-                      backgroundColor: Platform.OS === 'android' ? '#2a2a2a' : currentTheme.colors.primary,
+                      backgroundColor:
+                        Platform.OS === 'android' ? '#2a2a2a' : currentTheme.colors.primary,
                       transform: [
                         {
                           translateX: modeAnim.interpolate({
@@ -394,48 +455,84 @@ const AuthScreen: React.FC = () => {
                   ]}
                 />
                 <TouchableOpacity
-                  style={[
-                    styles.switchButton,
-                  ]}
+                  style={styles.switchButton}
                   onPress={() => setMode('signin')}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.switchText, { color: mode === 'signin' ? '#fff' : currentTheme.colors.textMuted }]}>
+                  <Text
+                    style={[
+                      styles.switchText,
+                      { color: mode === 'signin' ? '#fff' : currentTheme.colors.textMuted },
+                    ]}
+                  >
                     Sign In
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[
-                    styles.switchButton,
-                    signupDisabled && styles.disabledButton,
-                  ]}
+                  style={[styles.switchButton, signupDisabled && styles.disabledButton]}
                   onPress={() => !signupDisabled && setMode('signup')}
                   activeOpacity={signupDisabled ? 1 : 0.8}
                   disabled={signupDisabled}
                 >
-                  <Text style={[
-                    styles.switchText, 
-                    { 
-                      color: mode === 'signup' ? '#fff' : (signupDisabled ? 'rgba(255,255,255,0.3)' : currentTheme.colors.textMuted)
-                    }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.switchText,
+                      {
+                        color:
+                          mode === 'signup'
+                            ? '#fff'
+                            : signupDisabled
+                              ? 'rgba(255,255,255,0.3)'
+                              : currentTheme.colors.textMuted,
+                      },
+                    ]}
+                  >
                     Sign Up {signupDisabled && '(Disabled)'}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Email Input */}
-              <View style={[styles.inputContainer]}>
-                <View style={[styles.inputRow, { 
-                  backgroundColor: Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)', 
-                  borderColor: Platform.OS === 'android' ? '#2a2a2a' : (isEmailValid || !email ? 'rgba(255,255,255,0.08)' : 'rgba(255,107,107,0.4)'),
-                  borderWidth: 1,
-                }]}>                
-                  <View style={[styles.iconContainer, { backgroundColor: Platform.OS === 'android' ? '#222' : (isEmailValid ? 'rgba(46,160,67,0.15)' : 'rgba(255,255,255,0.05)') }]}>                
-                    <MaterialIcons 
-                      name="mail-outline" 
-                      size={18} 
-                      color={Platform.OS === 'android' ? currentTheme.colors.textMuted : (isEmailValid ? '#2EA043' : currentTheme.colors.textMuted)} 
+              <View style={styles.inputContainer}>
+                <View
+                  style={[
+                    styles.inputRow,
+                    {
+                      backgroundColor:
+                        Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)',
+                      borderColor:
+                        Platform.OS === 'android'
+                          ? '#2a2a2a'
+                          : isEmailValid || !email
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(255,107,107,0.4)',
+                      borderWidth: 1,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      {
+                        backgroundColor:
+                          Platform.OS === 'android'
+                            ? '#222'
+                            : isEmailValid
+                              ? 'rgba(46,160,67,0.15)'
+                              : 'rgba(255,255,255,0.05)',
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="mail-outline"
+                      size={18}
+                      color={
+                        Platform.OS === 'android'
+                          ? currentTheme.colors.textMuted
+                          : isEmailValid
+                            ? '#2EA043'
+                            : currentTheme.colors.textMuted
+                      }
                     />
                   </View>
                   <TextInput
@@ -449,23 +546,57 @@ const AuthScreen: React.FC = () => {
                     returnKeyType="next"
                   />
                   {Platform.OS !== 'android' && isEmailValid && (
-                    <MaterialIcons name="check-circle" size={16} color="#2EA043" style={{ marginRight: 12 }} />
+                    <MaterialIcons
+                      name="check-circle"
+                      size={16}
+                      color="#2EA043"
+                      style={{ marginRight: 12 }}
+                    />
                   )}
                 </View>
               </View>
 
               {/* Password Input */}
               <View style={styles.inputContainer}>
-                <View style={[styles.inputRow, { 
-                  backgroundColor: Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)', 
-                  borderColor: Platform.OS === 'android' ? '#2a2a2a' : (isPasswordValid || !password ? 'rgba(255,255,255,0.08)' : 'rgba(255,107,107,0.4)'),
-                  borderWidth: 1,
-                }]}>                
-                  <View style={[styles.iconContainer, { backgroundColor: Platform.OS === 'android' ? '#222' : (isPasswordValid ? 'rgba(46,160,67,0.15)' : 'rgba(255,255,255,0.05)') }]}>                
-                    <MaterialIcons 
-                      name="lock-outline" 
-                      size={18} 
-                      color={Platform.OS === 'android' ? currentTheme.colors.textMuted : (isPasswordValid ? '#2EA043' : currentTheme.colors.textMuted)} 
+                <View
+                  style={[
+                    styles.inputRow,
+                    {
+                      backgroundColor:
+                        Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)',
+                      borderColor:
+                        Platform.OS === 'android'
+                          ? '#2a2a2a'
+                          : isPasswordValid || !password
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(255,107,107,0.4)',
+                      borderWidth: 1,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      {
+                        backgroundColor:
+                          Platform.OS === 'android'
+                            ? '#222'
+                            : isPasswordValid
+                              ? 'rgba(46,160,67,0.15)'
+                              : 'rgba(255,255,255,0.05)',
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="lock-outline"
+                      size={18}
+                      color={
+                        Platform.OS === 'android'
+                          ? currentTheme.colors.textMuted
+                          : isPasswordValid
+                            ? '#2EA043'
+                            : currentTheme.colors.textMuted
+                      }
                     />
                   </View>
                   <TextInput
@@ -478,15 +609,23 @@ const AuthScreen: React.FC = () => {
                     returnKeyType="done"
                     onSubmitEditing={handleSubmit}
                   />
-                  <TouchableOpacity onPress={() => setShowPassword(p => !p)} style={styles.eyeButton}>
-                    <MaterialIcons 
-                      name={showPassword ? 'visibility-off' : 'visibility'} 
-                      size={16} 
-                      color={currentTheme.colors.textMuted} 
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(p => !p)}
+                    style={styles.eyeButton}
+                  >
+                    <MaterialIcons
+                      name={showPassword ? 'visibility-off' : 'visibility'}
+                      size={16}
+                      color={currentTheme.colors.textMuted}
                     />
                   </TouchableOpacity>
                   {Platform.OS !== 'android' && isPasswordValid && (
-                    <MaterialIcons name="check-circle" size={16} color="#2EA043" style={{ marginRight: 12 }} />
+                    <MaterialIcons
+                      name="check-circle"
+                      size={16}
+                      color="#2EA043"
+                      style={{ marginRight: 12 }}
+                    />
                   )}
                 </View>
               </View>
@@ -494,16 +633,45 @@ const AuthScreen: React.FC = () => {
               {/* Confirm Password (signup only) */}
               {mode === 'signup' && (
                 <View style={styles.inputContainer}>
-                  <View style={[styles.inputRow, { 
-                    backgroundColor: Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)', 
-                    borderColor: Platform.OS === 'android' ? '#2a2a2a' : ((passwordsMatch && (isConfirmValid || !confirmPassword)) ? 'rgba(255,255,255,0.08)' : 'rgba(255,107,107,0.4)'),
-                    borderWidth: 1,
-                  }]}>                
-                    <View style={[styles.iconContainer, { backgroundColor: Platform.OS === 'android' ? '#222' : ((passwordsMatch && isConfirmValid) ? 'rgba(46,160,67,0.15)' : 'rgba(255,255,255,0.05)') }]}>                
-                      <MaterialIcons 
-                        name="lock-outline" 
-                        size={18} 
-                        color={Platform.OS === 'android' ? currentTheme.colors.textMuted : ((passwordsMatch && isConfirmValid) ? '#2EA043' : currentTheme.colors.textMuted)} 
+                  <View
+                    style={[
+                      styles.inputRow,
+                      {
+                        backgroundColor:
+                          Platform.OS === 'android' ? '#1a1a1a' : 'rgba(255,255,255,0.03)',
+                        borderColor:
+                          Platform.OS === 'android'
+                            ? '#2a2a2a'
+                            : passwordsMatch && (isConfirmValid || !confirmPassword)
+                              ? 'rgba(255,255,255,0.08)'
+                              : 'rgba(255,107,107,0.4)',
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        {
+                          backgroundColor:
+                            Platform.OS === 'android'
+                              ? '#222'
+                              : passwordsMatch && isConfirmValid
+                                ? 'rgba(46,160,67,0.15)'
+                                : 'rgba(255,255,255,0.05)',
+                        },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name="lock-outline"
+                        size={18}
+                        color={
+                          Platform.OS === 'android'
+                            ? currentTheme.colors.textMuted
+                            : passwordsMatch && isConfirmValid
+                              ? '#2EA043'
+                              : currentTheme.colors.textMuted
+                        }
                       />
                     </View>
                     <TextInput
@@ -516,15 +684,23 @@ const AuthScreen: React.FC = () => {
                       returnKeyType="done"
                       onSubmitEditing={handleSubmit}
                     />
-                    <TouchableOpacity onPress={() => setShowConfirm(p => !p)} style={styles.eyeButton}>
-                      <MaterialIcons 
-                        name={showConfirm ? 'visibility-off' : 'visibility'} 
-                        size={16} 
-                        color={currentTheme.colors.textMuted} 
+                    <TouchableOpacity
+                      onPress={() => setShowConfirm(p => !p)}
+                      style={styles.eyeButton}
+                    >
+                      <MaterialIcons
+                        name={showConfirm ? 'visibility-off' : 'visibility'}
+                        size={16}
+                        color={currentTheme.colors.textMuted}
                       />
                     </TouchableOpacity>
                     {Platform.OS !== 'android' && passwordsMatch && isConfirmValid && (
-                      <MaterialIcons name="check-circle" size={16} color="#2EA043" style={{ marginRight: 12 }} />
+                      <MaterialIcons
+                        name="check-circle"
+                        size={16}
+                        color="#2EA043"
+                        style={{ marginRight: 12 }}
+                      />
                     )}
                   </View>
                 </View>
@@ -542,16 +718,20 @@ const AuthScreen: React.FC = () => {
               <Animated.View style={{ transform: [{ scale: ctaScale }] }}>
                 <TouchableOpacity
                   style={[
-                    styles.ctaButton, 
-                    { 
-                      backgroundColor: canSubmit ? currentTheme.colors.primary : 'rgba(255,255,255,0.08)',
-                      ...(Platform.OS !== 'android' ? {
-                        shadowColor: canSubmit ? currentTheme.colors.primary : 'transparent',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: canSubmit ? 0.3 : 0,
-                        shadowRadius: 12,
-                      } : {}),
-                    }
+                    styles.ctaButton,
+                    {
+                      backgroundColor: canSubmit
+                        ? currentTheme.colors.primary
+                        : 'rgba(255,255,255,0.08)',
+                      ...(Platform.OS !== 'android'
+                        ? {
+                            shadowColor: canSubmit ? currentTheme.colors.primary : 'transparent',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: canSubmit ? 0.3 : 0,
+                            shadowRadius: 12,
+                          }
+                        : {}),
+                    },
                   ]}
                   onPress={handleSubmit}
                   onPressIn={() => {
@@ -576,7 +756,12 @@ const AuthScreen: React.FC = () => {
                   {loading ? (
                     <UnifiedSpinner size="small" color="#FFFFFF" />
                   ) : (
-                    <Animated.Text style={[styles.ctaText, { opacity: ctaTextOpacity, transform: [{ translateY: ctaTextTranslateY }] }]}>
+                    <Animated.Text
+                      style={[
+                        styles.ctaText,
+                        { opacity: ctaTextOpacity, transform: [{ translateY: ctaTextTranslateY }] },
+                      ]}
+                    >
                       {mode === 'signin' ? 'Sign In' : 'Create Account'}
                     </Animated.Text>
                   )}
@@ -585,8 +770,8 @@ const AuthScreen: React.FC = () => {
 
               {/* Switch Mode */}
               {!signupDisabled && (
-                <TouchableOpacity 
-                  onPress={() => setMode(mode === 'signin' ? 'signup' : 'signin')} 
+                <TouchableOpacity
+                  onPress={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
                   activeOpacity={0.7}
                   style={{ marginTop: 16 }}
                 >
@@ -598,11 +783,16 @@ const AuthScreen: React.FC = () => {
                   </Text>
                 </TouchableOpacity>
               )}
-              
+
               {/* Signup disabled message */}
               {signupDisabled && mode === 'signin' && (
                 <View style={{ marginTop: 16, alignItems: 'center' }}>
-                  <Text style={[styles.switchModeText, { color: 'rgba(255,255,255,0.5)', fontSize: 13 }]}>
+                  <Text
+                    style={[
+                      styles.switchModeText,
+                      { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
+                    ]}
+                  >
                     New account creation is temporarily disabled
                   </Text>
                 </View>
@@ -623,16 +813,19 @@ const AuthScreen: React.FC = () => {
                   },
                 ]}
               >
-                <Text style={{ 
-                  color: fromOnboarding ? currentTheme.colors.white : currentTheme.colors.textMuted, 
-                  textAlign: 'center',
-                  fontWeight: fromOnboarding ? '700' : '500',
-                }}>
+                <Text
+                  style={{
+                    color: fromOnboarding
+                      ? currentTheme.colors.white
+                      : currentTheme.colors.textMuted,
+                    textAlign: 'center',
+                    fontWeight: fromOnboarding ? '700' : '500',
+                  }}
+                >
                   Continue without an account
                 </Text>
               </TouchableOpacity>
             </Animated.View>
-
           </Animated.View>
         </KeyboardAvoidingView>
         {/* Toasts rendered globally in App root */}
@@ -860,4 +1053,3 @@ const styles = StyleSheet.create({
 });
 
 export default AuthScreen;
-

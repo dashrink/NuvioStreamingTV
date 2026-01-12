@@ -25,6 +25,10 @@
  * ```
  */
 
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Entypo, Ionicons } from '@expo/vector-icons';
+import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View,
@@ -36,11 +40,6 @@ import {
   StatusBar,
   findNodeHandle,
 } from 'react-native';
-import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons, Entypo, Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -53,20 +52,22 @@ import Animated, {
   withSpring,
   SharedValue,
 } from 'react-native-reanimated';
-import { StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSettings } from '../../hooks/useSettings';
+
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTrailer } from '../../contexts/TrailerContext';
-import TrailerService from '../../services/trailerService';
-import TrailerPlayer from '../video/TrailerPlayer';
-import { useLibrary } from '../../hooks/useLibrary';
 import { useTraktContext } from '../../contexts/TraktContext';
-import { useWatchProgress } from '../../hooks/useWatchProgress';
-import { streamCacheService } from '../../services/streamCacheService';
-import Focusable, { FocusableRef } from '../common/Focusable';
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
+import { useLibrary } from '../../hooks/useLibrary';
+import { useSettings } from '../../hooks/useSettings';
 import { useTVEventHandler } from '../../hooks/useTVEventHandler';
+import { useWatchProgress } from '../../hooks/useWatchProgress';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { StreamingContent } from '../../services/catalogService';
+import { streamCacheService } from '../../services/streamCacheService';
+import TrailerService from '../../services/trailerService';
+import Focusable, { FocusableRef } from '../common/Focusable';
+import TrailerPlayer from '../video/TrailerPlayer';
 
 // =============================================================================
 // Types & Interfaces
@@ -198,41 +199,42 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   const {
     watchProgress,
     getPlayButtonText: getProgressPlayButtonText,
-    loadWatchProgress
-  } = useWatchProgress(
-    currentItem?.id || '',
-    type,
-    undefined,
-    []
-  );
+    loadWatchProgress,
+  } = useWatchProgress(currentItem?.id || '', type, undefined, []);
 
   // =============================================================================
   // Focus Memory
   // =============================================================================
 
-  const saveFocusState = useCallback((focusId: string) => {
-    if (tvNav) {
-      tvNav.setScreenFocus(uniqueSectionId, focusId);
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [tvNav]);
+  const saveFocusState = useCallback(
+    (focusId: string) => {
+      if (tvNav) {
+        tvNav.setScreenFocus(uniqueSectionId, focusId);
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [tvNav]
+  );
 
   // =============================================================================
   // Next Focus Props Resolution
   // =============================================================================
 
-  const resolveNodeHandle = useCallback((value: number | React.RefObject<any> | undefined): number | undefined => {
-    if (value === undefined) return undefined;
-    if (typeof value === 'number') return value;
-    if (value.current) {
-      try {
-        return findNodeHandle(value.current) ?? undefined;
-      } catch {
-        return undefined;
+  const resolveNodeHandle = useCallback(
+    (value: number | React.RefObject<any> | undefined): number | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value === 'number') return value;
+      if (value.current) {
+        try {
+          return findNodeHandle(value.current) ?? undefined;
+        } catch {
+          return undefined;
+        }
       }
-    }
-    return undefined;
-  }, []);
+      return undefined;
+    },
+    []
+  );
 
   const nextFocusDownHandle = resolveNodeHandle(nextFocusDown);
 
@@ -254,7 +256,11 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
     autoPlayTimerRef.current = setTimeout(() => {
       const timeSinceInteraction = Date.now() - lastInteractionRef.current;
-      if (timeSinceInteraction >= 5000 && !isAnyFocused && (!globalTrailerPlaying || !trailerReady)) {
+      if (
+        timeSinceInteraction >= 5000 &&
+        !isAnyFocused &&
+        (!globalTrailerPlaying || !trailerReady)
+      ) {
         const nextIdx = (currentIndex + 1) % items.length;
         setCurrentIndex(nextIdx);
       } else {
@@ -300,15 +306,18 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   // =============================================================================
 
   useTVEventHandler(
-    useCallback((event) => {
-      if (!heroFocused) return;
+    useCallback(
+      event => {
+        if (!heroFocused) return;
 
-      if (event.eventType === 'left') {
-        goToPrevious();
-      } else if (event.eventType === 'right') {
-        goToNext();
-      }
-    }, [heroFocused, goToPrevious, goToNext]),
+        if (event.eventType === 'left') {
+          goToPrevious();
+        } else if (event.eventType === 'right') {
+          goToNext();
+        }
+      },
+      [heroFocused, goToPrevious, goToNext]
+    ),
     { enabled: heroFocused }
   );
 
@@ -431,12 +440,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
         const contentType = currentItem.type === 'series' ? 'tv' : 'movie';
 
-        const url = await TrailerService.getTrailerUrl(
-          currentItem.name,
-          year,
-          tmdbId,
-          contentType
-        );
+        const url = await TrailerService.getTrailerUrl(currentItem.name, year, tmdbId, contentType);
 
         if (!alive) return;
 
@@ -520,45 +524,58 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
     try {
       setTrailerPlaying(false);
-    } catch { }
+    } catch {}
 
-    const shouldResume = watchProgress &&
+    const shouldResume =
+      watchProgress &&
       watchProgress.currentTime > 0 &&
-      (watchProgress.currentTime / watchProgress.duration) < 0.85;
+      watchProgress.currentTime / watchProgress.duration < 0.85;
 
     try {
-      const episodeId = currentItem.type === 'series' && watchProgress?.episodeId
-        ? watchProgress.episodeId
-        : undefined;
+      const episodeId =
+        currentItem.type === 'series' && watchProgress?.episodeId
+          ? watchProgress.episodeId
+          : undefined;
 
-      const cachedStream = await streamCacheService.getCachedStream(currentItem.id, currentItem.type, episodeId);
+      const cachedStream = await streamCacheService.getCachedStream(
+        currentItem.id,
+        currentItem.type,
+        episodeId
+      );
 
       if (cachedStream && cachedStream.stream?.url) {
         const playerRoute = Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid';
 
-        navigation.navigate(playerRoute as any, {
-          uri: cachedStream.stream.url,
-          title: cachedStream.metadata?.name || currentItem.name,
-          episodeTitle: cachedStream.episodeTitle,
-          season: cachedStream.season,
-          episode: cachedStream.episode,
-          quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
-          year: cachedStream.metadata?.year || currentItem.year,
-          streamProvider: cachedStream.stream.addonId || cachedStream.stream.addonName || cachedStream.stream.name,
-          streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
-          headers: cachedStream.stream.headers || undefined,
-          forceVlc: false,
-          id: currentItem.id,
-          type: currentItem.type,
-          episodeId: episodeId,
-          imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || currentItem.imdb_id,
-          backdrop: cachedStream.metadata?.backdrop || currentItem.banner,
-          videoType: undefined,
-          ...(shouldResume && watchProgress && {
-            resumeTime: watchProgress.currentTime,
-            duration: watchProgress.duration
-          })
-        } as any);
+        navigation.navigate(
+          playerRoute as any,
+          {
+            uri: cachedStream.stream.url,
+            title: cachedStream.metadata?.name || currentItem.name,
+            episodeTitle: cachedStream.episodeTitle,
+            season: cachedStream.season,
+            episode: cachedStream.episode,
+            quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
+            year: cachedStream.metadata?.year || currentItem.year,
+            streamProvider:
+              cachedStream.stream.addonId ||
+              cachedStream.stream.addonName ||
+              cachedStream.stream.name,
+            streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
+            headers: cachedStream.stream.headers || undefined,
+            forceVlc: false,
+            id: currentItem.id,
+            type: currentItem.type,
+            episodeId,
+            imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || currentItem.imdb_id,
+            backdrop: cachedStream.metadata?.backdrop || currentItem.banner,
+            videoType: undefined,
+            ...(shouldResume &&
+              watchProgress && {
+                resumeTime: watchProgress.currentTime,
+                duration: watchProgress.duration,
+              }),
+          } as any
+        );
 
         return;
       }
@@ -571,15 +588,15 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           poster: currentItem.poster,
           banner: currentItem.banner,
           releaseInfo: currentItem.releaseInfo,
-          genres: currentItem.genres
+          genres: currentItem.genres,
         },
-        ...(shouldResume && watchProgress && {
-          resumeTime: watchProgress.currentTime,
-          duration: watchProgress.duration,
-          episodeId: watchProgress.episodeId
-        })
+        ...(shouldResume &&
+          watchProgress && {
+            resumeTime: watchProgress.currentTime,
+            duration: watchProgress.duration,
+            episodeId: watchProgress.episodeId,
+          }),
       });
-
     } catch {
       navigation.navigate('Streams', {
         id: currentItem.id,
@@ -589,8 +606,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           poster: currentItem.poster,
           banner: currentItem.banner,
           releaseInfo: currentItem.releaseInfo,
-          genres: currentItem.genres
-        }
+          genres: currentItem.genres,
+        },
       });
     }
   }, [currentItem, navigation, setTrailerPlaying, watchProgress]);
@@ -723,7 +740,11 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   return (
     <Animated.View
       entering={initialLoadComplete ? undefined : FadeIn.duration(600).delay(150)}
-      style={[styles.container, heroContainerStyle, { height: HERO_HEIGHT, marginTop: -insets.top }]}
+      style={[
+        styles.container,
+        heroContainerStyle,
+        { height: HERO_HEIGHT, marginTop: -insets.top },
+      ]}
     >
       {/* Focusable Background for D-pad Navigation */}
       <Focusable
@@ -740,7 +761,9 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           showFocusBorder: false,
         }}
         nextFocus={{
-          nextFocusDown: playButtonRef.current ? findNodeHandle(playButtonRef.current) ?? undefined : undefined,
+          nextFocusDown: playButtonRef.current
+            ? (findNodeHandle(playButtonRef.current) ?? undefined)
+            : undefined,
         }}
         accessibilityLabel={`${currentItem.name}, featured content ${currentIndex + 1} of ${items.length}`}
         accessibilityHint="Press left or right to browse, down to access actions"
@@ -759,56 +782,64 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             }}
             style={styles.backgroundImage}
             resizeMode={FastImage.resizeMode.cover}
-            onLoad={() => setBannerLoaded((prev) => ({ ...prev, [currentIndex]: true }))}
+            onLoad={() => setBannerLoaded(prev => ({ ...prev, [currentIndex]: true }))}
           />
         </View>
 
         {/* Trailer player */}
-        {settings?.showTrailers && trailerUrl && !trailerLoading && !trailerError && trailerPreloaded && (
-          <Animated.View style={trailerContainerStyle}>
-            <Animated.View style={trailerVideoStyle}>
-              <TrailerPlayer
-                key={`visible-${trailerUrl}`}
-                ref={trailerVideoRef}
-                trailerUrl={trailerUrl}
-                autoPlay={globalTrailerPlaying}
-                muted={trailerMuted}
-                style={StyleSheet.absoluteFillObject}
-                hideLoadingSpinner={true}
-                hideControls={true}
-                onLoad={handleTrailerReady}
-                onError={handleTrailerError}
-                onEnd={handleTrailerEnd}
-                contentType={currentItem.type as 'movie' | 'series'}
-                paused={trailerShouldBePaused}
+        {settings?.showTrailers &&
+          trailerUrl &&
+          !trailerLoading &&
+          !trailerError &&
+          trailerPreloaded && (
+            <Animated.View style={trailerContainerStyle}>
+              <Animated.View style={trailerVideoStyle}>
+                <TrailerPlayer
+                  key={`visible-${trailerUrl}`}
+                  ref={trailerVideoRef}
+                  trailerUrl={trailerUrl}
+                  autoPlay={globalTrailerPlaying}
+                  muted={trailerMuted}
+                  style={StyleSheet.absoluteFillObject}
+                  hideLoadingSpinner={true}
+                  hideControls={true}
+                  onLoad={handleTrailerReady}
+                  onError={handleTrailerError}
+                  onEnd={handleTrailerEnd}
+                  contentType={currentItem.type as 'movie' | 'series'}
+                  paused={trailerShouldBePaused}
+                />
+              </Animated.View>
+              <LinearGradient
+                colors={['transparent', currentTheme.colors.darkBackground]}
+                locations={[0, 1]}
+                style={styles.trailerGradient}
+                pointerEvents="none"
               />
             </Animated.View>
-            <LinearGradient
-              colors={['transparent', currentTheme.colors.darkBackground]}
-              locations={[0, 1]}
-              style={styles.trailerGradient}
-              pointerEvents="none"
-            />
-          </Animated.View>
-        )}
+          )}
 
         {/* Hidden preload player */}
-        {settings?.showTrailers && trailerUrl && !trailerLoading && !trailerError && !trailerPreloaded && (
-          <View style={[StyleSheet.absoluteFillObject, { opacity: 0, pointerEvents: 'none' }]}>
-            <TrailerPlayer
-              key={`preload-${trailerUrl}`}
-              trailerUrl={trailerUrl}
-              autoPlay={false}
-              muted={true}
-              style={StyleSheet.absoluteFillObject}
-              hideLoadingSpinner={true}
-              onLoad={handleTrailerPreloaded}
-              onError={handleTrailerError}
-              contentType={currentItem.type as 'movie' | 'series'}
-              paused={true}
-            />
-          </View>
-        )}
+        {settings?.showTrailers &&
+          trailerUrl &&
+          !trailerLoading &&
+          !trailerError &&
+          !trailerPreloaded && (
+            <View style={[StyleSheet.absoluteFillObject, { opacity: 0, pointerEvents: 'none' }]}>
+              <TrailerPlayer
+                key={`preload-${trailerUrl}`}
+                trailerUrl={trailerUrl}
+                autoPlay={false}
+                muted={true}
+                style={StyleSheet.absoluteFillObject}
+                hideLoadingSpinner={true}
+                onLoad={handleTrailerPreloaded}
+                onError={handleTrailerError}
+                contentType={currentItem.type as 'movie' | 'series'}
+                paused={true}
+              />
+            </View>
+          )}
 
         {/* Gradient Overlay */}
         <LinearGradient
@@ -837,11 +868,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             }}
             accessibilityLabel={trailerMuted ? 'Unmute trailer' : 'Mute trailer'}
           >
-            <Entypo
-              name={trailerMuted ? 'sound-mute' : 'sound'}
-              size={24}
-              color="white"
-            />
+            <Entypo name={trailerMuted ? 'sound-mute' : 'sound'} size={24} color="white" />
           </Focusable>
         </View>
       )}
@@ -856,8 +883,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                 source={{ uri: currentItem.logo }}
                 style={styles.logo}
                 resizeMode={FastImage.resizeMode.contain}
-                onLoad={() => setLogoLoaded((prev) => ({ ...prev, [currentIndex]: true }))}
-                onError={() => setLogoError((prev) => ({ ...prev, [currentIndex]: true }))}
+                onLoad={() => setLogoLoaded(prev => ({ ...prev, [currentIndex]: true }))}
+                onError={() => setLogoError(prev => ({ ...prev, [currentIndex]: true }))}
               />
             </View>
           ) : (
@@ -903,15 +930,19 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               focusBorderWidth: 3,
             }}
             nextFocus={{
-              nextFocusUp: heroRef.current ? findNodeHandle(heroRef.current) ?? undefined : undefined,
-              nextFocusRight: saveButtonRef.current ? findNodeHandle(saveButtonRef.current) ?? undefined : undefined,
+              nextFocusUp: heroRef.current
+                ? (findNodeHandle(heroRef.current) ?? undefined)
+                : undefined,
+              nextFocusRight: saveButtonRef.current
+                ? (findNodeHandle(saveButtonRef.current) ?? undefined)
+                : undefined,
               nextFocusDown: nextFocusDownHandle,
             }}
             accessibilityLabel={playButtonText === 'Resume' ? 'Resume playback' : 'Play'}
             accessibilityHint="Starts playing the content"
           >
             <MaterialIcons
-              name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+              name={playButtonText === 'Resume' ? 'replay' : 'play-arrow'}
               size={28}
               color="#000"
             />
@@ -934,15 +965,19 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               focusBorderWidth: 2,
             }}
             nextFocus={{
-              nextFocusUp: heroRef.current ? findNodeHandle(heroRef.current) ?? undefined : undefined,
-              nextFocusLeft: playButtonRef.current ? findNodeHandle(playButtonRef.current) ?? undefined : undefined,
+              nextFocusUp: heroRef.current
+                ? (findNodeHandle(heroRef.current) ?? undefined)
+                : undefined,
+              nextFocusLeft: playButtonRef.current
+                ? (findNodeHandle(playButtonRef.current) ?? undefined)
+                : undefined,
               nextFocusDown: nextFocusDownHandle,
             }}
             accessibilityLabel={inLibrary ? 'Remove from library' : 'Add to library'}
             accessibilityHint="Toggles the item in your library"
           >
             <MaterialIcons
-              name={inLibrary ? "bookmark" : "bookmark-outline"}
+              name={inLibrary ? 'bookmark' : 'bookmark-outline'}
               size={28}
               color="white"
             />

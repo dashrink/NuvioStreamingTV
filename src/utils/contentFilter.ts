@@ -15,34 +15,34 @@ import {
 // Common rating aliases and mappings
 const RATING_ALIASES: Record<string, AgeRating> = {
   // Movie ratings
-  'g': 'G',
-  'pg': 'PG',
+  g: 'G',
+  pg: 'PG',
   'pg-13': 'PG-13',
-  'pg13': 'PG-13',
-  'r': 'R',
+  pg13: 'PG-13',
+  r: 'R',
   'nc-17': 'NC-17',
-  'nc17': 'NC-17',
-  'x': 'NC-17',
+  nc17: 'NC-17',
+  x: 'NC-17',
   // TV ratings
   'tv-y': 'TV-Y',
-  'tvy': 'TV-Y',
+  tvy: 'TV-Y',
   'tv-y7': 'TV-Y7',
-  'tvy7': 'TV-Y7',
+  tvy7: 'TV-Y7',
   'tv-g': 'TV-G',
-  'tvg': 'TV-G',
+  tvg: 'TV-G',
   'tv-pg': 'TV-PG',
-  'tvpg': 'TV-PG',
+  tvpg: 'TV-PG',
   'tv-14': 'TV-14',
-  'tv14': 'TV-14',
+  tv14: 'TV-14',
   'tv-ma': 'TV-MA',
-  'tvma': 'TV-MA',
+  tvma: 'TV-MA',
   // Unrated
-  'nr': 'NR',
-  'unrated': 'UNRATED',
+  nr: 'NR',
+  unrated: 'UNRATED',
   'not rated': 'NR',
   'not-rated': 'NR',
   // International ratings (common mappings)
-  'u': 'G', // UK
+  u: 'G', // UK
   '12': 'PG-13',
   '12a': 'PG-13', // UK
   '15': 'R', // UK
@@ -136,7 +136,7 @@ export function filterContentForProfile<T extends { certification?: string; rati
   const maxLevel = AGE_RATING_LEVELS[profile.maxAgeRating];
   const isKids = isKidsProfile(profile);
 
-  return content.filter((item) => {
+  return content.filter(item => {
     const rating = item.certification || item.rating;
     const normalizedRating = normalizeRating(rating);
 
@@ -238,14 +238,14 @@ export function createContentFilter<T extends { certification?: string; rating?:
   profile: Profile | null
 ): (content: T[]) => T[] {
   if (!profile) {
-    return (content) => content;
+    return content => content;
   }
 
   const maxLevel = AGE_RATING_LEVELS[profile.maxAgeRating];
   const isKids = isKidsProfile(profile);
 
   return (content: T[]) => {
-    return content.filter((item) => {
+    return content.filter(item => {
       const rating = item.certification || item.rating;
       const normalizedRating = normalizeRating(rating);
 

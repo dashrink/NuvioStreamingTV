@@ -1,30 +1,13 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
+import axios from 'axios';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, StatusBar, StyleSheet, Animated, Dimensions } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import axios from 'axios';
 
 // Shared Components
-import LoadingOverlay from './modals/LoadingOverlay';
 import UpNextButton from './common/UpNextButton';
-import { PlayerControls } from './controls/PlayerControls';
-import AudioTrackModal from './modals/AudioTrackModal';
-import SpeedModal from './modals/SpeedModal';
-import SubtitleModals from './modals/SubtitleModals';
-import { SubtitleSyncModal } from './modals/SubtitleSyncModal';
-import SourcesModal from './modals/SourcesModal';
-import EpisodesModal from './modals/EpisodesModal';
-import { EpisodeStreamsModal } from './modals/EpisodeStreamsModal';
-import { ErrorModal } from './modals/ErrorModal';
-import CustomSubtitles from './subtitles/CustomSubtitles';
-import ResumeOverlay from './modals/ResumeOverlay';
-import ParentalGuideOverlay from './overlays/ParentalGuideOverlay';
-import SkipIntroButton from './overlays/SkipIntroButton';
 import { SpeedActivatedOverlay, PauseOverlay, GestureControls } from './components';
-
-// Platform-specific components
-import { KSPlayerSurface } from './ios/components/KSPlayerSurface';
-
+import { PlayerControls } from './controls/PlayerControls';
 import {
   usePlayerState,
   usePlayerModals,
@@ -35,8 +18,24 @@ import {
   usePlayerControls,
   usePlayerSetup,
   useWatchProgress,
-  useNextEpisode
+  useNextEpisode,
 } from './hooks';
+import { KSPlayerSurface } from './ios/components/KSPlayerSurface';
+import AudioTrackModal from './modals/AudioTrackModal';
+import EpisodesModal from './modals/EpisodesModal';
+import { EpisodeStreamsModal } from './modals/EpisodeStreamsModal';
+import { ErrorModal } from './modals/ErrorModal';
+import LoadingOverlay from './modals/LoadingOverlay';
+import ResumeOverlay from './modals/ResumeOverlay';
+import SourcesModal from './modals/SourcesModal';
+import SpeedModal from './modals/SpeedModal';
+import SubtitleModals from './modals/SubtitleModals';
+import { SubtitleSyncModal } from './modals/SubtitleSyncModal';
+import ParentalGuideOverlay from './overlays/ParentalGuideOverlay';
+import SkipIntroButton from './overlays/SkipIntroButton';
+import CustomSubtitles from './subtitles/CustomSubtitles';
+
+// Platform-specific components
 
 // Speed settings storage key
 const SPEED_SETTINGS_KEY = '@nuvio_speed_settings';
@@ -45,20 +44,25 @@ const SPEED_SETTINGS_KEY = '@nuvio_speed_settings';
 import { useKSPlayer } from './ios/hooks/useKSPlayer';
 
 // App-level Hooks
-import { useTraktAutosync } from '../../hooks/useTraktAutosync';
+import { WyzieSubtitle } from './utils/playerTypes';
+import { formatTime } from './utils/playerUtils';
+import { parseSRT } from './utils/subtitleParser';
+import {
+  findBestSubtitleTrack,
+  autoSelectAudioTrack,
+  findBestAudioTrack,
+} from './utils/trackSelectionUtils';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useMetadata } from '../../hooks/useMetadata';
 import { usePlayerGestureControls } from '../../hooks/usePlayerGestureControls';
+import { useSettings } from '../../hooks/useSettings';
+import { useTraktAutosync } from '../../hooks/useTraktAutosync';
 import stremioService from '../../services/stremioService';
 import { logger } from '../../utils/logger';
-import { useSettings } from '../../hooks/useSettings';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import * as Brightness from 'expo-brightness';
 
 // Utils
-import { formatTime } from './utils/playerUtils';
-import { WyzieSubtitle } from './utils/playerTypes';
-import { parseSRT } from './utils/subtitleParser';
-import { findBestSubtitleTrack, autoSelectAudioTrack, findBestAudioTrack } from './utils/trackSelectionUtils';
 
 // Player route params interface
 interface PlayerRouteParams {
@@ -90,27 +94,52 @@ const KSPlayerCore: React.FC = () => {
 
   // Deconstruct params
   const {
-    uri, title, episodeTitle, season, episode, id, type, quality, year,
-    episodeId, imdbId, backdrop, availableStreams,
-    headers, streamProvider, streamName,
-    initialPosition: routeInitialPosition
+    uri,
+    title,
+    episodeTitle,
+    season,
+    episode,
+    id,
+    type,
+    quality,
+    year,
+    episodeId,
+    imdbId,
+    backdrop,
+    availableStreams,
+    headers,
+    streamProvider,
+    streamName,
+    initialPosition: routeInitialPosition,
   } = params;
 
   // --- Hooks ---
   const playerState = usePlayerState();
   const {
-    paused, setPaused,
-    currentTime, setCurrentTime,
-    duration, setDuration,
-    buffered, setBuffered,
-    isBuffering, setIsBuffering,
-    isVideoLoaded, setIsVideoLoaded,
-    isPlayerReady, setIsPlayerReady,
-    showControls, setShowControls,
-    resizeMode, setResizeMode,
-    screenDimensions, setScreenDimensions,
-    zoomScale, setZoomScale,
-    lastZoomScale, setLastZoomScale,
+    paused,
+    setPaused,
+    currentTime,
+    setCurrentTime,
+    duration,
+    setDuration,
+    buffered,
+    setBuffered,
+    isBuffering,
+    setIsBuffering,
+    isVideoLoaded,
+    setIsVideoLoaded,
+    isPlayerReady,
+    setIsPlayerReady,
+    showControls,
+    setShowControls,
+    resizeMode,
+    setResizeMode,
+    screenDimensions,
+    setScreenDimensions,
+    zoomScale,
+    setZoomScale,
+    lastZoomScale,
+    setLastZoomScale,
     isAirPlayActive,
     allowsAirPlay,
     isSeeking,
@@ -131,7 +160,7 @@ const KSPlayerCore: React.FC = () => {
     episode,
     title,
     id,
-    year: year?.toString() || metadata?.year?.toString() || ''
+    year: year?.toString() || metadata?.year?.toString() || '',
   });
 
   const openingAnim = useOpeningAnimation(backdrop, metadata);
@@ -156,8 +185,10 @@ const KSPlayerCore: React.FC = () => {
     const previousVideo = previousVideoRef.current;
 
     // Only reset if this is actually a new video (uri or episodeId changed)
-    if (previousVideo.uri !== undefined &&
-      (previousVideo.uri !== currentVideo.uri || previousVideo.episodeId !== currentVideo.episodeId)) {
+    if (
+      previousVideo.uri !== undefined &&
+      (previousVideo.uri !== currentVideo.uri || previousVideo.episodeId !== currentVideo.episodeId)
+    ) {
       customSubs.setSubtitleOffsetSec(0);
     }
 
@@ -172,7 +203,7 @@ const KSPlayerCore: React.FC = () => {
     season,
     episode,
     groupedEpisodes: groupedEpisodes as any,
-    episodeId
+    episodeId,
   });
 
   const controls = usePlayerControls({
@@ -182,11 +213,13 @@ const KSPlayerCore: React.FC = () => {
     currentTime,
     duration,
     isSeeking,
-    isMounted
+    isMounted,
   });
 
   const watchProgress = useWatchProgress(
-    id, type, episodeId,
+    id,
+    type,
+    episodeId,
     currentTime,
     duration,
     paused,
@@ -216,10 +249,10 @@ const KSPlayerCore: React.FC = () => {
 
   // Shared Gesture Hook
   const gestureControls = usePlayerGestureControls({
-    volume: volume,
-    setVolume: (v) => setVolumeState(v),
-    brightness: brightness,
-    setBrightness: (b) => setBrightnessState(b),
+    volume,
+    setVolume: v => setVolumeState(v),
+    brightness,
+    setBrightness: b => setBrightnessState(b),
   });
 
   // Setup Hook (Listeners, StatusBar, etc)
@@ -228,7 +261,7 @@ const KSPlayerCore: React.FC = () => {
     setVolume: setVolumeState,
     setBrightness: setBrightnessState,
     isOpeningAnimationComplete: openingAnim.isOpeningAnimationComplete,
-    paused: paused
+    paused,
   });
 
   // Refs for Logic
@@ -285,7 +318,10 @@ const KSPlayerCore: React.FC = () => {
     customSubs.setIsLoadingSubtitleList(true);
     try {
       const stremioType = type === 'series' ? 'series' : 'movie';
-      const stremioVideoId = stremioType === 'series' && season && episode ? `series:${targetImdbId}:${season}:${episode}` : undefined;
+      const stremioVideoId =
+        stremioType === 'series' && season && episode
+          ? `series:${targetImdbId}:${season}:${episode}`
+          : undefined;
       const results = await stremioService.getSubtitles(stremioType, targetImdbId, stremioVideoId);
 
       const subs: WyzieSubtitle[] = (results || []).map((sub: any) => ({
@@ -332,7 +368,6 @@ const KSPlayerCore: React.FC = () => {
       const adjustedTime = currentTime + (customSubs.subtitleOffsetSec || 0);
       const cueNow = parsedCues.find(cue => adjustedTime >= cue.start && adjustedTime <= cue.end);
       customSubs.setCurrentSubtitle(cueNow ? cueNow.text : '');
-
     } catch (e) {
       logger.error('[VideoPlayer] Error loading wyzie', e);
     } finally {
@@ -361,23 +396,26 @@ const KSPlayerCore: React.FC = () => {
     const timeoutId = setTimeout(() => {
       if (hasAutoSelectedTracks.current) return;
 
-      const subtitleSelection = findBestSubtitleTrack(
-        internalTracks,
-        externalSubs,
-        {
-          preferredSubtitleLanguage: settings?.preferredSubtitleLanguage || 'en',
-          subtitleSourcePreference: settings?.subtitleSourcePreference || 'internal',
-          enableSubtitleAutoSelect: true
-        }
-      );
+      const subtitleSelection = findBestSubtitleTrack(internalTracks, externalSubs, {
+        preferredSubtitleLanguage: settings?.preferredSubtitleLanguage || 'en',
+        subtitleSourcePreference: settings?.subtitleSourcePreference || 'internal',
+        enableSubtitleAutoSelect: true,
+      });
 
       // Trust the findBestSubtitleTrack function's decision - it already implements priority logic
-      if (subtitleSelection.type === 'internal' && subtitleSelection.internalTrackId !== undefined) {
-        logger.debug(`[KSPlayerCore] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId}`);
+      if (
+        subtitleSelection.type === 'internal' &&
+        subtitleSelection.internalTrackId !== undefined
+      ) {
+        logger.debug(
+          `[KSPlayerCore] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId}`
+        );
         tracks.selectTextTrack(subtitleSelection.internalTrackId);
         hasAutoSelectedTracks.current = true;
       } else if (subtitleSelection.type === 'external' && subtitleSelection.externalSubtitle) {
-        logger.debug(`[KSPlayerCore] Auto-selecting external subtitle: ${subtitleSelection.externalSubtitle.display}`);
+        logger.debug(
+          `[KSPlayerCore] Auto-selecting external subtitle: ${subtitleSelection.externalSubtitle.display}`
+        );
         loadWyzieSubtitle(subtitleSelection.externalSubtitle);
         hasAutoSelectedTracks.current = true;
       }
@@ -399,7 +437,13 @@ const KSPlayerCore: React.FC = () => {
     if (newText !== customSubs.currentSubtitle) {
       customSubs.setCurrentSubtitle(newText);
     }
-  }, [currentTime, customSubs.useCustomSubtitles, customSubs.customSubtitles, customSubs.subtitleOffsetSec, customSubs.currentSubtitle]);
+  }, [
+    currentTime,
+    customSubs.useCustomSubtitles,
+    customSubs.customSubtitles,
+    customSubs.subtitleOffsetSec,
+    customSubs.currentSubtitle,
+  ]);
 
   // Handlers
   const onLoad = (data: any) => {
@@ -415,7 +459,9 @@ const KSPlayerCore: React.FC = () => {
     if (data.audioTracks && data.audioTracks.length > 0 && settings?.preferredAudioLanguage) {
       const bestAudioTrack = findBestAudioTrack(data.audioTracks, settings.preferredAudioLanguage);
       if (bestAudioTrack !== null) {
-        logger.debug(`[KSPlayerCore] Auto-selecting audio track ${bestAudioTrack} for language: ${settings.preferredAudioLanguage}`);
+        logger.debug(
+          `[KSPlayerCore] Auto-selecting audio track ${bestAudioTrack} for language: ${settings.preferredAudioLanguage}`
+        );
         tracks.selectAudioTrack(bestAudioTrack);
         if (ksPlayerRef.current) {
           ksPlayerRef.current.setAudioTrack(bestAudioTrack);
@@ -426,7 +472,12 @@ const KSPlayerCore: React.FC = () => {
     // Auto-select subtitle track based on preferences
     // Only auto-select internal tracks here if preference is 'internal' or 'any'
     // If preference is 'external', we wait for the useEffect to handle selection after external subs load
-    if (data.textTracks && data.textTracks.length > 0 && !hasAutoSelectedTracks.current && settings?.enableSubtitleAutoSelect) {
+    if (
+      data.textTracks &&
+      data.textTracks.length > 0 &&
+      !hasAutoSelectedTracks.current &&
+      settings?.enableSubtitleAutoSelect
+    ) {
       const sourcePreference = settings?.subtitleSourcePreference || 'internal';
 
       // Only pre-select internal if preference is internal or any
@@ -437,12 +488,17 @@ const KSPlayerCore: React.FC = () => {
           {
             preferredSubtitleLanguage: settings?.preferredSubtitleLanguage || 'en',
             subtitleSourcePreference: sourcePreference,
-            enableSubtitleAutoSelect: true
+            enableSubtitleAutoSelect: true,
           }
         );
 
-        if (subtitleSelection.type === 'internal' && subtitleSelection.internalTrackId !== undefined) {
-          logger.debug(`[KSPlayerCore] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId} on load`);
+        if (
+          subtitleSelection.type === 'internal' &&
+          subtitleSelection.internalTrackId !== undefined
+        ) {
+          logger.debug(
+            `[KSPlayerCore] Auto-selecting internal subtitle track ${subtitleSelection.internalTrackId} on load`
+          );
           tracks.selectTextTrack(subtitleSelection.internalTrackId);
           hasAutoSelectedTracks.current = true;
         }
@@ -451,7 +507,10 @@ const KSPlayerCore: React.FC = () => {
     }
 
     // Initial Seek
-    const resumeTarget = routeInitialPosition || watchProgress.initialPosition || watchProgress.initialSeekTargetRef?.current;
+    const resumeTarget =
+      routeInitialPosition ||
+      watchProgress.initialPosition ||
+      watchProgress.initialSeekTargetRef?.current;
     if (resumeTarget && resumeTarget > 0 && !watchProgress.showResumeOverlay && data.duration > 0) {
       setTimeout(() => {
         if (ksPlayerRef.current) {
@@ -503,25 +562,31 @@ const KSPlayerCore: React.FC = () => {
   }, [navigation, currentTime, duration, traktAutosync]);
 
   // Track selection handlers - update state, prop change triggers native update
-  const handleSelectTextTrack = useCallback((trackId: number) => {
-    console.log('[KSPlayerCore] handleSelectTextTrack called with trackId:', trackId);
+  const handleSelectTextTrack = useCallback(
+    (trackId: number) => {
+      console.log('[KSPlayerCore] handleSelectTextTrack called with trackId:', trackId);
 
-    // Disable custom subtitles when selecting a built-in track
-    // This ensures the textTrack prop is actually passed to the native player
-    if (trackId !== -1) {
-      customSubs.setUseCustomSubtitles(false);
-    }
+      // Disable custom subtitles when selecting a built-in track
+      // This ensures the textTrack prop is actually passed to the native player
+      if (trackId !== -1) {
+        customSubs.setUseCustomSubtitles(false);
+      }
 
-    // Just update state - the textTrack prop change will trigger native update
-    tracks.selectTextTrack(trackId);
-  }, [tracks, customSubs]);
+      // Just update state - the textTrack prop change will trigger native update
+      tracks.selectTextTrack(trackId);
+    },
+    [tracks, customSubs]
+  );
 
-  const handleSelectAudioTrack = useCallback((trackId: number) => {
-    tracks.selectAudioTrack(trackId);
-    if (ksPlayerRef.current) {
-      ksPlayerRef.current.setAudioTrack(trackId);
-    }
-  }, [tracks, ksPlayerRef]);
+  const handleSelectAudioTrack = useCallback(
+    (trackId: number) => {
+      tracks.selectAudioTrack(trackId);
+      if (ksPlayerRef.current) {
+        ksPlayerRef.current.setAudioTrack(trackId);
+      }
+    },
+    [tracks, ksPlayerRef]
+  );
 
   // Stream selection handler
   const handleSelectStream = async (newStream: any) => {
@@ -544,7 +609,7 @@ const KSPlayerCore: React.FC = () => {
         streamProvider: newProvider,
         streamName: newStreamName,
         headers: newStream.headers,
-        availableStreams: availableStreams
+        availableStreams,
       });
     }, 100);
   };
@@ -563,19 +628,19 @@ const KSPlayerCore: React.FC = () => {
     setPaused(true);
     const ep = modals.selectedEpisodeForStreams;
 
-    const newQuality = stream.quality || (stream.title?.match(/(\d+)p/)?.[0]);
+    const newQuality = stream.quality || stream.title?.match(/(\d+)p/)?.[0];
     const newProvider = stream.addonName || stream.name || stream.addon || 'Unknown';
     const newStreamName = stream.name || stream.title || 'Unknown Stream';
 
     setTimeout(() => {
       (navigation as any).replace('PlayerIOS', {
         uri: stream.url,
-        title: title,
+        title,
         episodeTitle: ep.name,
         season: ep.season_number,
         episode: ep.episode_number,
         quality: newQuality,
-        year: year,
+        year,
         streamProvider: newProvider,
         streamName: newStreamName,
         headers: stream.headers || undefined,
@@ -634,10 +699,10 @@ const KSPlayerCore: React.FC = () => {
         setLastZoomScale={setLastZoomScale}
         audioTrack={tracks.selectedAudioTrack ?? undefined}
         textTrack={customSubs.useCustomSubtitles ? -1 : tracks.selectedTextTrack}
-        onAudioTracks={(d) => tracks.setKsAudioTracks(d.audioTracks || [])}
-        onTextTracks={(d) => tracks.setKsTextTracks(d.textTracks || [])}
+        onAudioTracks={d => tracks.setKsAudioTracks(d.audioTracks || [])}
+        onTextTracks={d => tracks.setKsTextTracks(d.textTracks || [])}
         onLoad={onLoad}
-        onProgress={(d) => {
+        onProgress={d => {
           if (!isSliderDragging) {
             setCurrentTime(d.currentTime);
           }
@@ -660,7 +725,11 @@ const KSPlayerCore: React.FC = () => {
         screenHeight={screenDimensions.height}
         customVideoStyles={{ width: '100%', height: '100%' }}
         subtitleTextColor={customSubs.subtitleTextColor}
-        subtitleBackgroundColor={customSubs.subtitleBackground ? `rgba(0,0,0,${customSubs.subtitleBgOpacity})` : 'transparent'}
+        subtitleBackgroundColor={
+          customSubs.subtitleBackground
+            ? `rgba(0,0,0,${customSubs.subtitleBgOpacity})`
+            : 'transparent'
+        }
         subtitleFontSize={customSubs.subtitleSize}
         subtitleBottomOffset={customSubs.subtitleBottomOffset}
       />
@@ -693,7 +762,7 @@ const KSPlayerCore: React.FC = () => {
         gestureControls={gestureControls}
         onLongPressActivated={speedControl.activateSpeedBoost}
         onLongPressEnd={speedControl.deactivateSpeedBoost}
-        onLongPressStateChange={() => { }}
+        onLongPressStateChange={() => {}}
         toggleControls={toggleControls}
         showControls={showControls}
         hideControls={hideControls}
@@ -727,8 +796,12 @@ const KSPlayerCore: React.FC = () => {
             togglePlayback={controls.togglePlayback}
             skip={controls.skip}
             handleClose={handleClose}
-            cycleAspectRatio={() => setResizeMode(prev => prev === 'cover' ? 'contain' : 'cover')}
-            cyclePlaybackSpeed={() => speedControl.setPlaybackSpeed(speedControl.playbackSpeed >= 2 ? 1 : speedControl.playbackSpeed + 0.25)}
+            cycleAspectRatio={() => setResizeMode(prev => (prev === 'cover' ? 'contain' : 'cover'))}
+            cyclePlaybackSpeed={() =>
+              speedControl.setPlaybackSpeed(
+                speedControl.playbackSpeed >= 2 ? 1 : speedControl.playbackSpeed + 0.25
+              )
+            }
             currentPlaybackSpeed={speedControl.playbackSpeed}
             setShowAudioModal={modals.setShowAudioModal}
             setShowSubtitleModal={modals.setShowSubtitleModal}
@@ -805,7 +878,7 @@ const KSPlayerCore: React.FC = () => {
         season={season}
         episode={episode}
         currentTime={currentTime}
-        onSkip={(endTime) => controls.seekToTime(endTime)}
+        onSkip={endTime => controls.seekToTime(endTime)}
         controlsVisible={showControls}
         controlsFixedOffset={126}
       />
@@ -823,7 +896,9 @@ const KSPlayerCore: React.FC = () => {
         nextLoadingTitle={null}
         onPress={() => {
           if (nextEpisode) {
-            logger.log(`[KSPlayerCore] Opening streams for next episode: S${nextEpisode.season_number}E${nextEpisode.episode_number}`);
+            logger.log(
+              `[KSPlayerCore] Opening streams for next episode: S${nextEpisode.season_number}E${nextEpisode.episode_number}`
+            );
             modals.setSelectedEpisodeForStreams(nextEpisode);
             modals.setShowEpisodeStreamsModal(true);
           }
@@ -915,7 +990,7 @@ const KSPlayerCore: React.FC = () => {
       <SubtitleSyncModal
         visible={showSyncModal}
         onClose={() => setShowSyncModal(false)}
-        onConfirm={(offset) => customSubs.setSubtitleOffsetSec(offset)}
+        onConfirm={offset => customSubs.setSubtitleOffsetSec(offset)}
         currentOffset={customSubs.subtitleOffsetSec}
         currentTime={currentTime}
         subtitles={customSubs.customSubtitles}
@@ -936,7 +1011,7 @@ const KSPlayerCore: React.FC = () => {
           setShowEpisodesModal={modals.setShowEpisodesModal}
           groupedEpisodes={groupedEpisodes}
           currentEpisode={{ season: season || 1, episode: episode || 1 }}
-          metadata={{ poster: metadata?.poster, id: id }}
+          metadata={{ poster: metadata?.poster, id }}
           onSelectEpisode={handleSelectEpisode}
         />
       )}
@@ -946,93 +1021,123 @@ const KSPlayerCore: React.FC = () => {
         visible={showErrorModal}
         transparent
         animationType="fade"
-        supportedOrientations={["landscape", "landscape-left", "landscape-right", "portrait"]}
+        supportedOrientations={['landscape', 'landscape-left', 'landscape-right', 'portrait']}
         onRequestClose={handleErrorExit}
       >
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0,0,0,0.8)'
-        }}>
-          <View style={{
-            backgroundColor: '#1a1a1a',
-            borderRadius: 14,
-            width: '85%',
-            maxHeight: '70%',
-            padding: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.25,
-            shadowRadius: 8,
-            elevation: 5,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 16
-            }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.8)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: '#1a1a1a',
+              borderRadius: 14,
+              width: '85%',
+              maxHeight: '70%',
+              padding: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 16,
+              }}
+            >
               <MaterialIcons name="error" size={24} color="#ff4444" style={{ marginRight: 8 }} />
-              <Text style={{
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: '#ffffff',
-                flex: 1
-              }}>Playback Error</Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#ffffff',
+                  flex: 1,
+                }}
+              >
+                Playback Error
+              </Text>
               <Focusable onPress={handleErrorExit}>
                 <MaterialIcons name="close" size={24} color="#ffffff" />
               </Focusable>
             </View>
 
-            <Text style={{
-              fontSize: 14,
-              color: '#cccccc',
-              marginBottom: 16,
-              lineHeight: 20
-            }}>The video player encountered an error and cannot continue playback:</Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#cccccc',
+                marginBottom: 16,
+                lineHeight: 20,
+              }}
+            >
+              The video player encountered an error and cannot continue playback:
+            </Text>
 
-            <View style={{
-              backgroundColor: '#2a2a2a',
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 20,
-              maxHeight: 200
-            }}>
-              <Text style={{
-                fontSize: 12,
-                color: '#ff8888',
-                fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace'
-              }}>{errorDetails}</Text>
+            <View
+              style={{
+                backgroundColor: '#2a2a2a',
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 20,
+                maxHeight: 200,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: '#ff8888',
+                  fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+                }}
+              >
+                {errorDetails}
+              </Text>
             </View>
 
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end'
-            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+              }}
+            >
               <Focusable
                 style={{
                   backgroundColor: '#ff4444',
                   borderRadius: 8,
                   paddingVertical: 10,
-                  paddingHorizontal: 20
+                  paddingHorizontal: 20,
                 }}
                 onPress={handleErrorExit}
                 hasTVPreferredFocus={Platform.isTV}
               >
-                <Text style={{
-                  color: '#ffffff',
-                  fontWeight: '600',
-                  fontSize: 16
-                }}>Exit Player</Text>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    fontWeight: '600',
+                    fontSize: 16,
+                  }}
+                >
+                  Exit Player
+                </Text>
               </Focusable>
             </View>
 
-            <Text style={{
-              fontSize: 12,
-              color: '#888888',
-              textAlign: 'center',
-              marginTop: 12
-            }}>This dialog will auto-close in 5 seconds</Text>
+            <Text
+              style={{
+                fontSize: 12,
+                color: '#888888',
+                textAlign: 'center',
+                marginTop: 12,
+              }}
+            >
+              This dialog will auto-close in 5 seconds
+            </Text>
           </View>
         </View>
       </Modal>
@@ -1042,7 +1147,7 @@ const KSPlayerCore: React.FC = () => {
         onClose={() => modals.setShowEpisodeStreamsModal(false)}
         episode={modals.selectedEpisodeForStreams}
         onSelectStream={handleEpisodeStreamSelect}
-        metadata={{ id: id, name: title }}
+        metadata={{ id, name: title }}
       />
     </View>
   );

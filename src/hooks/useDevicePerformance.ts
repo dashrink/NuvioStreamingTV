@@ -254,7 +254,7 @@ export function subscribeToPerformanceChanges(callback: PerformanceSubscriber): 
  * Notify all subscribers of a tier change
  */
 function notifySubscribers(tier: PerformanceTier): void {
-  subscribers.forEach((callback) => callback(tier));
+  subscribers.forEach(callback => callback(tier));
 }
 
 /**
@@ -344,7 +344,8 @@ async function getDeviceMetrics(): Promise<DeviceMetrics> {
     try {
       const deviceInfo = NativeModules.DeviceInfo || NativeModules.RNDeviceInfo;
       if (deviceInfo) {
-        metrics.deviceModel = deviceInfo.deviceName?.toLowerCase() || deviceInfo.model?.toLowerCase();
+        metrics.deviceModel =
+          deviceInfo.deviceName?.toLowerCase() || deviceInfo.model?.toLowerCase();
       }
     } catch {
       // Fallback - assume high performance for Apple TV
@@ -375,11 +376,11 @@ function detectPerformanceTier(metrics: DeviceMetrics): PerformanceTier {
 
   // Check against known device patterns
   const isKnownLowEnd = LOW_END_DEVICE_PATTERNS.some(
-    (pattern) => combinedName.includes(pattern) || deviceModel.includes(pattern)
+    pattern => combinedName.includes(pattern) || deviceModel.includes(pattern)
   );
 
   const isKnownHighEnd = HIGH_END_DEVICE_PATTERNS.some(
-    (pattern) => combinedName.includes(pattern) || deviceModel.includes(pattern)
+    pattern => combinedName.includes(pattern) || deviceModel.includes(pattern)
   );
 
   // Known device check takes priority
@@ -463,7 +464,7 @@ export function useDevicePerformance(): UseDevicePerformanceReturn {
 
   // Subscribe to performance tier changes
   useEffect(() => {
-    const unsubscribe = subscribeToPerformanceChanges((tier) => {
+    const unsubscribe = subscribeToPerformanceChanges(tier => {
       setLocalPerformanceTier(tier);
     });
     return unsubscribe;
@@ -472,7 +473,7 @@ export function useDevicePerformance(): UseDevicePerformanceReturn {
   // Initialize performance detection if not already done
   useEffect(() => {
     if (cachedPerformanceTier === null) {
-      initializePerformanceDetection().then((tier) => {
+      initializePerformanceDetection().then(tier => {
         setLocalPerformanceTier(tier);
         setIsDetected(true);
         if (cachedDeviceMetrics) {
@@ -528,7 +529,10 @@ export function getFocusScale(baseTier?: PerformanceTier): number {
 /**
  * Get spring config based on performance tier
  */
-export function getSpringConfig(baseTier?: PerformanceTier): { damping: number; stiffness: number } {
+export function getSpringConfig(baseTier?: PerformanceTier): {
+  damping: number;
+  stiffness: number;
+} {
   const tier = baseTier ?? getPerformanceTier();
   const config = ANIMATION_CONFIGS[tier];
   return {

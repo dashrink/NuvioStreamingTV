@@ -1,14 +1,23 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, FlatList } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { CatalogContent, StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
-import ContentItem from './ContentItem';
+import React, { useCallback, useMemo, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Dimensions,
+  FlatList,
+} from 'react-native';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
-import { RootStackParamList } from '../../navigation/AppNavigator';
+
+import ContentItem from './ContentItem';
+import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { CatalogContent, StreamingContent } from '../../services/catalogService';
 
 interface CatalogSectionProps {
   catalog: CatalogContent;
@@ -66,7 +75,7 @@ const calculatePosterLayout = (screenWidth: number) => {
     numFullPosters: bestLayout.numFullPosters,
     posterWidth: bestLayout.posterWidth,
     spacing: SPACING,
-    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+    partialPosterWidth: bestLayout.posterWidth * 0.25, // 1/4 of next poster
   };
 };
 
@@ -77,36 +86,38 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
 
-  const handleContentPress = useCallback((id: string, type: string) => {
-    navigation.navigate('Metadata', { id, type, addonId: catalog.addon });
-  }, [navigation, catalog.addon]);
+  const handleContentPress = useCallback(
+    (id: string, type: string) => {
+      navigation.navigate('Metadata', { id, type, addonId: catalog.addon });
+    },
+    [navigation, catalog.addon]
+  );
 
-  const renderContentItem = useCallback(({ item }: { item: StreamingContent, index: number }) => {
-    return (
-      <ContentItem
-        item={item}
-        onPress={handleContentPress}
-      />
-    );
-  }, [handleContentPress]);
+  const renderContentItem = useCallback(
+    ({ item }: { item: StreamingContent; index: number }) => {
+      return <ContentItem item={item} onPress={handleContentPress} />;
+    },
+    [handleContentPress]
+  );
 
   // Memoize the ItemSeparatorComponent to prevent re-creation (responsive spacing)
   const separatorWidth = isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8;
-  const ItemSeparator = useCallback(() => <View style={{ width: separatorWidth }} />, [separatorWidth]);
+  const ItemSeparator = useCallback(
+    () => <View style={{ width: separatorWidth }} />,
+    [separatorWidth]
+  );
 
   // Memoize the keyExtractor to prevent re-creation
   const keyExtractor = useCallback((item: StreamingContent) => `${item.id}-${item.type}`, []);
 
-
-
   return (
-    <View
-      style={styles.catalogContainer}
-    >
-      <View style={[
-        styles.catalogHeader,
-        { paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16 }
-      ]}>
+    <View style={styles.catalogContainer}>
+      <View
+        style={[
+          styles.catalogHeader,
+          { paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16 },
+        ]}
+      >
         <View style={styles.titleContainer}>
           <Text
             style={[
@@ -114,7 +125,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
               {
                 color: currentTheme.colors.text,
                 fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 22,
-              }
+              },
             ]}
             numberOfLines={1}
           >
@@ -127,7 +138,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
                 backgroundColor: currentTheme.colors.primary,
                 width: isTV ? 64 : isLargeTablet ? 56 : isTablet ? 48 : 40,
                 height: isTV ? 4 : isLargeTablet ? 3 : 3,
-              }
+              },
             ]}
           />
         </View>
@@ -137,7 +148,7 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
             navigation.navigate('Catalog', {
               id: catalog.id,
               type: catalog.type,
-              addonId: catalog.addon
+              addonId: catalog.addon,
             });
           }}
           style={[
@@ -146,17 +157,21 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
               paddingVertical: isTV ? 10 : isLargeTablet ? 9 : isTablet ? 8 : 8,
               paddingHorizontal: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
               borderRadius: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
-            }
+            },
           ]}
         >
-          <Text style={[
-            styles.viewAllText,
-            {
-              color: currentTheme.colors.textMuted,
-              fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-              marginRight: isTV ? 6 : isLargeTablet ? 5 : 4,
-            }
-          ]}>View All</Text>
+          <Text
+            style={[
+              styles.viewAllText,
+              {
+                color: currentTheme.colors.textMuted,
+                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                marginRight: isTV ? 6 : isLargeTablet ? 5 : 4,
+              },
+            ]}
+          >
+            View All
+          </Text>
           <MaterialIcons
             name="chevron-right"
             size={isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20}
@@ -179,8 +194,10 @@ const CatalogSection = ({ catalog }: CatalogSectionProps) => {
           styles.catalogList,
           {
             paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16,
-            paddingRight: (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) - posterLayout.partialPosterWidth,
-          }
+            paddingRight:
+              (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) -
+              posterLayout.partialPosterWidth,
+          },
         ])}
         ItemSeparatorComponent={ItemSeparator}
         removeClippedSubviews={true}
@@ -219,7 +236,7 @@ const styles = StyleSheet.create({
     bottom: -2,
     left: 0,
     width: 40, // overridden responsively
-    height: 3,  // overridden responsively
+    height: 3, // overridden responsively
     borderRadius: 2,
     opacity: 0.8,
   },
@@ -249,10 +266,13 @@ export default React.memo(CatalogSection, (prevProps, nextProps) => {
     prevProps.catalog.name === nextProps.catalog.name &&
     prevProps.catalog.items.length === nextProps.catalog.items.length &&
     // Deep compare the first few items to detect changes
-    prevProps.catalog.items.slice(0, 3).every((item, index) =>
-      nextProps.catalog.items[index] &&
-      item.id === nextProps.catalog.items[index].id &&
-      item.poster === nextProps.catalog.items[index].poster
-    )
+    prevProps.catalog.items
+      .slice(0, 3)
+      .every(
+        (item, index) =>
+          nextProps.catalog.items[index] &&
+          item.id === nextProps.catalog.items[index].id &&
+          item.poster === nextProps.catalog.items[index].poster
+      )
   );
 });

@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, useWindowDimensions, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideOutRight,
-} from 'react-native-reanimated';
-import { Episode } from '../../../types/metadata';
-import { EpisodeCard } from '../cards/EpisodeCard';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+  StyleSheet,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutRight } from 'react-native-reanimated';
+
+import { triggerLight } from '../../../hooks/useHaptics';
 import { storageService } from '../../../services/storageService';
 import { TraktService } from '../../../services/traktService';
+import { Episode } from '../../../types/metadata';
 import { logger } from '../../../utils/logger';
-import { triggerLight } from '../../../hooks/useHaptics';
+import { EpisodeCard } from '../cards/EpisodeCard';
 
 interface EpisodesModalProps {
   showEpisodesModal: boolean;
@@ -31,7 +36,7 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
   currentEpisode,
   metadata,
   onSelectEpisode,
-  tmdbEpisodeOverrides
+  tmdbEpisodeOverrides,
 }) => {
   const { width } = useWindowDimensions();
   const [selectedSeason, setSelectedSeason] = useState<number>(currentEpisode?.season || 1);
@@ -46,8 +51,8 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
       mediumEmphasis: 'rgba(255,255,255,0.7)',
       primary: '#3B82F6',
       white: '#FFFFFF',
-      elevation2: 'rgba(255,255,255,0.05)'
-    }
+      elevation2: 'rgba(255,255,255,0.05)',
+    },
   };
 
   // Logic Preserved: Fetch progress from storage/Trakt
@@ -91,13 +96,26 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
 
   if (!showEpisodesModal) return null;
 
-  const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => a - b);
+  const seasons = Object.keys(groupedEpisodes)
+    .map(Number)
+    .sort((a, b) => a - b);
   const currentSeasonEpisodes = groupedEpisodes[selectedSeason] || [];
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
-      <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => { triggerLight(); setShowEpisodesModal(false); }}>
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+      <TouchableOpacity
+        style={StyleSheet.absoluteFill}
+        activeOpacity={1}
+        onPress={() => {
+          triggerLight();
+          setShowEpisodesModal(false);
+        }}
+      >
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(150)}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        />
       </TouchableOpacity>
 
       <Animated.View
@@ -115,15 +133,29 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
         }}
       >
         <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 15, paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '700' }}>Episodes</Text>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 15, gap: 8 }}>
-            {seasons.map((season) => (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 15, gap: 8 }}
+          >
+            {seasons.map(season => (
               <TouchableOpacity
                 key={season}
-                onPress={() => { triggerLight(); setSelectedSeason(season); }}
+                onPress={() => {
+                  triggerLight();
+                  setSelectedSeason(season);
+                }}
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: 8,
@@ -133,10 +165,12 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                   borderColor: selectedSeason === season ? 'white' : 'rgba(255,255,255,0.1)',
                 }}
               >
-                <Text style={{
-                  color: selectedSeason === season ? 'black' : 'white',
-                  fontWeight: selectedSeason === season ? '700' : '500'
-                }}>
+                <Text
+                  style={{
+                    color: selectedSeason === season ? 'black' : 'white',
+                    fontWeight: selectedSeason === season ? '700' : '500',
+                  }}
+                >
                   Season {season}
                 </Text>
               </TouchableOpacity>
@@ -144,12 +178,15 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
           </ScrollView>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15, paddingBottom: 40 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
+        >
           {isLoadingProgress ? (
             <ActivityIndicator color="white" style={{ marginTop: 20 }} />
           ) : (
             <View style={{ gap: 2 }}>
-              {currentSeasonEpisodes.map((episode) => (
+              {currentSeasonEpisodes.map(episode => (
                 <EpisodeCard
                   key={episode.id}
                   episode={episode}
@@ -162,7 +199,10 @@ export const EpisodesModal: React.FC<EpisodesModalProps> = ({
                     setShowEpisodesModal(false);
                   }}
                   currentTheme={currentTheme}
-                  isCurrent={currentEpisode?.season === episode.season_number && currentEpisode?.episode === episode.episode_number}
+                  isCurrent={
+                    currentEpisode?.season === episode.season_number &&
+                    currentEpisode?.episode === episode.episode_number
+                  }
                 />
               ))}
             </View>

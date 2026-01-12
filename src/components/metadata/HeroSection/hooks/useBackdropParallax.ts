@@ -33,11 +33,8 @@
  */
 
 import { useMemo } from 'react';
-import {
-  useAnimatedStyle,
-  useDerivedValue,
-  SharedValue,
-} from 'react-native-reanimated';
+import { useAnimatedStyle, useDerivedValue, SharedValue } from 'react-native-reanimated';
+
 import { BACKDROP_PARALLAX, TRAILER_PARALLAX } from '../constants';
 
 // =============================================================================
@@ -109,17 +106,9 @@ export interface UseBackdropParallaxReturn {
  * @param config - Parallax configuration
  * @returns Calculated scale value (bounded by MAX_SCALE)
  */
-export function calculateParallaxScale(
-  scrollY: number,
-  config: ParallaxConfig
-): number {
+export function calculateParallaxScale(scrollY: number, config: ParallaxConfig): number {
   'worklet';
-  const {
-    DEFAULT_ZOOM,
-    SCROLL_UP_MULTIPLIER,
-    SCROLL_DOWN_MULTIPLIER,
-    MAX_SCALE,
-  } = config;
+  const { DEFAULT_ZOOM, SCROLL_UP_MULTIPLIER, SCROLL_DOWN_MULTIPLIER, MAX_SCALE } = config;
 
   // Negative scroll (pulling down) = more aggressive zoom
   // Positive scroll (scrolling up) = subtle zoom
@@ -138,10 +127,7 @@ export function calculateParallaxScale(
  * @param parallaxFactor - Parallax movement factor (0-1)
  * @returns Calculated vertical offset
  */
-export function calculateParallaxTranslate(
-  scrollY: number,
-  parallaxFactor: number
-): number {
+export function calculateParallaxTranslate(scrollY: number, parallaxFactor: number): number {
   'worklet';
   return scrollY * parallaxFactor;
 }
@@ -177,13 +163,16 @@ export function useBackdropParallax({
    * Memoize config to prevent unnecessary recalculations
    * when parent re-renders with same config values
    */
-  const memoizedConfig = useMemo(() => config, [
-    config.DEFAULT_ZOOM,
-    config.SCROLL_UP_MULTIPLIER,
-    config.SCROLL_DOWN_MULTIPLIER,
-    config.MAX_SCALE,
-    config.PARALLAX_FACTOR,
-  ]);
+  const memoizedConfig = useMemo(
+    () => config,
+    [
+      config.DEFAULT_ZOOM,
+      config.SCROLL_UP_MULTIPLIER,
+      config.SCROLL_DOWN_MULTIPLIER,
+      config.MAX_SCALE,
+      config.PARALLAX_FACTOR,
+    ]
+  );
 
   // ---------------------------------------------------------------------------
   // Derived Parallax Values
@@ -200,10 +189,7 @@ export function useBackdropParallax({
     'worklet';
     const scrollYValue = scrollY.value;
     const scale = calculateParallaxScale(scrollYValue, memoizedConfig);
-    const translateY = calculateParallaxTranslate(
-      scrollYValue,
-      memoizedConfig.PARALLAX_FACTOR
-    );
+    const translateY = calculateParallaxTranslate(scrollYValue, memoizedConfig.PARALLAX_FACTOR);
 
     return { scale, translateY };
   }, [scrollY, memoizedConfig]);
@@ -227,10 +213,7 @@ export function useBackdropParallax({
     const { scale, translateY } = parallaxValues.value;
 
     return {
-      transform: [
-        { scale },
-        { translateY },
-      ],
+      transform: [{ scale }, { translateY }],
     };
   }, [parallaxValues]);
 
@@ -261,10 +244,7 @@ export function useBackdropParallax({
 
     return {
       opacity: combinedOpacity,
-      transform: [
-        { scale },
-        { translateY },
-      ],
+      transform: [{ scale }, { translateY }],
     };
   }, [parallaxValues, imageOpacity, imageLoadOpacity]);
 
@@ -336,9 +316,7 @@ export function useBackdropImageParallax(
  * return <Animated.View style={parallaxStyle}><Video .../></Animated.View>;
  * ```
  */
-export function useTrailerLayerParallax(
-  scrollY: SharedValue<number>
-): UseBackdropParallaxReturn {
+export function useTrailerLayerParallax(scrollY: SharedValue<number>): UseBackdropParallaxReturn {
   return useBackdropParallax({
     scrollY,
     config: TRAILER_PARALLAX,

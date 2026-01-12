@@ -1,3 +1,3 @@
 // Export all styles
 export * from './colors';
-export * from './focusStyles'; 
+export * from './focusStyles';

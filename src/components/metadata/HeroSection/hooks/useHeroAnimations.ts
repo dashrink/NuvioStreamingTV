@@ -47,12 +47,9 @@ import {
   withTiming,
   SharedValue,
 } from 'react-native-reanimated';
-import {
-  BACKDROP_PARALLAX,
-  TRAILER_PARALLAX,
-  LOGO_CONFIG,
-  UI_TIMING,
-} from '../constants';
+
+import { BACKDROP_PARALLAX, TRAILER_PARALLAX, LOGO_CONFIG, UI_TIMING } from '../constants';
+
 import type { WatchProgress } from '../types';
 
 // =============================================================================
@@ -145,10 +142,13 @@ export function useHeroAnimations({
    * Hero container animated style
    * Controls the overall hero section height and opacity
    */
-  const heroAnimatedStyle = useAnimatedStyle(() => ({
-    height: heroHeight.value,
-    opacity: heroOpacity.value,
-  }), []);
+  const heroAnimatedStyle = useAnimatedStyle(
+    () => ({
+      height: heroHeight.value,
+      opacity: heroOpacity.value,
+    }),
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Logo Animations
@@ -193,19 +193,17 @@ export function useHeroAnimations({
    * - Combines scroll-based opacity with trailer playback opacity
    * - Applies translateY offset for scroll effects
    */
-  const buttonsAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: buttonsOpacity.value * actionButtonsOpacity.value,
-    transform: [
-      {
-        translateY: interpolate(
-          buttonsTranslateY.value,
-          [0, 20],
-          [0, 20],
-          Extrapolate.CLAMP
-        ),
-      },
-    ],
-  }), []);
+  const buttonsAnimatedStyle = useAnimatedStyle(
+    () => ({
+      opacity: buttonsOpacity.value * actionButtonsOpacity.value,
+      transform: [
+        {
+          translateY: interpolate(buttonsTranslateY.value, [0, 20], [0, 20], Extrapolate.CLAMP),
+        },
+      ],
+    }),
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Title Card Animation
@@ -216,9 +214,12 @@ export function useHeroAnimations({
    * Applies translateY offset when trailer is unmuted
    * Moves the title/logo down slightly for better viewing
    */
-  const titleCardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: titleCardTranslateY.value }],
-  }), []);
+  const titleCardAnimatedStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ translateY: titleCardTranslateY.value }],
+    }),
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Genre Animation
@@ -228,9 +229,12 @@ export function useHeroAnimations({
    * Genre container animated style
    * Hides genres when trailer is unmuted for cleaner viewing
    */
-  const genreAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: genreOpacity.value,
-  }), []);
+  const genreAnimatedStyle = useAnimatedStyle(
+    () => ({
+      opacity: genreOpacity.value,
+    }),
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Watch Progress Animation
@@ -240,9 +244,12 @@ export function useHeroAnimations({
    * Watch progress container animated style
    * Controls visibility based on scroll position
    */
-  const watchProgressAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: watchProgressOpacity.value,
-  }), []);
+  const watchProgressAnimatedStyle = useAnimatedStyle(
+    () => ({
+      opacity: watchProgressOpacity.value,
+    }),
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Backdrop Parallax Animation
@@ -272,10 +279,7 @@ export function useHeroAnimations({
     // Optimized scale calculation with minimal branching
     const scrollUpScale = DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
     const scrollDownScale = DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
-    const scale = Math.min(
-      scrollYValue < 0 ? scrollUpScale : scrollDownScale,
-      MAX_SCALE
-    );
+    const scale = Math.min(scrollYValue < 0 ? scrollUpScale : scrollDownScale, MAX_SCALE);
 
     // Single parallax calculation
     const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
@@ -314,10 +318,7 @@ export function useHeroAnimations({
     // Optimized scale calculation with minimal branching
     const scrollUpScale = DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
     const scrollDownScale = DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
-    const scale = Math.min(
-      scrollYValue < 0 ? scrollUpScale : scrollDownScale,
-      MAX_SCALE
-    );
+    const scale = Math.min(scrollYValue < 0 ? scrollUpScale : scrollDownScale, MAX_SCALE);
 
     // Single parallax calculation
     const parallaxOffset = scrollYValue * PARALLAX_FACTOR;

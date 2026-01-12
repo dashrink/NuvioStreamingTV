@@ -1,3 +1,8 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect, NavigationProp } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -13,29 +18,26 @@ import {
   Clipboard,
   Linking,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useTheme } from '../contexts/ThemeContext';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
-import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import { useDownloads } from '../contexts/DownloadsContext';
-import { useSettings } from '../hooks/useSettings';
-import { VideoPlayerService } from '../services/videoPlayerService';
-import type { DownloadItem } from '../contexts/DownloadsContext';
-import { useToast } from '../contexts/ToastContext';
-import CustomAlert from '../components/CustomAlert';
-import ScreenHeader from '../components/common/ScreenHeader';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { EmptyState } from '../components/common';
+import ScreenHeader from '../components/common/ScreenHeader';
+import CustomAlert from '../components/CustomAlert';
+import { useDownloads } from '../contexts/DownloadsContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
+import { useSettings } from '../hooks/useSettings';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { VideoPlayerService } from '../services/videoPlayerService';
+
+import type { DownloadItem } from '../contexts/DownloadsContext';
+
 
 const { height, width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -523,7 +525,7 @@ const DownloadsScreen: React.FC = () => {
             forceVlc: Platform.OS === 'android' ? isMkv : false,
             id: item.contentId, // Use contentId (base ID) instead of compound id for progress tracking
             type: item.type,
-            episodeId: episodeId, // Pass episodeId for series progress tracking
+            episodeId, // Pass episodeId for series progress tracking
             imdbId: (item as any).imdbId || item.contentId, // Use imdbId if available, fallback to contentId
             availableStreams: {},
             backdrop: undefined,

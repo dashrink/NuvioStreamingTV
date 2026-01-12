@@ -14,7 +14,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
  */
 export const TV_HERO = {
   // Hero height as percentage of screen
-  heightPercentage: 0.70,
+  heightPercentage: 0.7,
 
   // Logo container size
   logoWidth: SCREEN_WIDTH * 0.5,

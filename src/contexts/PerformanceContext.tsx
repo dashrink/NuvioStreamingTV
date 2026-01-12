@@ -45,6 +45,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { Platform } from 'react-native';
+
 import {
   PerformanceTier,
   DeviceMetrics,
@@ -113,7 +114,7 @@ export function PerformanceProvider({
 
   // Initialize performance detection on mount
   useEffect(() => {
-    initializePerformanceDetection().then((tier) => {
+    initializePerformanceDetection().then(tier => {
       if (!hasManualOverride) {
         setLocalPerformanceTier(tier);
       }
@@ -123,7 +124,7 @@ export function PerformanceProvider({
 
   // Subscribe to performance tier changes
   useEffect(() => {
-    const unsubscribe = subscribeToPerformanceChanges((tier) => {
+    const unsubscribe = subscribeToPerformanceChanges(tier => {
       setLocalPerformanceTier(tier);
     });
     return unsubscribe;
@@ -141,14 +142,15 @@ export function PerformanceProvider({
     setManualPerformanceTier(null);
     setHasManualOverride(false);
     // Re-initialize to get actual detected tier
-    initializePerformanceDetection().then((tier) => {
+    initializePerformanceDetection().then(tier => {
       setLocalPerformanceTier(tier);
     });
   }, []);
 
   // Computed values
   const isLowEndDevice = performanceTier === PerformanceTier.LOW;
-  const shouldReduceAnimations = performanceTier === PerformanceTier.LOW || performanceTier === PerformanceTier.MEDIUM;
+  const shouldReduceAnimations =
+    performanceTier === PerformanceTier.LOW || performanceTier === PerformanceTier.MEDIUM;
   const animationConfig = getAnimationConfig();
   const isTV = Platform.isTV === true;
 
@@ -175,11 +177,7 @@ export function PerformanceProvider({
     ]
   );
 
-  return (
-    <PerformanceContext.Provider value={value}>
-      {children}
-    </PerformanceContext.Provider>
-  );
+  return <PerformanceContext.Provider value={value}>{children}</PerformanceContext.Provider>;
 }
 
 // =============================================================================

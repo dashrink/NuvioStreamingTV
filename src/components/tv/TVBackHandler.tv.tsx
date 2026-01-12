@@ -30,8 +30,9 @@
 
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Platform, BackHandler } from 'react-native';
-import { useTVEventHandler, isMenuEvent, TVRemoteEvent } from '../../hooks/useTVEventHandler';
+
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
+import { useTVEventHandler, isMenuEvent, TVRemoteEvent } from '../../hooks/useTVEventHandler';
 
 // =============================================================================
 // Types & Interfaces
@@ -163,10 +164,7 @@ export function TVBackHandler({
       return;
     }
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress
-    );
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
     return () => {
       backHandler.remove();
@@ -184,9 +182,7 @@ export function TVBackHandler({
 // Non-TV Fallback
 // =============================================================================
 
-export function TVBackHandlerFallback({
-  children,
-}: TVBackHandlerProps): React.ReactElement | null {
+export function TVBackHandlerFallback({ children }: TVBackHandlerProps): React.ReactElement | null {
   return <>{children}</>;
 }
 

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useMemo } from 'react';
+
 import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 
@@ -53,28 +54,26 @@ export const GenreProvider: React.FC<GenreProviderProps> = ({ children }) => {
       } catch (error) {
         logger.error('Failed to fetch genres for GenreProvider:', error);
         // Keep the genreMap empty or potentially set some default?
-        setGenreMap({}); 
+        setGenreMap({});
       } finally {
         setLoadingGenres(false);
       }
     };
 
     fetchAndSetGenres();
-    
+
     // Add logic here for periodic refetching or caching if needed
     // For now, it fetches only once on mount
-
   }, []); // Empty dependency array ensures this runs only once on mount
 
   // Memoize the context value to prevent unnecessary re-renders
-  const value = useMemo(() => ({
-    genreMap,
-    loadingGenres,
-  }), [genreMap, loadingGenres]);
-
-  return (
-    <GenreContext.Provider value={value}>
-      {children}
-    </GenreContext.Provider>
+  const value = useMemo(
+    () => ({
+      genreMap,
+      loadingGenres,
+    }),
+    [genreMap, loadingGenres]
   );
-}; 
+
+  return <GenreContext.Provider value={value}>{children}</GenreContext.Provider>;
+};

@@ -9,10 +9,14 @@
  * - TVScreenWrapper component focus management
  */
 
+import { render, act, waitFor, fireEvent, renderHook } from '@testing-library/react-native';
 import React, { ReactNode, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { render, act, waitFor, fireEvent } from '@testing-library/react-native';
-import { renderHook } from '@testing-library/react-native';
+
+import TVScreenWrapper, {
+  useTVScreenFocus,
+  useTVScreenFocusOptional,
+} from '../../src/components/tv/TVScreenWrapper.tv';
 import {
   TVNavigationProvider,
   useTVNavigation,
@@ -22,15 +26,7 @@ import {
   useTVFocusRestoration,
   useTVFocusRestorationSimple,
 } from '../../src/hooks/useTVFocusRestoration';
-import TVScreenWrapper, {
-  useTVScreenFocus,
-  useTVScreenFocusOptional,
-} from '../../src/components/tv/TVScreenWrapper.tv';
-import {
-  advanceTimersAndFlush,
-  getNavigationMock,
-  resetNavigationMock,
-} from '../setup';
+import { advanceTimersAndFlush, getNavigationMock, resetNavigationMock } from '../setup';
 
 // ============================================================================
 // Test Helpers
@@ -56,7 +52,10 @@ const createMockFocusableRef = () => ({
 /**
  * Create mock navigation and route props
  */
-const createMockNavigationProps = (screenName: string = 'TestScreen', params: Record<string, any> = {}) => {
+const createMockNavigationProps = (
+  screenName: string = 'TestScreen',
+  params: Record<string, any> = {}
+) => {
   const mockNavigation = {
     navigate: jest.fn(),
     goBack: jest.fn(),
@@ -377,7 +376,7 @@ describe('useTVFocusRestoration', () => {
       });
 
       // Track if restoreFocus was called (via useFocusEffect)
-      let restoreFocusCalled = false;
+      const restoreFocusCalled = false;
       const mockRef = createMockFocusableRef();
 
       const TestComponent = () => {
@@ -668,7 +667,7 @@ describe('useTVFocusRestorationSimple', () => {
 
     render(
       <TVProvider>
-        <TestComponent onGetFocus={(f) => (retrievedFocus = f)} />
+        <TestComponent onGetFocus={f => (retrievedFocus = f)} />
       </TVProvider>
     );
 
@@ -747,10 +746,7 @@ describe('TVScreenWrapper', () => {
 
       render(
         <TVProvider>
-          <TVScreenWrapper
-            screenName="TestScreen"
-            defaultFocusId="default-button"
-          >
+          <TVScreenWrapper screenName="TestScreen" defaultFocusId="default-button">
             <TestScreen />
           </TVScreenWrapper>
         </TVProvider>
@@ -810,7 +806,11 @@ describe('TVScreenWrapper', () => {
     });
 
     it('should return context value when used within wrapper', () => {
-      const TestScreen = ({ onContext }: { onContext: (ctx: ReturnType<typeof useTVScreenFocus>) => void }) => {
+      const TestScreen = ({
+        onContext,
+      }: {
+        onContext: (ctx: ReturnType<typeof useTVScreenFocus>) => void;
+      }) => {
         const context = useTVScreenFocus();
         useEffect(() => {
           onContext(context);
@@ -823,7 +823,7 @@ describe('TVScreenWrapper', () => {
       render(
         <TVProvider>
           <TVScreenWrapper screenName="TestScreen">
-            <TestScreen onContext={(ctx) => (contextValue = ctx)} />
+            <TestScreen onContext={ctx => (contextValue = ctx)} />
           </TVScreenWrapper>
         </TVProvider>
       );
@@ -985,7 +985,12 @@ describe('Navigation flow simulation', () => {
 
     // Home screen: focus on card-5
     const { result: homeResult } = renderHook(
-      () => useTVFocusRestoration(homeNavProps.navigation as any, homeNavProps.route as any, 'HomeScreen'),
+      () =>
+        useTVFocusRestoration(
+          homeNavProps.navigation as any,
+          homeNavProps.route as any,
+          'HomeScreen'
+        ),
       { wrapper: TVProvider }
     );
 
@@ -1001,7 +1006,12 @@ describe('Navigation flow simulation', () => {
 
     // Navigate to Details
     const { result: detailsResult } = renderHook(
-      () => useTVFocusRestoration(detailsNavProps.navigation as any, detailsNavProps.route as any, 'DetailsScreen'),
+      () =>
+        useTVFocusRestoration(
+          detailsNavProps.navigation as any,
+          detailsNavProps.route as any,
+          'DetailsScreen'
+        ),
       { wrapper: TVProvider }
     );
 

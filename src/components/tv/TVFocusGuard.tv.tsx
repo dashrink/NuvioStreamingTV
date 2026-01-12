@@ -46,14 +46,8 @@ import React, {
   useImperativeHandle,
   ReactNode,
 } from 'react';
-import {
-  View,
-  StyleSheet,
-  ViewStyle,
-  StyleProp,
-  findNodeHandle,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp, findNodeHandle, Platform } from 'react-native';
+
 import { useTVEventHandler, isMenuEvent } from '../../hooks/useTVEventHandler';
 
 // =============================================================================
@@ -237,7 +231,7 @@ function findNextFocusTarget(
   mode: FocusGuardMode
 ): FocusableElementInfo | null {
   const sorted = sortElements(elements);
-  const currentIndex = sorted.findIndex((e) => e.id === currentId);
+  const currentIndex = sorted.findIndex(e => e.id === currentId);
 
   if (currentIndex === -1 || sorted.length === 0) {
     return null;
@@ -249,11 +243,13 @@ function findNextFocusTarget(
   // For grid navigation, try to find element in the right direction
   const current = sorted[currentIndex];
   if (current.gridPosition) {
-    const targetRow = current.gridPosition.row + (direction === 'up' ? -1 : direction === 'down' ? 1 : 0);
-    const targetCol = current.gridPosition.col + (direction === 'left' ? -1 : direction === 'right' ? 1 : 0);
+    const targetRow =
+      current.gridPosition.row + (direction === 'up' ? -1 : direction === 'down' ? 1 : 0);
+    const targetCol =
+      current.gridPosition.col + (direction === 'left' ? -1 : direction === 'right' ? 1 : 0);
 
     const gridTarget = sorted.find(
-      (e) => e.gridPosition?.row === targetRow && e.gridPosition?.col === targetCol
+      e => e.gridPosition?.row === targetRow && e.gridPosition?.col === targetCol
     );
 
     if (gridTarget) {
@@ -331,23 +327,20 @@ const TVFocusGuard = forwardRef<TVFocusGuardRef, TVFocusGuardProps>(
     /**
      * Register a focusable element with the guard
      */
-    const registerElement = useCallback(
-      (info: Omit<FocusableElementInfo, 'nodeHandle'>) => {
-        setElements((prev) => {
-          const newMap = new Map(prev);
-          const nodeHandle = getNodeHandleSafe(info.ref);
-          newMap.set(info.id, { ...info, nodeHandle });
-          return newMap;
-        });
-      },
-      []
-    );
+    const registerElement = useCallback((info: Omit<FocusableElementInfo, 'nodeHandle'>) => {
+      setElements(prev => {
+        const newMap = new Map(prev);
+        const nodeHandle = getNodeHandleSafe(info.ref);
+        newMap.set(info.id, { ...info, nodeHandle });
+        return newMap;
+      });
+    }, []);
 
     /**
      * Unregister a focusable element
      */
     const unregisterElement = useCallback((id: string) => {
-      setElements((prev) => {
+      setElements(prev => {
         const newMap = new Map(prev);
         newMap.delete(id);
         return newMap;
@@ -358,7 +351,7 @@ const TVFocusGuard = forwardRef<TVFocusGuardRef, TVFocusGuardProps>(
      * Refresh all node handles (call after layout changes)
      */
     const refreshNodeHandles = useCallback(() => {
-      setElements((prev) => {
+      setElements(prev => {
         const newMap = new Map<string, FocusableElementInfo>();
         prev.forEach((info, id) => {
           const nodeHandle = getNodeHandleSafe(info.ref);
@@ -417,7 +410,7 @@ const TVFocusGuard = forwardRef<TVFocusGuardRef, TVFocusGuardProps>(
       }
 
       // Try default element
-      const defaultElement = elementList.find((e) => e.isDefault);
+      const defaultElement = elementList.find(e => e.isDefault);
       if (defaultElement && focusElement(defaultElement.id)) {
         return true;
       }
@@ -531,7 +524,7 @@ const TVFocusGuard = forwardRef<TVFocusGuardRef, TVFocusGuardProps>(
 
         const elementList = Array.from(elements.values());
         const sorted = sortElements(elementList);
-        const currentIndex = sorted.findIndex((e) => e.id === id);
+        const currentIndex = sorted.findIndex(e => e.id === id);
 
         if (currentIndex === -1) {
           return {};
@@ -690,7 +683,7 @@ const TVFocusGuard = forwardRef<TVFocusGuardRef, TVFocusGuardProps>(
       // Use a timeout to check if focus moved outside
       setTimeout(() => {
         const elementList = Array.from(elements.values());
-        const focusStillInside = elementList.some((e) => {
+        const focusStillInside = elementList.some(e => {
           if (!e.ref?.current) return false;
           try {
             // Check if element is still focused

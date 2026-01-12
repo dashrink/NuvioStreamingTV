@@ -1,18 +1,12 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSettings } from '../hooks/useSettings';
-import { useTheme } from '../contexts/ThemeContext';
-import ScreenHeader from '../components/common/ScreenHeader';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 'react-native';
+
+import ScreenHeader from '../components/common/ScreenHeader';
+import { useTheme } from '../contexts/ThemeContext';
 import { triggerMedium, triggerLight } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
 
 const Top10SettingsScreen: React.FC = () => {
   const { settings, updateSetting } = useSettings();
@@ -41,7 +35,9 @@ const Top10SettingsScreen: React.FC = () => {
     });
   };
 
-  const handleDisplayStyleChange = (displayStyle: 'disney' | 'appletv' | 'numbered' | 'minimal') => {
+  const handleDisplayStyleChange = (
+    displayStyle: 'disney' | 'appletv' | 'numbered' | 'minimal'
+  ) => {
     triggerLight();
     updateSetting('top10Settings', {
       ...top10Settings,
@@ -70,7 +66,7 @@ const Top10SettingsScreen: React.FC = () => {
         <View
           style={[
             styles.settingIconContainer,
-            { backgroundColor: currentTheme.colors.primary + '12' },
+            { backgroundColor: `${currentTheme.colors.primary}12` },
           ]}
         >
           <Feather name={icon as any} size={18} color={currentTheme.colors.primary} />
@@ -78,17 +74,12 @@ const Top10SettingsScreen: React.FC = () => {
       )}
       <View style={styles.settingContent}>
         <View style={styles.settingTextContainer}>
-          <Text
-            style={[styles.settingTitle, { color: currentTheme.colors.highEmphasis }]}
-          >
+          <Text style={[styles.settingTitle, { color: currentTheme.colors.highEmphasis }]}>
             {title}
           </Text>
           {description && (
             <Text
-              style={[
-                styles.settingDescription,
-                { color: currentTheme.colors.mediumEmphasis },
-              ]}
+              style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
             >
               {description}
             </Text>
@@ -109,11 +100,9 @@ const Top10SettingsScreen: React.FC = () => {
         styles.optionButton,
         {
           backgroundColor: selected
-            ? currentTheme.colors.primary + '20'
+            ? `${currentTheme.colors.primary}20`
             : currentTheme.colors.elevation2,
-          borderColor: selected
-            ? currentTheme.colors.primary
-            : 'transparent',
+          borderColor: selected ? currentTheme.colors.primary : 'transparent',
         },
       ]}
       onPress={onPress}
@@ -123,9 +112,7 @@ const Top10SettingsScreen: React.FC = () => {
         style={[
           styles.optionButtonText,
           {
-            color: selected
-              ? currentTheme.colors.primary
-              : currentTheme.colors.mediumEmphasis,
+            color: selected ? currentTheme.colors.primary : currentTheme.colors.mediumEmphasis,
             fontWeight: selected ? '600' : '500',
           },
         ]}
@@ -136,9 +123,7 @@ const Top10SettingsScreen: React.FC = () => {
   );
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
-    >
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
       <ScreenHeader title="Top 10 Content" showBackButton />
       <ScrollView
         style={styles.scrollView}
@@ -147,9 +132,7 @@ const Top10SettingsScreen: React.FC = () => {
       >
         {/* Enable/Disable */}
         <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}
-          >
+          <Text style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}>
             DISPLAY
           </Text>
           <View
@@ -189,9 +172,7 @@ const Top10SettingsScreen: React.FC = () => {
         {/* Time Window */}
         {top10Settings.enabled && (
           <View style={styles.section}>
-            <Text
-              style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}
-            >
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}>
               TIME WINDOW
             </Text>
             <View
@@ -222,9 +203,7 @@ const Top10SettingsScreen: React.FC = () => {
         {/* Display Style */}
         {top10Settings.enabled && (
           <View style={styles.section}>
-            <Text
-              style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}
-            >
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}>
               BADGE STYLE
             </Text>
             <View
@@ -266,9 +245,7 @@ const Top10SettingsScreen: React.FC = () => {
 
         {/* Info Section */}
         <View style={styles.infoSection}>
-          <Text
-            style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}
-          >
+          <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
             Top 10 content is based on TMDB trending data and updates automatically.
           </Text>
         </View>

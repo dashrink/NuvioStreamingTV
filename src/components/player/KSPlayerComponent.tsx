@@ -1,5 +1,11 @@
 import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState } from 'react';
-import { View, requireNativeComponent, UIManager, findNodeHandle, NativeModules } from 'react-native';
+import {
+  View,
+  requireNativeComponent,
+  UIManager,
+  findNodeHandle,
+  NativeModules,
+} from 'react-native';
 
 export interface KSPlayerSource {
   uri: string;
@@ -43,7 +49,11 @@ export interface KSPlayerRef {
   getTracks: () => Promise<{ audioTracks: any[]; textTracks: any[] }>;
   setAllowsExternalPlayback: (allows: boolean) => void;
   setUsesExternalPlaybackWhileExternalScreenIsActive: (uses: boolean) => void;
-  getAirPlayState: () => Promise<{ allowsExternalPlayback: boolean; usesExternalPlaybackWhileExternalScreenIsActive: boolean; isExternalPlaybackActive: boolean }>;
+  getAirPlayState: () => Promise<{
+    allowsExternalPlayback: boolean;
+    usesExternalPlaybackWhileExternalScreenIsActive: boolean;
+    isExternalPlaybackActive: boolean;
+  }>;
   showAirPlayPicker: () => void;
 }
 
@@ -149,7 +159,8 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
       if (nativeRef.current) {
         const node = findNodeHandle(nativeRef.current);
         // @ts-ignore legacy UIManager commands path for Paper
-        const commandId = UIManager.getViewManagerConfig('KSPlayerView').Commands.setAllowsExternalPlayback;
+        const commandId =
+          UIManager.getViewManagerConfig('KSPlayerView').Commands.setAllowsExternalPlayback;
         UIManager.dispatchViewManagerCommand(node, commandId, [allows]);
       }
     },
@@ -157,7 +168,9 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
       if (nativeRef.current) {
         const node = findNodeHandle(nativeRef.current);
         // @ts-ignore legacy UIManager commands path for Paper
-        const commandId = UIManager.getViewManagerConfig('KSPlayerView').Commands.setUsesExternalPlaybackWhileExternalScreenIsActive;
+        const commandId =
+          UIManager.getViewManagerConfig('KSPlayerView').Commands
+            .setUsesExternalPlaybackWhileExternalScreenIsActive;
         UIManager.dispatchViewManagerCommand(node, commandId, [uses]);
       }
     },
@@ -168,7 +181,11 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
           return await KSPlayerModule.getAirPlayState(node);
         }
       }
-      return { allowsExternalPlayback: false, usesExternalPlaybackWhileExternalScreenIsActive: false, isExternalPlaybackActive: false };
+      return {
+        allowsExternalPlayback: false,
+        usesExternalPlaybackWhileExternalScreenIsActive: false,
+        isExternalPlaybackActive: false,
+      };
     },
     showAirPlayPicker: () => {
       if (nativeRef.current) {
@@ -205,7 +222,9 @@ const KSPlayer = forwardRef<KSPlayerRef, KSPlayerProps>((props, ref) => {
       audioTrack={props.audioTrack}
       textTrack={props.textTrack}
       allowsExternalPlayback={props.allowsExternalPlayback}
-      usesExternalPlaybackWhileExternalScreenIsActive={props.usesExternalPlaybackWhileExternalScreenIsActive}
+      usesExternalPlaybackWhileExternalScreenIsActive={
+        props.usesExternalPlaybackWhileExternalScreenIsActive
+      }
       subtitleBottomOffset={props.subtitleBottomOffset}
       subtitleFontSize={props.subtitleFontSize}
       subtitleTextColor={props.subtitleTextColor}

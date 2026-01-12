@@ -1,10 +1,10 @@
+import { NavigationProp } from '@react-navigation/native';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { DeviceEventEmitter } from 'react-native';
-import { Share } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useToast } from '../contexts/ToastContext';
-import DropUpMenu from '../components/home/DropUpMenu';
-import ScreenHeader from '../components/common/ScreenHeader';
 import {
   View,
   Text,
@@ -17,27 +17,28 @@ import {
   Platform,
   ScrollView,
   BackHandler,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import FastImage from '@d11/react-native-fast-image';
+ Share , DeviceEventEmitter } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { catalogService } from '../services/catalogService';
-import type { StreamingContent } from '../services/catalogService';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { logger } from '../utils/logger';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTraktContext } from '../contexts/TraktContext';
+
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
+import ScreenHeader from '../components/common/ScreenHeader';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
+import DropUpMenu from '../components/home/DropUpMenu';
 import { UnifiedSpinner, PosterGridSkeleton } from '../components/loading';
-import { useSettings } from '../hooks/useSettings';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
+import { useTraktContext } from '../contexts/TraktContext';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { catalogService } from '../services/catalogService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { logger } from '../utils/logger';
+
+import type { StreamingContent } from '../services/catalogService';
 
 interface LibraryItem extends StreamingContent {
   progress?: number;

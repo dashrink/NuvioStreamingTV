@@ -1,5 +1,6 @@
 import React from 'react';
 import { ViewStyle } from 'react-native';
+
 import UnifiedSpinner from '../loading/UnifiedSpinner';
 
 /**
@@ -50,15 +51,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   offsetY = 0,
 }) => {
   // Wrap UnifiedSpinner with LoadingSpinner's props for backward compatibility
-  return (
-    <UnifiedSpinner
-      text={text}
-      size={size}
-      style={style}
-      source={source}
-      offsetY={offsetY}
-    />
-  );
+  return <UnifiedSpinner text={text} size={size} style={style} source={source} offsetY={offsetY} />;
 };
 
 export default LoadingSpinner;

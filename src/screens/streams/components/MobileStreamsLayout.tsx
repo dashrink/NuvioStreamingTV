@@ -1,19 +1,32 @@
-import React, { memo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView as ExpoBlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
+import { BlurView as ExpoBlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { memo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
 
-import AnimatedImage from '../../../components/AnimatedImage';
-import ProviderFilter from '../../../components/ProviderFilter';
-import PulsingChip from '../../../components/PulsingChip';
 import EpisodeHero from './EpisodeHero';
 import MovieHero from './MovieHero';
 import StreamsList from './StreamsList';
-import { Stream } from '../../../types/metadata';
-import { StreamSection, FilterItem, GroupedStreams, LoadingProviders, ScraperLogos } from '../types';
+import AnimatedImage from '../../../components/AnimatedImage';
 import Focusable from '../../../components/common/Focusable';
+import ProviderFilter from '../../../components/ProviderFilter';
+import PulsingChip from '../../../components/PulsingChip';
+import { Stream } from '../../../types/metadata';
+import {
+  StreamSection,
+  FilterItem,
+  GroupedStreams,
+  LoadingProviders,
+  ScraperLogos,
+} from '../types';
 
 // Lazy-safe community blur import for Android
 let AndroidBlurView: any = null;
@@ -255,7 +268,9 @@ const MobileStreamsLayout = memo(
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary} />
                 <Text style={styles.loadingText}>
-                  {isAutoplayWaiting ? 'Finding best stream for autoplay...' : 'Finding available streams...'}
+                  {isAutoplayWaiting
+                    ? 'Finding best stream for autoplay...'
+                    : 'Finding available streams...'}
                 </Text>
               </View>
             ) : showStillFetching ? (

@@ -30,9 +30,9 @@
  * });
  */
 
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppState } from 'react-native';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import {
   useSharedValue,
   useDerivedValue,
@@ -40,10 +40,12 @@ import {
   runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
+
 import { useTrailer } from '../../../../contexts/TrailerContext';
-import { logger } from '../../../../utils/logger';
 import TrailerService from '../../../../services/trailerService';
+import { logger } from '../../../../utils/logger';
 import { TRAILER_TIMING, SCROLL_THRESHOLDS } from '../constants';
+
 import type { ContentType } from '../types';
 
 // =============================================================================
@@ -206,7 +208,7 @@ export function useTrailerPlayback({
           });
 
           TrailerService.getTrailerUrl(metadata.name, metadata.year, tmdbIdString, contentType)
-            .then((url) => {
+            .then(url => {
               if (!alive) return;
               if (url) {
                 const bestUrl = TrailerService.getBestFormatUrl(url);
@@ -219,7 +221,7 @@ export function useTrailerPlayback({
                 logger.info('useTrailerPlayback', `No trailer found for ${metadata.name}`);
               }
             })
-            .catch((error) => {
+            .catch(error => {
               if (!alive) return;
               logger.error('useTrailerPlayback', 'Error fetching trailer:', error);
               setTrailerError(true);
@@ -253,7 +255,16 @@ export function useTrailerPlayback({
         }
       }
     };
-  }, [metadata?.name, metadata?.year, tmdbId, showTrailers, isFocused, type, metadata?.id, metadata?.tmdbId]);
+  }, [
+    metadata?.name,
+    metadata?.year,
+    tmdbId,
+    showTrailers,
+    isFocused,
+    type,
+    metadata?.id,
+    metadata?.tmdbId,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Trailer Event Handlers
@@ -365,7 +376,13 @@ export function useTrailerPlayback({
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    if (trailerReady && showTrailers && isFocused && !globalTrailerPlaying && !startedOnReadyRef.current) {
+    if (
+      trailerReady &&
+      showTrailers &&
+      isFocused &&
+      !globalTrailerPlaying &&
+      !startedOnReadyRef.current
+    ) {
       // Check scroll position - only auto-start if user hasn't scrolled past the hero section
       try {
         const y = scrollY.value || 0;
@@ -377,15 +394,30 @@ export function useTrailerPlayback({
           setTrailerPlaying(true);
           isPlayingSV.value = 1;
         } else {
-          logger.info('useTrailerPlayback', 'Trailer ready but user scrolled past - not auto-starting');
+          logger.info(
+            'useTrailerPlayback',
+            'Trailer ready but user scrolled past - not auto-starting'
+          );
           startedOnReadyRef.current = true;
         }
       } catch (_e) {
-        logger.info('useTrailerPlayback', 'Trailer ready but scroll position unavailable - not auto-starting');
+        logger.info(
+          'useTrailerPlayback',
+          'Trailer ready but scroll position unavailable - not auto-starting'
+        );
         startedOnReadyRef.current = true;
       }
     }
-  }, [trailerReady, showTrailers, isFocused, globalTrailerPlaying, setTrailerPlaying, scrollY, heroHeight, isPlayingSV]);
+  }, [
+    trailerReady,
+    showTrailers,
+    isFocused,
+    globalTrailerPlaying,
+    setTrailerPlaying,
+    scrollY,
+    heroHeight,
+    isPlayingSV,
+  ]);
 
   // ---------------------------------------------------------------------------
   // App State Management (Prevent Background Playback)

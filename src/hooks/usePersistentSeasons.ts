@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { mmkvStorage } from '../services/mmkvStorage';
 import { logger } from '../utils/logger';
 
@@ -13,13 +14,15 @@ interface SeasonsCache {
 let cache: SeasonsCache | null = null;
 
 export function usePersistentSeasons() {
-  const [selectedSeasons, setSelectedSeasons] = useState<{ [seriesId: string]: number } | null>(cache?.seasons || null);
+  const [selectedSeasons, setSelectedSeasons] = useState<{ [seriesId: string]: number } | null>(
+    cache?.seasons || null
+  );
   const [isLoading, setIsLoading] = useState(!cache); // Only loading if cache is empty
 
   const loadSelectedSeasons = useCallback(async () => {
     // Check if cache is recent enough (within last 5 minutes)
     const now = Date.now();
-    if (cache && (now - cache.lastUpdate < 5 * 60 * 1000)) {
+    if (cache && now - cache.lastUpdate < 5 * 60 * 1000) {
       if (!selectedSeasons) setSelectedSeasons(cache.seasons); // Ensure state is updated if cache existed
       setIsLoading(false);
       return;
@@ -44,42 +47,48 @@ export function usePersistentSeasons() {
     loadSelectedSeasons();
   }, [loadSelectedSeasons]);
 
-  const saveSeason = useCallback(async (seriesId: string, seasonNumber: number) => {
-    if (!selectedSeasons) return;
-    
-    try {
-      const updatedSeasons = {
-        ...selectedSeasons,
-        [seriesId]: seasonNumber
-      };
-      
-      // Update the cache
-      cache = {
-        seasons: updatedSeasons,
-        lastUpdate: Date.now()
-      };
-      
-      // Update state
-      setSelectedSeasons(updatedSeasons);
-      
-      // Save to AsyncStorage
-      await mmkvStorage.setItem(SEASONS_STORAGE_KEY, JSON.stringify(updatedSeasons));
-    } catch (error) {
-      logger.error('Failed to save selected season:', error);
-    }
-  }, [selectedSeasons]);
+  const saveSeason = useCallback(
+    async (seriesId: string, seasonNumber: number) => {
+      if (!selectedSeasons) return;
 
-  const getSeason = useCallback((seriesId: string, defaultSeason: number = 1): number => {
-    if (isLoading || !selectedSeasons) {
-      return defaultSeason;
-    }
-    return selectedSeasons[seriesId] || defaultSeason;
-  }, [selectedSeasons, isLoading]);
+      try {
+        const updatedSeasons = {
+          ...selectedSeasons,
+          [seriesId]: seasonNumber,
+        };
 
-  return { 
-    getSeason, 
-    saveSeason, 
-    isLoadingSeasons: isLoading, 
-    refreshSeasons: loadSelectedSeasons 
+        // Update the cache
+        cache = {
+          seasons: updatedSeasons,
+          lastUpdate: Date.now(),
+        };
+
+        // Update state
+        setSelectedSeasons(updatedSeasons);
+
+        // Save to AsyncStorage
+        await mmkvStorage.setItem(SEASONS_STORAGE_KEY, JSON.stringify(updatedSeasons));
+      } catch (error) {
+        logger.error('Failed to save selected season:', error);
+      }
+    },
+    [selectedSeasons]
+  );
+
+  const getSeason = useCallback(
+    (seriesId: string, defaultSeason: number = 1): number => {
+      if (isLoading || !selectedSeasons) {
+        return defaultSeason;
+      }
+      return selectedSeasons[seriesId] || defaultSeason;
+    },
+    [selectedSeasons, isLoading]
+  );
+
+  return {
+    getSeason,
+    saveSeason,
+    isLoadingSeasons: isLoading,
+    refreshSeasons: loadSelectedSeasons,
   };
-} 
+}

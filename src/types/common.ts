@@ -256,10 +256,7 @@ export function toApiError(
  * @param status - Optional HTTP status code
  * @returns A success ApiResponse
  */
-export function createSuccessResponse<T>(
-  data: T,
-  status: number = 200
-): ApiResponse<T> {
+export function createSuccessResponse<T>(data: T, status: number = 200): ApiResponse<T> {
   return {
     data,
     success: true,
@@ -275,10 +272,7 @@ export function createSuccessResponse<T>(
  * @param status - Optional HTTP status code
  * @returns An error ApiResponse
  */
-export function createErrorResponse<T = never>(
-  error: unknown,
-  status?: number
-): ApiResponse<T> {
+export function createErrorResponse<T = never>(error: unknown, status?: number): ApiResponse<T> {
   const apiError = toApiError(error);
   return {
     data: null,

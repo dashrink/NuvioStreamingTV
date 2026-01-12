@@ -21,12 +21,12 @@
  * ```
  */
 
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import FastImage from '@d11/react-native-fast-image';
+import { NavigationProp } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { DeviceEventEmitter, Share } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useToast } from '../contexts/ToastContext';
-import DropUpMenu from '../components/home/DropUpMenu';
-import ScreenHeader from '../components/common/ScreenHeader';
 import {
   View,
   Text,
@@ -40,20 +40,12 @@ import {
   ScrollView,
   BackHandler,
   FlatList,
+  DeviceEventEmitter,
+  Share,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import FastImage from '@d11/react-native-fast-image';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { catalogService } from '../services/catalogService';
-import type { StreamingContent } from '../services/catalogService';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { logger } from '../utils/logger';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTraktContext } from '../contexts/TraktContext';
+
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
 import { traktService, TraktService, TraktImages } from '../services/traktService';
 import { TraktLoadingSpinner } from '../components/common/TraktLoadingSpinner';
@@ -64,8 +56,19 @@ import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
 import { useTVEventHandler } from '../hooks/useTVEventHandler';
 import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
 import Focusable, { FocusableRef } from '../components/common/Focusable';
-import { useContextMenu } from '../hooks/useContextMenu';
+import ScreenHeader from '../components/common/ScreenHeader';
+import DropUpMenu from '../components/home/DropUpMenu';
 import TVContextMenu from '../components/tv/TVContextMenu';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
+import { useTraktContext } from '../contexts/TraktContext';
+import { useContextMenu } from '../hooks/useContextMenu';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { catalogService } from '../services/catalogService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { logger } from '../utils/logger';
+
+import type { StreamingContent } from '../services/catalogService';
 
 // =============================================================================
 // Types & Interfaces
@@ -160,151 +163,167 @@ interface TVLibraryItemProps {
   inLibrary?: boolean;
 }
 
-const TVLibraryItem: React.FC<TVLibraryItemProps> = React.memo(({
-  item,
-  width: itemWidth,
-  navigation,
-  currentTheme,
-  showTitles,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-  inLibrary = true,
-}) => {
-  const [watched, setWatched] = useState(item.watched || false);
-  const { openContextMenu, isAvailable: isContextMenuAvailable } = useContextMenu();
-  const { showInfo, showError, showSuccess } = useToast();
-
-  // Watch for watched status changes
-  useEffect(() => {
-    const updateWatched = () => {
-      mmkvStorage.getItem(`watched:${item.type}:${item.id}`).then(val => setWatched(val === 'true'));
-    };
-    updateWatched();
-    const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
-    return () => sub.remove();
-  }, [item.id, item.type]);
-
-  const handlePress = useCallback(() => {
-    navigation.navigate('Metadata', { id: item.id, type: item.type });
-  }, [navigation, item.id, item.type]);
-
-  const handleLongPress = useCallback(() => {
-    if (isContextMenuAvailable) {
-      openContextMenu({
-        targetId: focusId,
-        title: item.name,
-        mediaItem: {
-          id: item.id,
-          title: item.name,
-          type: item.type as 'movie' | 'series',
-          isInList: inLibrary,
-          isWatched: watched,
-        },
-        actions: inLibrary
-          ? ['removeFromList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info']
-          : ['addToList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info'],
-        onAddToList: async () => {
-          await catalogService.addToLibrary(item);
-          showSuccess('Added to Library', 'Added to your library');
-        },
-        onRemoveFromList: async () => {
-          await catalogService.removeFromLibrary(item.type, item.id);
-          showInfo('Removed from Library', 'Removed from your library');
-        },
-        onMarkWatched: async () => {
-          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'true');
-          setWatched(true);
-          showInfo('Marked as Watched', 'Item marked as watched');
-          DeviceEventEmitter.emit('watchedStatusChanged');
-        },
-        onMarkUnwatched: async () => {
-          await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'false');
-          setWatched(false);
-          showInfo('Marked as Unwatched', 'Item marked as unwatched');
-          DeviceEventEmitter.emit('watchedStatusChanged');
-        },
-        onShare: () => {
-          const url = item.id ? `https://www.imdb.com/title/${item.id}/` : '';
-          const message = `${item.name}\n${url}`;
-          Share.share({ message, url, title: item.name });
-        },
-        onGetInfo: () => {
-          navigation.navigate('Metadata', { id: item.id, type: item.type });
-        },
-      });
-    }
-  }, [
-    isContextMenuAvailable,
-    openContextMenu,
-    focusId,
+const TVLibraryItem: React.FC<TVLibraryItemProps> = React.memo(
+  ({
     item,
-    inLibrary,
-    watched,
+    width: itemWidth,
     navigation,
-    showInfo,
-    showSuccess,
-  ]);
+    currentTheme,
+    showTitles,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+    inLibrary = true,
+  }) => {
+    const [watched, setWatched] = useState(item.watched || false);
+    const { openContextMenu, isAvailable: isContextMenuAvailable } = useContextMenu();
+    const { showInfo, showError, showSuccess } = useToast();
 
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
+    // Watch for watched status changes
+    useEffect(() => {
+      const updateWatched = () => {
+        mmkvStorage
+          .getItem(`watched:${item.type}:${item.id}`)
+          .then(val => setWatched(val === 'true'));
+      };
+      updateWatched();
+      const sub = DeviceEventEmitter.addListener('watchedStatusChanged', updateWatched);
+      return () => sub.remove();
+    }, [item.id, item.type]);
 
-  return (
-    <Focusable
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={[styles.itemContainer, { width: itemWidth }]}
-      animationConfig={{
-        focusScale: 1.05,
-        unfocusedOpacity: 0.85,
-        showFocusBorder: true,
-        focusBorderColor: currentTheme.colors.primary,
-        focusBorderWidth: 3,
-        animateShadow: Platform.OS === 'ios',
-      }}
-      tvParallaxProperties={{
-        enabled: true,
-        shiftDistanceX: 3,
-        shiftDistanceY: 3,
-        tiltAngle: 0.03,
-        magnification: 1.02,
-      }}
-      accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
-      accessibilityHint="Press to view details, hold for more options"
-    >
-      <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
-        <FastImage
-          source={{ uri: item.poster || 'https://via.placeholder.com/300x450' }}
-          style={styles.poster}
-          resizeMode={FastImage.resizeMode.cover}
-        />
-        {watched && (
-          <View style={styles.watchedIndicator}>
-            <MaterialIcons name="check-circle" size={22} color={currentTheme.colors.success || '#4CAF50'} />
-          </View>
+    const handlePress = useCallback(() => {
+      navigation.navigate('Metadata', { id: item.id, type: item.type });
+    }, [navigation, item.id, item.type]);
+
+    const handleLongPress = useCallback(() => {
+      if (isContextMenuAvailable) {
+        openContextMenu({
+          targetId: focusId,
+          title: item.name,
+          mediaItem: {
+            id: item.id,
+            title: item.name,
+            type: item.type as 'movie' | 'series',
+            isInList: inLibrary,
+            isWatched: watched,
+          },
+          actions: inLibrary
+            ? ['removeFromList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info']
+            : ['addToList', watched ? 'markUnwatched' : 'markWatched', 'share', 'info'],
+          onAddToList: async () => {
+            await catalogService.addToLibrary(item);
+            showSuccess('Added to Library', 'Added to your library');
+          },
+          onRemoveFromList: async () => {
+            await catalogService.removeFromLibrary(item.type, item.id);
+            showInfo('Removed from Library', 'Removed from your library');
+          },
+          onMarkWatched: async () => {
+            await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'true');
+            setWatched(true);
+            showInfo('Marked as Watched', 'Item marked as watched');
+            DeviceEventEmitter.emit('watchedStatusChanged');
+          },
+          onMarkUnwatched: async () => {
+            await mmkvStorage.setItem(`watched:${item.type}:${item.id}`, 'false');
+            setWatched(false);
+            showInfo('Marked as Unwatched', 'Item marked as unwatched');
+            DeviceEventEmitter.emit('watchedStatusChanged');
+          },
+          onShare: () => {
+            const url = item.id ? `https://www.imdb.com/title/${item.id}/` : '';
+            const message = `${item.name}\n${url}`;
+            Share.share({ message, url, title: item.name });
+          },
+          onGetInfo: () => {
+            navigation.navigate('Metadata', { id: item.id, type: item.type });
+          },
+        });
+      }
+    }, [
+      isContextMenuAvailable,
+      openContextMenu,
+      focusId,
+      item,
+      inLibrary,
+      watched,
+      navigation,
+      showInfo,
+      showSuccess,
+    ]);
+
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
+
+    return (
+      <Focusable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
+        style={[styles.itemContainer, { width: itemWidth }]}
+        animationConfig={{
+          focusScale: 1.05,
+          unfocusedOpacity: 0.85,
+          showFocusBorder: true,
+          focusBorderColor: currentTheme.colors.primary,
+          focusBorderWidth: 3,
+          animateShadow: Platform.OS === 'ios',
+        }}
+        tvParallaxProperties={{
+          enabled: true,
+          shiftDistanceX: 3,
+          shiftDistanceY: 3,
+          tiltAngle: 0.03,
+          magnification: 1.02,
+        }}
+        accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
+        accessibilityHint="Press to view details, hold for more options"
+      >
+        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
+          <FastImage
+            source={{ uri: item.poster || 'https://via.placeholder.com/300x450' }}
+            style={styles.poster}
+            resizeMode={FastImage.resizeMode.cover}
+          />
+          {watched && (
+            <View style={styles.watchedIndicator}>
+              <MaterialIcons
+                name="check-circle"
+                size={22}
+                color={currentTheme.colors.success || '#4CAF50'}
+              />
+            </View>
+          )}
+          {item.progress !== undefined && item.progress < 1 && (
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBar,
+                  {
+                    width: `${item.progress * 100}%`,
+                    backgroundColor: currentTheme.colors.primary,
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
+        {showTitles && (
+          <Text
+            style={[
+              styles.cardTitle,
+              { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 16 : 13 },
+            ]}
+          >
+            {item.name}
+          </Text>
         )}
-        {item.progress !== undefined && item.progress < 1 && (
-          <View style={styles.progressBarContainer}>
-            <View
-              style={[
-                styles.progressBar,
-                { width: `${item.progress * 100}%`, backgroundColor: currentTheme.colors.primary }
-              ]}
-            />
-          </View>
-        )}
-      </View>
-      {showTitles && (
-        <Text style={[styles.cardTitle, { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 16 : 13 }]}>
-          {item.name}
-        </Text>
-      )}
-    </Focusable>
-  );
-});
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // TV Trakt Item Component
@@ -321,87 +340,105 @@ interface TVTraktItemProps {
   hasTVPreferredFocus?: boolean;
 }
 
-const TVTraktItem: React.FC<TVTraktItemProps> = React.memo(({
-  item,
-  width: itemWidth,
-  navigation,
-  currentTheme,
-  showTitles,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-}) => {
-  const [posterUrl, setPosterUrl] = useState<string | null>(null);
+const TVTraktItem: React.FC<TVTraktItemProps> = React.memo(
+  ({
+    item,
+    width: itemWidth,
+    navigation,
+    currentTheme,
+    showTitles,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+  }) => {
+    const [posterUrl, setPosterUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchPoster = async () => {
-      if (item.images) {
-        const url = TraktService.getTraktPosterUrl(item.images);
-        if (isMounted && url) {
-          setPosterUrl(url);
+    useEffect(() => {
+      let isMounted = true;
+      const fetchPoster = async () => {
+        if (item.images) {
+          const url = TraktService.getTraktPosterUrl(item.images);
+          if (isMounted && url) {
+            setPosterUrl(url);
+          }
         }
+      };
+      fetchPoster();
+      return () => {
+        isMounted = false;
+      };
+    }, [item.images]);
+
+    const handlePress = useCallback(() => {
+      if (item.imdbId) {
+        navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
       }
-    };
-    fetchPoster();
-    return () => { isMounted = false; };
-  }, [item.images]);
+    }, [navigation, item.imdbId, item.type]);
 
-  const handlePress = useCallback(() => {
-    if (item.imdbId) {
-      navigation.navigate('Metadata', { id: item.imdbId, type: item.type });
-    }
-  }, [navigation, item.imdbId, item.type]);
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
 
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
-
-  return (
-    <Focusable
-      onPress={handlePress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={[styles.itemContainer, { width: itemWidth }]}
-      animationConfig={{
-        focusScale: 1.05,
-        unfocusedOpacity: 0.85,
-        showFocusBorder: true,
-        focusBorderColor: currentTheme.colors.primary,
-        focusBorderWidth: 3,
-        animateShadow: Platform.OS === 'ios',
-      }}
-      tvParallaxProperties={{
-        enabled: true,
-        shiftDistanceX: 3,
-        shiftDistanceY: 3,
-        tiltAngle: 0.03,
-        magnification: 1.02,
-      }}
-      accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
-      accessibilityHint="Press to view details"
-    >
-      <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
-        {posterUrl ? (
-          <FastImage
-            source={{ uri: posterUrl }}
-            style={styles.poster}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-        ) : (
-          <View style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, justifyContent: 'center', alignItems: 'center' }]}>
-            <ActivityIndicator color={currentTheme.colors.primary} />
-          </View>
+    return (
+      <Focusable
+        onPress={handlePress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
+        style={[styles.itemContainer, { width: itemWidth }]}
+        animationConfig={{
+          focusScale: 1.05,
+          unfocusedOpacity: 0.85,
+          showFocusBorder: true,
+          focusBorderColor: currentTheme.colors.primary,
+          focusBorderWidth: 3,
+          animateShadow: Platform.OS === 'ios',
+        }}
+        tvParallaxProperties={{
+          enabled: true,
+          shiftDistanceX: 3,
+          shiftDistanceY: 3,
+          tiltAngle: 0.03,
+          magnification: 1.02,
+        }}
+        accessibilityLabel={`${item.name}${item.year ? `, ${item.year}` : ''}`}
+        accessibilityHint="Press to view details"
+      >
+        <View style={[styles.posterContainer, { shadowColor: currentTheme.colors.black }]}>
+          {posterUrl ? (
+            <FastImage
+              source={{ uri: posterUrl }}
+              style={styles.poster}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+          ) : (
+            <View
+              style={[
+                styles.poster,
+                {
+                  backgroundColor: currentTheme.colors.elevation1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}
+            >
+              <ActivityIndicator color={currentTheme.colors.primary} />
+            </View>
+          )}
+        </View>
+        {showTitles && (
+          <Text
+            style={[
+              styles.cardTitle,
+              { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 16 : 13 },
+            ]}
+          >
+            {item.name}
+          </Text>
         )}
-      </View>
-      {showTitles && (
-        <Text style={[styles.cardTitle, { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 16 : 13 }]}>
-          {item.name}
-        </Text>
-      )}
-    </Focusable>
-  );
-});
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // TV Trakt Folder Component
@@ -417,54 +454,70 @@ interface TVTraktFolderProps {
   hasTVPreferredFocus?: boolean;
 }
 
-const TVTraktFolder: React.FC<TVTraktFolderProps> = React.memo(({
-  folder,
-  width: itemWidth,
-  currentTheme,
-  onPress,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-}) => {
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
+const TVTraktFolder: React.FC<TVTraktFolderProps> = React.memo(
+  ({
+    folder,
+    width: itemWidth,
+    currentTheme,
+    onPress,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+  }) => {
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
 
-  return (
-    <Focusable
-      onPress={onPress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={[styles.itemContainer, { width: itemWidth }]}
-      animationConfig={{
-        focusScale: 1.05,
-        unfocusedOpacity: 0.85,
-        showFocusBorder: true,
-        focusBorderColor: currentTheme.colors.primary,
-        focusBorderWidth: 3,
-      }}
-      accessibilityLabel={`${folder.name} folder with ${folder.itemCount} items`}
-      accessibilityHint="Press to open this folder"
-    >
-      <View style={[styles.posterContainer, styles.folderContainer, { shadowColor: currentTheme.colors.black, backgroundColor: currentTheme.colors.elevation1 }]}>
-        <View style={styles.folderGradient}>
-          <MaterialIcons
-            name={folder.icon}
-            size={isTV ? 56 : 48}
-            color={currentTheme.colors.white}
-            style={{ marginBottom: isTV ? 12 : 8 }}
-          />
-          <Text style={[styles.folderTitle, { color: currentTheme.colors.white, fontSize: isTV ? 20 : 16 }]}>
-            {folder.name}
-          </Text>
-          <Text style={[styles.folderCount, { fontSize: isTV ? 14 : 12 }]}>
-            {folder.itemCount} items
-          </Text>
+    return (
+      <Focusable
+        onPress={onPress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
+        style={[styles.itemContainer, { width: itemWidth }]}
+        animationConfig={{
+          focusScale: 1.05,
+          unfocusedOpacity: 0.85,
+          showFocusBorder: true,
+          focusBorderColor: currentTheme.colors.primary,
+          focusBorderWidth: 3,
+        }}
+        accessibilityLabel={`${folder.name} folder with ${folder.itemCount} items`}
+        accessibilityHint="Press to open this folder"
+      >
+        <View
+          style={[
+            styles.posterContainer,
+            styles.folderContainer,
+            {
+              shadowColor: currentTheme.colors.black,
+              backgroundColor: currentTheme.colors.elevation1,
+            },
+          ]}
+        >
+          <View style={styles.folderGradient}>
+            <MaterialIcons
+              name={folder.icon}
+              size={isTV ? 56 : 48}
+              color={currentTheme.colors.white}
+              style={{ marginBottom: isTV ? 12 : 8 }}
+            />
+            <Text
+              style={[
+                styles.folderTitle,
+                { color: currentTheme.colors.white, fontSize: isTV ? 20 : 16 },
+              ]}
+            >
+              {folder.name}
+            </Text>
+            <Text style={[styles.folderCount, { fontSize: isTV ? 14 : 12 }]}>
+              {folder.itemCount} items
+            </Text>
+          </View>
         </View>
-      </View>
-    </Focusable>
-  );
-});
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // TV Filter Tab Component
@@ -483,66 +536,72 @@ interface TVFilterTabProps {
   traktAuthenticated?: boolean;
 }
 
-const TVFilterTab: React.FC<TVFilterTabProps> = React.memo(({
-  filterType,
-  label,
-  iconName,
-  isActive,
-  onPress,
-  focusId,
-  onFocus,
-  hasTVPreferredFocus = false,
-  currentTheme,
-  traktAuthenticated = false,
-}) => {
-  const handleFocus = useCallback(() => {
-    onFocus(focusId);
-  }, [onFocus, focusId]);
+const TVFilterTab: React.FC<TVFilterTabProps> = React.memo(
+  ({
+    filterType,
+    label,
+    iconName,
+    isActive,
+    onPress,
+    focusId,
+    onFocus,
+    hasTVPreferredFocus = false,
+    currentTheme,
+    traktAuthenticated = false,
+  }) => {
+    const handleFocus = useCallback(() => {
+      onFocus(focusId);
+    }, [onFocus, focusId]);
 
-  return (
-    <Focusable
-      onPress={onPress}
-      onFocus={handleFocus}
-      hasTVPreferredFocus={hasTVPreferredFocus}
-      style={[
-        styles.filterButton,
-        isActive && { backgroundColor: currentTheme.colors.primary },
-        { shadowColor: currentTheme.colors.black }
-      ]}
-      animationConfig={{
-        focusScale: 1.05,
-        unfocusedOpacity: isActive ? 1 : 0.8,
-        showFocusBorder: true,
-        focusBorderColor: isActive ? currentTheme.colors.white : currentTheme.colors.primary,
-        focusBorderWidth: 2,
-      }}
-      accessibilityLabel={`Filter by ${label}`}
-      accessibilityHint={isActive ? 'Currently selected' : 'Press to filter'}
-    >
-      {filterType === 'trakt' ? (
-        <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
-          <TraktIcon width={isTV ? 22 : 18} height={isTV ? 22 : 18} style={{ opacity: isActive ? 1 : 0.6 }} />
-        </View>
-      ) : (
-        <MaterialIcons
-          name={iconName}
-          size={isTV ? 26 : 22}
-          color={isActive ? currentTheme.colors.white : currentTheme.colors.mediumGray}
-          style={styles.filterIcon}
-        />
-      )}
-      <Text
+    return (
+      <Focusable
+        onPress={onPress}
+        onFocus={handleFocus}
+        hasTVPreferredFocus={hasTVPreferredFocus}
         style={[
-          styles.filterText,
-          { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 },
-          isActive && { color: currentTheme.colors.white, fontWeight: '600' }
+          styles.filterButton,
+          isActive && { backgroundColor: currentTheme.colors.primary },
+          { shadowColor: currentTheme.colors.black },
         ]}
+        animationConfig={{
+          focusScale: 1.05,
+          unfocusedOpacity: isActive ? 1 : 0.8,
+          showFocusBorder: true,
+          focusBorderColor: isActive ? currentTheme.colors.white : currentTheme.colors.primary,
+          focusBorderWidth: 2,
+        }}
+        accessibilityLabel={`Filter by ${label}`}
+        accessibilityHint={isActive ? 'Currently selected' : 'Press to filter'}
       >
-        {label}
-      </Text>
-    </Focusable>
-  );
-});
+        {filterType === 'trakt' ? (
+          <View style={[styles.filterIcon, { justifyContent: 'center', alignItems: 'center' }]}>
+            <TraktIcon
+              width={isTV ? 22 : 18}
+              height={isTV ? 22 : 18}
+              style={{ opacity: isActive ? 1 : 0.6 }}
+            />
+          </View>
+        ) : (
+          <MaterialIcons
+            name={iconName}
+            size={isTV ? 26 : 22}
+            color={isActive ? currentTheme.colors.white : currentTheme.colors.mediumGray}
+            style={styles.filterIcon}
+          />
+        )}
+        <Text
+          style={[
+            styles.filterText,
+            { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 },
+            isActive && { color: currentTheme.colors.white, fontWeight: '600' },
+          ]}
+        >
+          {label}
+        </Text>
+      </Focusable>
+    );
+  }
+);
 
 // =============================================================================
 // Skeleton Loader
@@ -583,13 +642,13 @@ const SkeletonLoader = () => {
       <RNAnimated.View
         style={[
           styles.posterContainer,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
+          { opacity, backgroundColor: currentTheme.colors.darkBackground },
         ]}
       />
       <RNAnimated.View
         style={[
           styles.skeletonTitle,
-          { opacity, backgroundColor: currentTheme.colors.darkBackground }
+          { opacity, backgroundColor: currentTheme.colors.darkBackground },
         ]}
       />
     </View>
@@ -652,43 +711,55 @@ const LibraryScreenTV = () => {
     continueWatching,
     ratedContent,
     loadWatchedItems,
-    loadAllCollections
+    loadAllCollections,
   } = useTraktContext();
 
   // =============================================================================
   // Focus Memory Per Tab
   // =============================================================================
 
-  const getFocusKeyForTab = useCallback((tabId: string) => {
-    return `library-${tabId}${selectedTraktFolder ? `-${selectedTraktFolder}` : ''}`;
-  }, [selectedTraktFolder]);
+  const getFocusKeyForTab = useCallback(
+    (tabId: string) => {
+      return `library-${tabId}${selectedTraktFolder ? `-${selectedTraktFolder}` : ''}`;
+    },
+    [selectedTraktFolder]
+  );
 
-  const handleItemFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNav) {
-      tvNav.setScreenFocus(getFocusKeyForTab(filter), focusId);
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNav, filter, getFocusKeyForTab]);
+  const handleItemFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNav) {
+        tvNav.setScreenFocus(getFocusKeyForTab(filter), focusId);
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNav, filter, getFocusKeyForTab]
+  );
 
-  const handleFilterFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNav) {
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNav]);
+  const handleFilterFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNav) {
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNav]
+  );
 
   // =============================================================================
   // TV Event Handler
   // =============================================================================
 
   useTVEventHandler(
-    useCallback((event) => {
-      // Handle voice button to open voice search
-      if (event.eventType === 'playPause' && tvNav) {
-        tvNav.openVoiceSearch();
-      }
-    }, [tvNav]),
+    useCallback(
+      event => {
+        // Handle voice button to open voice search
+        if (event.eventType === 'playPause' && tvNav) {
+          tvNav.openVoiceSearch();
+        }
+      },
+      [tvNav]
+    ),
     { enabled: Platform.isTV }
   );
 
@@ -747,19 +818,23 @@ const LibraryScreenTV = () => {
           return timeB - timeA;
         });
 
-        const updatedItems = await Promise.all(sortedItems.map(async (item) => {
-          const libraryItem: LibraryItem = {
-            ...item,
-            gradient: Array.isArray((item as any).gradient) ? (item as any).gradient : ['#222', '#444'],
-            traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
-          };
-          const key = `watched:${item.type}:${item.id}`;
-          const watched = await mmkvStorage.getItem(key);
-          return {
-            ...libraryItem,
-            watched: watched === 'true'
-          };
-        }));
+        const updatedItems = await Promise.all(
+          sortedItems.map(async item => {
+            const libraryItem: LibraryItem = {
+              ...item,
+              gradient: Array.isArray((item as any).gradient)
+                ? (item as any).gradient
+                : ['#222', '#444'],
+              traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
+            };
+            const key = `watched:${item.type}:${item.id}`;
+            const watched = await mmkvStorage.getItem(key);
+            return {
+              ...libraryItem,
+              watched: watched === 'true',
+            };
+          })
+        );
         setLibraryItems(updatedItems);
       } catch (error) {
         logger.error('Failed to load library:', error);
@@ -770,26 +845,30 @@ const LibraryScreenTV = () => {
 
     loadLibrary();
 
-    const unsubscribe = catalogService.subscribeToLibraryUpdates(async (items) => {
+    const unsubscribe = catalogService.subscribeToLibraryUpdates(async items => {
       const sortedItems = items.sort((a, b) => {
         const timeA = (a as any).addedToLibraryAt || 0;
         const timeB = (b as any).addedToLibraryAt || 0;
         return timeB - timeA;
       });
 
-      const updatedItems = await Promise.all(sortedItems.map(async (item) => {
-        const libraryItem: LibraryItem = {
-          ...item,
-          gradient: Array.isArray((item as any).gradient) ? (item as any).gradient : ['#222', '#444'],
-          traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
-        };
-        const key = `watched:${item.type}:${item.id}`;
-        const watched = await mmkvStorage.getItem(key);
-        return {
-          ...libraryItem,
-          watched: watched === 'true'
-        };
-      }));
+      const updatedItems = await Promise.all(
+        sortedItems.map(async item => {
+          const libraryItem: LibraryItem = {
+            ...item,
+            gradient: Array.isArray((item as any).gradient)
+              ? (item as any).gradient
+              : ['#222', '#444'],
+            traktId: typeof (item as any).traktId === 'number' ? (item as any).traktId : 0,
+          };
+          const key = `watched:${item.type}:${item.id}`;
+          const watched = await mmkvStorage.getItem(key);
+          return {
+            ...libraryItem,
+            watched: watched === 'true',
+          };
+        })
+      );
       setLibraryItems(updatedItems);
     });
 
@@ -852,237 +931,265 @@ const LibraryScreenTV = () => {
         name: 'Rated',
         icon: 'star',
         itemCount: ratedContent?.length || 0,
-      }
+      },
     ];
 
     return folders.filter(folder => folder.itemCount > 0);
-  }, [traktAuthenticated, watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
+  }, [
+    traktAuthenticated,
+    watchedMovies,
+    watchedShows,
+    watchlistMovies,
+    watchlistShows,
+    collectionMovies,
+    collectionShows,
+    continueWatching,
+    ratedContent,
+  ]);
 
   // =============================================================================
   // Get Trakt Folder Items
   // =============================================================================
 
-  const getTraktFolderItems = useCallback((folderId: string): TraktDisplayItem[] => {
-    const items: TraktDisplayItem[] = [];
+  const getTraktFolderItems = useCallback(
+    (folderId: string): TraktDisplayItem[] => {
+      const items: TraktDisplayItem[] = [];
 
-    switch (folderId) {
-      case 'watched':
-        if (watchedMovies) {
-          for (const watchedMovie of watchedMovies) {
-            const movie = watchedMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: watchedMovie.last_watched_at,
-                plays: watchedMovie.plays,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+      switch (folderId) {
+        case 'watched':
+          if (watchedMovies) {
+            for (const watchedMovie of watchedMovies) {
+              const movie = watchedMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: watchedMovie.last_watched_at,
+                  plays: watchedMovie.plays,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (watchedShows) {
-          for (const watchedShow of watchedShows) {
-            const show = watchedShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: watchedShow.last_watched_at,
-                plays: watchedShow.plays,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (watchedShows) {
+            for (const watchedShow of watchedShows) {
+              const show = watchedShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: watchedShow.last_watched_at,
+                  plays: watchedShow.plays,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'continue-watching':
-        if (continueWatching) {
-          for (const item of continueWatching) {
-            if (item.type === 'movie' && item.movie) {
-              items.push({
-                id: String(item.movie.ids.trakt),
-                name: item.movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: item.movie.year,
-                lastWatched: item.paused_at,
-                imdbId: item.movie.ids.imdb,
-                traktId: item.movie.ids.trakt,
-                images: item.movie.images,
-              });
-            } else if (item.type === 'episode' && item.show && item.episode) {
-              items.push({
-                id: `${item.show.ids.trakt}:${item.episode.season}:${item.episode.number}`,
-                name: `${item.show.title} S${item.episode.season}E${item.episode.number}`,
-                type: 'series',
-                poster: 'placeholder',
-                year: item.show.year,
-                lastWatched: item.paused_at,
-                imdbId: item.show.ids.imdb,
-                traktId: item.show.ids.trakt,
-                images: item.show.images,
-              });
+        case 'continue-watching':
+          if (continueWatching) {
+            for (const item of continueWatching) {
+              if (item.type === 'movie' && item.movie) {
+                items.push({
+                  id: String(item.movie.ids.trakt),
+                  name: item.movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: item.movie.year,
+                  lastWatched: item.paused_at,
+                  imdbId: item.movie.ids.imdb,
+                  traktId: item.movie.ids.trakt,
+                  images: item.movie.images,
+                });
+              } else if (item.type === 'episode' && item.show && item.episode) {
+                items.push({
+                  id: `${item.show.ids.trakt}:${item.episode.season}:${item.episode.number}`,
+                  name: `${item.show.title} S${item.episode.season}E${item.episode.number}`,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: item.show.year,
+                  lastWatched: item.paused_at,
+                  imdbId: item.show.ids.imdb,
+                  traktId: item.show.ids.trakt,
+                  images: item.show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'watchlist':
-        if (watchlistMovies) {
-          for (const watchlistMovie of watchlistMovies) {
-            const movie = watchlistMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: watchlistMovie.listed_at,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+        case 'watchlist':
+          if (watchlistMovies) {
+            for (const watchlistMovie of watchlistMovies) {
+              const movie = watchlistMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: watchlistMovie.listed_at,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (watchlistShows) {
-          for (const watchlistShow of watchlistShows) {
-            const show = watchlistShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: watchlistShow.listed_at,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (watchlistShows) {
+            for (const watchlistShow of watchlistShows) {
+              const show = watchlistShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: watchlistShow.listed_at,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'collection':
-        if (collectionMovies) {
-          for (const collectionMovie of collectionMovies) {
-            const movie = collectionMovie.movie;
-            if (movie) {
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: collectionMovie.collected_at,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
+        case 'collection':
+          if (collectionMovies) {
+            for (const collectionMovie of collectionMovies) {
+              const movie = collectionMovie.movie;
+              if (movie) {
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: collectionMovie.collected_at,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              }
             }
           }
-        }
-        if (collectionShows) {
-          for (const collectionShow of collectionShows) {
-            const show = collectionShow.show;
-            if (show) {
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: collectionShow.collected_at,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+          if (collectionShows) {
+            for (const collectionShow of collectionShows) {
+              const show = collectionShow.show;
+              if (show) {
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: collectionShow.collected_at,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
+          break;
 
-      case 'ratings':
-        if (ratedContent) {
-          for (const ratedItem of ratedContent) {
-            if (ratedItem.movie) {
-              const movie = ratedItem.movie;
-              items.push({
-                id: String(movie.ids.trakt),
-                name: movie.title,
-                type: 'movie',
-                poster: 'placeholder',
-                year: movie.year,
-                lastWatched: ratedItem.rated_at,
-                rating: ratedItem.rating,
-                imdbId: movie.ids.imdb,
-                traktId: movie.ids.trakt,
-                images: movie.images,
-              });
-            } else if (ratedItem.show) {
-              const show = ratedItem.show;
-              items.push({
-                id: String(show.ids.trakt),
-                name: show.title,
-                type: 'series',
-                poster: 'placeholder',
-                year: show.year,
-                lastWatched: ratedItem.rated_at,
-                rating: ratedItem.rating,
-                imdbId: show.ids.imdb,
-                traktId: show.ids.trakt,
-                images: show.images,
-              });
+        case 'ratings':
+          if (ratedContent) {
+            for (const ratedItem of ratedContent) {
+              if (ratedItem.movie) {
+                const movie = ratedItem.movie;
+                items.push({
+                  id: String(movie.ids.trakt),
+                  name: movie.title,
+                  type: 'movie',
+                  poster: 'placeholder',
+                  year: movie.year,
+                  lastWatched: ratedItem.rated_at,
+                  rating: ratedItem.rating,
+                  imdbId: movie.ids.imdb,
+                  traktId: movie.ids.trakt,
+                  images: movie.images,
+                });
+              } else if (ratedItem.show) {
+                const show = ratedItem.show;
+                items.push({
+                  id: String(show.ids.trakt),
+                  name: show.title,
+                  type: 'series',
+                  poster: 'placeholder',
+                  year: show.year,
+                  lastWatched: ratedItem.rated_at,
+                  rating: ratedItem.rating,
+                  imdbId: show.ids.imdb,
+                  traktId: show.ids.trakt,
+                  images: show.images,
+                });
+              }
             }
           }
-        }
-        break;
-    }
+          break;
+      }
 
-    return items.sort((a, b) => {
-      const dateA = a.lastWatched ? new Date(a.lastWatched).getTime() : 0;
-      const dateB = b.lastWatched ? new Date(b.lastWatched).getTime() : 0;
-      return dateB - dateA;
-    });
-  }, [watchedMovies, watchedShows, watchlistMovies, watchlistShows, collectionMovies, collectionShows, continueWatching, ratedContent]);
+      return items.sort((a, b) => {
+        const dateA = a.lastWatched ? new Date(a.lastWatched).getTime() : 0;
+        const dateB = b.lastWatched ? new Date(b.lastWatched).getTime() : 0;
+        return dateB - dateA;
+      });
+    },
+    [
+      watchedMovies,
+      watchedShows,
+      watchlistMovies,
+      watchlistShows,
+      collectionMovies,
+      collectionShows,
+      continueWatching,
+      ratedContent,
+    ]
+  );
 
   // =============================================================================
   // Filter Tab Handlers
   // =============================================================================
 
-  const handleFilterPress = useCallback((filterType: 'trakt' | 'movies' | 'series') => {
-    if (filterType === 'trakt') {
-      if (!traktAuthenticated) {
-        navigation.navigate('TraktSettings');
-      } else {
-        setShowTraktContent(true);
-        setSelectedTraktFolder(null);
-        loadAllCollections();
+  const handleFilterPress = useCallback(
+    (filterType: 'trakt' | 'movies' | 'series') => {
+      if (filterType === 'trakt') {
+        if (!traktAuthenticated) {
+          navigation.navigate('TraktSettings');
+        } else {
+          setShowTraktContent(true);
+          setSelectedTraktFolder(null);
+          loadAllCollections();
+        }
+        return;
       }
-      return;
-    }
-    setFilter(filterType);
-  }, [traktAuthenticated, navigation, loadAllCollections]);
+      setFilter(filterType);
+    },
+    [traktAuthenticated, navigation, loadAllCollections]
+  );
 
-  const handleTraktFolderPress = useCallback((folderId: string) => {
-    setSelectedTraktFolder(folderId);
-    loadAllCollections();
-  }, [loadAllCollections]);
+  const handleTraktFolderPress = useCallback(
+    (folderId: string) => {
+      setSelectedTraktFolder(folderId);
+      loadAllCollections();
+    },
+    [loadAllCollections]
+  );
 
   // =============================================================================
   // Render Trakt Content
@@ -1098,16 +1205,31 @@ const LibraryScreenTV = () => {
         return (
           <View style={styles.emptyContainer}>
             <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-            <Text style={[styles.emptyText, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 }]}>No Trakt collections</Text>
-            <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 }]}>
+            <Text
+              style={[
+                styles.emptyText,
+                { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 },
+              ]}
+            >
+              No Trakt collections
+            </Text>
+            <Text
+              style={[
+                styles.emptySubtext,
+                { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 },
+              ]}
+            >
               Your Trakt collections will appear here once you start using Trakt
             </Text>
             <Focusable
               onPress={loadAllCollections}
-              style={[styles.exploreButton, {
-                backgroundColor: currentTheme.colors.primary,
-                shadowColor: currentTheme.colors.black
-              }]}
+              style={[
+                styles.exploreButton,
+                {
+                  backgroundColor: currentTheme.colors.primary,
+                  shadowColor: currentTheme.colors.black,
+                },
+              ]}
               hasTVPreferredFocus={true}
               animationConfig={{
                 focusScale: 1.05,
@@ -1117,7 +1239,14 @@ const LibraryScreenTV = () => {
               }}
               accessibilityLabel="Load collections"
             >
-              <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 }]}>Load Collections</Text>
+              <Text
+                style={[
+                  styles.exploreButtonText,
+                  { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 },
+                ]}
+              >
+                Load Collections
+              </Text>
             </Focusable>
           </View>
         );
@@ -1126,7 +1255,16 @@ const LibraryScreenTV = () => {
       // Render Trakt folders in horizontal rows
       return (
         <View style={styles.traktFoldersContainer}>
-          <Text style={[styles.sectionTitle, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 18, marginBottom: isTV ? 24 : 16 }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: currentTheme.colors.white,
+                fontSize: isTV ? 24 : 18,
+                marginBottom: isTV ? 24 : 16,
+              },
+            ]}
+          >
             Trakt Collections
           </Text>
           <FlatList
@@ -1159,16 +1297,31 @@ const LibraryScreenTV = () => {
       return (
         <View style={styles.emptyContainer}>
           <TraktIcon width={80} height={80} style={{ opacity: 0.7, marginBottom: 16 }} />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 }]}>No content in {folderName}</Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 }]}>
+          <Text
+            style={[
+              styles.emptyText,
+              { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 },
+            ]}
+          >
+            No content in {folderName}
+          </Text>
+          <Text
+            style={[
+              styles.emptySubtext,
+              { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 },
+            ]}
+          >
             This collection is empty
           </Text>
           <Focusable
             onPress={loadAllCollections}
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
+            style={[
+              styles.exploreButton,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black,
+              },
+            ]}
             hasTVPreferredFocus={true}
             animationConfig={{
               focusScale: 1.05,
@@ -1178,7 +1331,14 @@ const LibraryScreenTV = () => {
             }}
             accessibilityLabel="Refresh"
           >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 }]}>Refresh</Text>
+            <Text
+              style={[
+                styles.exploreButtonText,
+                { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 },
+              ]}
+            >
+              Refresh
+            </Text>
           </Focusable>
         </View>
       );
@@ -1200,10 +1360,13 @@ const LibraryScreenTV = () => {
             hasTVPreferredFocus={index === 0}
           />
         )}
-        keyExtractor={(item) => `${item.type}-${item.id}`}
+        keyExtractor={item => `${item.type}-${item.id}`}
         numColumns={numColumns}
         estimatedItemSize={itemWidth * 1.5 + 40}
-        contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + (isTV ? 120 : 90) }]}
+        contentContainerStyle={[
+          styles.listContainer,
+          { paddingBottom: insets.bottom + (isTV ? 120 : 90) },
+        ]}
         showsVerticalScrollIndicator={false}
       />
     );
@@ -1233,7 +1396,12 @@ const LibraryScreenTV = () => {
     }
 
     if (filteredItems.length === 0) {
-      const emptyTitle = filter === 'movies' ? 'No movies yet' : filter === 'series' ? 'No TV shows yet' : 'No content yet';
+      const emptyTitle =
+        filter === 'movies'
+          ? 'No movies yet'
+          : filter === 'series'
+            ? 'No TV shows yet'
+            : 'No content yet';
       const emptySubtitle = 'Add some content to your library to see it here';
       return (
         <View style={styles.emptyContainer}>
@@ -1242,18 +1410,31 @@ const LibraryScreenTV = () => {
             size={isTV ? 80 : 64}
             color={currentTheme.colors.lightGray}
           />
-          <Text style={[styles.emptyText, { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 }]}>
+          <Text
+            style={[
+              styles.emptyText,
+              { color: currentTheme.colors.white, fontSize: isTV ? 24 : 20 },
+            ]}
+          >
             {emptyTitle}
           </Text>
-          <Text style={[styles.emptySubtext, { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 }]}>
+          <Text
+            style={[
+              styles.emptySubtext,
+              { color: currentTheme.colors.mediumGray, fontSize: isTV ? 18 : 15 },
+            ]}
+          >
             {emptySubtitle}
           </Text>
           <Focusable
             onPress={() => navigation.navigate('Search')}
-            style={[styles.exploreButton, {
-              backgroundColor: currentTheme.colors.primary,
-              shadowColor: currentTheme.colors.black
-            }]}
+            style={[
+              styles.exploreButton,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                shadowColor: currentTheme.colors.black,
+              },
+            ]}
             hasTVPreferredFocus={true}
             animationConfig={{
               focusScale: 1.05,
@@ -1263,7 +1444,14 @@ const LibraryScreenTV = () => {
             }}
             accessibilityLabel="Find something to watch"
           >
-            <Text style={[styles.exploreButtonText, { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 }]}>Find something to watch</Text>
+            <Text
+              style={[
+                styles.exploreButtonText,
+                { color: currentTheme.colors.white, fontSize: isTV ? 18 : 16 },
+              ]}
+            >
+              Find something to watch
+            </Text>
           </Focusable>
         </View>
       );
@@ -1289,11 +1477,25 @@ const LibraryScreenTV = () => {
         keyExtractor={item => item.id}
         numColumns={numColumns}
         estimatedItemSize={itemWidth * 1.5 + 40}
-        contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom + (isTV ? 120 : 90) }]}
+        contentContainerStyle={[
+          styles.listContainer,
+          { paddingBottom: insets.bottom + (isTV ? 120 : 90) },
+        ]}
         showsVerticalScrollIndicator={false}
       />
     );
-  }, [loading, filteredItems, filter, itemWidth, numColumns, currentTheme, navigation, settings.showPosterTitles, handleItemFocus, insets.bottom]);
+  }, [
+    loading,
+    filteredItems,
+    filter,
+    itemWidth,
+    numColumns,
+    currentTheme,
+    navigation,
+    settings.showPosterTitles,
+    handleItemFocus,
+    insets.bottom,
+  ]);
 
   // =============================================================================
   // Tablet Detection
@@ -1301,7 +1503,10 @@ const LibraryScreenTV = () => {
 
   const isTablet = useMemo(() => {
     const smallestDimension = Math.min(windowWidth, windowHeight);
-    return Platform.isTV || (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768);
+    return (
+      Platform.isTV ||
+      (Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768)
+    );
   }, [windowWidth, windowHeight]);
 
   // =============================================================================
@@ -1310,34 +1515,37 @@ const LibraryScreenTV = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       <ScreenHeader
-        title={showTraktContent
-          ? (selectedTraktFolder
-            ? traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection'
-            : 'Trakt Collection')
-          : 'Library'
+        title={
+          showTraktContent
+            ? selectedTraktFolder
+              ? traktFolders.find(f => f.id === selectedTraktFolder)?.name || 'Collection'
+              : 'Trakt Collection'
+            : 'Library'
         }
         showBackButton={showTraktContent}
-        onBackPress={showTraktContent ? () => {
-          if (selectedTraktFolder) {
-            setSelectedTraktFolder(null);
-          } else {
-            setShowTraktContent(false);
-          }
-        } : undefined}
+        onBackPress={
+          showTraktContent
+            ? () => {
+                if (selectedTraktFolder) {
+                  setSelectedTraktFolder(null);
+                } else {
+                  setShowTraktContent(false);
+                }
+              }
+            : undefined
+        }
         useMaterialIcons={showTraktContent}
         rightActionIcon={!showTraktContent ? 'calendar' : undefined}
         onRightActionPress={!showTraktContent ? () => navigation.navigate('Calendar') : undefined}
         isTablet={isTablet}
       />
 
-      <View style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <View
+        style={[styles.contentContainer, { backgroundColor: currentTheme.colors.darkBackground }]}
+      >
         {!showTraktContent && (
           <View style={styles.filtersContainer}>
             <TVFilterTab
@@ -1390,14 +1598,18 @@ const LibraryScreenTV = () => {
           item={selectedItem}
           isWatched={!!selectedItem.watched}
           isSaved={true}
-          onOptionSelect={async (option) => {
+          onOptionSelect={async option => {
             if (!selectedItem) return;
             switch (option) {
               case 'library': {
                 try {
                   await catalogService.removeFromLibrary(selectedItem.type, selectedItem.id);
                   showInfo('Removed from Library', 'Item removed from your library');
-                  setLibraryItems(prev => prev.filter(item => !(item.id === selectedItem.id && item.type === selectedItem.type)));
+                  setLibraryItems(prev =>
+                    prev.filter(
+                      item => !(item.id === selectedItem.id && item.type === selectedItem.type)
+                    )
+                  );
                   setMenuVisible(false);
                 } catch (error) {
                   showError('Failed to update Library', 'Unable to remove item from library');
@@ -1409,12 +1621,17 @@ const LibraryScreenTV = () => {
                   const key = `watched:${selectedItem.type}:${selectedItem.id}`;
                   const newWatched = !selectedItem.watched;
                   await mmkvStorage.setItem(key, newWatched ? 'true' : 'false');
-                  showInfo(newWatched ? 'Marked as Watched' : 'Marked as Unwatched', newWatched ? 'Item marked as watched' : 'Item marked as unwatched');
-                  setLibraryItems(prev => prev.map(item =>
-                    item.id === selectedItem.id && item.type === selectedItem.type
-                      ? { ...item, watched: newWatched }
-                      : item
-                  ));
+                  showInfo(
+                    newWatched ? 'Marked as Watched' : 'Marked as Unwatched',
+                    newWatched ? 'Item marked as watched' : 'Item marked as unwatched'
+                  );
+                  setLibraryItems(prev =>
+                    prev.map(item =>
+                      item.id === selectedItem.id && item.type === selectedItem.type
+                        ? { ...item, watched: newWatched }
+                        : item
+                    )
+                  );
                 } catch (error) {
                   showError('Failed to update watched status', 'Unable to update watched status');
                 }

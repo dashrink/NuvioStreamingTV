@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect, NavigationProp } from '@react-navigation/native';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
@@ -11,15 +13,13 @@ import {
   Platform,
   useColorScheme,
   Animated,
-  Dimensions
+  Dimensions,
 } from 'react-native';
-import { useSettings } from '../hooks/useSettings';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../contexts/ThemeContext';
-import { RootStackParamList } from '../navigation/AppNavigator';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -30,10 +30,7 @@ interface SettingsCardProps {
 }
 
 const SettingsCard: React.FC<SettingsCardProps> = ({ children, isDarkMode, colors }) => (
-  <View style={[
-    styles.card,
-    { backgroundColor: isDarkMode ? colors.elevation2 : colors.white }
-  ]}>
+  <View style={[styles.card, { backgroundColor: isDarkMode ? colors.elevation2 : colors.white }]}>
     {children}
   </View>
 );
@@ -60,9 +57,9 @@ const SettingItem: React.FC<SettingItemProps> = ({
   isLast = false,
   onPress,
   isDarkMode,
-  colors
+  colors,
 }) => {
-  const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
+  const isTabletDevice = Platform.OS !== 'web' && Dimensions.get('window').width >= 768;
 
   const handlePress = onPress
     ? () => {
@@ -78,7 +75,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
       style={[
         styles.settingItem,
         !isLast && styles.settingItemBorder,
-        { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }
+        { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
       ]}
     >
       <View style={styles.settingIconContainer}>
@@ -86,29 +83,43 @@ const SettingItem: React.FC<SettingItemProps> = ({
       </View>
       <View style={styles.settingContent}>
         <View style={styles.settingTitleRow}>
-          <Text style={[styles.settingTitle, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
+          <Text
+            style={[
+              styles.settingTitle,
+              { color: isDarkMode ? colors.highEmphasis : colors.textDark },
+            ]}
+          >
             {title}
           </Text>
           {description && (
-            <Text style={[styles.settingDescription, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>
+            <Text
+              style={[
+                styles.settingDescription,
+                { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+              ]}
+            >
               {description}
             </Text>
           )}
         </View>
       </View>
-      <View style={styles.settingControl}>
-        {renderControl()}
-      </View>
+      <View style={styles.settingControl}>{renderControl()}</View>
     </TouchableOpacity>
   );
 };
 
-const SectionHeader: React.FC<{ title: string; isDarkMode: boolean; colors: any }> = ({ title, isDarkMode, colors }) => (
+const SectionHeader: React.FC<{ title: string; isDarkMode: boolean; colors: any }> = ({
+  title,
+  isDarkMode,
+  colors,
+}) => (
   <View style={styles.sectionHeader}>
-    <Text style={[
-      styles.sectionHeaderText,
-      { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }
-    ]}>
+    <Text
+      style={[
+        styles.sectionHeaderText,
+        { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+      ]}
+    >
       {title}
     </Text>
   </View>
@@ -123,7 +134,7 @@ const HomeScreenSettings: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const isTabletDevice = Platform.OS !== 'web' && (Dimensions.get('window').width >= 768);
+  const isTabletDevice = Platform.OS !== 'web' && Dimensions.get('window').width >= 768;
 
   // Prevent iOS entrance flicker by restoring a non-translucent StatusBar
   useFocusEffect(
@@ -152,25 +163,25 @@ const HomeScreenSettings: React.FC = () => {
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
-          useNativeDriver: true
+          useNativeDriver: true,
         }),
         Animated.delay(1000),
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 300,
-          useNativeDriver: true
-        })
+          useNativeDriver: true,
+        }),
       ]).start(() => setShowSavedIndicator(false));
     }
   }, [showSavedIndicator, fadeAnim]);
 
-  const handleUpdateSetting = useCallback(<K extends keyof typeof settings>(
-    key: K,
-    value: typeof settings[K]
-  ) => {
-    updateSetting(key, value);
-    setShowSavedIndicator(true);
-  }, [updateSetting]);
+  const handleUpdateSetting = useCallback(
+    <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) => {
+      updateSetting(key, value);
+      setShowSavedIndicator(true);
+    },
+    [updateSetting]
+  );
 
   // Ensure carousel is the default hero layout on tablets for all users
   useEffect(() => {
@@ -181,21 +192,38 @@ const HomeScreenSettings: React.FC = () => {
     } catch {}
   }, [isTabletDevice, settings.heroStyle, updateSetting]);
 
-  const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (value: boolean) => void }) => (
+  const CustomSwitch = ({
+    value,
+    onValueChange,
+  }: {
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+  }) => (
     <Switch
       value={value}
-      onValueChange={(val) => {
+      onValueChange={val => {
         triggerMedium();
         onValueChange(val);
       }}
-      trackColor={{ false: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', true: colors.primary }}
+      trackColor={{
+        false: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        true: colors.primary,
+      }}
       thumbColor={Platform.OS === 'android' ? (value ? colors.white : colors.white) : ''}
       ios_backgroundColor={isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
     />
   );
 
   // Radio button component for content source selection
-  const RadioOption = ({ selected, onPress, label }: { selected: boolean, onPress: () => void, label: string }) => (
+  const RadioOption = ({
+    selected,
+    onPress,
+    label,
+  }: {
+    selected: boolean;
+    onPress: () => void;
+    label: string;
+  }) => (
     <TouchableOpacity
       style={styles.radioOption}
       onPress={() => {
@@ -205,16 +233,17 @@ const HomeScreenSettings: React.FC = () => {
       activeOpacity={0.7}
     >
       <View style={styles.radioContainer}>
-        <View style={[
-          styles.radio, 
-          { borderColor: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }
-        ]}>
+        <View
+          style={[
+            styles.radio,
+            { borderColor: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+          ]}
+        >
           {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
         </View>
-        <Text style={[
-          styles.radioLabel, 
-          { color: isDarkMode ? colors.highEmphasis : colors.textDark }
-        ]}>
+        <Text
+          style={[styles.radioLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}
+        >
           {label}
         </Text>
       </View>
@@ -225,13 +254,18 @@ const HomeScreenSettings: React.FC = () => {
   const SegmentedControl = ({
     options,
     value,
-    onChange
+    onChange,
   }: {
     options: { label: string; value: string }[];
     value: string;
     onChange: (val: string) => void;
   }) => (
-    <View style={[styles.segmentContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
+    <View
+      style={[
+        styles.segmentContainer,
+        { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
+      ]}
+    >
       {options.map((opt, idx) => {
         const selected = value === opt.value;
         return (
@@ -249,11 +283,13 @@ const HomeScreenSettings: React.FC = () => {
               selected && { backgroundColor: colors.primary },
             ]}
           >
-            <Text style={{
-              color: selected ? colors.white : (isDarkMode ? colors.highEmphasis : colors.textDark),
-              fontWeight: '700',
-              fontSize: 13,
-            }}>
+            <Text
+              style={{
+                color: selected ? colors.white : isDarkMode ? colors.highEmphasis : colors.textDark,
+                fontWeight: '700',
+                fontSize: 13,
+              }}
+            >
               {opt.label}
             </Text>
           </TouchableOpacity>
@@ -265,55 +301,61 @@ const HomeScreenSettings: React.FC = () => {
   // Format selected catalogs text
   const getSelectedCatalogsText = useCallback(() => {
     if (!settings.selectedHeroCatalogs || settings.selectedHeroCatalogs.length === 0) {
-      return "All catalogs";
+      return 'All catalogs';
     } else {
       return `${settings.selectedHeroCatalogs.length} selected`;
     }
   }, [settings.selectedHeroCatalogs]);
 
   const ChevronRight = () => (
-    <MaterialIcons 
-      name="chevron-right" 
-      size={24} 
+    <MaterialIcons
+      name="chevron-right"
+      size={24}
       color={isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
     />
   );
 
   return (
-    <SafeAreaView style={[
-      styles.container,
-      { backgroundColor: isDarkMode ? colors.darkBackground : '#F2F2F7' }
-    ]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? colors.darkBackground : '#F2F2F7' },
+      ]}
+    >
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons 
-            name="arrow-back" 
-            size={24} 
-            color={isDarkMode ? colors.highEmphasis : colors.textDark} 
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? colors.highEmphasis : colors.textDark}
           />
-          <Text style={[styles.backText, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
+          <Text
+            style={[styles.backText, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}
+          >
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
-      <Text style={[styles.headerTitle, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>
+
+      <Text
+        style={[styles.headerTitle, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}
+      >
         Home Screen Settings
       </Text>
 
       {/* Saved indicator */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.savedIndicator, 
-          { 
+          styles.savedIndicator,
+          {
             opacity: fadeAnim,
-            backgroundColor: isDarkMode ? 'rgba(0, 180, 150, 0.9)' : 'rgba(0, 180, 150, 0.9)'
-          }
+            backgroundColor: isDarkMode ? 'rgba(0, 180, 150, 0.9)' : 'rgba(0, 180, 150, 0.9)',
+          },
         ]}
         pointerEvents="none"
       >
@@ -321,7 +363,7 @@ const HomeScreenSettings: React.FC = () => {
         <Text style={styles.savedIndicatorText}>Changes Applied</Text>
       </Animated.View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -335,9 +377,9 @@ const HomeScreenSettings: React.FC = () => {
             isDarkMode={isDarkMode}
             colors={colors}
             renderControl={() => (
-              <CustomSwitch 
-                value={settings.showHeroSection} 
-                onValueChange={(value) => handleUpdateSetting('showHeroSection', value)} 
+              <CustomSwitch
+                value={settings.showHeroSection}
+                onValueChange={value => handleUpdateSetting('showHeroSection', value)}
               />
             )}
           />
@@ -358,32 +400,74 @@ const HomeScreenSettings: React.FC = () => {
         {settings.showHeroSection && (
           <>
             <View style={styles.segmentCard}>
-              <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Hero Layout</Text>
+              <Text
+                style={[
+                  styles.segmentTitle,
+                  { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+                ]}
+              >
+                Hero Layout
+              </Text>
               <SegmentedControl
                 options={[
-                  { label: 'Legacy', value: 'legacy' }, 
+                  { label: 'Legacy', value: 'legacy' },
                   { label: 'Carousel', value: 'carousel' },
-                  { label: 'Apple TV', value: 'appletv' }
+                  { label: 'Apple TV', value: 'appletv' },
                 ]}
                 value={settings.heroStyle}
-                onChange={(val) => handleUpdateSetting('heroStyle', val as any)}
+                onChange={val => handleUpdateSetting('heroStyle', val as any)}
               />
-              <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Full-width banner, swipeable cards, or Apple TV style</Text>
+              <Text
+                style={[
+                  styles.segmentHint,
+                  { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+                ]}
+              >
+                Full-width banner, swipeable cards, or Apple TV style
+              </Text>
             </View>
 
             <View style={styles.segmentCard}>
-              <Text style={[styles.segmentTitle, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Featured Source</Text>
-              <Text style={[styles.segmentHint, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Using Catalogs</Text>
+              <Text
+                style={[
+                  styles.segmentTitle,
+                  { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+                ]}
+              >
+                Featured Source
+              </Text>
+              <Text
+                style={[
+                  styles.segmentHint,
+                  { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+                ]}
+              >
+                Using Catalogs
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   triggerLight();
                   navigation.navigate('HeroCatalogs');
                 }}
-                style={[styles.manageLink, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' }]}
+                style={[
+                  styles.manageLink,
+                  { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.04)' },
+                ]}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: isDarkMode ? colors.highEmphasis : colors.textDark, fontWeight: '600' }}>Manage selected catalogs</Text>
-                <MaterialIcons name="chevron-right" size={20} color={isDarkMode ? colors.mediumEmphasis : colors.textMutedDark} />
+                <Text
+                  style={{
+                    color: isDarkMode ? colors.highEmphasis : colors.textDark,
+                    fontWeight: '600',
+                  }}
+                >
+                  Manage selected catalogs
+                </Text>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={isDarkMode ? colors.mediumEmphasis : colors.textMutedDark}
+                />
               </TouchableOpacity>
             </View>
 
@@ -396,50 +480,106 @@ const HomeScreenSettings: React.FC = () => {
                   isDarkMode={isDarkMode}
                   colors={colors}
                   renderControl={() => (
-                    <CustomSwitch 
+                    <CustomSwitch
                       value={settings.enableHomeHeroBackground}
-                      onValueChange={(value) => handleUpdateSetting('enableHomeHeroBackground', value)}
+                      onValueChange={value =>
+                        handleUpdateSetting('enableHomeHeroBackground', value)
+                      }
                     />
                   )}
                 />
-                <Text style={[styles.settingInlineNote, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>May impact performance on low-end devices.</Text>
+                <Text
+                  style={[
+                    styles.settingInlineNote,
+                    { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+                  ]}
+                >
+                  May impact performance on low-end devices.
+                </Text>
               </SettingsCard>
             )}
           </>
         )}
 
         <SettingsCard isDarkMode={isDarkMode} colors={colors}>
-          <Text style={[styles.cardHeader, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>Posters</Text>
+          <Text
+            style={[
+              styles.cardHeader,
+              { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+            ]}
+          >
+            Posters
+          </Text>
           <View style={styles.settingsRowInline}>
-            <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Show Titles</Text>
-            <CustomSwitch 
+            <Text
+              style={[
+                styles.rowLabel,
+                { color: isDarkMode ? colors.highEmphasis : colors.textDark },
+              ]}
+            >
+              Show Titles
+            </Text>
+            <CustomSwitch
               value={settings.showPosterTitles}
-              onValueChange={(value) => handleUpdateSetting('showPosterTitles', value)}
+              onValueChange={value => handleUpdateSetting('showPosterTitles', value)}
             />
           </View>
           <View style={styles.settingsRow}>
-            <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Poster Size</Text>
+            <Text
+              style={[
+                styles.rowLabel,
+                { color: isDarkMode ? colors.highEmphasis : colors.textDark },
+              ]}
+            >
+              Poster Size
+            </Text>
             <SegmentedControl
-              options={[{ label: 'Small', value: 'small' }, { label: 'Medium', value: 'medium' }, { label: 'Large', value: 'large' }]}
+              options={[
+                { label: 'Small', value: 'small' },
+                { label: 'Medium', value: 'medium' },
+                { label: 'Large', value: 'large' },
+              ]}
               value={settings.posterSize}
-              onChange={(val) => handleUpdateSetting('posterSize', val as any)}
+              onChange={val => handleUpdateSetting('posterSize', val as any)}
             />
           </View>
 
           <View style={styles.settingsRow}>
-            <Text style={[styles.rowLabel, { color: isDarkMode ? colors.highEmphasis : colors.textDark }]}>Poster Corners</Text>
+            <Text
+              style={[
+                styles.rowLabel,
+                { color: isDarkMode ? colors.highEmphasis : colors.textDark },
+              ]}
+            >
+              Poster Corners
+            </Text>
             <SegmentedControl
-              options={[{ label: 'Square', value: '0' }, { label: 'Rounded', value: '12' }, { label: 'Pill', value: '20' }]}
+              options={[
+                { label: 'Square', value: '0' },
+                { label: 'Rounded', value: '12' },
+                { label: 'Pill', value: '20' },
+              ]}
               value={String(settings.posterBorderRadius)}
-              onChange={(val) => handleUpdateSetting('posterBorderRadius', Number(val) as any)}
+              onChange={val => handleUpdateSetting('posterBorderRadius', Number(val) as any)}
             />
           </View>
         </SettingsCard>
 
         <SectionHeader title="ABOUT THESE SETTINGS" isDarkMode={isDarkMode} colors={colors} />
-        <View style={[styles.infoCard, { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.03)' }]}>
-          <Text style={[styles.infoText, { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark }]}>
-            These settings control how content is displayed on your Home screen. Changes are applied immediately without requiring an app restart.
+        <View
+          style={[
+            styles.infoCard,
+            { backgroundColor: isDarkMode ? colors.elevation1 : 'rgba(0,0,0,0.03)' },
+          ]}
+        >
+          <Text
+            style={[
+              styles.infoText,
+              { color: isDarkMode ? colors.mediumEmphasis : colors.textMutedDark },
+            ]}
+          >
+            These settings control how content is displayed on your Home screen. Changes are applied
+            immediately without requiring an app restart.
           </Text>
         </View>
       </ScrollView>
@@ -625,17 +765,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentFirst: {
-  },
-  segmentLast: {
-  },
+  segmentFirst: {},
+  segmentLast: {},
   segmentCard: {
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 12,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)'
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   segmentTitle: {
     fontSize: 12,
@@ -707,4 +845,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreenSettings; 
+export default HomeScreenSettings;

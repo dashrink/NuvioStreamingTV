@@ -22,6 +22,7 @@
  */
 
 import { ViewStyle, TextStyle } from 'react-native';
+
 import type { SharedValue } from 'react-native-reanimated';
 
 // ============================================================================
@@ -516,7 +517,14 @@ export interface SkeletonGroupProps {
  * @example
  * <SkeletonGroup count={5} preset="poster" />
  */
-export type SkeletonPreset = 'list' | 'grid' | 'textBlock' | 'poster' | 'episode' | 'cast' | 'catalogRow';
+export type SkeletonPreset =
+  | 'list'
+  | 'grid'
+  | 'textBlock'
+  | 'poster'
+  | 'episode'
+  | 'cast'
+  | 'catalogRow';
 
 /**
  * Props for full-screen loading overlay component (LoadingOverlayScreen).

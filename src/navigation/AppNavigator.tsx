@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
+import { mmkvStorage } from '../services/mmkvStorage';
+
+import type { MD3Theme } from 'react-native-paper';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+
+import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
+import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import {
   NavigationContainer,
   DefaultTheme as NavigationDefaultTheme,
@@ -11,7 +17,12 @@ import {
   NativeStackNavigationOptions,
   NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
-import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+
+
+import { PostHogProvider } from 'posthog-react-native';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import {
   useColorScheme,
   Platform,
@@ -24,24 +35,14 @@ import {
   Easing,
   Dimensions,
 } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
 import {
   PaperProvider,
   MD3DarkTheme,
   MD3LightTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
-import type { MD3Theme } from 'react-native-paper';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { colors } from '../styles/colors';
-import { HeaderVisibility } from '../contexts/HeaderVisibility';
-import { Stream } from '../types/streams';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { PostHogProvider } from 'posthog-react-native';
+
 import Focusable from '../components/common/Focusable';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback
@@ -61,12 +62,6 @@ if (Platform.OS === 'ios') {
 }
 
 // Import screens with their proper types
-import HomeScreen from '../screens/HomeScreen';
-import LibraryScreen from '../screens/LibraryScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import DownloadsScreen from '../screens/DownloadsScreen';
-import MetadataScreen from '../screens/MetadataScreen';
-import KSPlayerCore from '../components/player/KSPlayerCore';
 import AndroidVideoPlayer from '../components/player/AndroidVideoPlayer';
 import CatalogScreen from '../screens/CatalogScreen';
 import AddonsScreen from '../screens/AddonsScreen';
@@ -103,6 +98,16 @@ import Top10SettingsScreen from '../screens/Top10SettingsScreen';
 import { ProfileProvider, useActiveProfile } from '../contexts/ProfileContext';
 import ProfileSwitcherBottomSheet from '../components/profile/ProfileSwitcherBottomSheet';
 import ProfileIcon from '../components/icons/ProfileIcon';
+import KSPlayerCore from '../components/player/KSPlayerCore';
+import { HeaderVisibility } from '../contexts/HeaderVisibility';
+import { useTheme } from '../contexts/ThemeContext';
+import DownloadsScreen from '../screens/DownloadsScreen';
+import HomeScreen from '../screens/HomeScreen';
+import LibraryScreen from '../screens/LibraryScreen';
+import MetadataScreen from '../screens/MetadataScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import { colors } from '../styles/colors';
+import { Stream } from '../types/streams';
 
 // Optional Android immersive mode module
 let RNImmersiveMode: any = null;
@@ -689,8 +694,7 @@ const RootNavigator = () => {
     animationEnabled: true,
     headerShown: true,
     headerStyle: {
-      backgroundColor:
-        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+      backgroundColor: colorScheme === 'dark' ? colors.darkBackground : colors.white,
     },
     headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
     headerTitleStyle: {
@@ -703,9 +707,7 @@ const RootNavigator = () => {
 
   if (!isOnboarded) {
     return (
-      <Stack.Navigator
-        screenOptions={{ headerShown: false, animationEnabled: false }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false, animationEnabled: false }}>
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
@@ -717,9 +719,7 @@ const RootNavigator = () => {
 
   if (!activeProfile) {
     return (
-      <Stack.Navigator
-        screenOptions={{ headerShown: false, animationEnabled: false }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false, animationEnabled: false }}>
         <Stack.Screen
           name="ProfileSelector"
           component={ProfileSelectorScreen}
@@ -731,11 +731,7 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="MainTabs"
-        component={TabNavigator}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="MainTabs" component={TabNavigator} options={{ headerShown: false }} />
       <Stack.Screen
         name="Backup"
         component={BackupScreen}
@@ -867,8 +863,7 @@ const TabNavigator = () => {
     animationEnabled: true,
     headerShown: true,
     headerStyle: {
-      backgroundColor:
-        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+      backgroundColor: colorScheme === 'dark' ? colors.darkBackground : colors.white,
     },
     headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
     headerTitleStyle: {
@@ -902,12 +897,7 @@ const TabNavigator = () => {
           tabBarLabel: 'Home',
           tabBarAccessibilityLabel: 'Home',
           tabBarIcon: ({ color }) => (
-            <TabIcon
-              focused={true}
-              color={color}
-              iconName="home"
-              iconLibrary="material"
-            />
+            <TabIcon focused={true} color={color} iconName="home" iconLibrary="material" />
           ),
         }}
       />
@@ -919,12 +909,7 @@ const TabNavigator = () => {
           tabBarLabel: 'Library',
           tabBarAccessibilityLabel: 'Library',
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              iconName="bookmark"
-              iconLibrary="material"
-            />
+            <TabIcon focused={focused} color={color} iconName="bookmark" iconLibrary="material" />
           ),
         }}
       />
@@ -936,12 +921,7 @@ const TabNavigator = () => {
           tabBarLabel: 'Search',
           tabBarAccessibilityLabel: 'Search',
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              iconName="magnify"
-              iconLibrary="material"
-            />
+            <TabIcon focused={focused} color={color} iconName="magnify" iconLibrary="material" />
           ),
         }}
       />
@@ -953,12 +933,7 @@ const TabNavigator = () => {
           tabBarLabel: 'Downloads',
           tabBarAccessibilityLabel: 'Downloads',
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              iconName="download"
-              iconLibrary="material"
-            />
+            <TabIcon focused={focused} color={color} iconName="download" iconLibrary="material" />
           ),
         }}
       />
@@ -971,12 +946,7 @@ const TabNavigator = () => {
           tabBarAccessibilityLabel: 'Settings',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              iconName="cog"
-              iconLibrary="material"
-            />
+            <TabIcon focused={focused} color={color} iconName="cog" iconLibrary="material" />
           ),
         }}
       />
@@ -991,8 +961,7 @@ const SettingsStackNavigator = () => {
 
   const screenOptions: NativeStackNavigationOptions = {
     headerStyle: {
-      backgroundColor:
-        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+      backgroundColor: colorScheme === 'dark' ? colors.darkBackground : colors.white,
     },
     headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
     headerTitleStyle: {
@@ -1177,9 +1146,7 @@ export const AppNavigator: React.FC<AppNavigatorProps> = () => {
   }
 
   return (
-    <PaperProvider
-      theme={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}
-    >
+    <PaperProvider theme={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>
       <SafeAreaProvider>
         <NavigationContainer theme={navigationTheme} fallback={null}>
           <PostHogProvider

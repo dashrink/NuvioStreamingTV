@@ -20,14 +20,14 @@ const TEST_ACTION_CONTENT = {
   id: 'tt0468569', // The Dark Knight (action)
   type: 'movie' as const,
   name: 'The Dark Knight',
-  genre: 'action'
+  genre: 'action',
 };
 
 const TEST_DOCUMENTARY_CONTENT = {
   id: 'tt1663662', // Planet Earth II (documentary)
   type: 'series' as const,
   name: 'Planet Earth II',
-  genre: 'documentary'
+  genre: 'documentary',
 };
 
 export interface Profile {
@@ -69,7 +69,7 @@ export class ProfileIsolationTester {
       name: 'Test Profile A (Action)',
       avatar: 'action-avatar',
       isActive: false,
-      createdAt: timestamp
+      createdAt: timestamp,
     };
 
     this.profileB = {
@@ -77,12 +77,14 @@ export class ProfileIsolationTester {
       name: 'Test Profile B (Documentary)',
       avatar: 'documentary-avatar',
       isActive: false,
-      createdAt: timestamp + 1
+      createdAt: timestamp + 1,
     };
 
     // Load existing profiles and add test profiles
     const existingProfilesJson = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
-    const existingProfiles: Profile[] = existingProfilesJson ? JSON.parse(existingProfilesJson) : [];
+    const existingProfiles: Profile[] = existingProfilesJson
+      ? JSON.parse(existingProfilesJson)
+      : [];
 
     // Set profileA as active
     this.profileA.isActive = true;
@@ -90,7 +92,11 @@ export class ProfileIsolationTester {
     const updatedProfiles = [...existingProfiles, this.profileA, this.profileB];
     await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
 
-    logger.log('[ProfileIsolationTest] Created test profiles:', this.profileA.name, this.profileB.name);
+    logger.log(
+      '[ProfileIsolationTest] Created test profiles:',
+      this.profileA.name,
+      this.profileB.name
+    );
 
     return { profileA: this.profileA, profileB: this.profileB };
   }
@@ -161,7 +167,7 @@ export class ProfileIsolationTester {
       const parsedProfiles: Profile[] = JSON.parse(storedProfiles);
       const updatedProfiles = parsedProfiles.map(profile => ({
         ...profile,
-        isActive: profile.id === profileId
+        isActive: profile.id === profileId,
       }));
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
     }
@@ -175,7 +181,7 @@ export class ProfileIsolationTester {
       return {
         testName: 'Profile A Isolation',
         passed: false,
-        message: 'Profile A not created'
+        message: 'Profile A not created',
       };
     }
 
@@ -211,8 +217,10 @@ export class ProfileIsolationTester {
       details: {
         actionContentVisible: actionContentExists,
         documentaryContentIsolated: documentaryContentNotVisible,
-        actionProgress: actionProgress ? `${((actionProgress.currentTime / actionProgress.duration) * 100).toFixed(1)}%` : 'none',
-      }
+        actionProgress: actionProgress
+          ? `${((actionProgress.currentTime / actionProgress.duration) * 100).toFixed(1)}%`
+          : 'none',
+      },
     };
   }
 
@@ -224,7 +232,7 @@ export class ProfileIsolationTester {
       return {
         testName: 'Profile B Isolation',
         passed: false,
-        message: 'Profile B not created'
+        message: 'Profile B not created',
       };
     }
 
@@ -246,7 +254,8 @@ export class ProfileIsolationTester {
       this.profileB.id
     );
 
-    const documentaryContentExists = documentaryProgress !== null && documentaryProgress.currentTime > 0;
+    const documentaryContentExists =
+      documentaryProgress !== null && documentaryProgress.currentTime > 0;
     const actionContentNotVisible = actionProgress === null;
 
     const passed = documentaryContentExists && actionContentNotVisible;
@@ -260,8 +269,10 @@ export class ProfileIsolationTester {
       details: {
         documentaryContentVisible: documentaryContentExists,
         actionContentIsolated: actionContentNotVisible,
-        documentaryProgress: documentaryProgress ? `${((documentaryProgress.currentTime / documentaryProgress.duration) * 100).toFixed(1)}%` : 'none',
-      }
+        documentaryProgress: documentaryProgress
+          ? `${((documentaryProgress.currentTime / documentaryProgress.duration) * 100).toFixed(1)}%`
+          : 'none',
+      },
     };
   }
 
@@ -273,7 +284,7 @@ export class ProfileIsolationTester {
       return {
         testName: 'Cross-Profile Isolation',
         passed: false,
-        message: 'Test profiles not created'
+        message: 'Test profiles not created',
       };
     }
 
@@ -297,8 +308,8 @@ export class ProfileIsolationTester {
       details: {
         crossAccessAttempted: true,
         dataLeaked: !passed,
-        leakedData: crossAccessResult
-      }
+        leakedData: crossAccessResult,
+      },
     };
   }
 
@@ -310,7 +321,7 @@ export class ProfileIsolationTester {
       return {
         testName: 'Storage Key Isolation',
         passed: false,
-        message: 'Test profiles not created'
+        message: 'Test profiles not created',
       };
     }
 
@@ -338,7 +349,7 @@ export class ProfileIsolationTester {
         profileBKeyCount: profileBKeys.length,
         sampleProfileAKey: profileAKeys[0] || 'none',
         sampleProfileBKey: profileBKeys[0] || 'none',
-      }
+      },
     };
   }
 
@@ -350,7 +361,7 @@ export class ProfileIsolationTester {
       return {
         testName: 'Profile Switching',
         passed: false,
-        message: 'Test profiles not created'
+        message: 'Test profiles not created',
       };
     }
 
@@ -370,8 +381,11 @@ export class ProfileIsolationTester {
     const profileAInactiveAfterSwitch2 = !profiles.find(p => p.id === this.profileA!.id)?.isActive;
     const profileBActiveAfterSwitch2 = profiles.find(p => p.id === this.profileB!.id)?.isActive;
 
-    const passed = profileAActiveAfterSwitch && profileBInactiveAfterSwitch &&
-                   profileAInactiveAfterSwitch2 && profileBActiveAfterSwitch2;
+    const passed =
+      profileAActiveAfterSwitch &&
+      profileBInactiveAfterSwitch &&
+      profileAInactiveAfterSwitch2 &&
+      profileBActiveAfterSwitch2;
 
     return {
       testName: 'Profile Switching State Management',
@@ -382,7 +396,7 @@ export class ProfileIsolationTester {
       details: {
         switchToAWorked: profileAActiveAfterSwitch && profileBInactiveAfterSwitch,
         switchToBWorked: profileAInactiveAfterSwitch2 && profileBActiveAfterSwitch2,
-      }
+      },
     };
   }
 
@@ -396,17 +410,18 @@ export class ProfileIsolationTester {
     const storedProfiles = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
     if (storedProfiles) {
       const profiles: Profile[] = JSON.parse(storedProfiles);
-      const cleanedProfiles = profiles.filter(p =>
-        p.id !== this.profileA?.id && p.id !== this.profileB?.id
+      const cleanedProfiles = profiles.filter(
+        p => p.id !== this.profileA?.id && p.id !== this.profileB?.id
       );
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(cleanedProfiles));
     }
 
     // Clean up test watch progress data
     const allKeys = await mmkvStorage.getAllKeys();
-    const testKeys = allKeys.filter(key =>
-      (this.profileA && key.includes(this.profileA.id)) ||
-      (this.profileB && key.includes(this.profileB.id))
+    const testKeys = allKeys.filter(
+      key =>
+        (this.profileA && key.includes(this.profileA.id)) ||
+        (this.profileB && key.includes(this.profileB.id))
     );
 
     for (const key of testKeys) {
@@ -433,7 +448,7 @@ export class ProfileIsolationTester {
       results.push({
         testName: 'Create Test Profiles',
         passed: true,
-        message: 'Test profiles created successfully'
+        message: 'Test profiles created successfully',
       });
 
       // Step 2: Simulate Profile A watching action content
@@ -441,7 +456,7 @@ export class ProfileIsolationTester {
       results.push({
         testName: 'Simulate Profile A Watch Action',
         passed: true,
-        message: 'Action content watch progress recorded for Profile A'
+        message: 'Action content watch progress recorded for Profile A',
       });
 
       // Step 3: Simulate Profile B watching documentary content
@@ -449,7 +464,7 @@ export class ProfileIsolationTester {
       results.push({
         testName: 'Simulate Profile B Watch Documentary',
         passed: true,
-        message: 'Documentary content watch progress recorded for Profile B'
+        message: 'Documentary content watch progress recorded for Profile B',
       });
 
       // Step 4: Verify Profile A isolation
@@ -466,13 +481,12 @@ export class ProfileIsolationTester {
 
       // Step 8: Verify profile switching
       results.push(await this.verifyProfileSwitching());
-
     } catch (error: any) {
       results.push({
         testName: 'Test Suite Error',
         passed: false,
         message: `Error during test execution: ${error.message}`,
-        details: { error: error.stack }
+        details: { error: error.stack },
       });
     } finally {
       // Clean up test data
@@ -484,13 +498,15 @@ export class ProfileIsolationTester {
     const testSuite: ProfileIsolationTestSuite = {
       allPassed,
       results,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Log summary
     logger.log('[ProfileIsolationTest] Test Suite Complete');
     logger.log(`[ProfileIsolationTest] Overall Result: ${allPassed ? 'PASSED' : 'FAILED'}`);
-    logger.log(`[ProfileIsolationTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`);
+    logger.log(
+      `[ProfileIsolationTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`
+    );
 
     return testSuite;
   }

@@ -1,3 +1,7 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as Sharing from 'expo-sharing';
+import * as Updates from 'expo-updates';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -7,14 +11,11 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
-import * as Sharing from 'expo-sharing';
-import * as Updates from 'expo-updates';
-import { backupService, BackupOptions } from '../services/backupService';
-import { useTheme } from '../contexts/ThemeContext';
-import { logger } from '../utils/logger';
+
 import CustomAlert from './CustomAlert';
+import { useTheme } from '../contexts/ThemeContext';
+import { backupService, BackupOptions } from '../services/backupService';
+import { logger } from '../utils/logger';
 
 interface BackupRestoreSettingsProps {
   isTablet?: boolean;
@@ -23,12 +24,14 @@ interface BackupRestoreSettingsProps {
 const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet = false }) => {
   const { currentTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Alert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([]);
 
   const openAlert = (
     title: string,
@@ -55,7 +58,6 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
     }
   };
 
-
   // Create backup
   const handleCreateBackup = useCallback(async () => {
     try {
@@ -65,17 +67,18 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
       setIsLoading(false);
 
       // Calculate total without downloads
-      const totalWithoutDownloads = preview.library + preview.watchProgress + preview.addons + preview.scrapers;
+      const totalWithoutDownloads =
+        preview.library + preview.watchProgress + preview.addons + preview.scrapers;
 
       openAlert(
         'Create Backup',
         `Backup Contents:\n\n` +
-        `Library: ${preview.library} items\n` +
-        `Watch Progress: ${preview.watchProgress} entries\n` +
-        `Addons: ${preview.addons} installed\n` +
-        `Plugins: ${preview.scrapers} configurations\n\n` +
-        `Total: ${totalWithoutDownloads} items\n\n` +
-        `This backup includes all your app settings, themes, and integration data.`,
+          `Library: ${preview.library} items\n` +
+          `Watch Progress: ${preview.watchProgress} entries\n` +
+          `Addons: ${preview.addons} installed\n` +
+          `Plugins: ${preview.scrapers} configurations\n\n` +
+          `Total: ${totalWithoutDownloads} items\n\n` +
+          `This backup includes all your app settings, themes, and integration data.`,
         [
           { label: 'Cancel', onPress: () => {} },
           {
@@ -104,11 +107,9 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
                   });
                 }
 
-                openAlert(
-                  'Backup Created',
-                  'Your backup has been created and is ready to share.',
-                  [{ label: 'OK', onPress: () => {} }]
-                );
+                openAlert('Backup Created', 'Your backup has been created and is ready to share.', [
+                  { label: 'OK', onPress: () => {} },
+                ]);
               } catch (error) {
                 logger.error('[BackupRestoreSettings] Failed to create backup:', error);
                 openAlert(
@@ -119,17 +120,15 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
               } finally {
                 setIsLoading(false);
               }
-            }
-          }
+            },
+          },
         ]
       );
     } catch (error) {
       logger.error('[BackupRestoreSettings] Failed to get backup preview:', error);
-      openAlert(
-        'Error',
-        'Failed to prepare backup information. Please try again.',
-        [{ label: 'OK', onPress: () => {} }]
-      );
+      openAlert('Error', 'Failed to prepare backup information. Please try again.', [
+        { label: 'OK', onPress: () => {} },
+      ]);
       setIsLoading(false);
     }
   }, [openAlert]);
@@ -147,21 +146,21 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
       }
 
       const fileUri = result.assets[0].uri;
-      
+
       // Validate backup file
       const backupInfo = await backupService.getBackupInfo(fileUri);
-      
+
       openAlert(
         'Confirm Restore',
         `This will restore your data from a backup created on ${new Date(backupInfo.timestamp || 0).toLocaleDateString()}.\n\nThis action will overwrite your current data. Are you sure you want to continue?`,
         [
           { label: 'Cancel', onPress: () => {} },
-          { 
-            label: 'Restore', 
+          {
+            label: 'Restore',
             onPress: async () => {
               try {
                 setIsLoading(true);
-                
+
                 const restoreOptions: BackupOptions = {
                   includeLibrary: true,
                   includeWatchProgress: true,
@@ -171,19 +170,19 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
                   includeTraktData: true,
                   includeLocalScrapers: true,
                 };
-                
+
                 await backupService.restoreBackup(fileUri, restoreOptions);
-                
+
                 openAlert(
                   'Restore Complete',
                   'Your data has been successfully restored. Please restart the app to see all changes.',
                   [
                     { label: 'Cancel', onPress: () => {} },
-                    { 
-                      label: 'Restart App', 
+                    {
+                      label: 'Restart App',
                       onPress: restartApp,
-                      style: { fontWeight: 'bold' }
-                    }
+                      style: { fontWeight: 'bold' },
+                    },
                   ]
                 );
               } catch (error) {
@@ -196,8 +195,8 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
               } finally {
                 setIsLoading(false);
               }
-            }
-          }
+            },
+          },
         ]
       );
     } catch (error) {
@@ -210,10 +209,8 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
     }
   }, [openAlert]);
 
-
-
   const formatDate = (timestamp: number): string => {
-    return new Date(timestamp).toLocaleDateString() + ' ' + new Date(timestamp).toLocaleTimeString();
+    return `${new Date(timestamp).toLocaleDateString()} ${new Date(timestamp).toLocaleTimeString()}`;
   };
 
   return (
@@ -225,20 +222,20 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
         actions={alertActions}
         onClose={() => setAlertVisible(false)}
       />
-      
+
       {/* Backup Actions */}
       <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
         <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
           Backup & Restore
         </Text>
-        
+
         <TouchableOpacity
           style={[
             styles.actionButton,
-            { 
+            {
               backgroundColor: currentTheme.colors.primary,
-              opacity: isLoading ? 0.6 : 1
-            }
+              opacity: isLoading ? 0.6 : 1,
+            },
           ]}
           onPress={handleCreateBackup}
           disabled={isLoading}
@@ -252,14 +249,14 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
             </>
           )}
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={[
             styles.actionButton,
-            { 
+            {
               backgroundColor: currentTheme.colors.secondary,
-              opacity: isLoading ? 0.6 : 1
-            }
+              opacity: isLoading ? 0.6 : 1,
+            },
           ]}
           onPress={handleRestoreBackup}
           disabled={isLoading}
@@ -269,17 +266,15 @@ const BackupRestoreSettings: React.FC<BackupRestoreSettingsProps> = ({ isTablet 
         </TouchableOpacity>
       </View>
 
-      
       {/* Info Section */}
       <View style={[styles.section, { backgroundColor: currentTheme.colors.elevation1 }]}>
         <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
           About Backups
         </Text>
         <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
-          • Backups include all your data: library, watch progress, settings, addons, downloads, and plugins{'\n'}
-          • Backup files are stored locally on your device{'\n'}
-          • Share your backup to transfer data between devices{'\n'}
-          • Restoring will overwrite your current data
+          • Backups include all your data: library, watch progress, settings, addons, downloads, and
+          plugins{'\n'}• Backup files are stored locally on your device{'\n'}• Share your backup to
+          transfer data between devices{'\n'}• Restoring will overwrite your current data
         </Text>
       </View>
     </View>
@@ -329,4 +324,3 @@ const styles = StyleSheet.create({
 });
 
 export default BackupRestoreSettings;
-

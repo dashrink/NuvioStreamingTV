@@ -1,3 +1,6 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,20 +11,17 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
-import { UnifiedSpinner } from '../components/loading';
-import { useRoute, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons } from '@expo/vector-icons';
-import { TMDBService } from '../services/tmdbService';
+
+import { UnifiedSpinner } from '../components/loading';
 import { useTheme } from '../contexts/ThemeContext';
-import { useSettings } from '../hooks/useSettings';
 import { triggerLight } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { TMDBService } from '../services/tmdbService';
 
 const { width } = Dimensions.get('window');
 const BACKDROP_WIDTH = width * 0.9;
 const BACKDROP_HEIGHT = (BACKDROP_WIDTH * 9) / 16; // 16:9 aspect ratio
-
 
 interface BackdropItem {
   file_path: string;
@@ -52,9 +52,11 @@ const BackdropGalleryScreen: React.FC = () => {
       try {
         setLoading(true);
         const tmdbService = TMDBService.getInstance();
-        
+
         // Get language preference
-        const language = settings.useTmdbLocalizedMetadata ? (settings.tmdbLanguagePreference || 'en') : 'en';
+        const language = settings.useTmdbLocalizedMetadata
+          ? settings.tmdbLanguagePreference || 'en'
+          : 'en';
 
         let images;
         if (type === 'movie') {
@@ -69,7 +71,7 @@ const BackdropGalleryScreen: React.FC = () => {
             type,
             hasImages: !!images,
             backdropsCount: images?.backdrops?.length || 0,
-            images
+            images,
           });
         }
 
@@ -90,8 +92,6 @@ const BackdropGalleryScreen: React.FC = () => {
       fetchBackdrops();
     }
   }, [tmdbId, type, settings.useTmdbLocalizedMetadata, settings.tmdbLanguagePreference]);
-
-
 
   const renderBackdrop = ({ item, index }: { item: BackdropItem; index: number }) => {
     const imageUrl = `https://image.tmdb.org/t/p/w1280${item.file_path}`;
@@ -155,7 +155,11 @@ const BackdropGalleryScreen: React.FC = () => {
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         {renderHeader()}
         <View style={styles.errorContainer}>
-          <MaterialIcons name="image-not-supported" size={64} color={currentTheme.colors.textMuted} />
+          <MaterialIcons
+            name="image-not-supported"
+            size={64}
+            color={currentTheme.colors.textMuted}
+          />
           <Text style={[styles.errorText, { color: currentTheme.colors.textMuted }]}>
             {error || 'No backdrops available'}
           </Text>

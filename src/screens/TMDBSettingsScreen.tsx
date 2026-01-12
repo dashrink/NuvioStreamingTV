@@ -1,3 +1,5 @@
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
@@ -18,17 +20,16 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { mmkvStorage } from '../services/mmkvStorage';
-import FastImage from '@d11/react-native-fast-image';
-import { tmdbService } from '../services/tmdbService';
-import { useSettings } from '../hooks/useSettings';
-import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
-import { logger } from '../utils/logger';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import CustomAlert from '../components/CustomAlert';
+import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { tmdbService } from '../services/tmdbService';
+import { logger } from '../utils/logger';
 // (duplicate import removed)
 
 const TMDB_API_KEY_STORAGE_KEY = 'tmdb_api_key';
@@ -41,25 +42,25 @@ const EXAMPLE_SHOWS = [
     name: 'Breaking Bad',
     imdbId: 'tt0903747',
     tmdbId: '1396',
-    type: 'tv' as const
+    type: 'tv' as const,
   },
   {
     name: 'Friends',
     imdbId: 'tt0108778',
     tmdbId: '1668',
-    type: 'tv' as const
+    type: 'tv' as const,
   },
   {
     name: 'Stranger Things',
     imdbId: 'tt4574334',
     tmdbId: '66732',
-    type: 'tv' as const
+    type: 'tv' as const,
   },
   {
     name: 'Avatar',
     imdbId: 'tt0499549',
     tmdbId: '19995',
-    type: 'movie' as const
+    type: 'movie' as const,
   },
 ];
 
@@ -74,9 +75,9 @@ const TMDBSettingsScreen = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
-    { label: 'OK', onPress: () => setAlertVisible(false) },
-  ]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
   const apiKeyInputRef = useRef<TextInput>(null);
   const { currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -105,7 +106,9 @@ const TMDBSettingsScreen = () => {
         actions.map(a => ({
           label: a.label,
           style: a.style,
-          onPress: () => { a.onPress?.(); },
+          onPress: () => {
+            a.onPress?.();
+          },
         }))
       );
     } else {
@@ -186,7 +189,7 @@ const TMDBSettingsScreen = () => {
     try {
       const [savedKey, savedUseCustomKey] = await Promise.all([
         mmkvStorage.getItem(TMDB_API_KEY_STORAGE_KEY),
-        mmkvStorage.getItem(USE_CUSTOM_TMDB_API_KEY)
+        mmkvStorage.getItem(USE_CUSTOM_TMDB_API_KEY),
       ]);
 
       logger.log('[TMDBSettingsScreen] API key status:', savedKey ? 'Found' : 'Not found');
@@ -239,7 +242,7 @@ const TMDBSettingsScreen = () => {
       logger.error('[TMDBSettingsScreen] Error saving API key:', error);
       setTestResult({
         success: false,
-        message: 'An error occurred while saving. Please try again.'
+        message: 'An error occurred while saving. Please try again.',
       });
     }
   };
@@ -247,15 +250,12 @@ const TMDBSettingsScreen = () => {
   const testApiKey = async (key: string): Promise<boolean> => {
     try {
       // Simple API call to test the key using the API key parameter method
-      const response = await fetch(
-        `https://api.themoviedb.org/3/configuration?api_key=${key}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
+      const response = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${key}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       return response.ok;
     } catch (error) {
       logger.error('[TMDBSettingsScreen] API key test error:', error);
@@ -306,21 +306,21 @@ const TMDBSettingsScreen = () => {
         logger.log('[TMDBSettingsScreen] Switching to built-in API key');
         setTestResult({
           success: true,
-          message: 'Now using the built-in TMDb API key.'
+          message: 'Now using the built-in TMDb API key.',
         });
       } else if (apiKey && isKeySet) {
         // If switching to custom key and we have a key
         logger.log('[TMDBSettingsScreen] Switching to custom API key');
         setTestResult({
           success: true,
-          message: 'Now using your custom TMDb API key.'
+          message: 'Now using your custom TMDb API key.',
         });
       } else {
         // If switching to custom key but don't have a key yet
         logger.log('[TMDBSettingsScreen] No custom key available yet');
         setTestResult({
           success: false,
-          message: 'Please enter and save your custom TMDb API key.'
+          message: 'Please enter and save your custom TMDb API key.',
         });
       }
     } catch (error) {
@@ -352,7 +352,7 @@ const TMDBSettingsScreen = () => {
   };
 
   // Logo preview functions
-  const fetchExampleLogos = async (show: typeof EXAMPLE_SHOWS[0]) => {
+  const fetchExampleLogos = async (show: (typeof EXAMPLE_SHOWS)[0]) => {
     setLoadingLogos(true);
     setTmdbLogo(null);
     setTmdbBanner(null);
@@ -367,7 +367,9 @@ const TMDBSettingsScreen = () => {
 
       const apiKey = TMDB_API_KEY;
       const endpoint = contentType === 'tv' ? 'tv' : 'movie';
-      const response = await fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdbId}/images?api_key=${apiKey}`);
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${endpoint}/${tmdbId}/images?api_key=${apiKey}`
+      );
       const imagesData = await response.json();
 
       if (imagesData.logos && imagesData.logos.length > 0) {
@@ -375,7 +377,10 @@ const TMDBSettingsScreen = () => {
         let logoLanguage = preferredTmdbLanguage;
 
         // Try to find logo in preferred language
-        const preferredLogo = imagesData.logos.find((logo: { iso_639_1: string; file_path: string }) => logo.iso_639_1 === preferredTmdbLanguage);
+        const preferredLogo = imagesData.logos.find(
+          (logo: { iso_639_1: string; file_path: string }) =>
+            logo.iso_639_1 === preferredTmdbLanguage
+        );
 
         if (preferredLogo) {
           logoPath = preferredLogo.file_path;
@@ -383,7 +388,9 @@ const TMDBSettingsScreen = () => {
           setIsPreviewFallback(false);
         } else {
           // Fallback to English
-          const englishLogo = imagesData.logos.find((logo: { iso_639_1: string; file_path: string }) => logo.iso_639_1 === 'en');
+          const englishLogo = imagesData.logos.find(
+            (logo: { iso_639_1: string; file_path: string }) => logo.iso_639_1 === 'en'
+          );
 
           if (englishLogo) {
             logoPath = englishLogo.file_path;
@@ -414,7 +421,9 @@ const TMDBSettingsScreen = () => {
         const backdropPath = imagesData.backdrops[0].file_path;
         setTmdbBanner(`https://image.tmdb.org/t/p/original${backdropPath}`);
       } else {
-        const detailsResponse = await fetch(`https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}`);
+        const detailsResponse = await fetch(
+          `https://api.themoviedb.org/3/${endpoint}/${tmdbId}?api_key=${apiKey}`
+        );
         const details = await detailsResponse.json();
 
         if (details.backdrop_path) {
@@ -428,7 +437,7 @@ const TMDBSettingsScreen = () => {
     }
   };
 
-  const handleShowSelect = (show: typeof EXAMPLE_SHOWS[0]) => {
+  const handleShowSelect = (show: (typeof EXAMPLE_SHOWS)[0]) => {
     triggerLight();
     setSelectedShow(show);
     try {
@@ -476,7 +485,12 @@ const TMDBSettingsScreen = () => {
     if (settings.enrichMetadataWithTMDB && settings.useTmdbLocalizedMetadata) {
       fetchExampleLogos(selectedShow);
     }
-  }, [selectedShow, settings.enrichMetadataWithTMDB, settings.useTmdbLocalizedMetadata, settings.tmdbLanguagePreference]);
+  }, [
+    selectedShow,
+    settings.enrichMetadataWithTMDB,
+    settings.useTmdbLocalizedMetadata,
+    settings.tmdbLanguagePreference,
+  ]);
 
   // Load selected show from AsyncStorage on mount
   useEffect(() => {
@@ -498,7 +512,7 @@ const TMDBSettingsScreen = () => {
   }, []);
 
   const headerBaseHeight = Platform.OS === 'android' ? 80 : 60;
-  const topSpacing = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top;
+  const topSpacing = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : insets.top;
   const headerHeight = headerBaseHeight + topSpacing;
 
   if (isLoading) {
@@ -507,7 +521,9 @@ const TMDBSettingsScreen = () => {
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: currentTheme.colors.text }]}>Loading Settings...</Text>
+          <Text style={[styles.loadingText, { color: currentTheme.colors.text }]}>
+            Loading Settings...
+          </Text>
         </View>
       </View>
     );
@@ -529,9 +545,7 @@ const TMDBSettingsScreen = () => {
             <Text style={[styles.backText, { color: currentTheme.colors.primary }]}>Settings</Text>
           </TouchableOpacity>
         </View>
-        <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-          TMDb Settings
-        </Text>
+        <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>TMDb Settings</Text>
       </View>
 
       <ScrollView
@@ -544,7 +558,9 @@ const TMDBSettingsScreen = () => {
         <View style={[styles.sectionCard, { backgroundColor: currentTheme.colors.elevation2 }]}>
           <View style={styles.sectionHeader}>
             <MaterialIcons name="movie" size={20} color={currentTheme.colors.primary} />
-            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>Metadata Enrichment</Text>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+              Metadata Enrichment
+            </Text>
           </View>
           <Text style={[styles.sectionDescription, { color: currentTheme.colors.mediumEmphasis }]}>
             Enhance your content metadata with TMDb data for better details and information.
@@ -552,19 +568,30 @@ const TMDBSettingsScreen = () => {
 
           <View style={styles.settingRow}>
             <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Enable Enrichment</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-                Augments addon metadata with TMDb for cast, certification, logos/posters, and episode fallback.
+              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                Enable Enrichment
+              </Text>
+              <Text
+                style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
+              >
+                Augments addon metadata with TMDb for cast, certification, logos/posters, and
+                episode fallback.
               </Text>
             </View>
             <Switch
               value={settings.enrichMetadataWithTMDB}
-              onValueChange={(v) => {
+              onValueChange={v => {
                 triggerMedium();
                 updateSetting('enrichMetadataWithTMDB', v);
               }}
               trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-              thumbColor={Platform.OS === 'android' ? (settings.enrichMetadataWithTMDB ? currentTheme.colors.white : currentTheme.colors.white) : ''}
+              thumbColor={
+                Platform.OS === 'android'
+                  ? settings.enrichMetadataWithTMDB
+                    ? currentTheme.colors.white
+                    : currentTheme.colors.white
+                  : ''
+              }
               ios_backgroundColor={'rgba(255,255,255,0.1)'}
             />
           </View>
@@ -575,19 +602,32 @@ const TMDBSettingsScreen = () => {
 
               <View style={styles.settingRow}>
                 <View style={styles.settingTextContainer}>
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Localized Text</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                    Localized Text
+                  </Text>
+                  <Text
+                    style={[
+                      styles.settingDescription,
+                      { color: currentTheme.colors.mediumEmphasis },
+                    ]}
+                  >
                     Fetch titles and descriptions in your preferred language from TMDb.
                   </Text>
                 </View>
                 <Switch
                   value={settings.useTmdbLocalizedMetadata}
-                  onValueChange={(v) => {
+                  onValueChange={v => {
                     triggerMedium();
                     updateSetting('useTmdbLocalizedMetadata', v);
                   }}
                   trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-                  thumbColor={Platform.OS === 'android' ? (settings.useTmdbLocalizedMetadata ? currentTheme.colors.white : currentTheme.colors.white) : ''}
+                  thumbColor={
+                    Platform.OS === 'android'
+                      ? settings.useTmdbLocalizedMetadata
+                        ? currentTheme.colors.white
+                        : currentTheme.colors.white
+                      : ''
+                  }
                   ios_backgroundColor={'rgba(255,255,255,0.1)'}
                 />
               </View>
@@ -598,8 +638,15 @@ const TMDBSettingsScreen = () => {
 
                   <View style={styles.settingRow}>
                     <View style={styles.settingTextContainer}>
-                      <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Language</Text>
-                      <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+                      <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                        Language
+                      </Text>
+                      <Text
+                        style={[
+                          styles.settingDescription,
+                          { color: currentTheme.colors.mediumEmphasis },
+                        ]}
+                      >
                         Current: {(settings.tmdbLanguagePreference || 'en').toUpperCase()}
                       </Text>
                     </View>
@@ -608,35 +655,61 @@ const TMDBSettingsScreen = () => {
                         triggerLight();
                         setLanguagePickerVisible(true);
                       }}
-                      style={[styles.languageButton, { backgroundColor: currentTheme.colors.primary }]}
+                      style={[
+                        styles.languageButton,
+                        { backgroundColor: currentTheme.colors.primary },
+                      ]}
                     >
-                      <Text style={[styles.languageButtonText, { color: currentTheme.colors.white }]}>Change</Text>
+                      <Text
+                        style={[styles.languageButtonText, { color: currentTheme.colors.white }]}
+                      >
+                        Change
+                      </Text>
                     </TouchableOpacity>
                   </View>
 
                   {/* Logo Preview */}
                   <View style={styles.divider} />
 
-                  <Text style={[styles.settingTitle, { color: currentTheme.colors.text, marginBottom: 8 }]}>Logo Preview</Text>
-                  <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis, marginBottom: 12 }]}>
+                  <Text
+                    style={[
+                      styles.settingTitle,
+                      { color: currentTheme.colors.text, marginBottom: 8 },
+                    ]}
+                  >
+                    Logo Preview
+                  </Text>
+                  <Text
+                    style={[
+                      styles.settingDescription,
+                      { color: currentTheme.colors.mediumEmphasis, marginBottom: 12 },
+                    ]}
+                  >
                     Preview shows how localized logos will appear in the selected language.
                   </Text>
 
                   {/* Show selector */}
-                  <Text style={[styles.selectorLabel, { color: currentTheme.colors.mediumEmphasis }]}>Example:</Text>
+                  <Text
+                    style={[styles.selectorLabel, { color: currentTheme.colors.mediumEmphasis }]}
+                  >
+                    Example:
+                  </Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.showsScrollContent}
                     style={styles.showsScrollView}
                   >
-                    {EXAMPLE_SHOWS.map((show) => (
+                    {EXAMPLE_SHOWS.map(show => (
                       <TouchableOpacity
                         key={show.imdbId}
                         style={[
                           styles.showItem,
                           { backgroundColor: currentTheme.colors.elevation1 },
-                          selectedShow.imdbId === show.imdbId && [styles.selectedShowItem, { borderColor: currentTheme.colors.primary }]
+                          selectedShow.imdbId === show.imdbId && [
+                            styles.selectedShowItem,
+                            { borderColor: currentTheme.colors.primary },
+                          ],
                         ]}
                         onPress={() => handleShowSelect(show)}
                         activeOpacity={0.7}
@@ -645,7 +718,10 @@ const TMDBSettingsScreen = () => {
                           style={[
                             styles.showItemText,
                             { color: currentTheme.colors.mediumEmphasis },
-                            selectedShow.imdbId === show.imdbId && [styles.selectedShowItemText, { color: currentTheme.colors.white }]
+                            selectedShow.imdbId === show.imdbId && [
+                              styles.selectedShowItemText,
+                              { color: currentTheme.colors.white },
+                            ],
                           ]}
                         >
                           {show.name}
@@ -655,10 +731,20 @@ const TMDBSettingsScreen = () => {
                   </ScrollView>
 
                   {/* Preview card */}
-                  <View style={[styles.logoPreviewCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
+                  <View
+                    style={[
+                      styles.logoPreviewCard,
+                      { backgroundColor: currentTheme.colors.elevation1 },
+                    ]}
+                  >
                     {renderLogoExample(tmdbLogo, tmdbBanner, loadingLogos)}
                     {tmdbLogo && (
-                      <Text style={[styles.logoSourceLabel, { color: currentTheme.colors.mediumEmphasis }]}>
+                      <Text
+                        style={[
+                          styles.logoSourceLabel,
+                          { color: currentTheme.colors.mediumEmphasis },
+                        ]}
+                      >
                         {`Language: ${(previewLanguage || '').toUpperCase() || 'N/A'}${isPreviewFallback ? ' (fallback to available)' : ''}`}
                       </Text>
                     )}
@@ -673,7 +759,9 @@ const TMDBSettingsScreen = () => {
         <View style={[styles.sectionCard, { backgroundColor: currentTheme.colors.elevation2 }]}>
           <View style={styles.sectionHeader}>
             <MaterialIcons name="api" size={20} color={currentTheme.colors.primary} />
-            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>API Configuration</Text>
+            <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
+              API Configuration
+            </Text>
           </View>
           <Text style={[styles.sectionDescription, { color: currentTheme.colors.mediumEmphasis }]}>
             Configure your TMDb API access for enhanced functionality.
@@ -681,19 +769,29 @@ const TMDBSettingsScreen = () => {
 
           <View style={styles.settingRow}>
             <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Custom API Key</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                Custom API Key
+              </Text>
+              <Text
+                style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
+              >
                 Use your own TMDb API key for better performance and dedicated rate limits.
               </Text>
             </View>
             <Switch
               value={useCustomKey}
-              onValueChange={(v) => {
+              onValueChange={v => {
                 triggerMedium();
                 toggleUseCustomKey(v);
               }}
               trackColor={{ false: 'rgba(255,255,255,0.1)', true: currentTheme.colors.primary }}
-              thumbColor={Platform.OS === 'android' ? (useCustomKey ? currentTheme.colors.white : currentTheme.colors.white) : ''}
+              thumbColor={
+                Platform.OS === 'android'
+                  ? useCustomKey
+                    ? currentTheme.colors.white
+                    : currentTheme.colors.white
+                  : ''
+              }
               ios_backgroundColor={'rgba(255,255,255,0.1)'}
             />
           </View>
@@ -705,14 +803,19 @@ const TMDBSettingsScreen = () => {
               {/* API Key Status */}
               <View style={styles.statusRow}>
                 <MaterialIcons
-                  name={isKeySet ? "check-circle" : "error-outline"}
+                  name={isKeySet ? 'check-circle' : 'error-outline'}
                   size={20}
                   color={isKeySet ? currentTheme.colors.success : currentTheme.colors.warning}
                 />
-                <Text style={[styles.statusText, {
-                  color: isKeySet ? currentTheme.colors.success : currentTheme.colors.warning
-                }]}>
-                  {isKeySet ? "Custom API key active" : "API key required"}
+                <Text
+                  style={[
+                    styles.statusText,
+                    {
+                      color: isKeySet ? currentTheme.colors.success : currentTheme.colors.warning,
+                    },
+                  ]}
+                >
+                  {isKeySet ? 'Custom API key active' : 'API key required'}
                 </Text>
               </View>
 
@@ -726,11 +829,11 @@ const TMDBSettingsScreen = () => {
                       {
                         backgroundColor: currentTheme.colors.elevation1,
                         color: currentTheme.colors.text,
-                        borderColor: isInputFocused ? currentTheme.colors.primary : 'transparent'
-                      }
+                        borderColor: isInputFocused ? currentTheme.colors.primary : 'transparent',
+                      },
                     ]}
                     value={apiKey}
-                    onChangeText={(text) => {
+                    onChangeText={text => {
                       setApiKey(text);
                       if (testResult) setTestResult(null);
                     }}
@@ -749,7 +852,11 @@ const TMDBSettingsScreen = () => {
                       pasteFromClipboard();
                     }}
                   >
-                    <MaterialIcons name="content-paste" size={20} color={currentTheme.colors.primary} />
+                    <MaterialIcons
+                      name="content-paste"
+                      size={20}
+                      color={currentTheme.colors.primary}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -761,37 +868,59 @@ const TMDBSettingsScreen = () => {
                       saveApiKey();
                     }}
                   >
-                    <Text style={[styles.buttonText, { color: currentTheme.colors.white }]}>Save</Text>
+                    <Text style={[styles.buttonText, { color: currentTheme.colors.white }]}>
+                      Save
+                    </Text>
                   </TouchableOpacity>
 
                   {isKeySet && (
                     <TouchableOpacity
-                      style={[styles.button, styles.clearButton, { borderColor: currentTheme.colors.error }]}
+                      style={[
+                        styles.button,
+                        styles.clearButton,
+                        { borderColor: currentTheme.colors.error },
+                      ]}
                       onPress={() => {
                         triggerHeavy();
                         clearApiKey();
                       }}
                     >
-                      <Text style={[styles.buttonText, { color: currentTheme.colors.error }]}>Clear</Text>
+                      <Text style={[styles.buttonText, { color: currentTheme.colors.error }]}>
+                        Clear
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </View>
 
                 {testResult && (
-                  <View style={[
-                    styles.resultMessage,
-                    { backgroundColor: testResult.success ? currentTheme.colors.success + '1A' : currentTheme.colors.error + '1A' }
-                  ]}>
+                  <View
+                    style={[
+                      styles.resultMessage,
+                      {
+                        backgroundColor: testResult.success
+                          ? `${currentTheme.colors.success}1A`
+                          : `${currentTheme.colors.error}1A`,
+                      },
+                    ]}
+                  >
                     <MaterialIcons
-                      name={testResult.success ? "check-circle" : "error"}
+                      name={testResult.success ? 'check-circle' : 'error'}
                       size={16}
-                      color={testResult.success ? currentTheme.colors.success : currentTheme.colors.error}
+                      color={
+                        testResult.success ? currentTheme.colors.success : currentTheme.colors.error
+                      }
                       style={styles.resultIcon}
                     />
-                    <Text style={[
-                      styles.resultText,
-                      { color: testResult.success ? currentTheme.colors.success : currentTheme.colors.error }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.resultText,
+                        {
+                          color: testResult.success
+                            ? currentTheme.colors.success
+                            : currentTheme.colors.error,
+                        },
+                      ]}
+                    >
                       {testResult.message}
                     </Text>
                   </View>
@@ -804,7 +933,12 @@ const TMDBSettingsScreen = () => {
                     openTMDBWebsite();
                   }}
                 >
-                  <MaterialIcons name="help" size={16} color={currentTheme.colors.primary} style={styles.helpIcon} />
+                  <MaterialIcons
+                    name="help"
+                    size={16}
+                    color={currentTheme.colors.primary}
+                    style={styles.helpIcon}
+                  />
                   <Text style={[styles.helpText, { color: currentTheme.colors.primary }]}>
                     How to get a TMDb API key?
                   </Text>
@@ -817,7 +951,8 @@ const TMDBSettingsScreen = () => {
             <View style={styles.infoContainer}>
               <MaterialIcons name="info-outline" size={18} color={currentTheme.colors.primary} />
               <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
-                Currently using built-in API key. Consider using your own key for better performance.
+                Currently using built-in API key. Consider using your own key for better
+                performance.
               </Text>
             </View>
           )}
@@ -827,8 +962,12 @@ const TMDBSettingsScreen = () => {
 
           <View style={styles.settingRow}>
             <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>Cache Size</Text>
-              <Text style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}>
+              <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>
+                Cache Size
+              </Text>
+              <Text
+                style={[styles.settingDescription, { color: currentTheme.colors.mediumEmphasis }]}
+              >
                 {cacheSize}
               </Text>
             </View>
@@ -843,7 +982,11 @@ const TMDBSettingsScreen = () => {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <MaterialIcons name="delete-outline" size={18} color={currentTheme.colors.white} />
-              <Text style={[styles.buttonText, { color: currentTheme.colors.white, marginLeft: 8 }]}>Clear Cache</Text>
+              <Text
+                style={[styles.buttonText, { color: currentTheme.colors.white, marginLeft: 8 }]}
+              >
+                Clear Cache
+              </Text>
             </View>
           </TouchableOpacity>
 
@@ -866,18 +1009,44 @@ const TMDBSettingsScreen = () => {
           <TouchableWithoutFeedback onPress={() => setLanguagePickerVisible(false)}>
             <View style={styles.modalOverlay}>
               <TouchableWithoutFeedback>
-                <View style={[styles.modalContent, { backgroundColor: currentTheme.colors.darkBackground }]}>
+                <View
+                  style={[
+                    styles.modalContent,
+                    { backgroundColor: currentTheme.colors.darkBackground },
+                  ]}
+                >
                   {/* Header */}
                   <View style={styles.modalHeader}>
-                    <View style={[styles.dragHandle, { backgroundColor: currentTheme.colors.elevation3 }]} />
-                    <Text style={[styles.modalTitle, { color: currentTheme.colors.text }]}>Choose Language</Text>
-                    <Text style={[styles.modalSubtitle, { color: currentTheme.colors.mediumEmphasis }]}>Select your preferred language for TMDb content</Text>
+                    <View
+                      style={[
+                        styles.dragHandle,
+                        { backgroundColor: currentTheme.colors.elevation3 },
+                      ]}
+                    />
+                    <Text style={[styles.modalTitle, { color: currentTheme.colors.text }]}>
+                      Choose Language
+                    </Text>
+                    <Text
+                      style={[styles.modalSubtitle, { color: currentTheme.colors.mediumEmphasis }]}
+                    >
+                      Select your preferred language for TMDb content
+                    </Text>
                   </View>
 
                   {/* Search Section */}
                   <View style={styles.searchSection}>
-                    <View style={[styles.searchContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
-                      <MaterialIcons name="search" size={20} color={currentTheme.colors.mediumEmphasis} style={styles.searchIcon} />
+                    <View
+                      style={[
+                        styles.searchContainer,
+                        { backgroundColor: currentTheme.colors.elevation1 },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name="search"
+                        size={20}
+                        color={currentTheme.colors.mediumEmphasis}
+                        style={styles.searchIcon}
+                      />
                       <TextInput
                         placeholder="Search languages..."
                         placeholderTextColor={currentTheme.colors.mediumEmphasis}
@@ -888,8 +1057,18 @@ const TMDBSettingsScreen = () => {
                         autoCorrect={false}
                       />
                       {languageSearch.length > 0 && (
-                        <TouchableOpacity onPress={() => { triggerLight(); setLanguageSearch(''); }} style={styles.searchClearButton}>
-                          <MaterialIcons name="close" size={20} color={currentTheme.colors.mediumEmphasis} />
+                        <TouchableOpacity
+                          onPress={() => {
+                            triggerLight();
+                            setLanguageSearch('');
+                          }}
+                          style={styles.searchClearButton}
+                        >
+                          <MaterialIcons
+                            name="close"
+                            size={20}
+                            color={currentTheme.colors.mediumEmphasis}
+                          />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -898,7 +1077,11 @@ const TMDBSettingsScreen = () => {
                   {/* Popular Languages */}
                   {languageSearch.length === 0 && (
                     <View style={styles.popularSection}>
-                      <Text style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}>Popular</Text>
+                      <Text
+                        style={[styles.sectionTitle, { color: currentTheme.colors.mediumEmphasis }]}
+                      >
+                        Popular
+                      </Text>
                       <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -914,21 +1097,38 @@ const TMDBSettingsScreen = () => {
                         ].map(({ code, label }) => (
                           <TouchableOpacity
                             key={code}
-                            onPress={() => { triggerLight(); updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
+                            onPress={() => {
+                              triggerLight();
+                              updateSetting('tmdbLanguagePreference', code);
+                              setLanguagePickerVisible(false);
+                            }}
                             style={[
                               styles.popularChip,
                               settings.tmdbLanguagePreference === code && styles.selectedChip,
                               {
-                                backgroundColor: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.elevation1,
-                                borderColor: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : 'rgba(255,255,255,0.1)',
-                              }
+                                backgroundColor:
+                                  settings.tmdbLanguagePreference === code
+                                    ? currentTheme.colors.primary
+                                    : currentTheme.colors.elevation1,
+                                borderColor:
+                                  settings.tmdbLanguagePreference === code
+                                    ? currentTheme.colors.primary
+                                    : 'rgba(255,255,255,0.1)',
+                              },
                             ]}
                           >
-                            <Text style={[
-                              styles.popularChipText,
-                              settings.tmdbLanguagePreference === code && styles.selectedChipText,
-                              { color: settings.tmdbLanguagePreference === code ? currentTheme.colors.white : currentTheme.colors.text }
-                            ]}>
+                            <Text
+                              style={[
+                                styles.popularChipText,
+                                settings.tmdbLanguagePreference === code && styles.selectedChipText,
+                                {
+                                  color:
+                                    settings.tmdbLanguagePreference === code
+                                      ? currentTheme.colors.white
+                                      : currentTheme.colors.text,
+                                },
+                              ]}
+                            >
                               {label}
                             </Text>
                           </TouchableOpacity>
@@ -939,11 +1139,18 @@ const TMDBSettingsScreen = () => {
 
                   {/* All Languages */}
                   <View style={styles.languagesSection}>
-                    <Text style={[
-                      styles.sectionTitle,
-                      languageSearch.length > 0 && styles.searchResultsTitle,
-                      { color: languageSearch.length > 0 ? currentTheme.colors.text : currentTheme.colors.mediumEmphasis }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        languageSearch.length > 0 && styles.searchResultsTitle,
+                        {
+                          color:
+                            languageSearch.length > 0
+                              ? currentTheme.colors.text
+                              : currentTheme.colors.mediumEmphasis,
+                        },
+                      ]}
+                    >
                       {languageSearch.length > 0 ? 'Search Results' : 'All Languages'}
                     </Text>
 
@@ -978,11 +1185,12 @@ const TMDBSettingsScreen = () => {
                           { code: 'th', label: 'ไทย', native: 'Thai' },
                         ];
 
-                        const filteredLanguages = languages.filter(({ label, code, native }) =>
-                          (languageSearch || '').length === 0 ||
-                          label.toLowerCase().includes(languageSearch.toLowerCase()) ||
-                          native.toLowerCase().includes(languageSearch.toLowerCase()) ||
-                          code.toLowerCase().includes(languageSearch.toLowerCase())
+                        const filteredLanguages = languages.filter(
+                          ({ label, code, native }) =>
+                            (languageSearch || '').length === 0 ||
+                            label.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                            native.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                            code.toLowerCase().includes(languageSearch.toLowerCase())
                         );
 
                         return (
@@ -990,37 +1198,58 @@ const TMDBSettingsScreen = () => {
                             {filteredLanguages.map(({ code, label, native }) => (
                               <TouchableOpacity
                                 key={code}
-                                onPress={() => { triggerLight(); updateSetting('tmdbLanguagePreference', code); setLanguagePickerVisible(false); }}
+                                onPress={() => {
+                                  triggerLight();
+                                  updateSetting('tmdbLanguagePreference', code);
+                                  setLanguagePickerVisible(false);
+                                }}
                                 style={[
                                   styles.languageItem,
-                                  settings.tmdbLanguagePreference === code && styles.selectedLanguageItem
+                                  settings.tmdbLanguagePreference === code &&
+                                    styles.selectedLanguageItem,
                                 ]}
                                 activeOpacity={0.7}
                               >
                                 <View style={styles.languageContent}>
                                   <View style={styles.languageInfo}>
-                                    <Text style={[
-                                      styles.languageName,
-                                      settings.tmdbLanguagePreference === code && styles.selectedLanguageName,
-                                      {
-                                        color: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.text,
-                                      }
-                                    ]}>
+                                    <Text
+                                      style={[
+                                        styles.languageName,
+                                        settings.tmdbLanguagePreference === code &&
+                                          styles.selectedLanguageName,
+                                        {
+                                          color:
+                                            settings.tmdbLanguagePreference === code
+                                              ? currentTheme.colors.primary
+                                              : currentTheme.colors.text,
+                                        },
+                                      ]}
+                                    >
                                       {native}
                                     </Text>
-                                    <Text style={[
-                                      styles.languageCode,
-                                      settings.tmdbLanguagePreference === code && styles.selectedLanguageCode,
-                                      {
-                                        color: settings.tmdbLanguagePreference === code ? currentTheme.colors.primary : currentTheme.colors.mediumEmphasis,
-                                      }
-                                    ]}>
+                                    <Text
+                                      style={[
+                                        styles.languageCode,
+                                        settings.tmdbLanguagePreference === code &&
+                                          styles.selectedLanguageCode,
+                                        {
+                                          color:
+                                            settings.tmdbLanguagePreference === code
+                                              ? currentTheme.colors.primary
+                                              : currentTheme.colors.mediumEmphasis,
+                                        },
+                                      ]}
+                                    >
                                       {label} • {code.toUpperCase()}
                                     </Text>
                                   </View>
                                   {settings.tmdbLanguagePreference === code && (
                                     <View style={styles.checkmarkContainer}>
-                                      <MaterialIcons name="check-circle" size={24} color={currentTheme.colors.primary} />
+                                      <MaterialIcons
+                                        name="check-circle"
+                                        size={24}
+                                        color={currentTheme.colors.primary}
+                                      />
                                     </View>
                                   )}
                                 </View>
@@ -1028,15 +1257,37 @@ const TMDBSettingsScreen = () => {
                             ))}
                             {languageSearch.length > 0 && filteredLanguages.length === 0 && (
                               <View style={styles.noResultsContainer}>
-                                <MaterialIcons name="search-off" size={48} color={currentTheme.colors.mediumEmphasis} />
-                                <Text style={[styles.noResultsText, { color: currentTheme.colors.mediumEmphasis }]}>
+                                <MaterialIcons
+                                  name="search-off"
+                                  size={48}
+                                  color={currentTheme.colors.mediumEmphasis}
+                                />
+                                <Text
+                                  style={[
+                                    styles.noResultsText,
+                                    { color: currentTheme.colors.mediumEmphasis },
+                                  ]}
+                                >
                                   No languages found for "{languageSearch}"
                                 </Text>
                                 <TouchableOpacity
-                                  onPress={() => { triggerLight(); setLanguageSearch(''); }}
-                                  style={[styles.clearSearchButton, { backgroundColor: currentTheme.colors.elevation1 }]}
+                                  onPress={() => {
+                                    triggerLight();
+                                    setLanguageSearch('');
+                                  }}
+                                  style={[
+                                    styles.clearSearchButton,
+                                    { backgroundColor: currentTheme.colors.elevation1 },
+                                  ]}
                                 >
-                                  <Text style={[styles.clearSearchButtonText, { color: currentTheme.colors.primary }]}>Clear search</Text>
+                                  <Text
+                                    style={[
+                                      styles.clearSearchButtonText,
+                                      { color: currentTheme.colors.primary },
+                                    ]}
+                                  >
+                                    Clear search
+                                  </Text>
                                 </TouchableOpacity>
                               </View>
                             )}
@@ -1055,7 +1306,9 @@ const TMDBSettingsScreen = () => {
                       }}
                       style={styles.cancelButton}
                     >
-                      <Text style={[styles.cancelButtonText, { color: currentTheme.colors.text }]}>Cancel</Text>
+                      <Text style={[styles.cancelButtonText, { color: currentTheme.colors.text }]}>
+                        Cancel
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
@@ -1064,7 +1317,9 @@ const TMDBSettingsScreen = () => {
                       }}
                       style={[styles.doneButton, { backgroundColor: currentTheme.colors.primary }]}
                     >
-                      <Text style={[styles.doneButtonText, { color: currentTheme.colors.white }]}>Done</Text>
+                      <Text style={[styles.doneButtonText, { color: currentTheme.colors.white }]}>
+                        Done
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1415,8 +1670,7 @@ const styles = StyleSheet.create({
   languageCode: {
     fontSize: 12,
   },
-  selectedLanguageCode: {
-  },
+  selectedLanguageCode: {},
   checkmarkContainer: {
     width: 32,
     height: 32,
@@ -1560,4 +1814,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TMDBSettingsScreen; 
+export default TMDBSettingsScreen;

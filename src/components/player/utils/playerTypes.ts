@@ -3,7 +3,7 @@ export const RESUME_PREF_KEY = '@video_resume_preference';
 export const RESUME_PREF = {
   ALWAYS_ASK: 'always_ask',
   ALWAYS_RESUME: 'always_resume',
-  ALWAYS_START_OVER: 'always_start_over'
+  ALWAYS_START_OVER: 'always_start_over',
 };
 
 export const SUBTITLE_SIZE_KEY = '@subtitle_size_preference';
@@ -12,7 +12,7 @@ export const SUBTITLE_SIZE_KEY = '@subtitle_size_preference';
 export const getDefaultSubtitleSize = (screenWidth: number): number => {
   if (screenWidth >= 1440) return 65; // TV
   if (screenWidth >= 1024) return 55; // Large tablet
-  if (screenWidth >= 768) return 45;  // Tablet
+  if (screenWidth >= 768) return 45; // Tablet
   return 30; // Phone
 };
 
@@ -71,8 +71,8 @@ export interface VlcMediaEvent {
   duration: number;
   bufferTime?: number;
   isBuffering?: boolean;
-  audioTracks?: Array<{ id: number, name: string, language?: string }>;
-  textTracks?: Array<{ id: number, name: string, language?: string }>;
+  audioTracks?: Array<{ id: number; name: string; language?: string }>;
+  textTracks?: Array<{ id: number; name: string; language?: string }>;
   selectedAudioTrack?: number;
   selectedTextTrack?: number;
 }
@@ -108,4 +108,4 @@ export interface WyzieSubtitle {
   language: string;
   isHearingImpaired: boolean;
   source: string;
-} 
+}

@@ -19,12 +19,18 @@ class AccountService {
     return AccountService.instance;
   }
 
-  async signUpWithEmail(email: string, password: string): Promise<{ user?: AuthUser; error?: string }> {
+  async signUpWithEmail(
+    email: string,
+    password: string
+  ): Promise<{ user?: AuthUser; error?: string }> {
     // Since signup is disabled, always return error
     return { error: 'Sign up is currently disabled due to upcoming system changes' };
   }
 
-  async signInWithEmail(email: string, password: string): Promise<{ user?: AuthUser; error?: string }> {
+  async signInWithEmail(
+    email: string,
+    password: string
+  ): Promise<{ user?: AuthUser; error?: string }> {
     // Since signin is disabled, always return error
     return { error: 'Authentication is currently disabled' };
   }
@@ -44,7 +50,10 @@ class AccountService {
     }
   }
 
-  async updateProfile(partial: { avatarUrl?: string; displayName?: string }): Promise<string | null> {
+  async updateProfile(partial: {
+    avatarUrl?: string;
+    displayName?: string;
+  }): Promise<string | null> {
     try {
       const currentUser = await this.getCurrentUser();
       if (!currentUser) return 'Not authenticated';
@@ -69,4 +78,3 @@ class AccountService {
 
 export const accountService = AccountService.getInstance();
 export default accountService;
-

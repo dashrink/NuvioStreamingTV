@@ -25,6 +25,10 @@
  * ```
  */
 
+import FastImage from '@d11/react-native-fast-image';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState, useEffect, useCallback, memo, useRef } from 'react';
 import {
   View,
@@ -45,21 +49,16 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
 import { Pagination } from 'react-native-reanimated-carousel';
-import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
+import { useSettings } from '../../hooks/useSettings';
+import { useTVEventHandler } from '../../hooks/useTVEventHandler';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSettings } from '../../hooks/useSettings';
 import Focusable, { FocusableRef } from '../common/Focusable';
-import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
-import { useTVEventHandler } from '../../hooks/useTVEventHandler';
 
 // =============================================================================
 // Types & Interfaces
@@ -127,28 +126,38 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   // =============================================================================
 
   const isTablet = useMemo(
-    () => Math.min(windowWidth, windowHeight) >= 600 || (Platform.OS === 'ios' && (Platform as any).isPad),
+    () =>
+      Math.min(windowWidth, windowHeight) >= 600 ||
+      (Platform.OS === 'ios' && (Platform as any).isPad),
     [windowWidth, windowHeight]
   );
 
   const isTV = Platform.isTV || windowWidth >= 1200;
 
   const baseCardWidthForHeight = useMemo(
-    () => isTV ? Math.min(windowWidth * 0.6, 720) : Math.min(windowWidth * 0.8, 480),
+    () => (isTV ? Math.min(windowWidth * 0.6, 720) : Math.min(windowWidth * 0.8, 480)),
     [windowWidth, isTV]
   );
 
   const cardWidth = useMemo(
-    () => isTV ? Math.min(windowWidth * 0.6, 720) : (isTablet ? Math.max(560, windowWidth - 2 * Math.round(0.1 * windowWidth)) : Math.min(windowWidth * 0.8, 480)),
+    () =>
+      isTV
+        ? Math.min(windowWidth * 0.6, 720)
+        : isTablet
+          ? Math.max(560, windowWidth - 2 * Math.round(0.1 * windowWidth))
+          : Math.min(windowWidth * 0.8, 480),
     [isTablet, isTV, windowWidth]
   );
 
   const cardHeight = useMemo(
-    () => Math.round(baseCardWidthForHeight * 9 / 16) + (isTV ? 280 : 310),
+    () => Math.round((baseCardWidthForHeight * 9) / 16) + (isTV ? 280 : 310),
     [baseCardWidthForHeight, isTV]
   );
 
-  const effectiveTopOffset = useMemo(() => (isTablet || isTV ? TOP_TABS_OFFSET : 8), [isTablet, isTV]);
+  const effectiveTopOffset = useMemo(
+    () => (isTablet || isTV ? TOP_TABS_OFFSET : 8),
+    [isTablet, isTV]
+  );
 
   // =============================================================================
   // State
@@ -187,13 +196,16 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   /**
    * Save focus state to TV navigation context
    */
-  const saveFocusState = useCallback((index: number) => {
-    if (tvNav && index >= 0) {
-      const focusId = `${uniqueSectionId}-item-${index}`;
-      tvNav.setScreenFocus(uniqueSectionId, focusId);
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [tvNav, uniqueSectionId]);
+  const saveFocusState = useCallback(
+    (index: number) => {
+      if (tvNav && index >= 0) {
+        const focusId = `${uniqueSectionId}-item-${index}`;
+        tvNav.setScreenFocus(uniqueSectionId, focusId);
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [tvNav, uniqueSectionId]
+  );
 
   /**
    * Get saved focus index from memory
@@ -285,21 +297,27 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   /**
    * Navigate to a specific item
    */
-  const goToIndex = useCallback((index: number) => {
-    if (index >= 0 && index < data.length) {
-      setActiveIndex(index);
-      paginationProgress.value = withTiming(index, { duration: 300 });
-      saveFocusState(index);
-    }
-  }, [data.length, paginationProgress, saveFocusState]);
+  const goToIndex = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < data.length) {
+        setActiveIndex(index);
+        paginationProgress.value = withTiming(index, { duration: 300 });
+        saveFocusState(index);
+      }
+    },
+    [data.length, paginationProgress, saveFocusState]
+  );
 
   /**
    * Handle content item press - navigate to metadata
    */
-  const handleNavigateToMetadata = useCallback((id: string, type: any) => {
-    saveFocusState(activeIndex);
-    navigation.navigate('Metadata', { id, type });
-  }, [navigation, saveFocusState, activeIndex]);
+  const handleNavigateToMetadata = useCallback(
+    (id: string, type: any) => {
+      saveFocusState(activeIndex);
+      navigation.navigate('Metadata', { id, type });
+    },
+    [navigation, saveFocusState, activeIndex]
+  );
 
   // =============================================================================
   // Focus Handlers
@@ -335,20 +353,23 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   // =============================================================================
 
   useTVEventHandler(
-    useCallback((event) => {
-      if (!isFocused) return;
+    useCallback(
+      event => {
+        if (!isFocused) return;
 
-      if (event.eventType === 'left') {
-        goToPrevious();
-      } else if (event.eventType === 'right') {
-        goToNext();
-      } else if (event.eventType === 'select') {
-        const currentItem = data[activeIndex];
-        if (currentItem) {
-          handleNavigateToMetadata(currentItem.id, currentItem.type);
+        if (event.eventType === 'left') {
+          goToPrevious();
+        } else if (event.eventType === 'right') {
+          goToNext();
+        } else if (event.eventType === 'select') {
+          const currentItem = data[activeIndex];
+          if (currentItem) {
+            handleNavigateToMetadata(currentItem.id, currentItem.type);
+          }
         }
-      }
-    }, [isFocused, goToPrevious, goToNext, data, activeIndex, handleNavigateToMetadata]),
+      },
+      [isFocused, goToPrevious, goToNext, data, activeIndex, handleNavigateToMetadata]
+    ),
     { enabled: isFocused }
   );
 
@@ -359,18 +380,21 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   /**
    * Resolve a ref or number to a node handle
    */
-  const resolveNodeHandle = useCallback((value: number | React.RefObject<any> | undefined): number | undefined => {
-    if (value === undefined) return undefined;
-    if (typeof value === 'number') return value;
-    if (value.current) {
-      try {
-        return findNodeHandle(value.current) ?? undefined;
-      } catch {
-        return undefined;
+  const resolveNodeHandle = useCallback(
+    (value: number | React.RefObject<any> | undefined): number | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value === 'number') return value;
+      if (value.current) {
+        try {
+          return findNodeHandle(value.current) ?? undefined;
+        } catch {
+          return undefined;
+        }
       }
-    }
-    return undefined;
-  }, []);
+      return undefined;
+    },
+    []
+  );
 
   const nextFocusUpHandle = resolveNodeHandle(nextFocusUp);
   const nextFocusDownHandle = resolveNodeHandle(nextFocusDown);
@@ -398,16 +422,18 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
     return (
       <View style={[styles.container, { paddingTop: 12 + effectiveTopOffset }]}>
         <View style={{ height: cardHeight, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={[
-            styles.card,
-            {
-              backgroundColor: currentTheme.colors.elevation1,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.18)',
-              width: cardWidth,
-              height: cardHeight,
-            }
-          ]}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: currentTheme.colors.elevation1,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.18)',
+                width: cardWidth,
+                height: cardHeight,
+              },
+            ]}
+          >
             <View style={styles.skeletonBannerFull} />
           </View>
         </View>
@@ -425,7 +451,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   return (
     <View style={styles.wrapper}>
-      <Animated.View style={[styles.container, focusedContainerStyle, { paddingTop: 12 + effectiveTopOffset }]}>
+      <Animated.View
+        style={[styles.container, focusedContainerStyle, { paddingTop: 12 + effectiveTopOffset }]}
+      >
         {/* Background Image */}
         {settings.enableHomeHeroBackground && currentItem && (
           <View style={[styles.backgroundContainer, { top: -insets.top }]} pointerEvents="none">
@@ -433,13 +461,13 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
               source={{
                 uri: currentItem.banner || currentItem.poster,
                 priority: FastImage.priority.low,
-                cache: FastImage.cacheControl.immutable
+                cache: FastImage.cacheControl.immutable,
               }}
               style={styles.backgroundImage}
               resizeMode={FastImage.resizeMode.cover}
             />
             <LinearGradient
-              colors={["rgba(0,0,0,0.45)", "rgba(0,0,0,0.75)"]}
+              colors={['rgba(0,0,0,0.45)', 'rgba(0,0,0,0.75)']}
               locations={[0.4, 1]}
               style={styles.backgroundOverlay}
             />
@@ -449,7 +477,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
         {/* Bottom blend */}
         {settings.enableHomeHeroBackground && (
           <LinearGradient
-            colors={["transparent", currentTheme.colors.darkBackground]}
+            colors={['transparent', currentTheme.colors.darkBackground]}
             locations={[0, 1]}
             style={styles.bottomBlend}
             pointerEvents="none"
@@ -489,7 +517,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
               item={currentItem}
               colors={currentTheme.colors}
               logoFailed={failedLogoIds.has(currentItem.id)}
-              onLogoError={() => setFailedLogoIds((prev) => new Set(prev).add(currentItem.id))}
+              onLogoError={() => setFailedLogoIds(prev => new Set(prev).add(currentItem.id))}
               cardWidth={cardWidth}
               cardHeight={cardHeight}
               isTablet={isTablet || isTV}
@@ -555,131 +583,124 @@ interface TVCarouselCardProps {
   isFocused: boolean;
 }
 
-const TVCarouselCard: React.FC<TVCarouselCardProps> = memo(({
-  item,
-  colors,
-  logoFailed,
-  onLogoError,
-  cardWidth,
-  cardHeight,
-  isTablet,
-  isFocused,
-}) => {
-  const [bannerLoaded, setBannerLoaded] = useState(false);
-  const [logoLoaded, setLogoLoaded] = useState(false);
+const TVCarouselCard: React.FC<TVCarouselCardProps> = memo(
+  ({ item, colors, logoFailed, onLogoError, cardWidth, cardHeight, isTablet, isFocused }) => {
+    const [bannerLoaded, setBannerLoaded] = useState(false);
+    const [logoLoaded, setLogoLoaded] = useState(false);
 
-  const bannerOpacity = useSharedValue(0);
-  const logoOpacity = useSharedValue(0);
+    const bannerOpacity = useSharedValue(0);
+    const logoOpacity = useSharedValue(0);
 
-  useEffect(() => {
-    if (bannerLoaded) {
-      bannerOpacity.value = withTiming(1, {
-        duration: 250,
-        easing: Easing.out(Easing.ease)
-      });
-    }
-  }, [bannerLoaded]);
-
-  useEffect(() => {
-    if (logoLoaded) {
-      logoOpacity.value = withTiming(1, {
-        duration: 300,
-        easing: Easing.out(Easing.ease)
-      });
-    }
-  }, [logoLoaded]);
-
-  const bannerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: bannerOpacity.value,
-  }));
-
-  const logoAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-  }));
-
-  return (
-    <View style={[
-      styles.card,
-      {
-        backgroundColor: colors.elevation1,
-        borderWidth: 1,
-        borderColor: isFocused ? colors.primary : 'rgba(255,255,255,0.18)',
-        width: cardWidth,
-        height: cardHeight,
+    useEffect(() => {
+      if (bannerLoaded) {
+        bannerOpacity.value = withTiming(1, {
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+        });
       }
-    ]}>
-      {/* Banner Image */}
-      <View style={styles.bannerContainer}>
-        {!bannerLoaded && (
-          <View style={styles.skeletonBannerFull} />
-        )}
-        <Animated.View style={[bannerAnimatedStyle, { flex: 1 }]}>
-          <FastImage
-            source={{
-              uri: item.banner || item.poster,
-              priority: FastImage.priority.normal,
-              cache: FastImage.cacheControl.immutable
-            }}
-            style={styles.banner}
-            resizeMode={FastImage.resizeMode.cover}
-            onLoad={() => setBannerLoaded(true)}
+    }, [bannerLoaded]);
+
+    useEffect(() => {
+      if (logoLoaded) {
+        logoOpacity.value = withTiming(1, {
+          duration: 300,
+          easing: Easing.out(Easing.ease),
+        });
+      }
+    }, [logoLoaded]);
+
+    const bannerAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: bannerOpacity.value,
+    }));
+
+    const logoAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: logoOpacity.value,
+    }));
+
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.elevation1,
+            borderWidth: 1,
+            borderColor: isFocused ? colors.primary : 'rgba(255,255,255,0.18)',
+            width: cardWidth,
+            height: cardHeight,
+          },
+        ]}
+      >
+        {/* Banner Image */}
+        <View style={styles.bannerContainer}>
+          {!bannerLoaded && <View style={styles.skeletonBannerFull} />}
+          <Animated.View style={[bannerAnimatedStyle, { flex: 1 }]}>
+            <FastImage
+              source={{
+                uri: item.banner || item.poster,
+                priority: FastImage.priority.normal,
+                cache: FastImage.cacheControl.immutable,
+              }}
+              style={styles.banner}
+              resizeMode={FastImage.resizeMode.cover}
+              onLoad={() => setBannerLoaded(true)}
+            />
+          </Animated.View>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.7)']}
+            locations={[0.4, 0.7, 1]}
+            style={styles.bannerGradient}
           />
-        </Animated.View>
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
-          locations={[0.4, 0.7, 1]}
-          style={styles.bannerGradient}
-        />
+        </View>
+
+        {/* Content Overlay */}
+        <View style={styles.contentOverlay}>
+          {/* Logo or Title */}
+          {item.logo && !logoFailed ? (
+            <View style={styles.logoContainer}>
+              <Animated.View style={logoAnimatedStyle}>
+                <FastImage
+                  source={{
+                    uri: item.logo,
+                    priority: FastImage.priority.high,
+                    cache: FastImage.cacheControl.immutable,
+                  }}
+                  style={[styles.logo, { width: Math.round(cardWidth * 0.72) }]}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => setLogoLoaded(true)}
+                  onError={onLogoError}
+                />
+              </Animated.View>
+            </View>
+          ) : (
+            <View style={styles.titleContainer}>
+              <Text style={[styles.title, { color: colors.highEmphasis }]} numberOfLines={1}>
+                {item.name}
+              </Text>
+            </View>
+          )}
+
+          {/* Genres */}
+          {item.genres && item.genres.length > 0 && (
+            <View style={styles.genresContainer}>
+              <Text style={[styles.genres, { color: colors.mediumEmphasis }]} numberOfLines={1}>
+                {item.genres.slice(0, 3).join(' \u2022 ')}
+              </Text>
+            </View>
+          )}
+
+          {/* Focus Hint */}
+          {isFocused && (
+            <View style={styles.focusHint}>
+              <Text style={[styles.focusHintText, { color: colors.highEmphasis }]}>
+                Press to view details
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
-
-      {/* Content Overlay */}
-      <View style={styles.contentOverlay}>
-        {/* Logo or Title */}
-        {item.logo && !logoFailed ? (
-          <View style={styles.logoContainer}>
-            <Animated.View style={logoAnimatedStyle}>
-              <FastImage
-                source={{
-                  uri: item.logo,
-                  priority: FastImage.priority.high,
-                  cache: FastImage.cacheControl.immutable
-                }}
-                style={[styles.logo, { width: Math.round(cardWidth * 0.72) }]}
-                resizeMode={FastImage.resizeMode.contain}
-                onLoad={() => setLogoLoaded(true)}
-                onError={onLogoError}
-              />
-            </Animated.View>
-          </View>
-        ) : (
-          <View style={styles.titleContainer}>
-            <Text style={[styles.title, { color: colors.highEmphasis }]} numberOfLines={1}>
-              {item.name}
-            </Text>
-          </View>
-        )}
-
-        {/* Genres */}
-        {item.genres && item.genres.length > 0 && (
-          <View style={styles.genresContainer}>
-            <Text style={[styles.genres, { color: colors.mediumEmphasis }]} numberOfLines={1}>
-              {item.genres.slice(0, 3).join(' \u2022 ')}
-            </Text>
-          </View>
-        )}
-
-        {/* Focus Hint */}
-        {isFocused && (
-          <View style={styles.focusHint}>
-            <Text style={[styles.focusHintText, { color: colors.highEmphasis }]}>
-              Press to view details
-            </Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-});
+    );
+  }
+);
 
 // =============================================================================
 // Styles
@@ -735,7 +756,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255,255,255,0.06)'
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   bannerContainer: {
     position: 'absolute',

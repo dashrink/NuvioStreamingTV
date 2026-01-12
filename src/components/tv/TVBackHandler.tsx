@@ -57,9 +57,7 @@ export function clearTVNavigationBackHandler(): void {
 /**
  * Non-TV fallback: simply renders children without TV back button handling.
  */
-export function TVBackHandler({
-  children,
-}: TVBackHandlerProps): React.ReactElement | null {
+export function TVBackHandler({ children }: TVBackHandlerProps): React.ReactElement | null {
   return <>{children}</>;
 }
 

@@ -8,7 +8,11 @@ interface MDBListIconProps {
 }
 
 // MDBList logo built from provided SVG paths. Colors are kept as in the source.
-const MDBListIcon: React.FC<MDBListIconProps> = ({ size = 24, colorPrimary = '#4284CA', colorSecondary = '#FBFCFE' }) => {
+const MDBListIcon: React.FC<MDBListIconProps> = ({
+  size = 24,
+  colorPrimary = '#4284CA',
+  colorSecondary = '#FBFCFE',
+}) => {
   // Original SVG is 200x200; maintain square aspect.
   return (
     <Svg width={size} height={size} viewBox="0 0 200 200">
@@ -32,5 +36,3 @@ const MDBListIcon: React.FC<MDBListIconProps> = ({ size = 24, colorPrimary = '#4
 };
 
 export default MDBListIcon;
-
-

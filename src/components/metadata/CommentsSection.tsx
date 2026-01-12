@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import React, { useCallback, useState, useRef, useMemo } from 'react';
 import {
   View,
@@ -12,15 +14,14 @@ import {
   Animated,
   Linking,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import TraktIcon from '../../../assets/rating-icons/trakt.svg';
 import { useTheme } from '../../contexts/ThemeContext';
+import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
+import { useSettings } from '../../hooks/useSettings';
+import { useTraktComments } from '../../hooks/useTraktComments';
 import { TraktContentComment } from '../../services/traktService';
 import { logger } from '../../utils/logger';
-import { useTraktComments } from '../../hooks/useTraktComments';
-import { useSettings } from '../../hooks/useSettings';
-import BottomSheet, { BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 // Enhanced responsive breakpoints for Comments Section
 const BREAKPOINTS = {
@@ -81,13 +82,24 @@ const MarkdownText: React.FC<{
     for (let i = 0; i < codeSplit.length; i++) {
       if (i % 2 === 1) {
         codeNodes.push(
-          <Text key={`${keyPrefix}-code-${i}`} style={[{ fontFamily: 'Courier', backgroundColor: theme.colors.card, paddingHorizontal: 3, borderRadius: 3 }, textStyle]}>
+          <Text
+            key={`${keyPrefix}-code-${i}`}
+            style={[
+              {
+                fontFamily: 'Courier',
+                backgroundColor: theme.colors.card,
+                paddingHorizontal: 3,
+                borderRadius: 3,
+              },
+              textStyle,
+            ]}
+          >
             {codeSplit[i]}
           </Text>
         );
       } else {
         // process bold and italic and links inside normal text
-        let chunk = codeSplit[i] ?? '';
+        const chunk = codeSplit[i] ?? '';
         const parts: React.ReactNode[] = [];
 
         // Links
@@ -95,7 +107,12 @@ const MarkdownText: React.FC<{
         let linkMatch: RegExpExecArray | null;
         while ((linkMatch = linkRegex.exec(chunk)) !== null) {
           const before = chunk.slice(cursor, linkMatch.index);
-          if (before) parts.push(<Text key={`${keyPrefix}-lnk-before-${cursor}`} style={textStyle}>{before}</Text>);
+          if (before)
+            parts.push(
+              <Text key={`${keyPrefix}-lnk-before-${cursor}`} style={textStyle}>
+                {before}
+              </Text>
+            );
           const label = linkMatch[1];
           const url = linkMatch[2];
           parts.push(
@@ -111,14 +128,18 @@ const MarkdownText: React.FC<{
           cursor = linkMatch.index + linkMatch[0].length;
         }
         if (cursor < chunk.length) {
-          parts.push(<Text key={`${keyPrefix}-lnk-tail`} style={textStyle}>{chunk.slice(cursor)}</Text>);
+          parts.push(
+            <Text key={`${keyPrefix}-lnk-tail`} style={textStyle}>
+              {chunk.slice(cursor)}
+            </Text>
+          );
         }
 
         // Wrap bold & italic via nested Text by replacing markers
         const applyFormat = (nodes: React.ReactNode[]): React.ReactNode[] => {
           return nodes.flatMap((node, idx) => {
             if (typeof node !== 'string' && !(node as any).props?.children) return node;
-            const str = typeof node === 'string' ? node : (node as any).props.children as string;
+            const str = typeof node === 'string' ? node : ((node as any).props.children as string);
             if (typeof str !== 'string') return node;
 
             // bold
@@ -126,15 +147,34 @@ const MarkdownText: React.FC<{
             const boldNodes: React.ReactNode[] = [];
             for (let b = 0; b < boldSplit.length; b++) {
               if (b % 2 === 1) {
-                boldNodes.push(<Text key={`${keyPrefix}-b-${idx}-${b}`} style={[{ fontWeight: '700' }, textStyle]}>{boldSplit[b]}</Text>);
+                boldNodes.push(
+                  <Text
+                    key={`${keyPrefix}-b-${idx}-${b}`}
+                    style={[{ fontWeight: '700' }, textStyle]}
+                  >
+                    {boldSplit[b]}
+                  </Text>
+                );
               } else {
                 // italic inside non-bold chunk
                 const italSplit = boldSplit[b].split(italicRegex);
                 for (let it = 0; it < italSplit.length; it++) {
                   if (it % 2 === 1) {
-                    boldNodes.push(<Text key={`${keyPrefix}-i-${idx}-${b}-${it}`} style={[{ fontStyle: 'italic' }, textStyle]}>{italSplit[it]}</Text>);
+                    boldNodes.push(
+                      <Text
+                        key={`${keyPrefix}-i-${idx}-${b}-${it}`}
+                        style={[{ fontStyle: 'italic' }, textStyle]}
+                      >
+                        {italSplit[it]}
+                      </Text>
+                    );
                   } else {
-                    if (italSplit[it]) boldNodes.push(<Text key={`${keyPrefix}-t-${idx}-${b}-${it}`} style={textStyle}>{italSplit[it]}</Text>);
+                    if (italSplit[it])
+                      boldNodes.push(
+                        <Text key={`${keyPrefix}-t-${idx}-${b}-${it}`} style={textStyle}>
+                          {italSplit[it]}
+                        </Text>
+                      );
                   }
                 }
               }
@@ -144,7 +184,10 @@ const MarkdownText: React.FC<{
         };
 
         codeNodes.push(
-          <Text key={`${keyPrefix}-txt-${i}`} style={[{ color: theme.colors.highEmphasis }, textStyle]}>
+          <Text
+            key={`${keyPrefix}-txt-${i}`}
+            style={[{ color: theme.colors.highEmphasis }, textStyle]}
+          >
             {applyFormat(parts)}
           </Text>
         );
@@ -154,13 +197,25 @@ const MarkdownText: React.FC<{
   };
 
   return (
-    <Text numberOfLines={numberOfLines} ellipsizeMode="tail" style={[{ color: theme.colors.highEmphasis }, textStyle]}>
+    <Text
+      numberOfLines={numberOfLines}
+      ellipsizeMode="tail"
+      style={[{ color: theme.colors.highEmphasis }, textStyle]}
+    >
       {spoilerTokens.map((tok, idx) => {
         if (tok.type === 'text') {
-          return <Text key={`seg-${idx}`} style={textStyle}>{renderInline(tok.content, `seg-${idx}`)}</Text>;
+          return (
+            <Text key={`seg-${idx}`} style={textStyle}>
+              {renderInline(tok.content, `seg-${idx}`)}
+            </Text>
+          );
         }
         if (revealedInlineSpoilers) {
-          return <Text key={`spl-${idx}`} style={textStyle}>{renderInline(tok.content, `spl-${idx}`)}</Text>;
+          return (
+            <Text key={`spl-${idx}`} style={textStyle}>
+              {renderInline(tok.content, `spl-${idx}`)}
+            </Text>
+          );
         }
         return (
           <Text key={`splmask-${idx}`} style={textStyle}>
@@ -289,7 +344,7 @@ const CompactCommentCard: React.FC<{
       // For older dates, show month/day
       return commentDate.toLocaleDateString('en-US', {
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch {
       return '';
@@ -304,25 +359,19 @@ const CompactCommentCard: React.FC<{
 
     // Add full stars
     for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <MaterialIcons key={`full-${i}`} name="star" size={10} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`full-${i}`} name="star" size={10} color="#FFD700" />);
     }
 
     // Add half star if needed
     if (hasHalfStar) {
-      stars.push(
-        <MaterialIcons key="half" name="star-half" size={10} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key="half" name="star-half" size={10} color="#FFD700" />);
     }
 
     // Add empty stars to make 5 total
     const filledStars = fullStars + (hasHalfStar ? 1 : 0);
     const emptyStars = 5 - filledStars;
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <MaterialIcons key={`empty-${i}`} name="star-border" size={10} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`empty-${i}`} name="star-border" size={10} color="#FFD700" />);
     }
 
     return stars;
@@ -341,7 +390,7 @@ const CompactCommentCard: React.FC<{
           height: commentCardHeight,
           marginRight: commentCardSpacing,
           padding: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
-          borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
+          borderRadius: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
         },
       ]}
     >
@@ -358,41 +407,54 @@ const CompactCommentCard: React.FC<{
       >
         {/* Trakt Icon - Top Right Corner */}
         <View style={styles.traktIconContainer}>
-          <TraktIcon width={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16} height={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16} />
+          <TraktIcon
+            width={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+            height={isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16}
+          />
         </View>
 
         {/* Header Section - Fixed at top */}
-        <View style={[
-          styles.compactHeader,
-          {
-            marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8
-          }
-        ]}>
+        <View
+          style={[
+            styles.compactHeader,
+            {
+              marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8,
+            },
+          ]}
+        >
           <View style={styles.usernameContainer}>
-            <Text style={[
-              styles.compactUsername,
-              {
-                color: theme.colors.highEmphasis,
-                fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 16
-              }
-            ]}>
+            <Text
+              style={[
+                styles.compactUsername,
+                {
+                  color: theme.colors.highEmphasis,
+                  fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 16,
+                },
+              ]}
+            >
               {username}
             </Text>
             {user.vip && (
-              <View style={[
-                styles.miniVipBadge,
-                {
-                  paddingHorizontal: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
-                  paddingVertical: isTV ? 2 : isLargeTablet ? 2 : isTablet ? 1 : 1,
-                  borderRadius: isTV ? 8 : isLargeTablet ? 7 : isTablet ? 6 : 6
-                }
-              ]}>
-                <Text style={[
-                  styles.miniVipText,
+              <View
+                style={[
+                  styles.miniVipBadge,
                   {
-                    fontSize: isTV ? 11 : isLargeTablet ? 10 : isTablet ? 9 : 9
-                  }
-                ]}>VIP</Text>
+                    paddingHorizontal: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+                    paddingVertical: isTV ? 2 : isLargeTablet ? 2 : isTablet ? 1 : 1,
+                    borderRadius: isTV ? 8 : isLargeTablet ? 7 : isTablet ? 6 : 6,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.miniVipText,
+                    {
+                      fontSize: isTV ? 11 : isLargeTablet ? 10 : isTablet ? 9 : 9,
+                    },
+                  ]}
+                >
+                  VIP
+                </Text>
               </View>
             )}
           </View>
@@ -400,42 +462,52 @@ const CompactCommentCard: React.FC<{
 
         {/* Rating - Show stars */}
         {comment.user_stats?.rating && (
-          <View style={[
-            styles.compactRating,
-            {
-              marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8
-            }
-          ]}>
-            {renderCompactStars(comment.user_stats.rating)}
-            <Text style={[
-              styles.compactRatingText,
+          <View
+            style={[
+              styles.compactRating,
               {
-                color: theme.colors.mediumEmphasis,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14
-              }
-            ]}>
+                marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8,
+              },
+            ]}
+          >
+            {renderCompactStars(comment.user_stats.rating)}
+            <Text
+              style={[
+                styles.compactRatingText,
+                {
+                  color: theme.colors.mediumEmphasis,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                },
+              ]}
+            >
               {comment.user_stats.rating}/10
             </Text>
           </View>
         )}
 
         {/* Comment Preview - Flexible area that fills space */}
-        <View style={[
-          styles.commentContainer,
-          shouldBlurContent ? styles.blurredContent : undefined,
-          {
-            marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8
-          }
-        ]}>
+        <View
+          style={[
+            styles.commentContainer,
+            shouldBlurContent ? styles.blurredContent : undefined,
+            {
+              marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8,
+            },
+          ]}
+        >
           {shouldBlurContent ? (
-            <Text style={[
-              styles.compactComment,
-              {
-                color: theme.colors.highEmphasis,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18
-              }
-            ]}>⚠️ This comment contains spoilers. Tap to reveal.</Text>
+            <Text
+              style={[
+                styles.compactComment,
+                {
+                  color: theme.colors.highEmphasis,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                  lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18,
+                },
+              ]}
+            >
+              ⚠️ This comment contains spoilers. Tap to reveal.
+            </Text>
           ) : (
             <MarkdownText
               text={comment.comment}
@@ -447,60 +519,72 @@ const CompactCommentCard: React.FC<{
                 styles.compactComment,
                 {
                   fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                  lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18
-                }
+                  lineHeight: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18,
+                },
               ]}
             />
           )}
         </View>
 
         {/* Meta Info - Fixed at bottom */}
-        <View style={[
-          styles.compactMeta,
-          {
-            paddingTop: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 6
-          }
-        ]}>
+        <View
+          style={[
+            styles.compactMeta,
+            {
+              paddingTop: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 6,
+            },
+          ]}
+        >
           <View style={styles.compactBadges}>
             {comment.spoiler && (
-              <Text style={[
-                styles.spoilerMiniText,
-                {
-                  color: theme.colors.error,
-                  fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11
-                }
-              ]}>Spoiler</Text>
+              <Text
+                style={[
+                  styles.spoilerMiniText,
+                  {
+                    color: theme.colors.error,
+                    fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                  },
+                ]}
+              >
+                Spoiler
+              </Text>
             )}
           </View>
           <View style={styles.compactStats}>
-            <Text style={[
-              styles.compactTime,
-              {
-                color: theme.colors.mediumEmphasis,
-                fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11
-              }
-            ]}>
+            <Text
+              style={[
+                styles.compactTime,
+                {
+                  color: theme.colors.mediumEmphasis,
+                  fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 11 : 11,
+                },
+              ]}
+            >
               {formatRelativeTime(comment.created_at)}
             </Text>
             {comment.likes > 0 && (
-              <Text style={[
-                styles.compactStat,
-                {
-                  color: theme.colors.mediumEmphasis,
-                  fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12
-                }
-              ]}>
+              <Text
+                style={[
+                  styles.compactStat,
+                  {
+                    color: theme.colors.mediumEmphasis,
+                    fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12,
+                  },
+                ]}
+              >
                 👍 {comment.likes}
               </Text>
             )}
             {comment.replies > 0 && (
-              <Text style={[
-                styles.compactStat,
-                {
-                  color: theme.colors.mediumEmphasis,
-                  fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12
-                }
-              ]}>
+              <Text
+                style={[
+                  styles.compactStat,
+                  {
+                    color: theme.colors.mediumEmphasis,
+                    fontSize: isTV ? 13 : isLargeTablet ? 12 : isTablet ? 12 : 12,
+                  },
+                ]}
+              >
                 💬 {comment.replies}
               </Text>
             )}
@@ -564,22 +648,16 @@ const ExpandedCommentBottomSheet: React.FC<{
     const hasHalfStar = rating % 2 >= 1;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <MaterialIcons key={`full-${i}`} name="star" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`full-${i}`} name="star" size={16} color="#FFD700" />);
     }
 
     if (hasHalfStar) {
-      stars.push(
-        <MaterialIcons key="half" name="star-half" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key="half" name="star-half" size={16} color="#FFD700" />);
     }
 
     const emptyStars = 5 - Math.ceil(rating / 2);
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <MaterialIcons key={`empty-${i}`} name="star-border" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`empty-${i}`} name="star-border" size={16} color="#FFD700" />);
     }
 
     return stars;
@@ -588,7 +666,7 @@ const ExpandedCommentBottomSheet: React.FC<{
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      onChange={(index) => {
+      onChange={index => {
         if (index === -1) {
           onClose();
         }
@@ -617,7 +695,13 @@ const ExpandedCommentBottomSheet: React.FC<{
         keyboardShouldPersistTaps="handled"
       >
         {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={() => { triggerLight(); onClose(); }}>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => {
+            triggerLight();
+            onClose();
+          }}
+        >
           <MaterialIcons name="close" size={24} color={theme.colors.highEmphasis} />
         </TouchableOpacity>
 
@@ -670,10 +754,15 @@ const ExpandedCommentBottomSheet: React.FC<{
             <View style={[styles.spoilerIcon, { backgroundColor: theme.colors.card }]}>
               <MaterialIcons name="visibility-off" size={20} color={theme.colors.mediumEmphasis} />
             </View>
-            <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>Contains spoilers</Text>
+            <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>
+              Contains spoilers
+            </Text>
             <TouchableOpacity
               style={[styles.revealButton, { borderColor: theme.colors.primary }]}
-              onPress={() => { triggerMedium(); onSpoilerPress(); }}
+              onPress={() => {
+                triggerMedium();
+                onSpoilerPress();
+              }}
               activeOpacity={0.9}
             >
               <MaterialIcons name="visibility" size={18} color={theme.colors.primary} />
@@ -707,7 +796,11 @@ const ExpandedCommentBottomSheet: React.FC<{
             )}
             {comment.replies > 0 && (
               <View style={styles.repliesContainer}>
-                <MaterialIcons name="chat-bubble-outline" size={16} color={theme.colors.mediumEmphasis} />
+                <MaterialIcons
+                  name="chat-bubble-outline"
+                  size={16}
+                  color={theme.colors.mediumEmphasis}
+                />
                 <Text style={[styles.repliesText, { color: theme.colors.mediumEmphasis }]}>
                   {comment.replies}
                 </Text>
@@ -763,22 +856,21 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
     }
   }, [deviceType]);
 
-  const {
-    comments,
-    loading,
-    error,
-    hasMore,
-    isAuthenticated,
-    loadMore,
-    refresh,
-  } = useTraktComments({
-    imdbId,
-    type: type === 'show' ? (season !== undefined && episode !== undefined ? 'episode' :
-      season !== undefined ? 'season' : 'show') : 'movie',
-    season,
-    episode,
-    enabled: true,
-  });
+  const { comments, loading, error, hasMore, isAuthenticated, loadMore, refresh } =
+    useTraktComments({
+      imdbId,
+      type:
+        type === 'show'
+          ? season !== undefined && episode !== undefined
+            ? 'episode'
+            : season !== undefined
+              ? 'season'
+              : 'show'
+          : 'movie',
+      season,
+      episode,
+      enabled: true,
+    });
 
   // Track when first load completes to avoid premature empty state
   React.useEffect(() => {
@@ -793,45 +885,51 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
   console.log('CommentsSection: Loading:', loading);
   console.log('CommentsSection: Error:', error);
 
-  const renderComment = useCallback(({ item }: { item: TraktContentComment }) => {
-    // Safety check for null/undefined items
-    if (!item || !item.id) {
-      console.log('CommentsSection: Invalid comment item:', item);
-      return null;
-    }
+  const renderComment = useCallback(
+    ({ item }: { item: TraktContentComment }) => {
+      // Safety check for null/undefined items
+      if (!item || !item.id) {
+        console.log('CommentsSection: Invalid comment item:', item);
+        return null;
+      }
 
-    console.log('CommentsSection: Rendering comment:', item.id);
+      console.log('CommentsSection: Rendering comment:', item.id);
 
-    return (
-      <CompactCommentCard
-        comment={item}
-        theme={currentTheme}
-        onPress={() => {
-          console.log('CommentsSection: Comment pressed:', item.id);
-          onCommentPress?.(item);
-        }}
-        isSpoilerRevealed={true}
-        onSpoilerPress={() => {
-          // Do nothing for now - spoilers are handled by parent
-        }}
-      />
-    );
-  }, [currentTheme, onCommentPress]);
+      return (
+        <CompactCommentCard
+          comment={item}
+          theme={currentTheme}
+          onPress={() => {
+            console.log('CommentsSection: Comment pressed:', item.id);
+            onCommentPress?.(item);
+          }}
+          isSpoilerRevealed={true}
+          onSpoilerPress={() => {
+            // Do nothing for now - spoilers are handled by parent
+          }}
+        />
+      );
+    },
+    [currentTheme, onCommentPress]
+  );
 
   const renderEmpty = useCallback(() => {
     if (loading) return null;
 
     return (
       <View style={styles.emptyContainer}>
-        <MaterialIcons name="chat-bubble-outline" size={48} color={currentTheme.colors.mediumEmphasis} />
+        <MaterialIcons
+          name="chat-bubble-outline"
+          size={48}
+          color={currentTheme.colors.mediumEmphasis}
+        />
         <Text style={[styles.emptyText, { color: currentTheme.colors.mediumEmphasis }]}>
           {error ? 'Comments unavailable' : 'No comments on Trakt yet'}
         </Text>
         <Text style={[styles.emptySubtext, { color: currentTheme.colors.disabled }]}>
           {error
-            ? 'This content may not be in Trakt\'s database yet'
-            : 'Be the first to comment on Trakt.tv'
-          }
+            ? "This content may not be in Trakt's database yet"
+            : 'Be the first to comment on Trakt.tv'}
         </Text>
       </View>
     );
@@ -851,8 +949,12 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
     const badgeH = isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12;
 
     return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.horizontalList, { paddingRight: gap }]}>
-        {placeholders.map((i) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.horizontalList, { paddingRight: gap }]}
+      >
+        {placeholders.map(i => (
           <View
             key={`skeleton-${i}`}
             style={[
@@ -869,26 +971,82 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
             ]}
           >
             <View style={styles.skeletonTraktContainer}>
-              <View style={[styles.skeletonDot, { width: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16, height: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16, borderRadius: isTV ? 10 : isLargeTablet ? 9 : 8 }]} />
+              <View
+                style={[
+                  styles.skeletonDot,
+                  {
+                    width: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+                    height: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+                    borderRadius: isTV ? 10 : isLargeTablet ? 9 : 8,
+                  },
+                ]}
+              />
             </View>
 
-            <View style={[styles.compactHeader, { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 }]}>
-              <View style={[styles.skeletonLine, { width: headLineWidth, height: isTV ? 14 : 12 }]} />
-              <View style={[styles.miniVipBadge, styles.skeletonBadge, { width: isTV ? 36 : isLargeTablet ? 32 : isTablet ? 28 : 24, height: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12, borderRadius: isTV ? 10 : isLargeTablet ? 9 : 8 }]} />
+            <View
+              style={[
+                styles.compactHeader,
+                { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 },
+              ]}
+            >
+              <View
+                style={[styles.skeletonLine, { width: headLineWidth, height: isTV ? 14 : 12 }]}
+              />
+              <View
+                style={[
+                  styles.miniVipBadge,
+                  styles.skeletonBadge,
+                  {
+                    width: isTV ? 36 : isLargeTablet ? 32 : isTablet ? 28 : 24,
+                    height: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+                    borderRadius: isTV ? 10 : isLargeTablet ? 9 : 8,
+                  },
+                ]}
+              />
             </View>
 
-            <View style={[styles.compactRating, { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 }]}>
+            <View
+              style={[
+                styles.compactRating,
+                { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 },
+              ]}
+            >
               <View style={[styles.skeletonLine, { width: ratingWidth, height: isTV ? 12 : 10 }]} />
             </View>
 
-            <View style={[styles.commentContainer, { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 }]}>
+            <View
+              style={[
+                styles.commentContainer,
+                { marginBottom: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 8 : 8 },
+              ]}
+            >
               <View style={[styles.skeletonLine, { width: '95%', height: isTV ? 14 : 12 }]} />
-              <View style={[styles.skeletonLine, { width: '90%', height: isTV ? 14 : 12, marginTop: 6 }]} />
-              <View style={[styles.skeletonLine, { width: '70%', height: isTV ? 14 : 12, marginTop: 6 }]} />
+              <View
+                style={[
+                  styles.skeletonLine,
+                  { width: '90%', height: isTV ? 14 : 12, marginTop: 6 },
+                ]}
+              />
+              <View
+                style={[
+                  styles.skeletonLine,
+                  { width: '70%', height: isTV ? 14 : 12, marginTop: 6 },
+                ]}
+              />
             </View>
 
-            <View style={[styles.compactMeta, { paddingTop: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 6 }]}>
-              <View style={[styles.skeletonBadge, { width: badgeW, height: badgeH, borderRadius: Math.min(6, badgeH / 2) }]} />
+            <View
+              style={[
+                styles.compactMeta,
+                { paddingTop: isTV ? 8 : isLargeTablet ? 6 : isTablet ? 6 : 6 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.skeletonBadge,
+                  { width: badgeW, height: badgeH, borderRadius: Math.min(6, badgeH / 2) },
+                ]}
+              />
               <View style={{ flexDirection: 'row', gap }}>
                 <View style={[styles.skeletonLine, { width: statWidth, height: isTV ? 12 : 10 }]} />
                 <View style={[styles.skeletonLine, { width: statWidth, height: isTV ? 12 : 10 }]} />
@@ -915,23 +1073,24 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
   }
 
   return (
-    <View style={[
-      styles.container,
-      { paddingHorizontal: horizontalPadding }
-    ]}>
-      <View style={[
-        styles.header,
-        {
-          marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16
-        }
-      ]}>
-        <Text style={[
-          styles.title,
+    <View style={[styles.container, { paddingHorizontal: horizontalPadding }]}>
+      <View
+        style={[
+          styles.header,
           {
-            color: currentTheme.colors.highEmphasis,
-            fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 20
-          }
-        ]}>
+            marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.title,
+            {
+              color: currentTheme.colors.highEmphasis,
+              fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 20,
+            },
+          ]}
+        >
           Trakt Comments
         </Text>
       </View>
@@ -939,12 +1098,13 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
       {error && (
         <View style={[styles.errorContainer, { backgroundColor: currentTheme.colors.card }]}>
           <MaterialIcons name="error-outline" size={20} color={currentTheme.colors.error} />
-          <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>
-            {error}
-          </Text>
+          <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{error}</Text>
           <TouchableOpacity
             style={[styles.retryButton, { borderColor: currentTheme.colors.error }]}
-            onPress={() => { triggerMedium(); refresh(); }}
+            onPress={() => {
+              triggerMedium();
+              refresh();
+            }}
           >
             <Text style={[styles.retryButtonText, { color: currentTheme.colors.error }]}>
               Retry
@@ -955,9 +1115,12 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
 
       {loading && Array.isArray(comments) && comments.length === 0 && renderSkeletons()}
 
-      {(!loading && Array.isArray(comments) && comments.length === 0 && hasLoadedOnce && !error) && (
-        renderEmpty()
-      )}
+      {!loading &&
+        Array.isArray(comments) &&
+        comments.length === 0 &&
+        hasLoadedOnce &&
+        !error &&
+        renderEmpty()}
 
       {Array.isArray(comments) && comments.length > 0 && (
         <Animated.FlatList
@@ -987,7 +1150,10 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
               <View style={styles.loadMoreContainer}>
                 <TouchableOpacity
                   style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.card }]}
-                  onPress={() => { triggerLight(); loadMore(); }}
+                  onPress={() => {
+                    triggerLight();
+                    loadMore();
+                  }}
                   disabled={loading}
                 >
                   {loading ? (
@@ -997,7 +1163,11 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
                       <Text style={[styles.loadMoreText, { color: currentTheme.colors.primary }]}>
                         Load More
                       </Text>
-                      <MaterialIcons name="chevron-right" size={20} color={currentTheme.colors.primary} />
+                      <MaterialIcons
+                        name="chevron-right"
+                        size={20}
+                        color={currentTheme.colors.primary}
+                      />
                     </>
                   )}
                 </TouchableOpacity>
@@ -1008,7 +1178,6 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
           style={{ opacity: 1 }}
         />
       )}
-
     </View>
   );
 };
@@ -1068,22 +1237,16 @@ export const CommentBottomSheet: React.FC<{
     const hasHalfStar = rating % 2 >= 1;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <MaterialIcons key={`full-${i}`} name="star" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`full-${i}`} name="star" size={16} color="#FFD700" />);
     }
 
     if (hasHalfStar) {
-      stars.push(
-        <MaterialIcons key="half" name="star-half" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key="half" name="star-half" size={16} color="#FFD700" />);
     }
 
     const emptyStars = 5 - Math.ceil(rating / 2);
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <MaterialIcons key={`empty-${i}`} name="star-border" size={16} color="#FFD700" />
-      );
+      stars.push(<MaterialIcons key={`empty-${i}`} name="star-border" size={16} color="#FFD700" />);
     }
 
     return stars;
@@ -1092,7 +1255,7 @@ export const CommentBottomSheet: React.FC<{
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      onChange={(index) => {
+      onChange={index => {
         console.log('CommentBottomSheet: onChange called with index:', index);
         if (index === -1) {
           onClose();
@@ -1170,10 +1333,15 @@ export const CommentBottomSheet: React.FC<{
             <View style={[styles.spoilerIcon, { backgroundColor: theme.colors.card }]}>
               <MaterialIcons name="visibility-off" size={20} color={theme.colors.mediumEmphasis} />
             </View>
-            <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>Contains spoilers</Text>
+            <Text style={[styles.spoilerTitle, { color: theme.colors.highEmphasis }]}>
+              Contains spoilers
+            </Text>
             <TouchableOpacity
               style={[styles.revealButton, { borderColor: theme.colors.primary }]}
-              onPress={() => { triggerMedium(); onSpoilerPress(); }}
+              onPress={() => {
+                triggerMedium();
+                onSpoilerPress();
+              }}
               activeOpacity={0.9}
             >
               <MaterialIcons name="visibility" size={18} color={theme.colors.primary} />
@@ -1207,7 +1375,11 @@ export const CommentBottomSheet: React.FC<{
             )}
             {comment.replies > 0 && (
               <View style={styles.repliesContainer}>
-                <MaterialIcons name="chat-bubble-outline" size={16} color={theme.colors.mediumEmphasis} />
+                <MaterialIcons
+                  name="chat-bubble-outline"
+                  size={16}
+                  color={theme.colors.mediumEmphasis}
+                />
                 <Text style={[styles.repliesText, { color: theme.colors.mediumEmphasis }]}>
                   {comment.replies}
                 </Text>
@@ -1486,7 +1658,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.08)'
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   errorContainer: {
     flexDirection: 'row',

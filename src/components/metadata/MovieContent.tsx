@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { StreamingContent } from '../../types/metadata';
 
@@ -32,4 +33,4 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 24,
   },
-}); 
+});

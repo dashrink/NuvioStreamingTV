@@ -6,4 +6,8 @@
 
 export { default as TVLibraryGrid, TVLibraryGridProps, TVLibraryItem } from './TVLibraryGrid';
 export { default as TVLibraryFolders } from './TVLibraryFolders';
-export { default as TVContinueWatchingSection, TVContinueWatchingItem, TVContinueWatchingSectionProps } from './TVContinueWatchingSection';
+export {
+  default as TVContinueWatchingSection,
+  TVContinueWatchingItem,
+  TVContinueWatchingSectionProps,
+} from './TVContinueWatchingSection';

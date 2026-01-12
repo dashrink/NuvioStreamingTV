@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { mmkvStorage } from '../services/mmkvStorage';
+
 import { settingsEmitter } from '../hooks/useSettings';
+import { mmkvStorage } from '../services/mmkvStorage';
 import { colors as defaultColors } from '../styles/colors';
 
 // Define the Theme interface
@@ -172,7 +173,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const appSettingsJson = await mmkvStorage.getItem(`@user:${scope}:app_settings`);
         const appSettings = appSettingsJson ? JSON.parse(appSettingsJson) : {};
         const savedThemeId = appSettings.themeId || (await mmkvStorage.getItem(CURRENT_THEME_KEY));
-        const customThemesJson = appSettings.customThemes ? JSON.stringify(appSettings.customThemes) : await mmkvStorage.getItem(CUSTOM_THEMES_KEY);
+        const customThemesJson = appSettings.customThemes
+          ? JSON.stringify(appSettings.customThemes)
+          : await mmkvStorage.getItem(CUSTOM_THEMES_KEY);
         const customThemes = customThemesJson ? JSON.parse(customThemesJson) : [];
         const allThemes = [...DEFAULT_THEMES, ...customThemes];
         setAvailableThemes(allThemes);
@@ -198,7 +201,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
       const key = `@user:${scope}:app_settings`;
       let settings = {} as any;
-      try { settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}'); } catch {}
+      try {
+        settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}');
+      } catch {}
       settings.themeId = themeId;
       await mmkvStorage.setItem(key, JSON.stringify(settings));
       await mmkvStorage.setItem(CURRENT_THEME_KEY, themeId);
@@ -211,31 +216,33 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       // Generate unique ID
       const id = `custom_${Date.now()}`;
-      
+
       // Create new theme object
       const newTheme: Theme = {
         id,
         ...themeData,
         isEditable: true,
       };
-      
+
       // Add to available themes
       const customThemes = availableThemes.filter(t => t.isEditable);
       const updatedCustomThemes = [...customThemes, newTheme];
       const updatedAllThemes = [...DEFAULT_THEMES, ...updatedCustomThemes];
-      
+
       // Save to storage (scoped app_settings + legacy key)
       const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
       const key = `@user:${scope}:app_settings`;
       let settings = {} as any;
-      try { settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}'); } catch {}
+      try {
+        settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}');
+      } catch {}
       settings.customThemes = updatedCustomThemes;
       await mmkvStorage.setItem(key, JSON.stringify(settings));
       await mmkvStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(updatedCustomThemes));
-      
+
       // Update state
       setAvailableThemes(updatedAllThemes);
-      
+
       // Set as current theme
       setCurrentThemeState(newTheme);
       await mmkvStorage.setItem(CURRENT_THEME_KEY, id);
@@ -251,28 +258,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (!updatedTheme.isEditable) {
         throw new Error('Cannot edit built-in themes');
       }
-      
+
       // Find and update the theme
       const customThemes = availableThemes.filter(t => t.isEditable);
-      const updatedCustomThemes = customThemes.map(t => 
+      const updatedCustomThemes = customThemes.map(t =>
         t.id === updatedTheme.id ? updatedTheme : t
       );
-      
+
       // Update available themes
       const updatedAllThemes = [...DEFAULT_THEMES, ...updatedCustomThemes];
-      
+
       // Save to storage (scoped app_settings + legacy key)
       const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
       const key = `@user:${scope}:app_settings`;
       let settings = {} as any;
-      try { settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}'); } catch {}
+      try {
+        settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}');
+      } catch {}
       settings.customThemes = updatedCustomThemes;
       await mmkvStorage.setItem(key, JSON.stringify(settings));
       await mmkvStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(updatedCustomThemes));
-      
+
       // Update state
       setAvailableThemes(updatedAllThemes);
-      
+
       // Update current theme if needed
       if (currentTheme.id === updatedTheme.id) {
         setCurrentThemeState(updatedTheme);
@@ -288,27 +297,29 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       // Find theme to delete
       const themeToDelete = availableThemes.find(t => t.id === themeId);
-      
+
       if (!themeToDelete || !themeToDelete.isEditable) {
         throw new Error('Cannot delete built-in themes or theme not found');
       }
-      
+
       // Filter out the theme
       const customThemes = availableThemes.filter(t => t.isEditable && t.id !== themeId);
       const updatedAllThemes = [...DEFAULT_THEMES, ...customThemes];
-      
+
       // Save to storage (scoped app_settings + legacy key)
       const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
       const key = `@user:${scope}:app_settings`;
       let settings = {} as any;
-      try { settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}'); } catch {}
+      try {
+        settings = JSON.parse((await mmkvStorage.getItem(key)) || '{}');
+      } catch {}
       settings.customThemes = customThemes;
       await mmkvStorage.setItem(key, JSON.stringify(settings));
       await mmkvStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes));
-      
+
       // Update state
       setAvailableThemes(updatedAllThemes);
-      
+
       // Reset to default theme if current theme was deleted
       if (currentTheme.id === themeId) {
         setCurrentThemeState(DEFAULT_THEMES[0]);
@@ -343,4 +354,4 @@ export function useTheme() {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
-} 
+}

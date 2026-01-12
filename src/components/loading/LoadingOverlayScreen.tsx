@@ -61,15 +61,9 @@
  * }
  */
 
-import React, { useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  Platform,
-  Modal,
-} from 'react-native';
 import { BlurView } from 'expo-blur';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, TouchableWithoutFeedback, Platform, Modal } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -78,7 +72,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../contexts/ThemeContext';
+
 import {
   LoadingOverlayProps,
   LOADING_ANIMATION_DURATIONS,
@@ -86,6 +80,7 @@ import {
   getLoadingColorTokens,
 } from './types';
 import UnifiedSpinner from './UnifiedSpinner';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * LoadingOverlayScreen - A full-screen loading overlay for page-level loading states
@@ -169,7 +164,7 @@ const LoadingOverlayScreen: React.FC<LoadingOverlayProps> = ({
           duration: LOADING_ANIMATION_DURATIONS.fadeOut,
           easing: Easing.in(Easing.cubic),
         },
-        (finished) => {
+        finished => {
           if (finished) {
             runOnJS(setShouldRender)(false);
           }
@@ -216,19 +211,12 @@ const LoadingOverlayScreen: React.FC<LoadingOverlayProps> = ({
       statusBarTranslucent
       testID={testID}
     >
-      <TouchableWithoutFeedback
-        onPress={handleBackdropPress}
-        disabled={!onBackdropPress}
-      >
+      <TouchableWithoutFeedback onPress={handleBackdropPress} disabled={!onBackdropPress}>
         <View style={[styles.container, style]}>
           {/* Backdrop layer */}
           {blur && Platform.OS === 'ios' ? (
             <Animated.View style={[StyleSheet.absoluteFill, backdropAnimatedStyle]}>
-              <BlurView
-                intensity={60}
-                tint="dark"
-                style={StyleSheet.absoluteFill}
-              />
+              <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
           ) : (
             <Animated.View

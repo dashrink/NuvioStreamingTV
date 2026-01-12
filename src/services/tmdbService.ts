@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { mmkvStorage } from './mmkvStorage';
 import { logger } from '../utils/logger';
 
@@ -143,7 +144,7 @@ export class TMDBService {
     let hash = 0;
     for (let i = 0; i < paramsStr.length; i++) {
       const char = paramsStr.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     const cleanEndpoint = endpoint.replace(/[^a-zA-Z0-9]/g, '_');
@@ -202,7 +203,7 @@ export class TMDBService {
     try {
       const cacheEntry = {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       mmkvStorage.setString(key, JSON.stringify(cacheEntry));
       logger.log(`[TMDB Cache] 💾 STORED: ${key}`);
@@ -241,7 +242,7 @@ export class TMDBService {
     try {
       const [savedKey, savedUseCustomKey] = await Promise.all([
         mmkvStorage.getItem(TMDB_API_KEY_STORAGE_KEY),
-        mmkvStorage.getItem(USE_CUSTOM_TMDB_API_KEY)
+        mmkvStorage.getItem(USE_CUSTOM_TMDB_API_KEY),
       ]);
 
       this.useCustomKey = savedUseCustomKey === 'true';
@@ -278,11 +279,15 @@ export class TMDBService {
 
     return {
       api_key: this.apiKey,
-      ...additionalParams
+      ...additionalParams,
     };
   }
 
-  private generateRatingCacheKey(showName: string, seasonNumber: number, episodeNumber: number): string {
+  private generateRatingCacheKey(
+    showName: string,
+    seasonNumber: number,
+    episodeNumber: number
+  ): string {
     return `${showName.toLowerCase()}_s${seasonNumber}_e${episodeNumber}`;
   }
 
@@ -330,7 +335,7 @@ export class TMDBService {
         headers: await this.getHeaders(),
         params: await this.getParams({
           language,
-          append_to_response: 'external_ids,credits,keywords,networks' // Append external IDs, cast/crew, keywords, and networks
+          append_to_response: 'external_ids,credits,keywords,networks', // Append external IDs, cast/crew, keywords, and networks
         }),
       });
       const data = response.data;
@@ -349,7 +354,9 @@ export class TMDBService {
     seasonNumber: number,
     episodeNumber: number
   ): Promise<{ imdb_id: string | null } | null> {
-    const cacheKey = this.generateCacheKey(`tv_${tmdbId}_season_${seasonNumber}_episode_${episodeNumber}_external_ids`);
+    const cacheKey = this.generateCacheKey(
+      `tv_${tmdbId}_season_${seasonNumber}_episode_${episodeNumber}_external_ids`
+    );
 
     // Check cache (local or remote)
     const cached = await this.getFromCacheOrRemote<{ imdb_id: string | null }>(cacheKey);
@@ -375,7 +382,11 @@ export class TMDBService {
    * Get IMDb rating for an episode using OMDB API with caching
    * @deprecated This method is deprecated. Use getIMDbRatings instead for better accuracy and performance.
    */
-  async getIMDbRating(showName: string, seasonNumber: number, episodeNumber: number): Promise<number | null> {
+  async getIMDbRating(
+    showName: string,
+    seasonNumber: number,
+    episodeNumber: number
+  ): Promise<number | null> {
     const cacheKey = this.generateRatingCacheKey(showName, seasonNumber, episodeNumber);
 
     // Check cache first
@@ -390,8 +401,8 @@ export class TMDBService {
           apikey: OMDB_API_KEY,
           t: showName,
           Season: seasonNumber,
-          Episode: episodeNumber
-        }
+          Episode: episodeNumber,
+        },
       });
 
       let rating: number | null = null;
@@ -454,8 +465,16 @@ export class TMDBService {
    * Get season details including all episodes
    * Note: IMDb ratings are now fetched separately via getIMDbRatings() for better accuracy
    */
-  async getSeasonDetails(tmdbId: number, seasonNumber: number, showName?: string, language: string = 'en-US'): Promise<TMDBSeason | null> {
-    const cacheKey = this.generateCacheKey(`tv_${tmdbId}_season_${seasonNumber}`, { language, showName });
+  async getSeasonDetails(
+    tmdbId: number,
+    seasonNumber: number,
+    showName?: string,
+    language: string = 'en-US'
+  ): Promise<TMDBSeason | null> {
+    const cacheKey = this.generateCacheKey(`tv_${tmdbId}_season_${seasonNumber}`, {
+      language,
+      showName,
+    });
 
     // Check cache (local or remote)
     const cached = await this.getFromCacheOrRemote<TMDBSeason>(cacheKey);
@@ -486,7 +505,10 @@ export class TMDBService {
     episodeNumber: number,
     language: string = 'en-US'
   ): Promise<TMDBEpisode | null> {
-    const cacheKey = this.generateCacheKey(`tv_${tmdbId}_season_${seasonNumber}_episode_${episodeNumber}`, { language });
+    const cacheKey = this.generateCacheKey(
+      `tv_${tmdbId}_season_${seasonNumber}_episode_${episodeNumber}`,
+      { language }
+    );
 
     // Check cache (local or remote)
     const cached = await this.getFromCacheOrRemote<TMDBEpisode>(cacheKey);
@@ -499,7 +521,7 @@ export class TMDBService {
           headers: await this.getHeaders(),
           params: await this.getParams({
             language,
-            append_to_response: 'credits' // Include guest stars and crew for episode context
+            append_to_response: 'credits', // Include guest stars and crew for episode context
           }),
         }
       );
@@ -576,7 +598,10 @@ export class TMDBService {
   /**
    * Get image URL for TMDB images
    */
-  getImageUrl(path: string | null, size: 'original' | 'w500' | 'w300' | 'w185' | 'profile' = 'original'): string | null {
+  getImageUrl(
+    path: string | null,
+    size: 'original' | 'w500' | 'w300' | 'w185' | 'profile' = 'original'
+  ): string | null {
     if (!path) {
       return null;
     }
@@ -591,7 +616,10 @@ export class TMDBService {
    * Get all episodes for a TV show
    * @param language Language for localized episode names/overviews
    */
-  async getAllEpisodes(tmdbId: number, language: string = 'en-US'): Promise<{ [seasonNumber: number]: TMDBEpisode[] }> {
+  async getAllEpisodes(
+    tmdbId: number,
+    language: string = 'en-US'
+  ): Promise<{ [seasonNumber: number]: TMDBEpisode[] }> {
     try {
       // First get the show details to know how many seasons there are
       const showDetails = await this.getTVShowDetails(tmdbId, language);
@@ -603,7 +631,12 @@ export class TMDBService {
       const seasonPromises = showDetails.seasons
         .filter(season => season.season_number > 0) // Filter out specials (season 0)
         .map(async season => {
-          const seasonDetails = await this.getSeasonDetails(tmdbId, season.season_number, showDetails.name, language);
+          const seasonDetails = await this.getSeasonDetails(
+            tmdbId,
+            season.season_number,
+            showDetails.name,
+            language
+          );
           if (seasonDetails && seasonDetails.episodes) {
             allEpisodes[season.season_number] = seasonDetails.episodes;
           }
@@ -619,7 +652,11 @@ export class TMDBService {
   /**
    * Get episode image URL with fallbacks
    */
-  getEpisodeImageUrl(episode: TMDBEpisode, show: TMDBShow | null = null, size: 'original' | 'w500' | 'w300' | 'w185' = 'w300'): string | null {
+  getEpisodeImageUrl(
+    episode: TMDBEpisode,
+    show: TMDBShow | null = null,
+    size: 'original' | 'w500' | 'w300' | 'w185' = 'w300'
+  ): string | null {
     // Try episode still image first
     if (episode.still_path) {
       return this.getImageUrl(episode.still_path, size);
@@ -652,7 +689,7 @@ export class TMDBService {
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch (e) {
       return airDate;
@@ -667,15 +704,18 @@ export class TMDBService {
     if (cached !== null) return cached;
 
     try {
-      const response = await axios.get(`${BASE_URL}/${type === 'series' ? 'tv' : 'movie'}/${tmdbId}/credits`, {
-        headers: await this.getHeaders(),
-        params: await this.getParams({
-          language,
-        }),
-      });
+      const response = await axios.get(
+        `${BASE_URL}/${type === 'series' ? 'tv' : 'movie'}/${tmdbId}/credits`,
+        {
+          headers: await this.getHeaders(),
+          params: await this.getParams({
+            language,
+          }),
+        }
+      );
       const data = {
         cast: response.data.cast || [],
-        crew: response.data.crew || []
+        crew: response.data.crew || [],
       };
       this.setCachedData(cacheKey, data);
       return data;
@@ -792,13 +832,10 @@ export class TMDBService {
     if (cached !== null) return cached;
 
     try {
-      const response = await axios.get(
-        `${BASE_URL}/tv/${tmdbId}/external_ids`,
-        {
-          headers: await this.getHeaders(),
-          params: await this.getParams(),
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/tv/${tmdbId}/external_ids`, {
+        headers: await this.getHeaders(),
+        params: await this.getParams(),
+      });
       const data = response.data;
       this.setCachedData(cacheKey, data);
       return data;
@@ -807,7 +844,11 @@ export class TMDBService {
     }
   }
 
-  async getRecommendations(type: 'movie' | 'tv', tmdbId: string, language: string = 'en-US'): Promise<any[]> {
+  async getRecommendations(
+    type: 'movie' | 'tv',
+    tmdbId: string,
+    language: string = 'en-US'
+  ): Promise<any[]> {
     if (!this.apiKey) {
       return [];
     }
@@ -821,7 +862,7 @@ export class TMDBService {
     try {
       const response = await axios.get(`${BASE_URL}/${type}/${tmdbId}/recommendations`, {
         headers: await this.getHeaders(),
-        params: await this.getParams({ language })
+        params: await this.getParams({ language }),
       });
       const results = response.data.results || [];
       this.setCachedData(cacheKey, results);
@@ -871,7 +912,7 @@ export class TMDBService {
         headers: await this.getHeaders(),
         params: await this.getParams({
           language,
-          append_to_response: 'external_ids,credits,keywords,release_dates,production_companies' // Include release dates and production companies
+          append_to_response: 'external_ids,credits,keywords,release_dates,production_companies', // Include release dates and production companies
         }),
       });
       const data = response.data;
@@ -885,7 +926,10 @@ export class TMDBService {
   /**
    * Get collection details by collection ID
    */
-  async getCollectionDetails(collectionId: number, language: string = 'en'): Promise<TMDBCollection | null> {
+  async getCollectionDetails(
+    collectionId: number,
+    language: string = 'en'
+  ): Promise<TMDBCollection | null> {
     const cacheKey = this.generateCacheKey(`collection_${collectionId}`, { language });
 
     // Check cache (local or remote)
@@ -922,7 +966,7 @@ export class TMDBService {
         headers: await this.getHeaders(),
         params: await this.getParams({
           language,
-          include_image_language: `${language},en,null`
+          include_image_language: `${language},en,null`,
         }),
       });
       const data = response.data;
@@ -945,17 +989,15 @@ export class TMDBService {
       return cached;
     }
 
-
     try {
       const response = await axios.get(`${BASE_URL}/movie/${movieId}/images`, {
         headers: await this.getHeaders(),
         params: await this.getParams({
-          include_image_language: `${language},en,null`
+          include_image_language: `${language},en,null`,
         }),
       });
 
       const data = response.data;
-
 
       this.setCachedData(cacheKey, data);
       return data;
@@ -967,7 +1009,10 @@ export class TMDBService {
   /**
    * Get movie images (logos only) by TMDB ID - legacy method
    */
-  async getMovieImages(movieId: number | string, preferredLanguage: string = 'en'): Promise<string | null> {
+  async getMovieImages(
+    movieId: number | string,
+    preferredLanguage: string = 'en'
+  ): Promise<string | null> {
     const cacheKey = this.generateCacheKey(`movie_${movieId}_logo`, { preferredLanguage });
 
     // Check cache
@@ -978,7 +1023,7 @@ export class TMDBService {
       const response = await axios.get(`${BASE_URL}/movie/${movieId}/images`, {
         headers: await this.getHeaders(),
         params: await this.getParams({
-          include_image_language: `${preferredLanguage},en,null`
+          include_image_language: `${preferredLanguage},en,null`,
         }),
       });
 
@@ -989,10 +1034,11 @@ export class TMDBService {
       if (images && images.logos && images.logos.length > 0) {
         // First prioritize preferred language SVG logos if not English
         if (preferredLanguage !== 'en') {
-          const preferredSvgLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.svg') &&
-            logo.iso_639_1 === preferredLanguage
+          const preferredSvgLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path &&
+              logo.file_path.endsWith('.svg') &&
+              logo.iso_639_1 === preferredLanguage
           );
           if (preferredSvgLogo) {
             result = this.getImageUrl(preferredSvgLogo.file_path);
@@ -1000,10 +1046,11 @@ export class TMDBService {
 
           // Then preferred language PNG logos
           if (!result) {
-            const preferredPngLogo = images.logos.find((logo: any) =>
-              logo.file_path &&
-              logo.file_path.endsWith('.png') &&
-              logo.iso_639_1 === preferredLanguage
+            const preferredPngLogo = images.logos.find(
+              (logo: any) =>
+                logo.file_path &&
+                logo.file_path.endsWith('.png') &&
+                logo.iso_639_1 === preferredLanguage
             );
             if (preferredPngLogo) {
               result = this.getImageUrl(preferredPngLogo.file_path);
@@ -1012,8 +1059,8 @@ export class TMDBService {
 
           // Then any preferred language logo
           if (!result) {
-            const preferredLogo = images.logos.find((logo: any) =>
-              logo.iso_639_1 === preferredLanguage
+            const preferredLogo = images.logos.find(
+              (logo: any) => logo.iso_639_1 === preferredLanguage
             );
             if (preferredLogo) {
               result = this.getImageUrl(preferredLogo.file_path);
@@ -1023,10 +1070,9 @@ export class TMDBService {
 
         // Then prioritize English SVG logos
         if (!result) {
-          const enSvgLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.svg') &&
-            logo.iso_639_1 === 'en'
+          const enSvgLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path && logo.file_path.endsWith('.svg') && logo.iso_639_1 === 'en'
           );
           if (enSvgLogo) {
             result = this.getImageUrl(enSvgLogo.file_path);
@@ -1035,10 +1081,9 @@ export class TMDBService {
 
         // Then English PNG logos
         if (!result) {
-          const enPngLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.png') &&
-            logo.iso_639_1 === 'en'
+          const enPngLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path && logo.file_path.endsWith('.png') && logo.iso_639_1 === 'en'
           );
           if (enPngLogo) {
             result = this.getImageUrl(enPngLogo.file_path);
@@ -1047,9 +1092,7 @@ export class TMDBService {
 
         // Then any English logo
         if (!result) {
-          const enLogo = images.logos.find((logo: any) =>
-            logo.iso_639_1 === 'en'
-          );
+          const enLogo = images.logos.find((logo: any) => logo.iso_639_1 === 'en');
           if (enLogo) {
             result = this.getImageUrl(enLogo.file_path);
           }
@@ -1057,8 +1100,8 @@ export class TMDBService {
 
         // Fallback to any SVG logo
         if (!result) {
-          const svgLogo = images.logos.find((logo: any) =>
-            logo.file_path && logo.file_path.endsWith('.svg')
+          const svgLogo = images.logos.find(
+            (logo: any) => logo.file_path && logo.file_path.endsWith('.svg')
           );
           if (svgLogo) {
             result = this.getImageUrl(svgLogo.file_path);
@@ -1067,8 +1110,8 @@ export class TMDBService {
 
         // Then any PNG logo
         if (!result) {
-          const pngLogo = images.logos.find((logo: any) =>
-            logo.file_path && logo.file_path.endsWith('.png')
+          const pngLogo = images.logos.find(
+            (logo: any) => logo.file_path && logo.file_path.endsWith('.png')
           );
           if (pngLogo) {
             result = this.getImageUrl(pngLogo.file_path);
@@ -1102,7 +1145,7 @@ export class TMDBService {
       const response = await axios.get(`${BASE_URL}/tv/${showId}/images`, {
         headers: await this.getHeaders(),
         params: await this.getParams({
-          include_image_language: `${language},en,null`
+          include_image_language: `${language},en,null`,
         }),
       });
 
@@ -1117,7 +1160,10 @@ export class TMDBService {
   /**
    * Get TV show images (logos only) by TMDB ID - legacy method
    */
-  async getTvShowImages(showId: number | string, preferredLanguage: string = 'en'): Promise<string | null> {
+  async getTvShowImages(
+    showId: number | string,
+    preferredLanguage: string = 'en'
+  ): Promise<string | null> {
     const cacheKey = this.generateCacheKey(`tv_${showId}_logo`, { preferredLanguage });
 
     // Check cache (local or remote)
@@ -1128,7 +1174,7 @@ export class TMDBService {
       const response = await axios.get(`${BASE_URL}/tv/${showId}/images`, {
         headers: await this.getHeaders(),
         params: await this.getParams({
-          include_image_language: `${preferredLanguage},en,null`
+          include_image_language: `${preferredLanguage},en,null`,
         }),
       });
 
@@ -1139,10 +1185,11 @@ export class TMDBService {
       if (images && images.logos && images.logos.length > 0) {
         // First prioritize preferred language SVG logos if not English
         if (preferredLanguage !== 'en') {
-          const preferredSvgLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.svg') &&
-            logo.iso_639_1 === preferredLanguage
+          const preferredSvgLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path &&
+              logo.file_path.endsWith('.svg') &&
+              logo.iso_639_1 === preferredLanguage
           );
           if (preferredSvgLogo) {
             result = this.getImageUrl(preferredSvgLogo.file_path);
@@ -1150,10 +1197,11 @@ export class TMDBService {
 
           // Then preferred language PNG logos
           if (!result) {
-            const preferredPngLogo = images.logos.find((logo: any) =>
-              logo.file_path &&
-              logo.file_path.endsWith('.png') &&
-              logo.iso_639_1 === preferredLanguage
+            const preferredPngLogo = images.logos.find(
+              (logo: any) =>
+                logo.file_path &&
+                logo.file_path.endsWith('.png') &&
+                logo.iso_639_1 === preferredLanguage
             );
             if (preferredPngLogo) {
               result = this.getImageUrl(preferredPngLogo.file_path);
@@ -1162,8 +1210,8 @@ export class TMDBService {
 
           // Then any preferred language logo
           if (!result) {
-            const preferredLogo = images.logos.find((logo: any) =>
-              logo.iso_639_1 === preferredLanguage
+            const preferredLogo = images.logos.find(
+              (logo: any) => logo.iso_639_1 === preferredLanguage
             );
             if (preferredLogo) {
               result = this.getImageUrl(preferredLogo.file_path);
@@ -1173,10 +1221,9 @@ export class TMDBService {
 
         // First prioritize English SVG logos
         if (!result) {
-          const enSvgLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.svg') &&
-            logo.iso_639_1 === 'en'
+          const enSvgLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path && logo.file_path.endsWith('.svg') && logo.iso_639_1 === 'en'
           );
           if (enSvgLogo) {
             result = this.getImageUrl(enSvgLogo.file_path);
@@ -1185,10 +1232,9 @@ export class TMDBService {
 
         // Then English PNG logos
         if (!result) {
-          const enPngLogo = images.logos.find((logo: any) =>
-            logo.file_path &&
-            logo.file_path.endsWith('.png') &&
-            logo.iso_639_1 === 'en'
+          const enPngLogo = images.logos.find(
+            (logo: any) =>
+              logo.file_path && logo.file_path.endsWith('.png') && logo.iso_639_1 === 'en'
           );
           if (enPngLogo) {
             result = this.getImageUrl(enPngLogo.file_path);
@@ -1197,9 +1243,7 @@ export class TMDBService {
 
         // Then any English logo
         if (!result) {
-          const enLogo = images.logos.find((logo: any) =>
-            logo.iso_639_1 === 'en'
-          );
+          const enLogo = images.logos.find((logo: any) => logo.iso_639_1 === 'en');
           if (enLogo) {
             result = this.getImageUrl(enLogo.file_path);
           }
@@ -1207,8 +1251,8 @@ export class TMDBService {
 
         // Fallback to any SVG logo
         if (!result) {
-          const svgLogo = images.logos.find((logo: any) =>
-            logo.file_path && logo.file_path.endsWith('.svg')
+          const svgLogo = images.logos.find(
+            (logo: any) => logo.file_path && logo.file_path.endsWith('.svg')
           );
           if (svgLogo) {
             result = this.getImageUrl(svgLogo.file_path);
@@ -1217,8 +1261,8 @@ export class TMDBService {
 
         // Then any PNG logo
         if (!result) {
-          const pngLogo = images.logos.find((logo: any) =>
-            logo.file_path && logo.file_path.endsWith('.png')
+          const pngLogo = images.logos.find(
+            (logo: any) => logo.file_path && logo.file_path.endsWith('.png')
           );
           if (pngLogo) {
             result = this.getImageUrl(pngLogo.file_path);
@@ -1241,11 +1285,16 @@ export class TMDBService {
   /**
    * Get content logo based on type (movie or TV show)
    */
-  async getContentLogo(type: 'movie' | 'tv', id: number | string, preferredLanguage: string = 'en'): Promise<string | null> {
+  async getContentLogo(
+    type: 'movie' | 'tv',
+    id: number | string,
+    preferredLanguage: string = 'en'
+  ): Promise<string | null> {
     try {
-      const result = type === 'movie'
-        ? await this.getMovieImages(id, preferredLanguage)
-        : await this.getTvShowImages(id, preferredLanguage);
+      const result =
+        type === 'movie'
+          ? await this.getMovieImages(id, preferredLanguage)
+          : await this.getTvShowImages(id, preferredLanguage);
 
       if (result) {
       } else {
@@ -1273,7 +1322,7 @@ export class TMDBService {
       if (type === 'movie') {
         const response = await axios.get(`${BASE_URL}/movie/${id}/release_dates`, {
           headers: await this.getHeaders(),
-          params: await this.getParams()
+          params: await this.getParams(),
         });
 
         if (response.data && response.data.results) {
@@ -1291,7 +1340,9 @@ export class TMDBService {
           }
           if (!result) {
             for (const country of response.data.results) {
-              const cert = country.release_dates?.find((rd: any) => rd.certification)?.certification;
+              const cert = country.release_dates?.find(
+                (rd: any) => rd.certification
+              )?.certification;
               if (cert) {
                 result = cert;
                 break;
@@ -1303,7 +1354,7 @@ export class TMDBService {
         // TV uses content ratings endpoint, not release_dates
         const response = await axios.get(`${BASE_URL}/tv/${id}/content_ratings`, {
           headers: await this.getHeaders(),
-          params: await this.getParams()
+          params: await this.getParams(),
         });
 
         if (response.data && response.data.results) {
@@ -1336,7 +1387,11 @@ export class TMDBService {
    * @param timeWindow 'day' or 'week'
    * @param language Language for localized results
    */
-  async getTrending(type: 'movie' | 'tv', timeWindow: 'day' | 'week', language: string = 'en-US'): Promise<TMDBTrendingResult[]> {
+  async getTrending(
+    type: 'movie' | 'tv',
+    timeWindow: 'day' | 'week',
+    language: string = 'en-US'
+  ): Promise<TMDBTrendingResult[]> {
     const cacheKey = this.generateCacheKey(`trending_${type}_${timeWindow}`, { language });
 
     // Check cache (local or remote)
@@ -1365,7 +1420,7 @@ export class TMDBService {
             );
             return {
               ...item,
-              external_ids: externalIdsResponse.data
+              external_ids: externalIdsResponse.data,
             };
           } catch (error) {
             return item;
@@ -1386,7 +1441,11 @@ export class TMDBService {
    * @param page Page number for pagination
    * @param language Language for localized results
    */
-  async getPopular(type: 'movie' | 'tv', page: number = 1, language: string = 'en-US'): Promise<TMDBTrendingResult[]> {
+  async getPopular(
+    type: 'movie' | 'tv',
+    page: number = 1,
+    language: string = 'en-US'
+  ): Promise<TMDBTrendingResult[]> {
     const cacheKey = this.generateCacheKey(`popular_${type}`, { page, language });
 
     // Check cache (local or remote)
@@ -1416,7 +1475,7 @@ export class TMDBService {
             );
             return {
               ...item,
-              external_ids: externalIdsResponse.data
+              external_ids: externalIdsResponse.data,
             };
           } catch (error) {
             return item;
@@ -1437,7 +1496,11 @@ export class TMDBService {
    * @param page Page number for pagination
    * @param language Language for localized results
    */
-  async getUpcoming(type: 'movie' | 'tv', page: number = 1, language: string = 'en-US'): Promise<TMDBTrendingResult[]> {
+  async getUpcoming(
+    type: 'movie' | 'tv',
+    page: number = 1,
+    language: string = 'en-US'
+  ): Promise<TMDBTrendingResult[]> {
     const cacheKey = this.generateCacheKey(`upcoming_${type}`, { page, language });
 
     // Check cache (local or remote)
@@ -1470,7 +1533,7 @@ export class TMDBService {
             );
             return {
               ...item,
-              external_ids: externalIdsResponse.data
+              external_ids: externalIdsResponse.data,
             };
           } catch (error) {
             return item;
@@ -1491,7 +1554,11 @@ export class TMDBService {
    * @param region ISO 3166-1 country code (e.g., 'US', 'GB')
    * @param language Language for localized results
    */
-  async getNowPlaying(page: number = 1, region: string = 'US', language: string = 'en-US'): Promise<TMDBTrendingResult[]> {
+  async getNowPlaying(
+    page: number = 1,
+    region: string = 'US',
+    language: string = 'en-US'
+  ): Promise<TMDBTrendingResult[]> {
     const cacheKey = this.generateCacheKey('now_playing', { page, region, language });
 
     // Check cache (local or remote)
@@ -1522,7 +1589,7 @@ export class TMDBService {
             );
             return {
               ...item,
-              external_ids: externalIdsResponse.data
+              external_ids: externalIdsResponse.data,
             };
           } catch (error) {
             return item;
@@ -1596,7 +1663,12 @@ export class TMDBService {
    * @param page Page number for pagination
    * @param language Language for localized results
    */
-  async discoverByGenre(type: 'movie' | 'tv', genreName: string, page: number = 1, language: string = 'en-US'): Promise<TMDBTrendingResult[]> {
+  async discoverByGenre(
+    type: 'movie' | 'tv',
+    genreName: string,
+    page: number = 1,
+    language: string = 'en-US'
+  ): Promise<TMDBTrendingResult[]> {
     const cacheKey = this.generateCacheKey(`discover_${type}`, { genreName, page, language });
 
     // Check cache (local or remote)
@@ -1605,9 +1677,8 @@ export class TMDBService {
 
     try {
       // First get the genre ID from the name
-      const genreList = type === 'movie'
-        ? await this.getMovieGenres(language)
-        : await this.getTvGenres(language);
+      const genreList =
+        type === 'movie' ? await this.getMovieGenres(language) : await this.getTvGenres(language);
 
       const genre = genreList.find(g => g.name.toLowerCase() === genreName.toLowerCase());
 
@@ -1641,7 +1712,7 @@ export class TMDBService {
             );
             return {
               ...item,
-              external_ids: externalIdsResponse.data
+              external_ids: externalIdsResponse.data,
             };
           } catch (error) {
             return item;
@@ -1658,4 +1729,4 @@ export class TMDBService {
 }
 
 export const tmdbService = TMDBService.getInstance();
-export default tmdbService; 
+export default tmdbService;

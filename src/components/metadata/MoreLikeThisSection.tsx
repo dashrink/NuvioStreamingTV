@@ -1,3 +1,5 @@
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation, StackActions, NavigationProp } from '@react-navigation/native';
 import React from 'react';
 import {
   View,
@@ -8,18 +10,15 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { UnifiedSpinner } from '../loading';
-import FastImage from '@d11/react-native-fast-image';
-import { useNavigation, StackActions } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useSettings } from '../../hooks/useSettings';
-import { TMDBService } from '../../services/tmdbService';
-import { catalogService } from '../../services/catalogService';
+
 import CustomAlert from '../../components/CustomAlert';
+import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
+import { useSettings } from '../../hooks/useSettings';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { catalogService, StreamingContent } from '../../services/catalogService';
+import { TMDBService } from '../../services/tmdbService';
+import { UnifiedSpinner } from '../loading';
 
 const { width } = Dimensions.get('window');
 
@@ -38,7 +37,7 @@ interface MoreLikeThisSectionProps {
 
 export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
   recommendations,
-  loadingRecommendations
+  loadingRecommendations,
 }) => {
   const { currentTheme } = useTheme();
   const { settings } = useSettings();
@@ -61,28 +60,40 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
   // Responsive spacing & sizes
   const horizontalPadding = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 32;
-      case 'largeTablet': return 28;
-      case 'tablet': return 24;
-      default: return 16;
+      case 'tv':
+        return 32;
+      case 'largeTablet':
+        return 28;
+      case 'tablet':
+        return 24;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
   const itemSpacing = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 14;
-      case 'largeTablet': return 12;
-      case 'tablet': return 12;
-      default: return 12;
+      case 'tv':
+        return 14;
+      case 'largeTablet':
+        return 12;
+      case 'tablet':
+        return 12;
+      default:
+        return 12;
     }
   }, [deviceType]);
 
   const posterWidth = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 180;
-      case 'largeTablet': return 160;
-      case 'tablet': return 140;
-      default: return 120;
+      case 'tv':
+        return 180;
+      case 'largeTablet':
+        return 160;
+      case 'tablet':
+        return 140;
+      default:
+        return 120;
     }
   }, [deviceType]);
   const posterHeight = React.useMemo(() => posterWidth * 1.5, [posterWidth]);
@@ -106,7 +117,7 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
         navigation.dispatch(
           StackActions.push('Metadata', {
             id: stremioId,
-            type: item.type
+            type: item.type,
           })
         );
       } else {
@@ -116,7 +127,7 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
       if (__DEV__) console.error('Error navigating to recommendation:', error);
       setAlertTitle('Error');
       setAlertMessage('Unable to load this content. Please try again later.');
-      setAlertActions([{ label: 'OK', onPress: () => { } }]);
+      setAlertActions([{ label: 'OK', onPress: () => {} }]);
       setAlertVisible(true);
     }
   };
@@ -128,10 +139,28 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
     >
       <FastImage
         source={{ uri: item.poster }}
-        style={[styles.poster, { backgroundColor: currentTheme.colors.elevation1, width: posterWidth, height: posterHeight, borderRadius }]}
+        style={[
+          styles.poster,
+          {
+            backgroundColor: currentTheme.colors.elevation1,
+            width: posterWidth,
+            height: posterHeight,
+            borderRadius,
+          },
+        ]}
         resizeMode={FastImage.resizeMode.cover}
       />
-      <Text style={[styles.title, { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13, lineHeight: isTV ? 20 : 18 }]} numberOfLines={2}>
+      <Text
+        style={[
+          styles.title,
+          {
+            color: currentTheme.colors.mediumEmphasis,
+            fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
+            lineHeight: isTV ? 20 : 18,
+          },
+        ]}
+        numberOfLines={2}
+      >
         {item.name}
       </Text>
     </TouchableOpacity>
@@ -151,14 +180,28 @@ export const MoreLikeThisSection: React.FC<MoreLikeThisSectionProps> = ({
 
   return (
     <View style={[styles.container, { paddingLeft: 0 }]}>
-      <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis, fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20, paddingHorizontal: horizontalPadding }]}>More Like This</Text>
+      <Text
+        style={[
+          styles.sectionTitle,
+          {
+            color: currentTheme.colors.highEmphasis,
+            fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+            paddingHorizontal: horizontalPadding,
+          },
+        ]}
+      >
+        More Like This
+      </Text>
       <FlatList
         data={recommendations}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[styles.listContentContainer, { paddingHorizontal: horizontalPadding, paddingRight: horizontalPadding + itemSpacing }]}
+        contentContainerStyle={[
+          styles.listContentContainer,
+          { paddingHorizontal: horizontalPadding, paddingRight: horizontalPadding + itemSpacing },
+        ]}
       />
       <CustomAlert
         visible={alertVisible}

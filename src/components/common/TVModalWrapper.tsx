@@ -1,17 +1,9 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import {
-  View,
-  StyleSheet,
-  Platform,
-  BackHandler,
-  findNodeHandle,
-} from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeOut,
-} from 'react-native-reanimated';
-import { useTVEventHandler } from '../../hooks/useTVEventHandler';
+import { View, StyleSheet, Platform, BackHandler, findNodeHandle } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+
 import Focusable from './Focusable';
+import { useTVEventHandler } from '../../hooks/useTVEventHandler';
 
 interface TVModalWrapperProps {
   visible: boolean;
@@ -43,12 +35,12 @@ interface TVModalWrapperProps {
 /**
  * A wrapper component for modals that provides TV-specific focus trapping
  * and remote control handling (back/menu button to close).
- * 
+ *
  * On TV platforms:
  * - Traps D-pad focus within the modal
  * - Handles back/menu button to close
  * - Sets initial focus to the first focusable element
- * 
+ *
  * On mobile:
  * - Handles back button on Android
  * - Standard backdrop tap to close
@@ -69,7 +61,7 @@ const TVModalWrapper: React.FC<TVModalWrapperProps> = ({
   // Handle TV remote events (back/menu to close)
   useTVEventHandler(
     useCallback(
-      (evt) => {
+      evt => {
         if (!visible) return;
 
         if (evt.eventType === 'blur' || evt.eventType === 'menu') {
@@ -120,7 +112,7 @@ const TVModalWrapper: React.FC<TVModalWrapperProps> = ({
       {/* Backdrop */}
       {showBackdrop && (
         <Focusable
-          style={[StyleSheet.absoluteFill]}
+          style={StyleSheet.absoluteFill}
           onPress={closeOnBackdropPress ? onClose : undefined}
           activeOpacity={1}
           // Make backdrop not focusable on TV to trap focus in modal content
@@ -144,11 +136,7 @@ const TVModalWrapper: React.FC<TVModalWrapperProps> = ({
         {/* Invisible close button for TV - positioned off-screen but focusable
             This helps with focus management and provides a way to close via select */}
         {Platform.isTV && (
-          <Focusable
-            ref={closeButtonRef}
-            onPress={onClose}
-            style={styles.hiddenCloseButton}
-          >
+          <Focusable ref={closeButtonRef} onPress={onClose} style={styles.hiddenCloseButton}>
             <View />
           </Focusable>
         )}

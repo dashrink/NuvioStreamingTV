@@ -5,39 +5,42 @@
  * @format
  */
 
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, I18nManager, Platform, LogBox, Dimensions } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StatusBar } from 'expo-status-bar';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { enableScreens, enableFreeze } from 'react-native-screens';
+
+import AnnouncementOverlay from './src/components/AnnouncementOverlay';
+import MajorUpdateOverlay from './src/components/MajorUpdateOverlay';
+import SplashScreen from './src/components/SplashScreen';
+import { CatalogProvider } from './src/contexts/CatalogContext';
 import AppNavigator, {
   CustomNavigationDarkTheme,
   CustomDarkTheme,
 } from './src/navigation/AppNavigator';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import 'react-native-reanimated';
-import { CatalogProvider } from './src/contexts/CatalogContext';
 import { GenreProvider } from './src/contexts/GenreContext';
 import { TraktProvider } from './src/contexts/TraktContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { TrailerProvider } from './src/contexts/TrailerContext';
 import { DownloadsProvider } from './src/contexts/DownloadsContext';
-import SplashScreen from './src/components/SplashScreen';
 import UpdatePopup from './src/components/UpdatePopup';
-import MajorUpdateOverlay from './src/components/MajorUpdateOverlay';
 import { useGithubMajorUpdate } from './src/hooks/useGithubMajorUpdate';
 import { useUpdatePopup } from './src/hooks/useUpdatePopup';
+
 import * as Sentry from '@sentry/react-native';
-import UpdateService from './src/services/updateService';
-import { memoryMonitorService } from './src/services/memoryMonitorService';
+
 import { aiService } from './src/services/aiService';
+import { memoryMonitorService } from './src/services/memoryMonitorService';
+import { mmkvStorage } from './src/services/mmkvStorage';
+import UpdateService from './src/services/updateService';
 import { AccountProvider, useAccount } from './src/contexts/AccountContext';
 import { ProfileProvider, useProfile } from './src/contexts/ProfileContext';
 import { ToastProvider } from './src/contexts/ToastContext';
-import { mmkvStorage } from './src/services/mmkvStorage';
-import AnnouncementOverlay from './src/components/AnnouncementOverlay';
 import { useTVMode } from './src/hooks/useTVMode';
 import { CampaignManager } from './src/components/promotions/CampaignManager';
 import { TVNavigationProvider } from './src/contexts/TVNavigationContext';

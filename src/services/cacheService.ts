@@ -1,7 +1,7 @@
 import { StreamingContent } from './catalogService';
-import { GroupedStreams } from '../types/streams';
 import { TMDBEpisode } from './tmdbService';
 import { Cast } from '../types/cast';
+import { GroupedStreams } from '../types/streams';
 
 interface CachedContent {
   metadata: StreamingContent;
@@ -58,17 +58,17 @@ class CacheService {
     let existing = this.cache.get(key);
 
     if (existing) {
-        // Update existing entry and mark as recent
-        existing = { ...existing, metadata, timestamp: Date.now() };
-        this.touch(key, existing);
+      // Update existing entry and mark as recent
+      existing = { ...existing, metadata, timestamp: Date.now() };
+      this.touch(key, existing);
     } else {
-        // Adding a new entry, first check limit
-        this.ensureCacheLimit();
-        // Add the new entry
-        this.cache.set(key, {
-            metadata,
-            timestamp: Date.now()
-        } as CachedContent);
+      // Adding a new entry, first check limit
+      this.ensureCacheLimit();
+      // Add the new entry
+      this.cache.set(key, {
+        metadata,
+        timestamp: Date.now(),
+      } as CachedContent);
     }
   }
 
@@ -76,12 +76,12 @@ class CacheService {
     const key = this.getCacheKey(id, type);
     const existing = this.cache.get(key);
     // Can only set streams if metadata already exists in cache
-    if (!existing?.metadata) return; 
+    if (!existing?.metadata) return;
 
     const updatedData = {
       ...existing,
       streams,
-      timestamp: Date.now() // Update timestamp on modification
+      timestamp: Date.now(), // Update timestamp on modification
     };
     this.touch(key, updatedData); // Mark as recently used
   }
@@ -94,9 +94,9 @@ class CacheService {
     const updatedData = {
       ...existing,
       episodes,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-     this.touch(key, updatedData);
+    this.touch(key, updatedData);
   }
 
   public setCast(id: string, type: string, cast: Cast[]): void {
@@ -104,15 +104,20 @@ class CacheService {
     const existing = this.cache.get(key);
     if (!existing?.metadata) return;
 
-     const updatedData = {
+    const updatedData = {
       ...existing,
       cast,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     this.touch(key, updatedData);
   }
 
-  public setEpisodeStreams(id: string, type: string, episodeId: string, streams: GroupedStreams): void {
+  public setEpisodeStreams(
+    id: string,
+    type: string,
+    episodeId: string,
+    streams: GroupedStreams
+  ): void {
     const key = this.getCacheKey(id, type);
     const existing = this.cache.get(key);
     if (!existing?.metadata) return;
@@ -121,9 +126,9 @@ class CacheService {
       ...existing,
       episodeStreams: {
         ...(existing.episodeStreams || {}),
-        [episodeId]: streams
+        [episodeId]: streams,
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     this.touch(key, updatedData);
   }
@@ -149,7 +154,7 @@ class CacheService {
   public getStreams(id: string, type: string): GroupedStreams | null {
     const key = this.getCacheKey(id, type);
     const data = this.cache.get(key);
-     if (data) {
+    if (data) {
       // Check for expiration first
       if (Date.now() - data.timestamp > this.CACHE_TTL_MS) {
         this.cache.delete(key); // Remove expired item
@@ -181,7 +186,7 @@ class CacheService {
   public getCast(id: string, type: string): Cast[] | null {
     const key = this.getCacheKey(id, type);
     const data = this.cache.get(key);
-     if (data) {
+    if (data) {
       // Check for expiration first
       if (Date.now() - data.timestamp > this.CACHE_TTL_MS) {
         this.cache.delete(key); // Remove expired item
@@ -197,17 +202,17 @@ class CacheService {
   public getEpisodeStreams(id: string, type: string, episodeId: string): GroupedStreams | null {
     const key = this.getCacheKey(id, type);
     const data = this.cache.get(key);
-     if (data) {
-        // Check for expiration first
-        if (Date.now() - data.timestamp > this.CACHE_TTL_MS) {
-          this.cache.delete(key); // Remove expired item
-          return null;
-        }
-        // Not expired, check if episode stream exists and proceed with LRU update
-        if (data.episodeStreams?.[episodeId]) {
-            this.touch(key, data); // Mark as recently used on access
-            return data.episodeStreams[episodeId];
-        }
+    if (data) {
+      // Check for expiration first
+      if (Date.now() - data.timestamp > this.CACHE_TTL_MS) {
+        this.cache.delete(key); // Remove expired item
+        return null;
+      }
+      // Not expired, check if episode stream exists and proceed with LRU update
+      if (data.episodeStreams?.[episodeId]) {
+        this.touch(key, data); // Mark as recently used on access
+        return data.episodeStreams[episodeId];
+      }
     }
     return null;
   }
@@ -252,8 +257,8 @@ class CacheService {
     const data = this.metadataScreenCache.get(key);
     // If found, mark as recently used by re-inserting
     if (data) {
-        this.metadataScreenCache.delete(key);
-        this.metadataScreenCache.set(key, data);
+      this.metadataScreenCache.delete(key);
+      this.metadataScreenCache.set(key, data);
     }
     return data;
   }
@@ -263,4 +268,4 @@ class CacheService {
   }
 }
 
-export const cacheService = CacheService.getInstance(); 
+export const cacheService = CacheService.getInstance();

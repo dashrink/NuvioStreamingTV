@@ -10,11 +10,7 @@ interface TraktIconProps {
 const TraktIcon: React.FC<TraktIconProps> = ({ size = 24, color = '#ed2224' }) => {
   return (
     <View style={{ width: size, height: size }}>
-      <Svg
-        width={size}
-        height={size}
-        viewBox="0 0 144.8 144.8"
-      >
+      <Svg width={size} height={size} viewBox="0 0 144.8 144.8">
         <Path
           d="m29.5 111.8c10.6 11.6 25.9 18.8 42.9 18.8 8.7 0 16.9-1.9 24.3-5.3l-40.4-40.3z"
           fill={color}

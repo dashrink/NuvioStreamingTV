@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,15 +15,14 @@ import {
   Dimensions,
   Switch,
 } from 'react-native';
-import CustomAlert from '../components/CustomAlert';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSettings } from '../hooks/useSettings';
-import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
 import { SvgXml } from 'react-native-svg';
+
+import CustomAlert from '../components/CustomAlert';
+import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -31,9 +32,9 @@ const AISettingsScreen: React.FC = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
-    { label: 'OK', onPress: () => setAlertVisible(false) },
-  ]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
 
   const openAlert = (
     title: string,
@@ -47,7 +48,9 @@ const AISettingsScreen: React.FC = () => {
         actions.map(a => ({
           label: a.label,
           style: a.style,
-          onPress: () => { a.onPress?.(); },
+          onPress: () => {
+            a.onPress?.();
+          },
         }))
       );
     } else {
@@ -70,7 +73,7 @@ const AISettingsScreen: React.FC = () => {
     <path stroke-width=".4" d="m244.1 250.4-60.3-34.7v69.5l60.3-34.8Z"/>
   </g>
 </svg>`;
-  
+
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [isKeySet, setIsKeySet] = useState(false);
@@ -132,8 +135,8 @@ const AISettingsScreen: React.FC = () => {
             } catch (error) {
               openAlert('Error', 'Failed to remove API key');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -143,9 +146,11 @@ const AISettingsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}> 
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <StatusBar barStyle="light-content" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -155,26 +160,18 @@ const AISettingsScreen: React.FC = () => {
           }}
           style={styles.backButton}
         >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={currentTheme.colors.text}
-          />
-          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
-            Settings
-          </Text>
+          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
+          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>Settings</Text>
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
-      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-        AI Assistant
-      </Text>
 
-      <ScrollView 
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>AI Assistant</Text>
+
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -182,19 +179,16 @@ const AISettingsScreen: React.FC = () => {
         {/* Info Card */}
         <View style={[styles.infoCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
           <View style={styles.infoHeader}>
-            <MaterialIcons 
-              name="smart-toy" 
-              size={24} 
-              color={currentTheme.colors.primary}
-            />
+            <MaterialIcons name="smart-toy" size={24} color={currentTheme.colors.primary} />
             <Text style={[styles.infoTitle, { color: currentTheme.colors.highEmphasis }]}>
               AI-Powered Chat
             </Text>
           </View>
           <Text style={[styles.infoDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-            Ask questions about any movie or TV show episode using advanced AI. Get insights about plot, characters, themes, trivia, and more - all powered by comprehensive TMDB data.
+            Ask questions about any movie or TV show episode using advanced AI. Get insights about
+            plot, characters, themes, trivia, and more - all powered by comprehensive TMDB data.
           </Text>
-          
+
           <View style={styles.featureList}>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={16} color={currentTheme.colors.primary} />
@@ -228,23 +222,21 @@ const AISettingsScreen: React.FC = () => {
           <Text style={[styles.cardTitle, { color: currentTheme.colors.mediumEmphasis }]}>
             OPENROUTER API KEY
           </Text>
-          
+
           <View style={styles.apiKeySection}>
-            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>
-              API Key
-            </Text>
+            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>API Key</Text>
             <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis }]}>
               Enter your OpenRouter API key to enable AI chat features
             </Text>
-            
+
             <TextInput
               style={[
                 styles.input,
-                { 
+                {
                   backgroundColor: currentTheme.colors.elevation2,
                   color: currentTheme.colors.highEmphasis,
-                  borderColor: currentTheme.colors.elevation2
-                }
+                  borderColor: currentTheme.colors.elevation2,
+                },
               ]}
               value={apiKey}
               onChangeText={setApiKey}
@@ -337,37 +329,58 @@ const AISettingsScreen: React.FC = () => {
 
         {/* Enable Toggle (top) */}
         <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation1 }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>Enable AI Chat</Text>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <Text style={[styles.label, { color: currentTheme.colors.highEmphasis }]}>
+              Enable AI Chat
+            </Text>
             <Switch
               value={!!settings.aiChatEnabled}
-              onValueChange={(v) => {
+              onValueChange={v => {
                 triggerMedium();
                 updateSetting('aiChatEnabled', v);
               }}
-              trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
-              thumbColor={settings.aiChatEnabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+              trackColor={{
+                false: currentTheme.colors.elevation2,
+                true: currentTheme.colors.primary,
+              }}
+              thumbColor={
+                settings.aiChatEnabled
+                  ? currentTheme.colors.white
+                  : currentTheme.colors.mediumEmphasis
+              }
               ios_backgroundColor={currentTheme.colors.elevation2}
             />
           </View>
-          <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis, marginTop: 8 }]}>When enabled, the Ask AI button will appear on content pages.</Text>
+          <Text
+            style={[
+              styles.description,
+              { color: currentTheme.colors.mediumEmphasis, marginTop: 8 },
+            ]}
+          >
+            When enabled, the Ask AI button will appear on content pages.
+          </Text>
         </View>
 
         {/* Status Card */}
         {isKeySet && (
           <View style={[styles.statusCard, { backgroundColor: currentTheme.colors.elevation1 }]}>
             <View style={styles.statusHeader}>
-              <MaterialIcons 
-                name="check-circle" 
-                size={24} 
+              <MaterialIcons
+                name="check-circle"
+                size={24}
                 color={currentTheme.colors.success || '#4CAF50'}
               />
-              <Text style={[styles.statusTitle, { color: currentTheme.colors.success || '#4CAF50' }]}>
+              <Text
+                style={[styles.statusTitle, { color: currentTheme.colors.success || '#4CAF50' }]}
+              >
                 AI Chat Enabled
               </Text>
             </View>
             <Text style={[styles.statusDescription, { color: currentTheme.colors.mediumEmphasis }]}>
-              You can now ask questions about movies and TV shows. Look for the "Ask AI" button on content pages!
+              You can now ask questions about movies and TV shows. Look for the "Ask AI" button on
+              content pages!
             </Text>
           </View>
         )}
@@ -378,16 +391,18 @@ const AISettingsScreen: React.FC = () => {
             How it works
           </Text>
           <Text style={[styles.usageText, { color: currentTheme.colors.mediumEmphasis }]}>
-            • OpenRouter provides access to multiple AI models{'\n'}
-            • Your API key stays private and secure{'\n'}
-            • Free tier includes generous usage limits{'\n'}
-            • Chat with context about specific episodes/movies{'\n'}
-            • Get detailed analysis and explanations
+            • OpenRouter provides access to multiple AI models{'\n'}• Your API key stays private and
+            secure{'\n'}• Free tier includes generous usage limits{'\n'}• Chat with context about
+            specific episodes/movies{'\n'}• Get detailed analysis and explanations
           </Text>
         </View>
         {/* OpenRouter branding */}
         <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 32 }}>
-          <SvgXml xml={OPENROUTER_SVG.replace(/CURRENTCOLOR/g, currentTheme.colors.mediumEmphasis)} width={180} height={60} />
+          <SvgXml
+            xml={OPENROUTER_SVG.replace(/CURRENTCOLOR/g, currentTheme.colors.mediumEmphasis)}
+            width={180}
+            height={60}
+          />
         </View>
       </ScrollView>
       <CustomAlert

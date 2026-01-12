@@ -7,13 +7,14 @@
  * @module HeroSection/components/HeroBackButton
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { memo } from 'react';
 import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { MaterialIcons } from '@expo/vector-icons';
+
+import { shadowStyles, spacing } from '../styles';
 
 import type { HeroBackButtonProps } from '../types';
-import { shadowStyles, spacing } from '../styles';
 
 /**
  * Back button component for navigating away from the hero section.
@@ -34,10 +35,7 @@ import { shadowStyles, spacing } from '../styles';
  * />
  * ```
  */
-const HeroBackButton = memo(function HeroBackButton({
-  onPress,
-  animatedStyle,
-}: HeroBackButtonProps) {
+const HeroBackButton = memo(({ onPress, animatedStyle }: HeroBackButtonProps) => {
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       <TouchableOpacity
@@ -48,12 +46,7 @@ const HeroBackButton = memo(function HeroBackButton({
         accessibilityLabel="Go back"
         accessibilityHint="Navigate to the previous screen"
       >
-        <MaterialIcons
-          name="arrow-back"
-          size={28}
-          color="#fff"
-          style={styles.icon}
-        />
+        <MaterialIcons name="arrow-back" size={28} color="#fff" style={styles.icon} />
       </TouchableOpacity>
     </Animated.View>
   );

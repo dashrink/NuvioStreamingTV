@@ -1,12 +1,6 @@
-import React, { memo, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
 import { LegendList } from '@legendapp/list';
+import React, { memo, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import StreamCard from '../../../components/StreamCard';
@@ -63,8 +57,10 @@ const StreamsList = memo(
     const styles = React.useMemo(() => createStyles(colors), [colors]);
 
     // Flatten sections into a single list with header items
-    type ListItem = { type: 'header'; title: string; addonId: string } | { type: 'stream'; stream: Stream; index: number };
-    
+    type ListItem =
+      | { type: 'header'; title: string; addonId: string }
+      | { type: 'stream'; stream: Stream; index: number };
+
     const flatListData = useMemo(() => {
       const items: ListItem[] = [];
       sections
@@ -99,7 +95,7 @@ const StreamsList = memo(
             </View>
           );
         }
-        
+
         const stream = item.stream;
         return (
           <StreamCard
@@ -112,19 +108,21 @@ const StreamsList = memo(
             showLogos={settings.showScraperLogos}
             scraperLogo={
               (stream.addonId && scraperLogos[stream.addonId]) ||
-              ((stream as any).addon ? scraperLogos[(stream.addonId || (stream as any).addon) as string] || null : null)
+              ((stream as any).addon
+                ? scraperLogos[(stream.addonId || (stream as any).addon) as string] || null
+                : null)
             }
             showAlert={(t: string, m: string) => openAlert(t, m)}
             parentTitle={metadata?.name}
             parentType={type as 'movie' | 'series'}
             parentSeason={
-              (type === 'series' || type === 'other') ? currentEpisode?.season_number : undefined
+              type === 'series' || type === 'other' ? currentEpisode?.season_number : undefined
             }
             parentEpisode={
-              (type === 'series' || type === 'other') ? currentEpisode?.episode_number : undefined
+              type === 'series' || type === 'other' ? currentEpisode?.episode_number : undefined
             }
             parentEpisodeTitle={
-              (type === 'series' || type === 'other') ? currentEpisode?.name : undefined
+              type === 'series' || type === 'other' ? currentEpisode?.name : undefined
             }
             parentPosterUrl={episodeImage || metadata?.poster || undefined}
             providerName={
@@ -138,7 +136,23 @@ const StreamsList = memo(
           />
         );
       },
-      [handleStreamPress, currentTheme, settings.showScraperLogos, scraperLogos, openAlert, metadata, type, currentEpisode, episodeImage, streams, id, imdbId, loadingProviders, styles, colors.primary]
+      [
+        handleStreamPress,
+        currentTheme,
+        settings.showScraperLogos,
+        scraperLogos,
+        openAlert,
+        metadata,
+        type,
+        currentEpisode,
+        episodeImage,
+        streams,
+        id,
+        imdbId,
+        loadingProviders,
+        styles,
+        colors.primary,
+      ]
     );
 
     const keyExtractor = useCallback((item: ListItem, index: number) => {
@@ -181,10 +195,7 @@ const StreamsList = memo(
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           ListFooterComponent={ListFooterComponent}
-          contentContainerStyle={[
-            styles.streamsContainer,
-            { paddingBottom: insets.bottom + 100 },
-          ]}
+          contentContainerStyle={[styles.streamsContainer, { paddingBottom: insets.bottom + 100 }]}
           style={styles.streamsContent}
           showsVerticalScrollIndicator={false}
           recycleItems={true}

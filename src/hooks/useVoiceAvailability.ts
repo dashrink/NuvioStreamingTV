@@ -27,6 +27,7 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { Platform, NativeModules } from 'react-native';
+
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
 
 // =============================================================================
@@ -214,10 +215,12 @@ function checkPlatformVoiceSupport(): {
     return {
       available: hasSpeechModule,
       reason: hasSpeechModule ? null : 'no_native_module',
-      capabilities: hasSpeechModule ? APPLE_TV_CAPABILITIES : {
-        ...UNAVAILABLE_CAPABILITIES,
-        hasRemoteVoiceButton: true, // Remote still has Siri button
-      },
+      capabilities: hasSpeechModule
+        ? APPLE_TV_CAPABILITIES
+        : {
+            ...UNAVAILABLE_CAPABILITIES,
+            hasRemoteVoiceButton: true, // Remote still has Siri button
+          },
     };
   }
 
@@ -233,10 +236,9 @@ function checkPlatformVoiceSupport(): {
 
     return {
       available: hasSpeechModule || hasSystemVoice,
-      reason: (hasSpeechModule || hasSystemVoice) ? null : 'no_native_module',
-      capabilities: (hasSpeechModule || hasSystemVoice)
-        ? ANDROID_TV_CAPABILITIES
-        : UNAVAILABLE_CAPABILITIES,
+      reason: hasSpeechModule || hasSystemVoice ? null : 'no_native_module',
+      capabilities:
+        hasSpeechModule || hasSystemVoice ? ANDROID_TV_CAPABILITIES : UNAVAILABLE_CAPABILITIES,
     };
   }
 
@@ -374,7 +376,7 @@ export function useVoiceAvailability(
     // Clear cache before re-checking
     voiceAvailabilityCache = null;
 
-    setStatus((prev) => ({ ...prev, isChecking: true }));
+    setStatus(prev => ({ ...prev, isChecking: true }));
 
     try {
       const newStatus = await performVoiceAvailabilityCheck();

@@ -10,11 +10,7 @@ interface PluginIconProps {
 const PluginIcon: React.FC<PluginIconProps> = ({ size = 24, color = '#FFFFFF' }) => {
   return (
     <View style={{ width: size, height: size }}>
-      <Svg
-        width={size}
-        height={size}
-        viewBox="0 0 32 32"
-      >
+      <Svg width={size} height={size} viewBox="0 0 32 32">
         <Path
           d="M16,22L16,22c-2.2,0-4-1.8-4-4v-4h8v4C20,20.2,18.2,22,16,22z"
           fill="none"

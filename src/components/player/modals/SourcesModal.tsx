@@ -1,14 +1,19 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideOutRight,
-} from 'react-native-reanimated';
-import { Stream } from '../../../types/streams';
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutRight } from 'react-native-reanimated';
+
 import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
+import { Stream } from '../../../types/streams';
 
 interface SourcesModalProps {
   showSourcesModal: boolean;
@@ -50,12 +55,14 @@ const QualityBadge = ({ quality }: { quality: string | null }) => {
         alignItems: 'center',
       }}
     >
-      <Text style={{
-        color: color,
-        fontSize: 12,
-        fontWeight: '700',
-        letterSpacing: 0.5,
-      }}>
+      <Text
+        style={{
+          color,
+          fontSize: 12,
+          fontWeight: '700',
+          letterSpacing: 0.5,
+        }}
+      >
         {label}
       </Text>
     </View>
@@ -102,7 +109,11 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
       <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose}>
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(150)}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        />
       </TouchableOpacity>
 
       <Animated.View
@@ -120,7 +131,14 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
         }}
       >
         <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 15, paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '700' }}>Change Source</Text>
           </View>
         </View>
@@ -130,21 +148,25 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
           contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
         >
           {isChangingSource && (
-            <View style={{
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 20,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
+            <View
+              style={{
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
               <ActivityIndicator size="small" color="#22C55E" />
-              <Text style={{
-                color: '#22C55E',
-                fontSize: 14,
-                fontWeight: '600',
-                marginLeft: 12,
-              }}>
+              <Text
+                style={{
+                  color: '#22C55E',
+                  fontSize: 14,
+                  fontWeight: '600',
+                  marginLeft: 12,
+                }}
+              >
                 Switching source...
               </Text>
             </View>
@@ -153,14 +175,16 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
           {sortedProviders.length > 0 ? (
             sortedProviders.map(([providerId, providerData]) => (
               <View key={providerId} style={{ marginBottom: 30 }}>
-                <Text style={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: 14,
-                  fontWeight: '600',
-                  marginBottom: 15,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                }}>
+                <Text
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: 14,
+                    fontWeight: '600',
+                    marginBottom: 15,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
                   {providerData.addonName} ({providerData.streams.length})
                 </Text>
 
@@ -178,26 +202,36 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                           padding: 12,
                           borderWidth: 1,
                           borderColor: isSelected ? 'white' : 'rgba(255,255,255,0.1)',
-                          opacity: (isChangingSource && !isSelected) ? 0.6 : 1,
+                          opacity: isChangingSource && !isSelected ? 0.6 : 1,
                         }}
                         onPress={() => handleStreamSelect(stream)}
                         activeOpacity={0.7}
                         disabled={isChangingSource === true}
                       >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
                           <View style={{ flex: 1 }}>
-                            <View style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              marginBottom: 8,
-                              gap: 8,
-                            }}>
-                              <Text style={{
-                                color: isSelected ? 'black' : 'white',
-                                fontSize: 15,
-                                fontWeight: isSelected ? '700' : '500',
-                                flex: 1,
-                              }}>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                marginBottom: 8,
+                                gap: 8,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  color: isSelected ? 'black' : 'white',
+                                  fontSize: 15,
+                                  fontWeight: isSelected ? '700' : '500',
+                                  flex: 1,
+                                }}
+                              >
                                 {stream.title || stream.name || `Stream ${index + 1}`}
                               </Text>
                               {quality && <QualityBadge quality={quality} />}
@@ -207,26 +241,46 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                                 {stream.size && (
                                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <MaterialIcons name="storage" size={14} color={isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'} />
-                                    <Text style={{
-                                      color: isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)',
-                                      fontSize: 12,
-                                      fontWeight: '600',
-                                      marginLeft: 4,
-                                    }}>
+                                    <MaterialIcons
+                                      name="storage"
+                                      size={14}
+                                      color={
+                                        isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'
+                                      }
+                                    />
+                                    <Text
+                                      style={{
+                                        color: isSelected
+                                          ? 'rgba(0,0,0,0.6)'
+                                          : 'rgba(255,255,255,0.5)',
+                                        fontSize: 12,
+                                        fontWeight: '600',
+                                        marginLeft: 4,
+                                      }}
+                                    >
                                       {(stream.size / (1024 * 1024 * 1024)).toFixed(1)} GB
                                     </Text>
                                   </View>
                                 )}
                                 {stream.lang && (
                                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <MaterialIcons name="language" size={14} color={isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(59,130,246,0.8)'} />
-                                    <Text style={{
-                                      color: isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(59,130,246,0.8)',
-                                      fontSize: 12,
-                                      fontWeight: '600',
-                                      marginLeft: 4,
-                                    }}>
+                                    <MaterialIcons
+                                      name="language"
+                                      size={14}
+                                      color={
+                                        isSelected ? 'rgba(0,0,0,0.6)' : 'rgba(59,130,246,0.8)'
+                                      }
+                                    />
+                                    <Text
+                                      style={{
+                                        color: isSelected
+                                          ? 'rgba(0,0,0,0.6)'
+                                          : 'rgba(59,130,246,0.8)',
+                                        fontSize: 12,
+                                        fontWeight: '600',
+                                        marginLeft: 4,
+                                      }}
+                                    >
                                       {stream.lang.toUpperCase()}
                                     </Text>
                                   </View>
@@ -239,7 +293,11 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
                             {isSelected ? (
                               <MaterialIcons name="check" size={18} color="black" />
                             ) : (
-                              <MaterialIcons name="play-arrow" size={20} color="rgba(255,255,255,0.4)" />
+                              <MaterialIcons
+                                name="play-arrow"
+                                size={20}
+                                color="rgba(255,255,255,0.4)"
+                              />
                             )}
                           </View>
                         </View>
@@ -250,27 +308,33 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({
               </View>
             ))
           ) : (
-            <View style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: 16,
-              padding: 20,
-              alignItems: 'center',
-            }}>
+            <View
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 16,
+                padding: 20,
+                alignItems: 'center',
+              }}
+            >
               <MaterialIcons name="error-outline" size={48} color="rgba(255,255,255,0.3)" />
-              <Text style={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: 16,
-                marginTop: 16,
-                textAlign: 'center',
-              }}>
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  fontSize: 16,
+                  marginTop: 16,
+                  textAlign: 'center',
+                }}
+              >
                 No sources available
               </Text>
-              <Text style={{
-                color: 'rgba(255, 255, 255, 0.4)',
-                fontSize: 14,
-                marginTop: 8,
-                textAlign: 'center',
-              }}>
+              <Text
+                style={{
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  fontSize: 14,
+                  marginTop: 8,
+                  textAlign: 'center',
+                }}
+              >
                 Try searching for different content
               </Text>
             </View>

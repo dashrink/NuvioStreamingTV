@@ -1,8 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
-import { useTheme } from '../../contexts/ThemeContext';
-import type { Theme } from '../../contexts/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  Dimensions,
+  Animated,
+  Easing,
+} from 'react-native';
+
+import { useTheme } from '../../contexts/ThemeContext';
+
+import type { Theme } from '../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -11,7 +21,9 @@ export const SkeletonCatalog = () => {
   const { currentTheme } = useTheme();
   return (
     <View style={styles.catalogContainer}>
-      <View style={[styles.loadingPlaceholder, { backgroundColor: currentTheme.colors.elevation1 }]}>
+      <View
+        style={[styles.loadingPlaceholder, { backgroundColor: currentTheme.colors.elevation1 }]}
+      >
         <ActivityIndicator size="small" color={currentTheme.colors.primary} />
       </View>
     </View>
@@ -41,15 +53,16 @@ export const SkeletonFeatured = () => {
   });
 
   return (
-    <View style={[styles.featuredSkeletonContainer, { backgroundColor: currentTheme.colors.elevation1 }]}>
+    <View
+      style={[
+        styles.featuredSkeletonContainer,
+        { backgroundColor: currentTheme.colors.elevation1 },
+      ]}
+    >
       {/* Shimmer overlay */}
       <Animated.View style={[styles.shimmerOverlay, { transform: [{ translateX }] }]}>
         <LinearGradient
-          colors={[
-            'rgba(255,255,255,0)',
-            'rgba(255,255,255,0.08)',
-            'rgba(255,255,255,0)'
-          ]}
+          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.08)', 'rgba(255,255,255,0)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFillObject}
@@ -191,5 +204,5 @@ const styles = StyleSheet.create({
 
 export default {
   SkeletonCatalog,
-  SkeletonFeatured
-}; 
+  SkeletonFeatured,
+};

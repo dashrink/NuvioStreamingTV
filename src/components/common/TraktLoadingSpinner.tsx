@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, ViewStyle } from 'react-native';
+
 import TraktIcon from '../../../assets/rating-icons/trakt.svg';
 import { LOADING_ANIMATION_DURATIONS, LoadingSize } from '../loading/types';
 
@@ -109,11 +110,7 @@ export const TraktLoadingSpinner: React.FC<TraktLoadingSpinnerProps> = ({
 
   return (
     <View
-      style={[
-        styles.container,
-        { transform: [{ translateY: offsetY }] },
-        style,
-      ]}
+      style={[styles.container, { transform: [{ translateY: offsetY }] }, style]}
       testID={testID}
       accessibilityRole="progressbar"
       accessibilityLabel={text || 'Loading Trakt data'}
@@ -140,4 +137,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-}); 
+});

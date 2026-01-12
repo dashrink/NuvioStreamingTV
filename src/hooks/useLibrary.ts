@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+
+import { StreamingContent, catalogService } from '../services/catalogService';
 import { mmkvStorage } from '../services/mmkvStorage';
-import { StreamingContent } from '../services/catalogService';
-import { catalogService } from '../services/catalogService';
 
 const LEGACY_LIBRARY_STORAGE_KEY = 'stremio-library';
 
@@ -46,10 +46,13 @@ export const useLibrary = () => {
   const saveLibraryItems = useCallback(async (items: StreamingContent[]) => {
     try {
       // Convert array to object format for compatibility with CatalogService
-      const itemsObject = items.reduce((acc, item) => {
-        acc[`${item.type}:${item.id}`] = item;
-        return acc;
-      }, {} as Record<string, StreamingContent>);
+      const itemsObject = items.reduce(
+        (acc, item) => {
+          acc[`${item.type}:${item.id}`] = item;
+          return acc;
+        },
+        {} as Record<string, StreamingContent>
+      );
       const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
       const scopedKey = `@user:${scope}:stremio-library`;
       await mmkvStorage.setItem(scopedKey, JSON.stringify(itemsObject));
@@ -61,51 +64,63 @@ export const useLibrary = () => {
   }, []);
 
   // Add item to library
-  const addToLibrary = useCallback(async (item: StreamingContent) => {
-    try {
-      await catalogService.addToLibrary({ ...item, inLibrary: true });
-      return true;
-    } catch (e) {
-      if (__DEV__) console.error('Error adding to library via catalogService:', e);
-      // Fallback local write
-      const updatedItems = [...libraryItems, { ...item, inLibrary: true }];
-      setLibraryItems(updatedItems);
-      await saveLibraryItems(updatedItems);
-      return true;
-    }
-  }, [libraryItems, saveLibraryItems]);
+  const addToLibrary = useCallback(
+    async (item: StreamingContent) => {
+      try {
+        await catalogService.addToLibrary({ ...item, inLibrary: true });
+        return true;
+      } catch (e) {
+        if (__DEV__) console.error('Error adding to library via catalogService:', e);
+        // Fallback local write
+        const updatedItems = [...libraryItems, { ...item, inLibrary: true }];
+        setLibraryItems(updatedItems);
+        await saveLibraryItems(updatedItems);
+        return true;
+      }
+    },
+    [libraryItems, saveLibraryItems]
+  );
 
   // Remove item from library
-  const removeFromLibrary = useCallback(async (id: string) => {
-    try {
-      const type = libraryItems.find(i => i.id === id)?.type || 'movie';
-      await catalogService.removeFromLibrary(type, id);
-      return true;
-    } catch (e) {
-      if (__DEV__) console.error('Error removing from library via catalogService:', e);
-      // Fallback local write
-      const updatedItems = libraryItems.filter(item => item.id !== id);
-      setLibraryItems(updatedItems);
-      await saveLibraryItems(updatedItems);
-      return true;
-    }
-  }, [libraryItems, saveLibraryItems]);
+  const removeFromLibrary = useCallback(
+    async (id: string) => {
+      try {
+        const type = libraryItems.find(i => i.id === id)?.type || 'movie';
+        await catalogService.removeFromLibrary(type, id);
+        return true;
+      } catch (e) {
+        if (__DEV__) console.error('Error removing from library via catalogService:', e);
+        // Fallback local write
+        const updatedItems = libraryItems.filter(item => item.id !== id);
+        setLibraryItems(updatedItems);
+        await saveLibraryItems(updatedItems);
+        return true;
+      }
+    },
+    [libraryItems, saveLibraryItems]
+  );
 
   // Toggle item in library
-  const toggleLibrary = useCallback(async (item: StreamingContent) => {
-    const exists = libraryItems.some(i => i.id === item.id);
+  const toggleLibrary = useCallback(
+    async (item: StreamingContent) => {
+      const exists = libraryItems.some(i => i.id === item.id);
 
-    if (exists) {
-      return await removeFromLibrary(item.id);
-    } else {
-      return await addToLibrary(item);
-    }
-  }, [libraryItems, addToLibrary, removeFromLibrary]);
+      if (exists) {
+        return await removeFromLibrary(item.id);
+      } else {
+        return await addToLibrary(item);
+      }
+    },
+    [libraryItems, addToLibrary, removeFromLibrary]
+  );
 
   // Check if item is in library
-  const isInLibrary = useCallback((id: string) => {
-    return libraryItems.some(item => item.id === id);
-  }, [libraryItems]);
+  const isInLibrary = useCallback(
+    (id: string) => {
+      return libraryItems.some(item => item.id === id);
+    },
+    [libraryItems]
+  );
 
   // Load library items on mount
   useEffect(() => {
@@ -114,7 +129,7 @@ export const useLibrary = () => {
 
   // Subscribe to catalogService library updates
   useEffect(() => {
-    const unsubscribe = catalogService.subscribeToLibraryUpdates((items) => {
+    const unsubscribe = catalogService.subscribeToLibraryUpdates(items => {
       setLibraryItems(items);
       setLoading(false);
     });
@@ -129,6 +144,6 @@ export const useLibrary = () => {
     removeFromLibrary,
     toggleLibrary,
     isInLibrary,
-    loadLibraryItems
+    loadLibraryItems,
   };
-}; 
+};

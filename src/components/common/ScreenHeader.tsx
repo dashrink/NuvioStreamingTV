@@ -1,8 +1,9 @@
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+
+import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
 import { ProfileHeaderButton } from '../profile';
 

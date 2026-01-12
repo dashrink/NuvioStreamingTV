@@ -13,13 +13,17 @@ export interface StreamDetectionResult {
  * Comprehensive MKV stream detection
  * Uses multiple detection methods for maximum accuracy
  */
-export const detectMkvStream = (streamUri: string, streamHeaders?: Record<string, string>): StreamDetectionResult => {
+export const detectMkvStream = (
+  streamUri: string,
+  streamHeaders?: Record<string, string>
+): StreamDetectionResult => {
   if (!streamUri) {
     return { isMkv: false, method: 'none', confidence: 'high' };
   }
 
   const lowerUri = streamUri.toLowerCase();
-  const contentType = (streamHeaders && (streamHeaders['Content-Type'] || streamHeaders['content-type'])) || '';
+  const contentType =
+    (streamHeaders && (streamHeaders['Content-Type'] || streamHeaders['content-type'])) || '';
 
   // Method 1: Content-Type header detection (most reliable)
   if (typeof contentType === 'string') {
@@ -47,7 +51,7 @@ export const detectMkvStream = (streamUri: string, streamHeaders?: Record<string
     /[?&]codec=mkv\b/,
     /[?&]format=matroska\b/,
     /[?&]type=mkv\b/,
-    /[?&]file_format=mkv\b/
+    /[?&]file_format=mkv\b/,
   ];
 
   for (const pattern of urlPatterns) {

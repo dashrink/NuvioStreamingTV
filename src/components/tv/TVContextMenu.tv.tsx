@@ -54,21 +54,8 @@
  * ```
  */
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, Modal, Dimensions, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -76,8 +63,15 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+
 import { useTVNavigationOptional, ContextMenuItem } from '../../contexts/TVNavigationContext';
-import { useTVEventHandler, isMenuEvent, isNavigationEvent, isSelectEvent, TVRemoteEvent } from '../../hooks/useTVEventHandler';
+import {
+  useTVEventHandler,
+  isMenuEvent,
+  isNavigationEvent,
+  isSelectEvent,
+  TVRemoteEvent,
+} from '../../hooks/useTVEventHandler';
 import Focusable, { FocusableRef } from '../common/Focusable';
 
 // =============================================================================
@@ -191,17 +185,9 @@ const MenuItem: React.FC<MenuItemProps> = ({
   }, [item.disabled, onSelect]);
 
   // Determine text color based on item state
-  const textColor = item.disabled
-    ? '#666'
-    : item.destructive
-    ? '#FF3B30'
-    : '#FFFFFF';
+  const textColor = item.disabled ? '#666' : item.destructive ? '#FF3B30' : '#FFFFFF';
 
-  const iconColor = item.disabled
-    ? '#666'
-    : item.destructive
-    ? '#FF3B30'
-    : '#007AFF';
+  const iconColor = item.disabled ? '#666' : item.destructive ? '#FF3B30' : '#007AFF';
 
   // Build next focus configuration
   const nextFocus = useMemo(() => {
@@ -241,9 +227,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
         {/* Icon */}
         {item.icon && (
           <View style={styles.iconContainer}>
-            <Text style={[styles.icon, { color: iconColor }]}>
-              {getIconChar(item.icon)}
-            </Text>
+            <Text style={[styles.icon, { color: iconColor }]}>{getIconChar(item.icon)}</Text>
           </View>
         )}
 
@@ -322,18 +306,21 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
   /**
    * Animate menu out
    */
-  const animateOut = useCallback((onComplete: () => void) => {
-    backdropOpacity.value = withTiming(0, { duration: 150 });
-    menuScale.value = withSpring(0.9, {
-      ...SPRING_CONFIG,
-      damping: 25,
-    });
-    menuOpacity.value = withTiming(0, { duration: 150 }, (finished) => {
-      if (finished) {
-        runOnJS(onComplete)();
-      }
-    });
-  }, [backdropOpacity, menuScale, menuOpacity]);
+  const animateOut = useCallback(
+    (onComplete: () => void) => {
+      backdropOpacity.value = withTiming(0, { duration: 150 });
+      menuScale.value = withSpring(0.9, {
+        ...SPRING_CONFIG,
+        damping: 25,
+      });
+      menuOpacity.value = withTiming(0, { duration: 150 }, finished => {
+        if (finished) {
+          runOnJS(onComplete)();
+        }
+      });
+    },
+    [backdropOpacity, menuScale, menuOpacity]
+  );
 
   // =============================================================================
   // Menu Visibility Effect
@@ -345,7 +332,7 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
       lastTriggerRef.current = contextMenu.targetId;
 
       // Reset selection to first non-disabled item
-      const firstEnabledIndex = menuItems.findIndex((item) => !item.disabled);
+      const firstEnabledIndex = menuItems.findIndex(item => !item.disabled);
       setSelectedIndex(firstEnabledIndex >= 0 ? firstEnabledIndex : 0);
 
       // Show menu with animation
@@ -376,15 +363,18 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
   /**
    * Handle selecting an item
    */
-  const handleSelect = useCallback((itemId: string) => {
-    selectContextMenuItem?.(itemId);
-  }, [selectContextMenuItem]);
+  const handleSelect = useCallback(
+    (itemId: string) => {
+      selectContextMenuItem?.(itemId);
+    },
+    [selectContextMenuItem]
+  );
 
   /**
    * Navigate to next item
    */
   const navigateDown = useCallback(() => {
-    setSelectedIndex((prev) => {
+    setSelectedIndex(prev => {
       // Find next non-disabled item
       let next = prev + 1;
       while (next < menuItems.length && menuItems[next]?.disabled) {
@@ -392,7 +382,7 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
       }
       if (next >= menuItems.length) {
         // Wrap to first enabled item
-        next = menuItems.findIndex((item) => !item.disabled);
+        next = menuItems.findIndex(item => !item.disabled);
         if (next === -1) next = 0;
       }
       return next;
@@ -403,7 +393,7 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
    * Navigate to previous item
    */
   const navigateUp = useCallback(() => {
-    setSelectedIndex((prev) => {
+    setSelectedIndex(prev => {
       // Find previous non-disabled item
       let next = prev - 1;
       while (next >= 0 && menuItems[next]?.disabled) {
@@ -502,9 +492,7 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
     const left = (SCREEN_WIDTH - MENU_WIDTH) / 2;
     const visibleItems = Math.min(menuItems.length, MENU_MAX_VISIBLE_ITEMS);
     const menuHeight =
-      visibleItems * MENU_ITEM_HEIGHT +
-      MENU_PADDING * 2 +
-      (contextMenu?.title ? 48 : 0);
+      visibleItems * MENU_ITEM_HEIGHT + MENU_PADDING * 2 + (contextMenu?.title ? 48 : 0);
     const top = (SCREEN_HEIGHT - menuHeight) / 2;
 
     return { top, left };
@@ -567,8 +555,12 @@ const TVContextMenu: React.FC<TVContextMenuProps> = ({ testID = 'tv-context-menu
                 onSelect={() => handleSelect(item.id)}
                 hasTVPreferredFocus={index === selectedIndex}
                 itemRef={itemRefs.current[index]}
-                nextFocusUp={index > 0 ? itemRefs.current[index - 1] : itemRefs.current[menuItems.length - 1]}
-                nextFocusDown={index < menuItems.length - 1 ? itemRefs.current[index + 1] : itemRefs.current[0]}
+                nextFocusUp={
+                  index > 0 ? itemRefs.current[index - 1] : itemRefs.current[menuItems.length - 1]
+                }
+                nextFocusDown={
+                  index < menuItems.length - 1 ? itemRefs.current[index + 1] : itemRefs.current[0]
+                }
               />
             ))}
           </View>

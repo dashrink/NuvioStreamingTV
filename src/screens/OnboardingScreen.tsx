@@ -1,13 +1,6 @@
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  Platform,
-} from 'react-native';
-import Focusable from '../components/common/Focusable';
+import { View, Text, StyleSheet, Dimensions, StatusBar, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,11 +14,12 @@ import Animated, {
   runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
+
+import Focusable from '../components/common/Focusable';
 import { useTheme } from '../contexts/ThemeContext';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { mmkvStorage } from '../services/mmkvStorage';
-import { triggerLight, triggerMedium } from '../hooks/useHaptics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,25 +41,29 @@ const onboardingData: OnboardingSlide[] = [
     id: '1',
     title: 'Welcome to\nNuvio',
     subtitle: 'Your Ultimate Content Hub',
-    description: 'Discover, organize, and manage your favorite movies and TV shows from multiple sources in one beautiful app.',
+    description:
+      'Discover, organize, and manage your favorite movies and TV shows from multiple sources in one beautiful app.',
   },
   {
     id: '2',
     title: 'Powerful\nAddons',
     subtitle: 'Extend Your Experience',
-    description: 'Install addons to access content from various platforms and services. Choose what works best for you.',
+    description:
+      'Install addons to access content from various platforms and services. Choose what works best for you.',
   },
   {
     id: '3',
     title: 'Smart\nDiscovery',
     subtitle: 'Find What You Love',
-    description: 'Browse trending content, search across all your sources, and get personalized recommendations.',
+    description:
+      'Browse trending content, search across all your sources, and get personalized recommendations.',
   },
   {
     id: '4',
     title: 'Your\nLibrary',
     subtitle: 'Track & Organize',
-    description: 'Save favorites, track your progress, and sync with Trakt to keep everything organized across devices.',
+    description:
+      'Save favorites, track your progress, and sync with Trakt to keep everything organized across devices.',
   },
 ];
 
@@ -73,7 +71,7 @@ const onboardingData: OnboardingSlide[] = [
 const AnimatedSlide = ({
   item,
   index,
-  scrollX
+  scrollX,
 }: {
   item: OnboardingSlide;
   index: number;
@@ -88,18 +86,8 @@ const AnimatedSlide = ({
       [width * 0.3, 0, -width * 0.3],
       Extrapolation.CLAMP
     );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0, 1, 0],
-      Extrapolation.CLAMP
-    );
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.8, 1, 0.8],
-      Extrapolation.CLAMP
-    );
+    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0], Extrapolation.CLAMP);
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1, 0.8], Extrapolation.CLAMP);
     return {
       transform: [{ translateX }, { scale }],
       opacity,
@@ -113,12 +101,7 @@ const AnimatedSlide = ({
       [width * 0.5, 0, -width * 0.5],
       Extrapolation.CLAMP
     );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0, 1, 0],
-      Extrapolation.CLAMP
-    );
+    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0], Extrapolation.CLAMP);
     return {
       transform: [{ translateX }],
       opacity,
@@ -132,12 +115,7 @@ const AnimatedSlide = ({
       [width * 0.7, 0, -width * 0.7],
       Extrapolation.CLAMP
     );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0, 1, 0],
-      Extrapolation.CLAMP
-    );
+    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0], Extrapolation.CLAMP);
     return {
       transform: [{ translateX }],
       opacity,
@@ -147,13 +125,9 @@ const AnimatedSlide = ({
   return (
     <View style={styles.slide}>
       <View style={styles.textContainer}>
-        <Animated.Text style={[styles.title, titleStyle]}>
-          {item.title}
-        </Animated.Text>
+        <Animated.Text style={[styles.title, titleStyle]}>{item.title}</Animated.Text>
 
-        <Animated.Text style={[styles.subtitle, subtitleStyle]}>
-          {item.subtitle}
-        </Animated.Text>
+        <Animated.Text style={[styles.subtitle, subtitleStyle]}>{item.subtitle}</Animated.Text>
 
         <Animated.Text style={[styles.description, descriptionStyle]}>
           {item.description}
@@ -181,10 +155,10 @@ const OnboardingScreen = () => {
   };
 
   const onScroll = useAnimatedScrollHandler({
-    onScroll: (event) => {
+    onScroll: event => {
       scrollX.value = event.contentOffset.x;
     },
-    onMomentumEnd: (event) => {
+    onMomentumEnd: event => {
       const slideIndex = Math.round(event.contentOffset.x / width);
       runOnJS(updateIndex)(slideIndex);
     },
@@ -208,7 +182,7 @@ const OnboardingScreen = () => {
       const nextIndex = currentIndex + 1;
       flatListRef.current?.scrollToOffset({
         offset: nextIndex * width,
-        animated: true
+        animated: true,
       });
     } else {
       handleGetStarted();
@@ -221,7 +195,7 @@ const OnboardingScreen = () => {
       try {
         await mmkvStorage.setItem('hasCompletedOnboarding', 'true');
         await mmkvStorage.setItem('showLoginHintToastOnce', 'true');
-      } catch { }
+      } catch {}
       navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     })();
   };
@@ -244,18 +218,8 @@ const OnboardingScreen = () => {
   const PaginationDot = ({ index }: { index: number }) => {
     const dotStyle = useAnimatedStyle(() => {
       const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
-      const dotWidth = interpolate(
-        scrollX.value,
-        inputRange,
-        [8, 32, 8],
-        Extrapolation.CLAMP
-      );
-      const opacity = interpolate(
-        scrollX.value,
-        inputRange,
-        [0.3, 1, 0.3],
-        Extrapolation.CLAMP
-      );
+      const dotWidth = interpolate(scrollX.value, inputRange, [8, 32, 8], Extrapolation.CLAMP);
+      const opacity = interpolate(scrollX.value, inputRange, [0.3, 1, 0.3], Extrapolation.CLAMP);
       return {
         width: dotWidth,
         opacity,
@@ -286,10 +250,7 @@ const OnboardingScreen = () => {
 
       <View style={styles.fullScreenContainer}>
         {/* Header */}
-        <Animated.View
-          entering={FadeIn.delay(300).duration(600)}
-          style={styles.header}
-        >
+        <Animated.View entering={FadeIn.delay(300).duration(600)} style={styles.header}>
           <Focusable
             onPress={handleSkip}
             style={styles.skipButton}
@@ -312,7 +273,7 @@ const OnboardingScreen = () => {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           onScroll={onScroll}
           scrollEventThrottle={16}
           decelerationRate="fast"
@@ -323,10 +284,7 @@ const OnboardingScreen = () => {
         />
 
         {/* Footer */}
-        <Animated.View
-          entering={FadeInUp.delay(500).duration(600)}
-          style={styles.footer}
-        >
+        <Animated.View entering={FadeInUp.delay(500).duration(600)} style={styles.footer}>
           {/* Smooth Pagination */}
           <View style={styles.pagination}>
             {onboardingData.map((_, index) => (

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { mmkvStorage } from '../services/mmkvStorage';
+
 import { useTraktIntegration } from './useTraktIntegration';
+import { mmkvStorage } from '../services/mmkvStorage';
 import { logger } from '../utils/logger';
 
 const TRAKT_AUTOSYNC_ENABLED_KEY = '@trakt_autosync_enabled';
@@ -20,12 +21,8 @@ const DEFAULT_SETTINGS: TraktAutosyncSettings = {
 };
 
 export function useTraktAutosyncSettings() {
-  const { 
-    isAuthenticated, 
-    syncAllProgress, 
-    fetchAndMergeTraktProgress 
-  } = useTraktIntegration();
-  
+  const { isAuthenticated, syncAllProgress, fetchAndMergeTraktProgress } = useTraktIntegration();
+
   const [settings, setSettings] = useState<TraktAutosyncSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -37,13 +34,15 @@ export function useTraktAutosyncSettings() {
       const [enabled, frequency, threshold] = await Promise.all([
         mmkvStorage.getItem(TRAKT_AUTOSYNC_ENABLED_KEY),
         mmkvStorage.getItem(TRAKT_SYNC_FREQUENCY_KEY),
-        mmkvStorage.getItem(TRAKT_COMPLETION_THRESHOLD_KEY)
+        mmkvStorage.getItem(TRAKT_COMPLETION_THRESHOLD_KEY),
       ]);
 
       setSettings({
         enabled: enabled !== null ? JSON.parse(enabled) : DEFAULT_SETTINGS.enabled,
         syncFrequency: frequency ? parseInt(frequency, 10) : DEFAULT_SETTINGS.syncFrequency,
-        completionThreshold: threshold ? parseInt(threshold, 10) : DEFAULT_SETTINGS.completionThreshold,
+        completionThreshold: threshold
+          ? parseInt(threshold, 10)
+          : DEFAULT_SETTINGS.completionThreshold,
       });
     } catch (error) {
       logger.error('[useTraktAutosyncSettings] Error loading settings:', error);
@@ -63,37 +62,46 @@ export function useTraktAutosyncSettings() {
   }, []);
 
   // Update autosync enabled status
-  const setAutosyncEnabled = useCallback(async (enabled: boolean) => {
-    try {
-      await saveSetting(TRAKT_AUTOSYNC_ENABLED_KEY, enabled);
-      setSettings(prev => ({ ...prev, enabled }));
-      logger.log(`[useTraktAutosyncSettings] Autosync ${enabled ? 'enabled' : 'disabled'}`);
-    } catch (error) {
-      logger.error('[useTraktAutosyncSettings] Error updating autosync enabled:', error);
-    }
-  }, [saveSetting]);
+  const setAutosyncEnabled = useCallback(
+    async (enabled: boolean) => {
+      try {
+        await saveSetting(TRAKT_AUTOSYNC_ENABLED_KEY, enabled);
+        setSettings(prev => ({ ...prev, enabled }));
+        logger.log(`[useTraktAutosyncSettings] Autosync ${enabled ? 'enabled' : 'disabled'}`);
+      } catch (error) {
+        logger.error('[useTraktAutosyncSettings] Error updating autosync enabled:', error);
+      }
+    },
+    [saveSetting]
+  );
 
   // Update sync frequency
-  const setSyncFrequency = useCallback(async (frequency: number) => {
-    try {
-      await saveSetting(TRAKT_SYNC_FREQUENCY_KEY, frequency);
-      setSettings(prev => ({ ...prev, syncFrequency: frequency }));
-      logger.log(`[useTraktAutosyncSettings] Sync frequency updated to ${frequency}ms`);
-    } catch (error) {
-      logger.error('[useTraktAutosyncSettings] Error updating sync frequency:', error);
-    }
-  }, [saveSetting]);
+  const setSyncFrequency = useCallback(
+    async (frequency: number) => {
+      try {
+        await saveSetting(TRAKT_SYNC_FREQUENCY_KEY, frequency);
+        setSettings(prev => ({ ...prev, syncFrequency: frequency }));
+        logger.log(`[useTraktAutosyncSettings] Sync frequency updated to ${frequency}ms`);
+      } catch (error) {
+        logger.error('[useTraktAutosyncSettings] Error updating sync frequency:', error);
+      }
+    },
+    [saveSetting]
+  );
 
   // Update completion threshold
-  const setCompletionThreshold = useCallback(async (threshold: number) => {
-    try {
-      await saveSetting(TRAKT_COMPLETION_THRESHOLD_KEY, threshold);
-      setSettings(prev => ({ ...prev, completionThreshold: threshold }));
-      logger.log(`[useTraktAutosyncSettings] Completion threshold updated to ${threshold}%`);
-    } catch (error) {
-      logger.error('[useTraktAutosyncSettings] Error updating completion threshold:', error);
-    }
-  }, [saveSetting]);
+  const setCompletionThreshold = useCallback(
+    async (threshold: number) => {
+      try {
+        await saveSetting(TRAKT_COMPLETION_THRESHOLD_KEY, threshold);
+        setSettings(prev => ({ ...prev, completionThreshold: threshold }));
+        logger.log(`[useTraktAutosyncSettings] Completion threshold updated to ${threshold}%`);
+      } catch (error) {
+        logger.error('[useTraktAutosyncSettings] Error updating completion threshold:', error);
+      }
+    },
+    [saveSetting]
+  );
 
   // Manual sync all progress
   const performManualSync = useCallback(async (): Promise<boolean> => {
@@ -105,20 +113,22 @@ export function useTraktAutosyncSettings() {
     try {
       setIsSyncing(true);
       logger.log('[useTraktAutosyncSettings] Starting manual sync...');
-      
+
       // First, fetch and merge Trakt progress with local
       const fetchSuccess = await fetchAndMergeTraktProgress();
-      
+
       // Then, sync any unsynced local progress to Trakt
       const uploadSuccess = await syncAllProgress();
-      
+
       // Consider sync successful if either:
       // 1. We successfully fetched from Trakt (main purpose of manual sync)
       // 2. We successfully uploaded local progress to Trakt
       // 3. Everything was already in sync (uploadSuccess = false is OK if fetchSuccess = true)
       const overallSuccess = fetchSuccess || uploadSuccess;
-      
-      logger.log(`[useTraktAutosyncSettings] Manual sync ${overallSuccess ? 'completed' : 'failed'}`);
+
+      logger.log(
+        `[useTraktAutosyncSettings] Manual sync ${overallSuccess ? 'completed' : 'failed'}`
+      );
       return overallSuccess;
     } catch (error) {
       logger.error('[useTraktAutosyncSettings] Error during manual sync:', error);
@@ -129,20 +139,26 @@ export function useTraktAutosyncSettings() {
   }, [isAuthenticated, syncAllProgress, fetchAndMergeTraktProgress]);
 
   // Get formatted sync frequency options
-  const getSyncFrequencyOptions = useCallback(() => [
-    { label: 'Every 30 seconds', value: 30000 },
-    { label: 'Every minute', value: 60000 },
-    { label: 'Every 2 minutes', value: 120000 },
-    { label: 'Every 5 minutes', value: 300000 },
-  ], []);
+  const getSyncFrequencyOptions = useCallback(
+    () => [
+      { label: 'Every 30 seconds', value: 30000 },
+      { label: 'Every minute', value: 60000 },
+      { label: 'Every 2 minutes', value: 120000 },
+      { label: 'Every 5 minutes', value: 300000 },
+    ],
+    []
+  );
 
   // Get formatted completion threshold options
-  const getCompletionThresholdOptions = useCallback(() => [
-    { label: '80% complete', value: 80 },
-    { label: '85% complete', value: 85 },
-    { label: '90% complete', value: 90 },
-    { label: '95% complete', value: 95 },
-  ], []);
+  const getCompletionThresholdOptions = useCallback(
+    () => [
+      { label: '80% complete', value: 80 },
+      { label: '85% complete', value: 85 },
+      { label: '90% complete', value: 90 },
+      { label: '95% complete', value: 95 },
+    ],
+    []
+  );
 
   // Load settings on mount
   useEffect(() => {
@@ -160,6 +176,6 @@ export function useTraktAutosyncSettings() {
     performManualSync,
     getSyncFrequencyOptions,
     getCompletionThresholdOptions,
-    loadSettings
+    loadSettings,
   };
-} 
+}

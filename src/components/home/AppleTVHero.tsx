@@ -1,3 +1,8 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Entypo } from '@expo/vector-icons';
+import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
+import { BlurView as ExpoBlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View,
@@ -11,11 +16,7 @@ import {
   StatusBar,
   Image,
 } from 'react-native';
-import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons, Entypo } from '@expo/vector-icons';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -30,21 +31,25 @@ import Animated, {
   useAnimatedScrollHandler,
   SharedValue,
 } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
-import { logger } from '../../utils/logger';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
-import { useTrailer } from '../../contexts/TrailerContext';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+
+
+import { StreamingContent } from '../../services/catalogService';
+import { streamCacheService } from '../../services/streamCacheService';
 import TrailerService from '../../services/trailerService';
+import { logger } from '../../utils/logger';
+
+
+import { useTrailer } from '../../contexts/TrailerContext';
 import TrailerPlayer from '../video/TrailerPlayer';
 import { useLibrary } from '../../hooks/useLibrary';
 import { useToast } from '../../contexts/ToastContext';
 import { useTraktContext } from '../../contexts/TraktContext';
-import { BlurView as ExpoBlurView } from 'expo-blur';
 import { useWatchProgress } from '../../hooks/useWatchProgress';
-import { streamCacheService } from '../../services/streamCacheService';
 import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
 
 interface AppleTVHeroProps {
@@ -69,74 +74,72 @@ const PaginationDot: React.FC<{
   isNext: boolean;
   dragProgress: SharedValue<number>;
   onPress: () => void;
-}> = React.memo(
-  ({ isActive, isNext, dragProgress, onPress }) => {
-    const animatedStyle = useAnimatedStyle(() => {
-      // Base values
-      const activeWidth = 32;
-      const inactiveWidth = 8;
-      const activeOpacity = 0.9;
-      const inactiveOpacity = 0.3;
+}> = React.memo(({ isActive, isNext, dragProgress, onPress }) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    // Base values
+    const activeWidth = 32;
+    const inactiveWidth = 8;
+    const activeOpacity = 0.9;
+    const inactiveOpacity = 0.3;
 
-      // Calculate target width and opacity based on state
-      let targetWidth = isActive ? activeWidth : inactiveWidth;
-      let targetOpacity = isActive ? activeOpacity : inactiveOpacity;
+    // Calculate target width and opacity based on state
+    let targetWidth = isActive ? activeWidth : inactiveWidth;
+    let targetOpacity = isActive ? activeOpacity : inactiveOpacity;
 
-      // If this is the next dot during drag, interpolate between inactive and active
-      if (isNext && dragProgress.value > 0) {
-        targetWidth = interpolate(
-          dragProgress.value,
-          [0, 1],
-          [inactiveWidth, activeWidth],
-          Extrapolation.CLAMP
-        );
-        targetOpacity = interpolate(
-          dragProgress.value,
-          [0, 1],
-          [inactiveOpacity, activeOpacity],
-          Extrapolation.CLAMP
-        );
-      }
+    // If this is the next dot during drag, interpolate between inactive and active
+    if (isNext && dragProgress.value > 0) {
+      targetWidth = interpolate(
+        dragProgress.value,
+        [0, 1],
+        [inactiveWidth, activeWidth],
+        Extrapolation.CLAMP
+      );
+      targetOpacity = interpolate(
+        dragProgress.value,
+        [0, 1],
+        [inactiveOpacity, activeOpacity],
+        Extrapolation.CLAMP
+      );
+    }
 
-      // If this is the current active dot during drag, interpolate from active to inactive
-      if (isActive && dragProgress.value > 0) {
-        targetWidth = interpolate(
-          dragProgress.value,
-          [0, 1],
-          [activeWidth, inactiveWidth],
-          Extrapolation.CLAMP
-        );
-        targetOpacity = interpolate(
-          dragProgress.value,
-          [0, 1],
-          [activeOpacity, inactiveOpacity],
-          Extrapolation.CLAMP
-        );
-      }
+    // If this is the current active dot during drag, interpolate from active to inactive
+    if (isActive && dragProgress.value > 0) {
+      targetWidth = interpolate(
+        dragProgress.value,
+        [0, 1],
+        [activeWidth, inactiveWidth],
+        Extrapolation.CLAMP
+      );
+      targetOpacity = interpolate(
+        dragProgress.value,
+        [0, 1],
+        [activeOpacity, inactiveOpacity],
+        Extrapolation.CLAMP
+      );
+    }
 
-      return {
-        width: withTiming(targetWidth, {
-          duration: 300,
-          easing: Easing.out(Easing.cubic),
-        }),
-        opacity: withTiming(targetOpacity, {
-          duration: 300,
-          easing: Easing.out(Easing.cubic),
-        }),
-      };
-    });
+    return {
+      width: withTiming(targetWidth, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      }),
+      opacity: withTiming(targetOpacity, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      }),
+    };
+  });
 
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Animated.View style={[styles.paginationDot, animatedStyle]} />
-      </TouchableOpacity>
-    );
-  }
-);
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <Animated.View style={[styles.paginationDot, animatedStyle]} />
+    </TouchableOpacity>
+  );
+});
 
 const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   featuredContent,
@@ -157,7 +160,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     isAuthenticated: isTraktAuthenticated,
     isInWatchlist: checkTraktWatchlist,
     addToWatchlist,
-    removeFromWatchlist
+    removeFromWatchlist,
   } = useTraktContext();
 
   // Library and watch state
@@ -211,7 +214,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   const {
     watchProgress,
     getPlayButtonText: getProgressPlayButtonText,
-    loadWatchProgress
+    loadWatchProgress,
   } = useWatchProgress(
     currentItem?.id || '',
     type,
@@ -277,10 +280,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     // Disable parallax during drag to avoid transform conflicts
     if (isDragging.value > 0) {
       return {
-        transform: [
-          { scale: 1.0 },
-          { translateY: 0 }
-        ],
+        transform: [{ scale: 1.0 }, { translateY: 0 }],
       };
     }
 
@@ -300,10 +300,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
 
     return {
-      transform: [
-        { scale },
-        { translateY: parallaxOffset }
-      ],
+      transform: [{ scale }, { translateY: parallaxOffset }],
     };
   });
 
@@ -315,10 +312,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     // Disable parallax during drag to avoid transform conflicts
     if (isDragging.value > 0) {
       return {
-        transform: [
-          { scale: 1.0 },
-          { translateY: 0 }
-        ],
+        transform: [{ scale: 1.0 }, { translateY: 0 }],
       };
     }
 
@@ -338,10 +332,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
 
     return {
-      transform: [
-        { scale },
-        { translateY: parallaxOffset }
-      ],
+      transform: [{ scale }, { translateY: parallaxOffset }],
     };
   });
 
@@ -454,12 +445,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
         logger.info('[AppleTVHero] Fetching trailer for:', currentItem.name, year, tmdbId);
 
-        const url = await TrailerService.getTrailerUrl(
-          currentItem.name,
-          year,
-          tmdbId,
-          contentType
-        );
+        const url = await TrailerService.getTrailerUrl(currentItem.name, year, tmdbId, contentType);
 
         if (!alive) return;
 
@@ -549,89 +535,110 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
   }, [watchProgress, getProgressPlayButtonText, currentItem]);
 
   // Function to check item status
-  const checkItemStatus = useCallback(async (itemId: string) => {
-    try {
-      // Check if item is in library
-      const libraryStatus = checkIsInLibrary(itemId);
-      setInLibrary(libraryStatus);
+  const checkItemStatus = useCallback(
+    async (itemId: string) => {
+      try {
+        // Check if item is in library
+        const libraryStatus = checkIsInLibrary(itemId);
+        setInLibrary(libraryStatus);
 
-      // Check Trakt watchlist status if authenticated
-      if (isTraktAuthenticated && currentItem?.imdb_id) {
-        const traktType = currentItem.type === 'series' ? 'show' : 'movie';
-        const watchlistStatus = checkTraktWatchlist(currentItem.imdb_id, traktType);
-        setIsInWatchlist(watchlistStatus);
-      } else {
-        setIsInWatchlist(false);
+        // Check Trakt watchlist status if authenticated
+        if (isTraktAuthenticated && currentItem?.imdb_id) {
+          const traktType = currentItem.type === 'series' ? 'show' : 'movie';
+          const watchlistStatus = checkTraktWatchlist(currentItem.imdb_id, traktType);
+          setIsInWatchlist(watchlistStatus);
+        } else {
+          setIsInWatchlist(false);
+        }
+      } catch (error) {
+        logger.error('[AppleTVHero] Error checking item status:', error);
       }
-    } catch (error) {
-      logger.error('[AppleTVHero] Error checking item status:', error);
-    }
-  }, [checkIsInLibrary, isTraktAuthenticated, currentItem, checkTraktWatchlist]);
+    },
+    [checkIsInLibrary, isTraktAuthenticated, currentItem, checkTraktWatchlist]
+  );
 
   // Update the handleSaveAction function:
-  const handleSaveAction = useCallback(async (e?: any) => {
-    triggerMedium();
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-
-    if (!currentItem) return;
-
-    const wasInLibrary = inLibrary;
-    const wasInWatchlist = isInWatchlist;
-
-    // Update local state immediately for responsiveness
-    setInLibrary(!wasInLibrary);
-
-    try {
-      // Toggle library using the useLibrary hook
-      const success = await toggleLibrary(currentItem);
-
-      if (success) {
-        logger.info('[AppleTVHero] Successfully toggled library:', currentItem.name);
-      } else {
-        logger.warn('[AppleTVHero] Library toggle returned false');
+  const handleSaveAction = useCallback(
+    async (e?: any) => {
+      triggerMedium();
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
       }
 
-      // If authenticated with Trakt, also toggle Trakt watchlist
-      if (isTraktAuthenticated && currentItem?.imdb_id) {
-        setIsInWatchlist(!wasInWatchlist);
+      if (!currentItem) return;
 
-        const traktType = currentItem.type === 'series' ? 'show' : 'movie';
-        const traktAction = wasInWatchlist ? removeFromWatchlist : addToWatchlist;
+      const wasInLibrary = inLibrary;
+      const wasInWatchlist = isInWatchlist;
 
-        try {
-          const success = await traktAction([{
-            type: traktType,
-            ids: { imdb: currentItem.imdb_id }
-          }]);
+      // Update local state immediately for responsiveness
+      setInLibrary(!wasInLibrary);
 
-          if (success) {
-            const toastFunc = wasInWatchlist ? showTraktRemoved : showTraktSaved;
-            toastFunc();
-            logger.info(`[AppleTVHero] Trakt watchlist ${wasInWatchlist ? 'remove' : 'add'} successful`);
-          } else {
-            setIsInWatchlist(wasInWatchlist); // Rollback
-            logger.warn('[AppleTVHero] Trakt watchlist operation failed');
-          }
-        } catch (error) {
-          setIsInWatchlist(wasInWatchlist); // Rollback
-          logger.error('[AppleTVHero] Trakt watchlist error:', error);
+      try {
+        // Toggle library using the useLibrary hook
+        const success = await toggleLibrary(currentItem);
+
+        if (success) {
+          logger.info('[AppleTVHero] Successfully toggled library:', currentItem.name);
+        } else {
+          logger.warn('[AppleTVHero] Library toggle returned false');
         }
-      } else if (isTraktAuthenticated && !currentItem?.imdb_id) {
-        logger.warn('[AppleTVHero] Cannot toggle Trakt watchlist: missing IMDb ID');
-      }
 
-    } catch (error) {
-      logger.error('[AppleTVHero] Error toggling library:', error);
-      // Revert state on error
-      setInLibrary(wasInLibrary);
-      if (isTraktAuthenticated) {
-        setIsInWatchlist(wasInWatchlist);
+        // If authenticated with Trakt, also toggle Trakt watchlist
+        if (isTraktAuthenticated && currentItem?.imdb_id) {
+          setIsInWatchlist(!wasInWatchlist);
+
+          const traktType = currentItem.type === 'series' ? 'show' : 'movie';
+          const traktAction = wasInWatchlist ? removeFromWatchlist : addToWatchlist;
+
+          try {
+            const success = await traktAction([
+              {
+                type: traktType,
+                ids: { imdb: currentItem.imdb_id },
+              },
+            ]);
+
+            if (success) {
+              const toastFunc = wasInWatchlist ? showTraktRemoved : showTraktSaved;
+              toastFunc();
+              logger.info(
+                `[AppleTVHero] Trakt watchlist ${wasInWatchlist ? 'remove' : 'add'} successful`
+              );
+            } else {
+              setIsInWatchlist(wasInWatchlist); // Rollback
+              logger.warn('[AppleTVHero] Trakt watchlist operation failed');
+            }
+          } catch (error) {
+            setIsInWatchlist(wasInWatchlist); // Rollback
+            logger.error('[AppleTVHero] Trakt watchlist error:', error);
+          }
+        } else if (isTraktAuthenticated && !currentItem?.imdb_id) {
+          logger.warn('[AppleTVHero] Cannot toggle Trakt watchlist: missing IMDb ID');
+        }
+      } catch (error) {
+        logger.error('[AppleTVHero] Error toggling library:', error);
+        // Revert state on error
+        setInLibrary(wasInLibrary);
+        if (isTraktAuthenticated) {
+          setIsInWatchlist(wasInWatchlist);
+        }
       }
-    }
-  }, [currentItem, inLibrary, isInWatchlist, isTraktAuthenticated, toggleLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved, addToWatchlist, removeFromWatchlist]);
+    },
+    [
+      currentItem,
+      inLibrary,
+      isInWatchlist,
+      isTraktAuthenticated,
+      toggleLibrary,
+      showSaved,
+      showTraktSaved,
+      showRemoved,
+      showTraktRemoved,
+      addToWatchlist,
+      removeFromWatchlist,
+    ]
+  );
 
   // Play button handler - navigates to Streams screen with progress data if available
   const handlePlayAction = useCallback(async () => {
@@ -642,24 +649,30 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
     // Stop any playing trailer
     try {
       setTrailerPlaying(false);
-    } catch { }
+    } catch {}
 
     // Check if we should resume based on watch progress
-    const shouldResume = watchProgress &&
+    const shouldResume =
+      watchProgress &&
       watchProgress.currentTime > 0 &&
-      (watchProgress.currentTime / watchProgress.duration) < 0.85;
+      watchProgress.currentTime / watchProgress.duration < 0.85;
 
     logger.info('[AppleTVHero] Should resume:', shouldResume, watchProgress);
 
     try {
       // Check if we have a cached stream for this content
-      const episodeId = currentItem.type === 'series' && watchProgress?.episodeId
-        ? watchProgress.episodeId
-        : undefined;
+      const episodeId =
+        currentItem.type === 'series' && watchProgress?.episodeId
+          ? watchProgress.episodeId
+          : undefined;
 
       logger.info('[AppleTVHero] Looking for cached stream with episodeId:', episodeId);
 
-      const cachedStream = await streamCacheService.getCachedStream(currentItem.id, currentItem.type, episodeId);
+      const cachedStream = await streamCacheService.getCachedStream(
+        currentItem.id,
+        currentItem.type,
+        episodeId
+      );
 
       if (cachedStream && cachedStream.stream?.url) {
         // We have a valid cached stream, navigate directly to player
@@ -669,36 +682,46 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         const playerRoute = Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid';
 
         // Navigate directly to player with cached stream data AND RESUME DATA
-        navigation.navigate(playerRoute as any, {
-          uri: cachedStream.stream.url,
-          title: cachedStream.metadata?.name || currentItem.name,
-          episodeTitle: cachedStream.episodeTitle,
-          season: cachedStream.season,
-          episode: cachedStream.episode,
-          quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
-          year: cachedStream.metadata?.year || currentItem.year,
-          streamProvider: cachedStream.stream.addonId || cachedStream.stream.addonName || cachedStream.stream.name,
-          streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
-          headers: cachedStream.stream.headers || undefined,
-          forceVlc: false,
-          id: currentItem.id,
-          type: currentItem.type,
-          episodeId: episodeId,
-          imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || currentItem.imdb_id,
-          backdrop: cachedStream.metadata?.backdrop || currentItem.banner,
-          videoType: undefined, // Let player auto-detect
-          // ADD RESUME DATA if we should resume
-          ...(shouldResume && watchProgress && {
-            resumeTime: watchProgress.currentTime,
-            duration: watchProgress.duration
-          })
-        } as any);
+        navigation.navigate(
+          playerRoute as any,
+          {
+            uri: cachedStream.stream.url,
+            title: cachedStream.metadata?.name || currentItem.name,
+            episodeTitle: cachedStream.episodeTitle,
+            season: cachedStream.season,
+            episode: cachedStream.episode,
+            quality: (cachedStream.stream.title?.match(/(\d+)p/) || [])[1] || undefined,
+            year: cachedStream.metadata?.year || currentItem.year,
+            streamProvider:
+              cachedStream.stream.addonId ||
+              cachedStream.stream.addonName ||
+              cachedStream.stream.name,
+            streamName: cachedStream.stream.name || cachedStream.stream.title || 'Unnamed Stream',
+            headers: cachedStream.stream.headers || undefined,
+            forceVlc: false,
+            id: currentItem.id,
+            type: currentItem.type,
+            episodeId,
+            imdbId: cachedStream.imdbId || cachedStream.metadata?.imdbId || currentItem.imdb_id,
+            backdrop: cachedStream.metadata?.backdrop || currentItem.banner,
+            videoType: undefined, // Let player auto-detect
+            // ADD RESUME DATA if we should resume
+            ...(shouldResume &&
+              watchProgress && {
+                resumeTime: watchProgress.currentTime,
+                duration: watchProgress.duration,
+              }),
+          } as any
+        );
 
         return;
       }
 
       // No cached stream, navigate to Streams screen with resume data
-      logger.info('[AppleTVHero] No cached stream, navigating to StreamsScreen for:', currentItem.name);
+      logger.info(
+        '[AppleTVHero] No cached stream, navigating to StreamsScreen for:',
+        currentItem.name
+      );
 
       const navigationParams: any = {
         id: currentItem.id,
@@ -708,8 +731,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           poster: currentItem.poster,
           banner: currentItem.banner,
           releaseInfo: currentItem.releaseInfo,
-          genres: currentItem.genres
-        }
+          genres: currentItem.genres,
+        },
       };
 
       // Add resume data if we have progress that's not near completion
@@ -717,11 +740,14 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         navigationParams.resumeTime = watchProgress.currentTime;
         navigationParams.duration = watchProgress.duration;
         navigationParams.episodeId = watchProgress.episodeId;
-        logger.info('[AppleTVHero] Passing resume data to Streams:', watchProgress.currentTime, watchProgress.duration);
+        logger.info(
+          '[AppleTVHero] Passing resume data to Streams:',
+          watchProgress.currentTime,
+          watchProgress.duration
+        );
       }
 
       navigation.navigate('Streams', navigationParams);
-
     } catch (error) {
       logger.error('[AppleTVHero] Error handling play action:', error);
       // Fallback to StreamsScreen on any error
@@ -733,8 +759,8 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           poster: currentItem.poster,
           banner: currentItem.banner,
           releaseInfo: currentItem.releaseInfo,
-          genres: currentItem.genres
-        }
+          genres: currentItem.genres,
+        },
       });
     }
   }, [currentItem, navigation, setTrailerPlaying, watchProgress]);
@@ -791,7 +817,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             duration: 500,
             easing: Easing.out(Easing.cubic),
           },
-          (finished) => {
+          finished => {
             if (finished) {
               runOnJS(setCurrentIndex)(nextIdx);
             }
@@ -842,12 +868,12 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   // Callback for navigating to previous item
   const goToPrevious = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    setCurrentIndex(prev => (prev - 1 + items.length) % items.length);
   }, [items.length]);
 
   // Callback for navigating to next item
   const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
+    setCurrentIndex(prev => (prev + 1) % items.length);
   }, [items.length]);
 
   // Callback for setting next preview index
@@ -875,7 +901,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           // Immediately stop trailer playback when drag starts
           runOnJS(hideTrailerOnDrag)();
         })
-        .onUpdate((event) => {
+        .onUpdate(event => {
           const translationX = event.translationX;
           // Use larger width multiplier for smoother visual feedback on small swipes
           const progress = Math.abs(translationX) / (width * 1.2);
@@ -901,7 +927,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             runOnJS(setPreviewIndex)(nextIdx);
           }
         })
-        .onEnd((event) => {
+        .onEnd(event => {
           const velocity = event.velocityX;
           const translationX = event.translationX;
           const swipeThreshold = width * 0.16; // 16% threshold for swipe detection
@@ -914,7 +940,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                 duration: 300,
                 easing: Easing.out(Easing.cubic),
               },
-              (finished) => {
+              finished => {
                 if (finished) {
                   // Re-enable parallax after navigation completes
                   isDragging.value = withTiming(0, { duration: 200 });
@@ -938,7 +964,15 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
             isDragging.value = withTiming(0, { duration: 200 });
           }
         }),
-    [goToPrevious, goToNext, updateInteractionTime, setPreviewIndex, hideTrailerOnDrag, currentIndex, items.length]
+    [
+      goToPrevious,
+      goToNext,
+      updateInteractionTime,
+      setPreviewIndex,
+      hideTrailerOnDrag,
+      currentIndex,
+      items.length,
+    ]
   );
 
   // Animated styles for next image only - smooth crossfade + slide during drag
@@ -962,7 +996,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         -slideDistance * 0.6 * dragDirection.value,
         -slideDistance * 0.35 * dragDirection.value,
         -slideDistance * 0.12 * dragDirection.value,
-        0
+        0,
       ],
       Extrapolation.CLAMP
     );
@@ -1022,7 +1056,14 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           <MaterialIcons name="theaters" size={48} color="rgba(255,255,255,0.5)" />
           <Text style={styles.noContentText}>No featured content available</Text>
           {onRetry && (
-            <TouchableOpacity style={styles.retryButton} onPress={() => { triggerLight(); onRetry(); }} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                triggerLight();
+                onRetry();
+              }}
+              activeOpacity={0.7}
+            >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           )}
@@ -1033,13 +1074,17 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
   const bannerUrl = currentItem.banner || currentItem.poster;
   const nextItem = items[nextIndex];
-  const nextBannerUrl = nextItem ? (nextItem.banner || nextItem.poster) : bannerUrl;
+  const nextBannerUrl = nextItem ? nextItem.banner || nextItem.poster : bannerUrl;
 
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View
         entering={initialLoadComplete ? undefined : FadeIn.duration(600).delay(150)}
-        style={[styles.container, heroContainerStyle, { height: HERO_HEIGHT, marginTop: -insets.top }]}
+        style={[
+          styles.container,
+          heroContainerStyle,
+          { height: HERO_HEIGHT, marginTop: -insets.top },
+        ]}
       >
         {/* Background Images with Crossfade */}
         <View style={styles.backgroundContainer}>
@@ -1053,13 +1098,15 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               }}
               style={styles.backgroundImage}
               resizeMode={FastImage.resizeMode.cover}
-              onLoad={() => setBannerLoaded((prev) => ({ ...prev, [currentIndex]: true }))}
+              onLoad={() => setBannerLoaded(prev => ({ ...prev, [currentIndex]: true }))}
             />
           </Animated.View>
 
           {/* Next/Preview Image - Animated overlay during drag */}
           {nextIndex !== currentIndex && (
-            <Animated.View style={[styles.imageWrapperAbsolute, nextImageStyle, backgroundParallaxStyle]}>
+            <Animated.View
+              style={[styles.imageWrapperAbsolute, nextImageStyle, backgroundParallaxStyle]}
+            >
               <FastImage
                 source={{
                   uri: nextBannerUrl,
@@ -1068,70 +1115,78 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                 }}
                 style={styles.backgroundImage}
                 resizeMode={FastImage.resizeMode.cover}
-                onLoad={() => setBannerLoaded((prev) => ({ ...prev, [nextIndex]: true }))}
+                onLoad={() => setBannerLoaded(prev => ({ ...prev, [nextIndex]: true }))}
               />
             </Animated.View>
           )}
 
           {/* Hidden preload trailer player */}
-          {settings?.showTrailers && trailerUrl && !trailerLoading && !trailerError && !trailerPreloaded && (
-            <View style={[StyleSheet.absoluteFillObject, { opacity: 0, pointerEvents: 'none' }]}>
-              <TrailerPlayer
-                key={`preload-${trailerUrl}`}
-                trailerUrl={trailerUrl}
-                autoPlay={false}
-                muted={true}
-                style={StyleSheet.absoluteFillObject}
-                hideLoadingSpinner={true}
-                onLoad={handleTrailerPreloaded}
-                onError={handleTrailerError}
-                contentType={currentItem.type as 'movie' | 'series'}
-                paused={true}
-              />
-            </View>
-          )}
-
-          {/* Visible trailer player - 60% height with 5% zoom and smooth fade */}
-          {settings?.showTrailers && trailerUrl && !trailerLoading && !trailerError && trailerPreloaded && (
-            <Animated.View style={[trailerContainerStyle, trailerParallaxStyle]}>
-              <Animated.View style={trailerVideoStyle}>
+          {settings?.showTrailers &&
+            trailerUrl &&
+            !trailerLoading &&
+            !trailerError &&
+            !trailerPreloaded && (
+              <View style={[StyleSheet.absoluteFillObject, { opacity: 0, pointerEvents: 'none' }]}>
                 <TrailerPlayer
-                  key={`visible-${trailerUrl}`}
-                  ref={trailerVideoRef}
+                  key={`preload-${trailerUrl}`}
                   trailerUrl={trailerUrl}
-                  autoPlay={globalTrailerPlaying}
-                  muted={trailerMuted}
+                  autoPlay={false}
+                  muted={true}
                   style={StyleSheet.absoluteFillObject}
                   hideLoadingSpinner={true}
-                  hideControls={true}
-                  onFullscreenToggle={handleFullscreenToggle}
-                  onLoad={handleTrailerReady}
+                  onLoad={handleTrailerPreloaded}
                   onError={handleTrailerError}
-                  onEnd={handleTrailerEnd}
                   contentType={currentItem.type as 'movie' | 'series'}
-                  paused={trailerShouldBePaused}
-                  onPlaybackStatusUpdate={(status) => {
-                    if (status.isLoaded && !trailerReady) {
-                      handleTrailerReady();
-                    }
+                  paused={true}
+                />
+              </View>
+            )}
+
+          {/* Visible trailer player - 60% height with 5% zoom and smooth fade */}
+          {settings?.showTrailers &&
+            trailerUrl &&
+            !trailerLoading &&
+            !trailerError &&
+            trailerPreloaded && (
+              <Animated.View style={[trailerContainerStyle, trailerParallaxStyle]}>
+                <Animated.View style={trailerVideoStyle}>
+                  <TrailerPlayer
+                    key={`visible-${trailerUrl}`}
+                    ref={trailerVideoRef}
+                    trailerUrl={trailerUrl}
+                    autoPlay={globalTrailerPlaying}
+                    muted={trailerMuted}
+                    style={StyleSheet.absoluteFillObject}
+                    hideLoadingSpinner={true}
+                    hideControls={true}
+                    onFullscreenToggle={handleFullscreenToggle}
+                    onLoad={handleTrailerReady}
+                    onError={handleTrailerError}
+                    onEnd={handleTrailerEnd}
+                    contentType={currentItem.type as 'movie' | 'series'}
+                    paused={trailerShouldBePaused}
+                    onPlaybackStatusUpdate={status => {
+                      if (status.isLoaded && !trailerReady) {
+                        handleTrailerReady();
+                      }
+                    }}
+                  />
+                </Animated.View>
+                {/* Gradient blend at bottom of trailer */}
+                <LinearGradient
+                  colors={['transparent', currentTheme.colors.darkBackground]}
+                  locations={[0, 1]}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
                   }}
+                  pointerEvents="none"
                 />
               </Animated.View>
-              {/* Gradient blend at bottom of trailer */}
-              <LinearGradient
-                colors={['transparent', currentTheme.colors.darkBackground]}
-                locations={[0, 1]}
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                }}
-                pointerEvents="none"
-              />
-            </Animated.View>
-          )}
+            )}
 
           {/* Gradient Overlay - darker at bottom for text readability */}
           <LinearGradient
@@ -1149,57 +1204,51 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
 
         {/* Trailer control buttons (unmute and fullscreen) */}
         {settings?.showTrailers && trailerReady && trailerUrl && (
-          <Animated.View style={{
-            position: 'absolute',
-            top: (Platform.OS === 'android' ? 60 : 70) + insets.top,
-            right: 24,
-            zIndex: 1000,
-            opacity: trailerOpacity,
-            flexDirection: 'row',
-            gap: 8,
-          }}>
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: (Platform.OS === 'android' ? 60 : 70) + insets.top,
+              right: 24,
+              zIndex: 1000,
+              opacity: trailerOpacity,
+              flexDirection: 'row',
+              gap: 8,
+            }}
+          >
             {/* Fullscreen button */}
             <TouchableOpacity
-              onPress={(e) => {
+              onPress={e => {
                 e?.stopPropagation();
                 handleFullscreenToggle();
               }}
               activeOpacity={0.7}
-              onPressIn={(e) => e?.stopPropagation()}
-              onPressOut={(e) => e?.stopPropagation()}
+              onPressIn={e => e?.stopPropagation()}
+              onPressOut={e => e?.stopPropagation()}
               style={{
                 padding: 8,
                 backgroundColor: 'rgba(0, 0, 0, 0.6)',
                 borderRadius: 20,
               }}
             >
-              <MaterialIcons
-                name="fullscreen"
-                size={24}
-                color="white"
-              />
+              <MaterialIcons name="fullscreen" size={24} color="white" />
             </TouchableOpacity>
 
             {/* Unmute button */}
             <TouchableOpacity
-              onPress={(e) => {
+              onPress={e => {
                 e?.stopPropagation();
                 handleMuteToggle();
               }}
               activeOpacity={0.7}
-              onPressIn={(e) => e?.stopPropagation()}
-              onPressOut={(e) => e?.stopPropagation()}
+              onPressIn={e => e?.stopPropagation()}
+              onPressOut={e => e?.stopPropagation()}
               style={{
                 padding: 8,
                 backgroundColor: 'rgba(0, 0, 0, 0.6)',
                 borderRadius: 20,
               }}
             >
-              <Entypo
-                name={trailerMuted ? 'sound-mute' : 'sound'}
-                size={24}
-                color="white"
-              />
+              <Entypo name={trailerMuted ? 'sound-mute' : 'sound'} size={24} color="white" />
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -1207,10 +1256,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
         {/* Content Overlay */}
         <View style={[styles.contentContainer, { paddingBottom: 0 + insets.bottom }]}>
           {/* Logo or Title with Fade Animation */}
-          <Animated.View
-            key={`logo-${currentIndex}`}
-            style={logoAnimatedStyle}
-          >
+          <Animated.View key={`logo-${currentIndex}`} style={logoAnimatedStyle}>
             {currentItem.logo && !logoError[currentIndex] ? (
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -1229,20 +1275,20 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
                     styles.logoContainer,
                     logoHeights[currentIndex] && logoHeights[currentIndex] < 80
                       ? { marginBottom: 4 } // Minimal spacing for small logos
-                      : { marginBottom: 8 } // Small spacing for normal logos
+                      : { marginBottom: 8 }, // Small spacing for normal logos
                   ]}
-                  onLayout={(event) => {
+                  onLayout={event => {
                     const { height } = event.nativeEvent.layout;
-                    setLogoHeights((prev) => ({ ...prev, [currentIndex]: height }));
+                    setLogoHeights(prev => ({ ...prev, [currentIndex]: height }));
                   }}
                 >
                   <Image
                     source={{ uri: currentItem.logo }}
                     style={styles.logo}
                     resizeMode="contain"
-                    onLoad={() => setLogoLoaded((prev) => ({ ...prev, [currentIndex]: true }))}
+                    onLoad={() => setLogoLoaded(prev => ({ ...prev, [currentIndex]: true }))}
                     onError={() => {
-                      setLogoError((prev) => ({ ...prev, [currentIndex]: true }));
+                      setLogoError(prev => ({ ...prev, [currentIndex]: true }));
                       logger.warn('[AppleTVHero] Logo load failed:', currentItem.logo);
                     }}
                   />
@@ -1290,12 +1336,12 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
           <View style={styles.buttonsContainer}>
             {/* Play Button */}
             <TouchableOpacity
-              style={[styles.playButton]}
+              style={styles.playButton}
               onPress={handlePlayAction}
               activeOpacity={0.85}
             >
               <MaterialIcons
-                name={playButtonText === 'Resume' ? "replay" : "play-arrow"}
+                name={playButtonText === 'Resume' ? 'replay' : 'play-arrow'}
                 size={24}
                 color="#000"
               />
@@ -1309,7 +1355,7 @@ const AppleTVHero: React.FC<AppleTVHeroProps> = ({
               activeOpacity={0.85}
             >
               <MaterialIcons
-                name={inLibrary ? "bookmark" : "bookmark-outline"}
+                name={inLibrary ? 'bookmark' : 'bookmark-outline'}
                 size={24}
                 color="white"
               />

@@ -11,9 +11,9 @@
  * @module ProfileIsolationVerification
  */
 
+import { logger } from './logger';
 import { mmkvStorage } from '../services/mmkvStorage';
 import { storageService } from '../services/storageService';
-import { logger } from './logger';
 
 const PROFILE_STORAGE_KEY = 'user_profiles';
 
@@ -90,13 +90,19 @@ export async function verifyProfileIsolation(): Promise<IsolationCheckResult> {
         key.includes(`:profile:${activeProfile.id}:`)
       );
 
-      const otherProfileKeys = profileScopedKeys.filter(key =>
-        !key.includes(`:profile:${activeProfile.id}:`)
+      const otherProfileKeys = profileScopedKeys.filter(
+        key => !key.includes(`:profile:${activeProfile.id}:`)
       );
 
       logger.log('[ProfileIsolation] Active profile:', activeProfile.name);
-      logger.log('[ProfileIsolation] Active profile watch progress items:', activeProfileKeys.length);
-      logger.log('[ProfileIsolation] Other profiles watch progress items:', otherProfileKeys.length);
+      logger.log(
+        '[ProfileIsolation] Active profile watch progress items:',
+        activeProfileKeys.length
+      );
+      logger.log(
+        '[ProfileIsolation] Other profiles watch progress items:',
+        otherProfileKeys.length
+      );
     }
 
     return {
@@ -136,16 +142,14 @@ export async function getProfileWatchProgressBreakdown(): Promise<
     const profiles: Profile[] = profilesJson ? JSON.parse(profilesJson) : [];
 
     const allKeys = await mmkvStorage.getAllKeys();
-    const watchProgressKeys = allKeys.filter(key =>
-      key.includes('@watch_progress:') && key.includes(':profile:')
+    const watchProgressKeys = allKeys.filter(
+      key => key.includes('@watch_progress:') && key.includes(':profile:')
     );
 
     for (const profile of profiles) {
       breakdown[profile.name] = [];
 
-      const profileKeys = watchProgressKeys.filter(key =>
-        key.includes(`:profile:${profile.id}:`)
-      );
+      const profileKeys = watchProgressKeys.filter(key => key.includes(`:profile:${profile.id}:`));
 
       for (const key of profileKeys) {
         try {
@@ -160,9 +164,8 @@ export async function getProfileWatchProgressBreakdown(): Promise<
             const type = parts[typeIndex] || 'unknown';
             const contentId = parts[typeIndex + 1] || 'unknown';
 
-            const progressPercent = progress.duration > 0
-              ? (progress.currentTime / progress.duration) * 100
-              : 0;
+            const progressPercent =
+              progress.duration > 0 ? (progress.currentTime / progress.duration) * 100 : 0;
 
             breakdown[profile.name].push({
               contentId,
@@ -211,8 +214,9 @@ export async function verifyContentIsolation(
     }
 
     return {
-      isolated: visibleToProfiles.length <= 1 &&
-                (visibleToProfiles.length === 0 || visibleToProfiles[0] === expectedProfileId),
+      isolated:
+        visibleToProfiles.length <= 1 &&
+        (visibleToProfiles.length === 0 || visibleToProfiles[0] === expectedProfileId),
       visibleToProfiles,
     };
   } catch (error) {

@@ -118,10 +118,7 @@ export const importPlatformModule = async <T>(
  * const BUTTON_SIZE = selectPlatformValue(56, 44);  // TV: 56, Mobile: 44
  * const COLUMNS = selectPlatformValue(6, 3);        // TV: 6 cols, Mobile: 3 cols
  */
-export const selectPlatformValue = <T>(
-  tvValue: T,
-  standardValue: T
-): T => {
+export const selectPlatformValue = <T>(tvValue: T, standardValue: T): T => {
   return isTVPlatform() ? tvValue : standardValue;
 };
 
@@ -164,9 +161,9 @@ export const createPlatformHook = <T extends (...args: any[]) => any>(
   tvHook: T,
   standardHook: T
 ): T => {
-  return (((...args: any[]) => {
+  return ((...args: any[]) => {
     return isTVPlatform() ? tvHook(...args) : standardHook(...args);
-  }) as any) as T;
+  }) as any as T;
 };
 
 /**
@@ -182,10 +179,7 @@ export const createPlatformHook = <T extends (...args: any[]) => any>(
  *   () => setupMobileNavigation()
  * );
  */
-export const executePlatformLogic = (
-  onTV: () => void,
-  onStandard: () => void
-): void => {
+export const executePlatformLogic = (onTV: () => void, onStandard: () => void): void => {
   isTVPlatform() ? onTV() : onStandard();
 };
 
@@ -202,9 +196,7 @@ export const executePlatformLogic = (
  *   return 14;
  * });
  */
-export const mapPlatform = <T>(
-  mapper: (platform: 'tv' | 'standard') => T
-): T => {
+export const mapPlatform = <T>(mapper: (platform: 'tv' | 'standard') => T): T => {
   return mapper(isTVPlatform() ? 'tv' : 'standard');
 };
 
@@ -235,18 +227,13 @@ export const mapPlatform = <T>(
  *   }
  * }, []);
  */
-export const getResolvedPath = (
-  componentName: string,
-  currentFile: string
-): string => {
+export const getResolvedPath = (componentName: string, currentFile: string): string => {
   // Extract the extension from the current file
   const hasTypeScript = currentFile.includes('.tsx') || currentFile.includes('.ts');
   const hasReact = currentFile.includes('.tsx') || currentFile.includes('.jsx');
 
   // Build the expected filename based on platform
-  const extension = hasReact
-    ? (hasTypeScript ? '.tsx' : '.jsx')
-    : (hasTypeScript ? '.ts' : '.js');
+  const extension = hasReact ? (hasTypeScript ? '.tsx' : '.jsx') : hasTypeScript ? '.ts' : '.js';
 
   const platformSuffix = isTVPlatform() ? '.tv' : '';
 

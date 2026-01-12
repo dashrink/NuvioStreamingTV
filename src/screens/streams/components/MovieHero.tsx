@@ -1,6 +1,6 @@
+import FastImage from '@d11/react-native-fast-image';
 import React, { memo } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
-import FastImage from '@d11/react-native-fast-image';
 
 import AnimatedText from '../../../components/AnimatedText';
 
@@ -18,12 +18,21 @@ interface MovieHeroProps {
 }
 
 const MovieHero = memo(
-  ({ metadata, movieLogoError, setMovieLogoError, colors, enableStreamsBackdrop }: MovieHeroProps) => {
+  ({
+    metadata,
+    movieLogoError,
+    setMovieLogoError,
+    colors,
+    enableStreamsBackdrop,
+  }: MovieHeroProps) => {
     const styles = React.useMemo(() => createStyles(colors), [colors]);
 
     return (
       <View
-        style={[styles.container, !enableStreamsBackdrop && { backgroundColor: colors.darkBackground }]}
+        style={[
+          styles.container,
+          !enableStreamsBackdrop && { backgroundColor: colors.darkBackground },
+        ]}
       >
         <View style={styles.content}>
           {metadata.logo && !movieLogoError ? (

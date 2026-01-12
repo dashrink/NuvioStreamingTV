@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getColors } from 'react-native-image-colors';
+
 import type { ImageColorsResult } from 'react-native-image-colors';
 
 interface DominantColorResult {
@@ -16,11 +17,11 @@ const calculateVibrancy = (hex: string): number => {
   const r = parseInt(hex.substr(1, 2), 16);
   const g = parseInt(hex.substr(3, 2), 16);
   const b = parseInt(hex.substr(5, 2), 16);
-  
+
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const saturation = max === 0 ? 0 : (max - min) / max;
-  
+
   return saturation * (max / 255);
 };
 
@@ -29,7 +30,7 @@ const calculateBrightness = (hex: string): number => {
   const r = parseInt(hex.substr(1, 2), 16);
   const g = parseInt(hex.substr(3, 2), 16);
   const b = parseInt(hex.substr(5, 2), 16);
-  
+
   return (r * 299 + g * 587 + b * 114) / 1000;
 };
 
@@ -38,18 +39,18 @@ const darkenColor = (hex: string, factor: number = 0.1): string => {
   const r = parseInt(hex.substr(1, 2), 16);
   const g = parseInt(hex.substr(3, 2), 16);
   const b = parseInt(hex.substr(5, 2), 16);
-  
+
   const newR = Math.floor(r * factor);
   const newG = Math.floor(g * factor);
   const newB = Math.floor(b * factor);
-  
+
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 };
 
 // Enhanced color selection logic
 const selectBestColor = (result: ImageColorsResult): string => {
   let candidates: string[] = [];
-  
+
   if (result.platform === 'android') {
     // Collect all available colors
     candidates = [
@@ -60,15 +61,12 @@ const selectBestColor = (result: ImageColorsResult): string => {
       result.darkMuted,
       result.lightVibrant,
       result.lightMuted,
-      result.average
+      result.average,
     ].filter(Boolean);
   } else if (result.platform === 'ios') {
-    candidates = [
-      result.primary,
-      result.secondary,
-      result.background,
-      result.detail
-    ].filter(Boolean);
+    candidates = [result.primary, result.secondary, result.background, result.detail].filter(
+      Boolean
+    );
   } else if (result.platform === 'web') {
     candidates = [
       result.dominant,
@@ -77,25 +75,25 @@ const selectBestColor = (result: ImageColorsResult): string => {
       result.muted,
       result.darkMuted,
       result.lightVibrant,
-      result.lightMuted
+      result.lightMuted,
     ].filter(Boolean);
   }
-  
+
   if (candidates.length === 0) {
     return '#1a1a1a';
   }
-  
+
   // Score each color based on vibrancy and appropriateness for backgrounds
   const scoredColors = candidates.map(color => {
     const brightness = calculateBrightness(color);
     const vibrancy = calculateVibrancy(color);
-    
+
     // Prefer colors that are:
     // 1. Not too bright (good for backgrounds)
     // 2. Have decent vibrancy (not too gray)
     // 3. Not too dark (still visible)
     let score = 0;
-    
+
     // Brightness scoring (prefer medium-dark colors)
     if (brightness >= 30 && brightness <= 120) {
       score += 3;
@@ -104,7 +102,7 @@ const selectBestColor = (result: ImageColorsResult): string => {
     } else if (brightness >= 5) {
       score += 1;
     }
-    
+
     // Vibrancy scoring (prefer some color over pure gray)
     if (vibrancy >= 0.3) {
       score += 3;
@@ -113,17 +111,17 @@ const selectBestColor = (result: ImageColorsResult): string => {
     } else if (vibrancy >= 0.05) {
       score += 1;
     }
-    
+
     return { color, score, brightness, vibrancy };
   });
-  
+
   // Sort by score (highest first)
   scoredColors.sort((a, b) => b.score - a.score);
-  
+
   // Get the best color
   let bestColor = scoredColors[0].color;
   const bestBrightness = scoredColors[0].brightness;
-  
+
   // Apply more aggressive darkening to make colors darker overall
   if (bestBrightness > 60) {
     bestColor = darkenColor(bestColor, 0.18);
@@ -134,16 +132,16 @@ const selectBestColor = (result: ImageColorsResult): string => {
   } else {
     bestColor = darkenColor(bestColor, 0.7);
   }
-  
+
   return bestColor;
 };
 
 // Preload function to start extraction early
 export const preloadDominantColor = async (imageUri: string | null) => {
   if (!imageUri || colorCache.has(imageUri)) return;
-  
+
   if (__DEV__) console.log('[useDominantColor] Preloading color for URI:', imageUri);
-  
+
   try {
     // Use highest quality for best color accuracy
     const result = await getColors(imageUri, {

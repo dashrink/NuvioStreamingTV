@@ -18,22 +18,13 @@
 
 import React, { memo, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useTheme } from '../../../../contexts/ThemeContext';
-import type { HeroTitleCardProps } from '../types';
 import { LOGO_CONFIG, UI_TIMING } from '../constants';
-import {
-  containerStyles,
-  textStyles,
-  sizes,
-  isTablet,
-  screenWidth,
-} from '../styles';
+import { containerStyles, textStyles, sizes, isTablet, screenWidth } from '../styles';
+
+import type { HeroTitleCardProps } from '../types';
 
 /**
  * Title card component displaying content logo or title with fallback logic.
@@ -64,202 +55,189 @@ import {
  * />
  * ```
  */
-const HeroTitleCard = memo(function HeroTitleCard({
-  metadata,
-  type,
-  tmdbId,
-  logoOpacity,
-  onStableLogoUriChange,
-}: HeroTitleCardProps) {
-  const { currentTheme } = useTheme();
+const HeroTitleCard = memo(
+  ({ metadata, type, tmdbId, logoOpacity, onStableLogoUriChange }: HeroTitleCardProps) => {
+    const { currentTheme } = useTheme();
 
-  // Stable logo state management - prevents flickering between logo and text
-  const [stableLogoUri, setStableLogoUri] = useState<string | null>(
-    metadata?.logo || null
-  );
-  const [logoHasLoadedSuccessfully, setLogoHasLoadedSuccessfully] = useState(false);
+    // Stable logo state management - prevents flickering between logo and text
+    const [stableLogoUri, setStableLogoUri] = useState<string | null>(metadata?.logo || null);
+    const [logoHasLoadedSuccessfully, setLogoHasLoadedSuccessfully] = useState(false);
 
-  // Smooth fade-in for logo when it finishes loading
-  const logoLoadOpacity = useSharedValue(0);
+    // Smooth fade-in for logo when it finishes loading
+    const logoLoadOpacity = useSharedValue(0);
 
-  // Grace delay before showing text fallback to avoid flashing when logo arrives late
-  const [shouldShowTextFallback, setShouldShowTextFallback] = useState<boolean>(
-    !metadata?.logo
-  );
+    // Grace delay before showing text fallback to avoid flashing when logo arrives late
+    const [shouldShowTextFallback, setShouldShowTextFallback] = useState<boolean>(!metadata?.logo);
 
-  // Timer ref for grace period
-  const logoWaitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Timer ref for grace period
+    const logoWaitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Ref to track the last synced logo to break circular dependency with error handling
-  const lastSyncedLogoRef = useRef<string | undefined>(metadata?.logo);
+    // Ref to track the last synced logo to break circular dependency with error handling
+    const lastSyncedLogoRef = useRef<string | undefined>(metadata?.logo);
 
-  // Theme colors for text fallback
-  const textColor = currentTheme.colors.highEmphasis;
+    // Theme colors for text fallback
+    const textColor = currentTheme.colors.highEmphasis;
 
-  /**
-   * Update stable logo URI when metadata logo changes.
-   * Implements grace period logic for text fallback.
-   */
-  useEffect(() => {
-    const currentMetadataLogo = metadata?.logo;
+    /**
+     * Update stable logo URI when metadata logo changes.
+     * Implements grace period logic for text fallback.
+     */
+    useEffect(() => {
+      const currentMetadataLogo = metadata?.logo;
 
-    if (currentMetadataLogo !== lastSyncedLogoRef.current) {
-      lastSyncedLogoRef.current = currentMetadataLogo;
+      if (currentMetadataLogo !== lastSyncedLogoRef.current) {
+        lastSyncedLogoRef.current = currentMetadataLogo;
 
-      // Clear any existing timer
-      if (logoWaitTimerRef.current) {
-        try {
-          clearTimeout(logoWaitTimerRef.current);
-        } catch (_e) {
-          // Ignore cleanup errors
+        // Clear any existing timer
+        if (logoWaitTimerRef.current) {
+          try {
+            clearTimeout(logoWaitTimerRef.current);
+          } catch (_e) {
+            // Ignore cleanup errors
+          }
+          logoWaitTimerRef.current = null;
         }
-        logoWaitTimerRef.current = null;
+
+        if (currentMetadataLogo) {
+          // New logo available - reset states and show it
+          setStableLogoUri(currentMetadataLogo);
+          onStableLogoUriChange?.(currentMetadataLogo);
+          setLogoHasLoadedSuccessfully(false);
+          logoLoadOpacity.value = 0; // Reset fade for new logo
+          setShouldShowTextFallback(false);
+        } else {
+          // No logo - clear and start grace period
+          setStableLogoUri(null);
+          onStableLogoUriChange?.(null);
+          setLogoHasLoadedSuccessfully(false);
+
+          // Start grace period before showing text fallback
+          logoWaitTimerRef.current = setTimeout(() => {
+            setShouldShowTextFallback(true);
+          }, LOGO_CONFIG.TEXT_FALLBACK_DELAY);
+        }
       }
 
-      if (currentMetadataLogo) {
-        // New logo available - reset states and show it
-        setStableLogoUri(currentMetadataLogo);
-        onStableLogoUriChange?.(currentMetadataLogo);
-        setLogoHasLoadedSuccessfully(false);
-        logoLoadOpacity.value = 0; // Reset fade for new logo
-        setShouldShowTextFallback(false);
-      } else {
-        // No logo - clear and start grace period
-        setStableLogoUri(null);
-        onStableLogoUriChange?.(null);
-        setLogoHasLoadedSuccessfully(false);
+      // Cleanup on unmount
+      return () => {
+        if (logoWaitTimerRef.current) {
+          try {
+            clearTimeout(logoWaitTimerRef.current);
+          } catch (_e) {
+            // Ignore cleanup errors
+          }
+          logoWaitTimerRef.current = null;
+        }
+      };
+    }, [metadata?.logo, onStableLogoUriChange, logoLoadOpacity]);
 
-        // Start grace period before showing text fallback
-        logoWaitTimerRef.current = setTimeout(() => {
+    /**
+     * Handle logo load success - once loaded successfully, keep it stable
+     */
+    const handleLogoLoad = useCallback(() => {
+      setLogoHasLoadedSuccessfully(true);
+      setShouldShowTextFallback(false);
+      logoLoadOpacity.value = withTiming(1, { duration: UI_TIMING.LOGO_LOAD });
+    }, [logoLoadOpacity]);
+
+    /**
+     * Handle logo load error - implements three-level fallback:
+     * TMDB logo → addon logo → text
+     */
+    const handleLogoError = useCallback(() => {
+      if (!logoHasLoadedSuccessfully) {
+        // Try addon logo as fallback if TMDB logo fails
+        const addonLogo = (metadata as any)?.addonLogo;
+
+        if (addonLogo && stableLogoUri !== addonLogo) {
+          // TMDB logo failed, try addon logo
+          setStableLogoUri(addonLogo);
+          setLogoHasLoadedSuccessfully(false);
+          logoLoadOpacity.value = 0; // Reset fade for new logo attempt
+        } else {
+          // No addon logo available or addon logo also failed - show text
+          setStableLogoUri(null);
           setShouldShowTextFallback(true);
-        }, LOGO_CONFIG.TEXT_FALLBACK_DELAY);
-      }
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (logoWaitTimerRef.current) {
-        try {
-          clearTimeout(logoWaitTimerRef.current);
-        } catch (_e) {
-          // Ignore cleanup errors
         }
-        logoWaitTimerRef.current = null;
       }
-    };
-  }, [metadata?.logo, onStableLogoUriChange, logoLoadOpacity]);
+      // If logo loaded successfully before, keep showing it even if it fails later
+    }, [logoHasLoadedSuccessfully, stableLogoUri, metadata, logoLoadOpacity]);
 
-  /**
-   * Handle logo load success - once loaded successfully, keep it stable
-   */
-  const handleLogoLoad = useCallback(() => {
-    setLogoHasLoadedSuccessfully(true);
-    setShouldShowTextFallback(false);
-    logoLoadOpacity.value = withTiming(1, { duration: UI_TIMING.LOGO_LOAD });
-  }, [logoLoadOpacity]);
+    /**
+     * Logo animated style - combines parent opacity with scale animation
+     */
+    const logoAnimatedStyle = useAnimatedStyle(() => {
+      return {
+        opacity: logoOpacity.value,
+        transform: [
+          {
+            scale: withTiming(1, { duration: UI_TIMING.LOGO_SCALE }),
+          },
+        ],
+      };
+    }, []);
 
-  /**
-   * Handle logo load error - implements three-level fallback:
-   * TMDB logo → addon logo → text
-   */
-  const handleLogoError = useCallback(() => {
-    if (!logoHasLoadedSuccessfully) {
-      // Try addon logo as fallback if TMDB logo fails
-      const addonLogo = (metadata as any)?.addonLogo;
+    /**
+     * Logo fade style - applies only to the image to avoid affecting layout
+     */
+    const logoFadeStyle = useAnimatedStyle(
+      () => ({
+        opacity: logoLoadOpacity.value,
+      }),
+      []
+    );
 
-      if (addonLogo && stableLogoUri !== addonLogo) {
-        // TMDB logo failed, try addon logo
-        setStableLogoUri(addonLogo);
-        setLogoHasLoadedSuccessfully(false);
-        logoLoadOpacity.value = 0; // Reset fade for new logo attempt
+    /**
+     * Memoized title text to prevent unnecessary re-renders
+     */
+    const titleText = useMemo(() => metadata?.name || '', [metadata?.name]);
+
+    /**
+     * Determine what to render based on logo state
+     */
+    const renderContent = () => {
+      if (metadata?.logo) {
+        // Logo is available in metadata
+        return (
+          <Animated.Image
+            source={{ uri: stableLogoUri || (metadata?.logo as string) }}
+            style={[isTablet ? styles.tabletTitleLogo : styles.titleLogo, logoFadeStyle]}
+            resizeMode="contain"
+            onLoad={handleLogoLoad}
+            onError={handleLogoError}
+            accessibilityLabel={`${titleText} logo`}
+          />
+        );
+      } else if (shouldShowTextFallback) {
+        // No logo and grace period elapsed - show text
+        return (
+          <Text
+            style={[isTablet ? styles.tabletHeroTitle : styles.heroTitle, { color: textColor }]}
+            numberOfLines={2}
+            adjustsFontSizeToFit
+            accessibilityRole="header"
+          >
+            {titleText}
+          </Text>
+        );
       } else {
-        // No addon logo available or addon logo also failed - show text
-        setStableLogoUri(null);
-        setShouldShowTextFallback(true);
+        // Reserve space to prevent layout jump while waiting briefly for logo
+        return (
+          <View
+            style={isTablet ? styles.tabletTitleLogo : styles.titleLogo}
+            accessibilityElementsHidden
+          />
+        );
       }
-    }
-    // If logo loaded successfully before, keep showing it even if it fails later
-  }, [logoHasLoadedSuccessfully, stableLogoUri, metadata, logoLoadOpacity]);
-
-  /**
-   * Logo animated style - combines parent opacity with scale animation
-   */
-  const logoAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: logoOpacity.value,
-      transform: [
-        {
-          scale: withTiming(1, { duration: UI_TIMING.LOGO_SCALE }),
-        },
-      ],
     };
-  }, []);
 
-  /**
-   * Logo fade style - applies only to the image to avoid affecting layout
-   */
-  const logoFadeStyle = useAnimatedStyle(() => ({
-    opacity: logoLoadOpacity.value,
-  }), []);
-
-  /**
-   * Memoized title text to prevent unnecessary re-renders
-   */
-  const titleText = useMemo(() => metadata?.name || '', [metadata?.name]);
-
-  /**
-   * Determine what to render based on logo state
-   */
-  const renderContent = () => {
-    if (metadata?.logo) {
-      // Logo is available in metadata
-      return (
-        <Animated.Image
-          source={{ uri: stableLogoUri || (metadata?.logo as string) }}
-          style={[
-            isTablet ? styles.tabletTitleLogo : styles.titleLogo,
-            logoFadeStyle,
-          ]}
-          resizeMode="contain"
-          onLoad={handleLogoLoad}
-          onError={handleLogoError}
-          accessibilityLabel={`${titleText} logo`}
-        />
-      );
-    } else if (shouldShowTextFallback) {
-      // No logo and grace period elapsed - show text
-      return (
-        <Text
-          style={[
-            isTablet ? styles.tabletHeroTitle : styles.heroTitle,
-            { color: textColor },
-          ]}
-          numberOfLines={2}
-          adjustsFontSizeToFit
-          accessibilityRole="header"
-        >
-          {titleText}
-        </Text>
-      );
-    } else {
-      // Reserve space to prevent layout jump while waiting briefly for logo
-      return (
-        <View
-          style={isTablet ? styles.tabletTitleLogo : styles.titleLogo}
-          accessibilityElementsHidden
-        />
-      );
-    }
-  };
-
-  return (
-    <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
-      <Animated.View style={styles.titleLogoContainer}>
-        {renderContent()}
+    return (
+      <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
+        <Animated.View style={styles.titleLogoContainer}>{renderContent()}</Animated.View>
       </Animated.View>
-    </Animated.View>
-  );
-});
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   /**

@@ -1,12 +1,6 @@
 import React, { useState, useCallback, forwardRef } from 'react';
-import {
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-  View,
-  ViewStyle,
-  StyleProp,
-} from 'react-native';
+import { TextInput, TextInputProps, StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface TVTextInputProps extends TextInputProps {
@@ -15,56 +9,58 @@ interface TVTextInputProps extends TextInputProps {
 
 /**
  * A TextInput wrapper optimized for TV platforms.
- * 
+ *
  * Features:
  * - Proper focus handling on TV
  * - Visual focus indicator border on TV
  */
-const TVTextInput = forwardRef<TextInput, TVTextInputProps>(({
-  containerStyle,
-  style,
-  onFocus,
-  onBlur,
-  ...props
-}, ref) => {
-  const { currentTheme } = useTheme();
-  const [isFocused, setIsFocused] = useState(false);
+const TVTextInput = forwardRef<TextInput, TVTextInputProps>(
+  ({ containerStyle, style, onFocus, onBlur, ...props }, ref) => {
+    const { currentTheme } = useTheme();
+    const [isFocused, setIsFocused] = useState(false);
 
-  const handleFocus = useCallback((e: any) => {
-    setIsFocused(true);
-    onFocus?.(e);
-  }, [onFocus]);
+    const handleFocus = useCallback(
+      (e: any) => {
+        setIsFocused(true);
+        onFocus?.(e);
+      },
+      [onFocus]
+    );
 
-  const handleBlur = useCallback((e: any) => {
-    setIsFocused(false);
-    onBlur?.(e);
-  }, [onBlur]);
+    const handleBlur = useCallback(
+      (e: any) => {
+        setIsFocused(false);
+        onBlur?.(e);
+      },
+      [onBlur]
+    );
 
-  // On TV, wrap in a View to provide focus border
-  return (
-    <View
-      style={[
-        styles.container,
-        containerStyle,
-        isFocused && {
-          borderColor: currentTheme?.colors?.primary || '#2d9cdb',
-          borderWidth: 2,
-        },
-      ]}
-    >
-      <TextInput
-        ref={ref}
-        style={[styles.input, style]}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        // TV-specific props
-        autoCorrect={false}
-        autoCapitalize="none"
-        {...props}
-      />
-    </View>
-  );
-});
+    // On TV, wrap in a View to provide focus border
+    return (
+      <View
+        style={[
+          styles.container,
+          containerStyle,
+          isFocused && {
+            borderColor: currentTheme?.colors?.primary || '#2d9cdb',
+            borderWidth: 2,
+          },
+        ]}
+      >
+        <TextInput
+          ref={ref}
+          style={[styles.input, style]}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          // TV-specific props
+          autoCorrect={false}
+          autoCapitalize="none"
+          {...props}
+        />
+      </View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

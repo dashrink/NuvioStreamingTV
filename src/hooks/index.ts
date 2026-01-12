@@ -56,7 +56,13 @@ export type {
   LoadingStateFocusConfig,
 } from './useSpatialNavigation';
 
-export { useLongPress, useLongPressWithTVEvents, LONG_PRESS_THRESHOLD_MS, supportsNativeLongPress, requiresTimerBasedLongPress } from './useLongPress';
+export {
+  useLongPress,
+  useLongPressWithTVEvents,
+  LONG_PRESS_THRESHOLD_MS,
+  supportsNativeLongPress,
+  requiresTimerBasedLongPress,
+} from './useLongPress';
 export type {
   UseLongPressOptions,
   UseLongPressReturn,
@@ -71,17 +77,20 @@ export type {
   UseTVFocusRestorationReturn,
 } from './useTVFocusRestoration';
 
-export { useTVBackHandler, useTVBackHandlerSimple, useTVBackWithFocusRestore, useTVNavigationBackHandler } from './useTVBackHandler';
-export type {
-  UseTVBackHandlerOptions,
-  UseTVBackHandlerReturn,
+export {
+  useTVBackHandler,
+  useTVBackHandlerSimple,
+  useTVBackWithFocusRestore,
+  useTVNavigationBackHandler,
 } from './useTVBackHandler';
+export type { UseTVBackHandlerOptions, UseTVBackHandlerReturn } from './useTVBackHandler';
 
-export { useTVPlayerControls, isTV as isTVPlatform, createDefaultVolumeHandler } from './useTVPlayerControls';
-export type {
-  TVPlayerControlsConfig,
-  TVPlayerControlsResult,
+export {
+  useTVPlayerControls,
+  isTV as isTVPlatform,
+  createDefaultVolumeHandler,
 } from './useTVPlayerControls';
+export type { TVPlayerControlsConfig, TVPlayerControlsResult } from './useTVPlayerControls';
 
 // Device Performance Detection
 export {

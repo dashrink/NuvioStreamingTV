@@ -2,6 +2,7 @@
  * PinEntryModal - Modal for entering PIN to unlock profiles
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -13,7 +14,7 @@ import {
   Vibration,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { PIN_CONFIG } from '../../types/profile';
 

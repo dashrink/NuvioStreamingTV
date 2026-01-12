@@ -11,8 +11,8 @@
  * @module PINProtectionVerification
  */
 
-import { mmkvStorage } from '../services/mmkvStorage';
 import { logger } from './logger';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 const PROFILE_STORAGE_KEY = 'user_profiles';
 const PIN_STORAGE_PREFIX = 'profile_pin_hash_';
@@ -60,7 +60,10 @@ export async function checkProfileHasPIN(profileId: string): Promise<boolean> {
 /**
  * Verify a PIN for a profile
  */
-export async function verifyPIN(profileId: string, pin: string): Promise<{ valid: boolean; error?: string }> {
+export async function verifyPIN(
+  profileId: string,
+  pin: string
+): Promise<{ valid: boolean; error?: string }> {
   const pinKey = `${PIN_STORAGE_PREFIX}${profileId}`;
   const storedHash = await mmkvStorage.getItem(pinKey);
 
@@ -171,7 +174,10 @@ export async function verifyPINHashSecurity(profileId: string): Promise<{
 /**
  * Enable PIN for a profile
  */
-export async function enablePIN(profileId: string, pin: string): Promise<{ success: boolean; error?: string }> {
+export async function enablePIN(
+  profileId: string,
+  pin: string
+): Promise<{ success: boolean; error?: string }> {
   if (pin.length !== 4) {
     return { success: false, error: 'PIN must be 4 digits' };
   }

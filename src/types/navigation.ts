@@ -23,4 +23,4 @@ export interface RootStackParamList extends ParamListBase {
     stream?: string;
   };
   [key: string]: undefined | object;
-} 
+}

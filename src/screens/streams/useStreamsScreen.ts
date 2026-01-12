@@ -1,33 +1,8 @@
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Dimensions, Platform, Linking } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { RouteProp } from '@react-navigation/native';
 
-import { RootStackParamList, RootStackNavigationProp } from '../../navigation/AppNavigator';
-import { useMetadata } from '../../hooks/useMetadata';
-import { useMetadataAssets } from '../../hooks/useMetadataAssets';
-import { useSettings } from '../../hooks/useSettings';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useTrailer } from '../../contexts/TrailerContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useDominantColor } from '../../hooks/useDominantColor';
-import { Stream } from '../../types/metadata';
-import { stremioService } from '../../services/stremioService';
-import { localScraperService } from '../../services/pluginService';
-import { VideoPlayerService } from '../../services/videoPlayerService';
-import { streamCacheService } from '../../services/streamCacheService';
-import { tmdbService } from '../../services/tmdbService';
-import { logger } from '../../utils/logger';
-import { TABLET_BREAKPOINT } from './constants';
-import {
-  filterStreamsByQuality,
-  filterStreamsByLanguage,
-  getQualityNumeric,
-  detectMkvViaHead,
-  inferVideoTypeFromUrl,
-  filterHeadersForVidrock,
-  sortStreamsByQuality,
-} from './utils';
+import { TABLET_BREAKPOINT, MKV_HEAD_TIMEOUT_MS } from './constants';
 import {
   GroupedStreams,
   StreamSection,
@@ -38,7 +13,30 @@ import {
   TMDBEpisodeOverride,
   AlertAction,
 } from './types';
-import { MKV_HEAD_TIMEOUT_MS } from './constants';
+import {
+  filterStreamsByQuality,
+  filterStreamsByLanguage,
+  getQualityNumeric,
+  detectMkvViaHead,
+  inferVideoTypeFromUrl,
+  filterHeadersForVidrock,
+  sortStreamsByQuality,
+} from './utils';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useTrailer } from '../../contexts/TrailerContext';
+import { useDominantColor } from '../../hooks/useDominantColor';
+import { useMetadata } from '../../hooks/useMetadata';
+import { useMetadataAssets } from '../../hooks/useMetadataAssets';
+import { useSettings } from '../../hooks/useSettings';
+import { RootStackParamList, RootStackNavigationProp } from '../../navigation/AppNavigator';
+import { localScraperService } from '../../services/pluginService';
+import { streamCacheService } from '../../services/streamCacheService';
+import { stremioService } from '../../services/stremioService';
+import { tmdbService } from '../../services/tmdbService';
+import { VideoPlayerService } from '../../services/videoPlayerService';
+import { Stream } from '../../types/metadata';
+import { logger } from '../../utils/logger';
 
 // Cache for scraper logos
 const scraperLogoCache = new Map<string, string>();
@@ -119,12 +117,23 @@ export const useStreamsScreen = () => {
   } = useMetadata({ id, type });
 
   // Get banner image
-  const setMetadataStub = useCallback(() => { }, []);
+  const setMetadataStub = useCallback(() => {}, []);
   const memoizedSettings = useMemo(
     () => settings,
-    [settings.logoSourcePreference, settings.tmdbLanguagePreference, settings.enrichMetadataWithTMDB]
+    [
+      settings.logoSourcePreference,
+      settings.tmdbLanguagePreference,
+      settings.enrichMetadataWithTMDB,
+    ]
   );
-  const { bannerImage } = useMetadataAssets(metadata, id, type, imdbId, memoizedSettings, setMetadataStub);
+  const { bannerImage } = useMetadataAssets(
+    metadata,
+    id,
+    type,
+    imdbId,
+    memoizedSettings,
+    setMetadataStub
+  );
 
   // Dimension listener
   useEffect(() => {
@@ -176,21 +185,20 @@ export const useStreamsScreen = () => {
   }, []);
 
   // Open alert helper
-  const openAlert = useCallback(
-    (title: string, message: string, actions?: AlertAction[]) => {
-      if (!isMounted.current) return;
+  const openAlert = useCallback((title: string, message: string, actions?: AlertAction[]) => {
+    if (!isMounted.current) return;
 
-      try {
-        setAlertTitle(title);
-        setAlertMessage(message);
-        setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
-        setAlertVisible(true);
-      } catch (error) {
-        console.warn('[StreamsScreen] Error showing alert:', error);
-      }
-    },
-    []
-  );
+    try {
+      setAlertTitle(title);
+      setAlertMessage(message);
+      setAlertActions(
+        actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]
+      );
+      setAlertVisible(true);
+    } catch (error) {
+      console.warn('[StreamsScreen] Error showing alert:', error);
+    }
+  }, []);
 
   const closeAlert = useCallback(() => setAlertVisible(false), []);
 
@@ -251,7 +259,8 @@ export const useStreamsScreen = () => {
 
       allStreams.sort((a, b) => {
         if (a.quality !== b.quality) return b.quality - a.quality;
-        if (a.providerPriority !== b.providerPriority) return b.providerPriority - a.providerPriority;
+        if (a.providerPriority !== b.providerPriority)
+          return b.providerPriority - a.providerPriority;
         return 0;
       });
 
@@ -269,7 +278,9 @@ export const useStreamsScreen = () => {
     if (!selectedEpisode) return null;
     const allEpisodes = Object.values(groupedEpisodes).flat();
     return allEpisodes.find(
-      ep => ep.stremioId === selectedEpisode || `${id}:${ep.season_number}:${ep.episode_number}` === selectedEpisode
+      ep =>
+        ep.stremioId === selectedEpisode ||
+        `${id}:${ep.season_number}:${ep.episode_number}` === selectedEpisode
     );
   }, [selectedEpisode, groupedEpisodes, id]);
 
@@ -294,7 +305,9 @@ export const useStreamsScreen = () => {
         }
         if (!tmdbShowId) return;
 
-        const allEpisodes: Record<string, any[]> = (await tmdbService.getAllEpisodes(tmdbShowId)) as any;
+        const allEpisodes: Record<string, any[]> = (await tmdbService.getAllEpisodes(
+          tmdbShowId
+        )) as any;
         const seasonKey = String(currentEpisode.season_number);
         const seasonList: any[] = (allEpisodes && (allEpisodes as any)[seasonKey]) || [];
         const ep = seasonList.find((e: any) => e.episode_number === currentEpisode.episode_number);
@@ -363,10 +376,14 @@ export const useStreamsScreen = () => {
 
       // Save stream to cache
       try {
-        const epId = (type === 'series' || type === 'other') && selectedEpisode ? selectedEpisode : undefined;
-        const season = (type === 'series' || type === 'other') ? currentEpisode?.season_number : undefined;
-        const episode = (type === 'series' || type === 'other') ? currentEpisode?.episode_number : undefined;
-        const episodeTitle = (type === 'series' || type === 'other') ? currentEpisode?.name : undefined;
+        const epId =
+          (type === 'series' || type === 'other') && selectedEpisode ? selectedEpisode : undefined;
+        const season =
+          type === 'series' || type === 'other' ? currentEpisode?.season_number : undefined;
+        const episode =
+          type === 'series' || type === 'other' ? currentEpisode?.episode_number : undefined;
+        const episodeTitle =
+          type === 'series' || type === 'other' ? currentEpisode?.name : undefined;
 
         await streamCacheService.saveStreamToCache(
           id,
@@ -390,31 +407,50 @@ export const useStreamsScreen = () => {
         if (!videoType && /xprime/i.test(providerId)) {
           videoType = 'm3u8';
         }
-      } catch { }
+      } catch {}
 
       const playerRoute = Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid';
 
-      navigation.navigate(playerRoute as any, {
-        uri: stream.url as any,
-        title: metadata?.name || '',
-        episodeTitle: (type === 'series' || type === 'other') ? currentEpisode?.name : undefined,
-        season: (type === 'series' || type === 'other') ? currentEpisode?.season_number : undefined,
-        episode: (type === 'series' || type === 'other') ? currentEpisode?.episode_number : undefined,
-        quality: (stream.title?.match(/(\d+)p/) || [])[1] || undefined,
-        year: metadata?.year,
-        streamProvider,
-        streamName,
-        headers: finalHeaders,
-        id,
-        type,
-        episodeId: (type === 'series' || type === 'other') && selectedEpisode ? selectedEpisode : undefined,
-        imdbId: imdbId || undefined,
-        availableStreams: streamsToPass,
-        backdrop: metadata?.banner || bannerImage,
-        videoType,
-      } as any);
+      navigation.navigate(
+        playerRoute as any,
+        {
+          uri: stream.url as any,
+          title: metadata?.name || '',
+          episodeTitle: type === 'series' || type === 'other' ? currentEpisode?.name : undefined,
+          season: type === 'series' || type === 'other' ? currentEpisode?.season_number : undefined,
+          episode:
+            type === 'series' || type === 'other' ? currentEpisode?.episode_number : undefined,
+          quality: (stream.title?.match(/(\d+)p/) || [])[1] || undefined,
+          year: metadata?.year,
+          streamProvider,
+          streamName,
+          headers: finalHeaders,
+          id,
+          type,
+          episodeId:
+            (type === 'series' || type === 'other') && selectedEpisode
+              ? selectedEpisode
+              : undefined,
+          imdbId: imdbId || undefined,
+          availableStreams: streamsToPass,
+          backdrop: metadata?.banner || bannerImage,
+          videoType,
+        } as any
+      );
     },
-    [metadata, type, currentEpisode, navigation, id, selectedEpisode, imdbId, episodeStreams, groupedStreams, bannerImage, settings.streamCacheTTL]
+    [
+      metadata,
+      type,
+      currentEpisode,
+      navigation,
+      id,
+      selectedEpisode,
+      imdbId,
+      episodeStreams,
+      groupedStreams,
+      bannerImage,
+      settings.streamCacheTTL,
+    ]
   );
 
   // Handle stream press
@@ -497,12 +533,10 @@ export const useStreamsScreen = () => {
 
             const tryNextUrl = (index: number) => {
               if (index >= externalPlayerUrls.length) {
-                Linking.openURL(stream.url!)
-                  .catch(() => navigateToPlayer(stream));
+                Linking.openURL(stream.url!).catch(() => navigateToPlayer(stream));
                 return;
               }
-              Linking.openURL(externalPlayerUrls[index])
-                .catch(() => tryNextUrl(index + 1));
+              Linking.openURL(externalPlayerUrls[index]).catch(() => tryNextUrl(index + 1));
             };
 
             tryNextUrl(0);
@@ -520,7 +554,8 @@ export const useStreamsScreen = () => {
               const success = await VideoPlayerService.playVideo(stream.url, {
                 useExternalPlayer: true,
                 title: metadata?.name || 'Video',
-                episodeTitle: (type === 'series' || type === 'other') ? currentEpisode?.name : undefined,
+                episodeTitle:
+                  type === 'series' || type === 'other' ? currentEpisode?.name : undefined,
                 episodeNumber:
                   (type === 'series' || type === 'other') && currentEpisode
                     ? `S${currentEpisode.season_number}E${currentEpisode.episode_number}`
@@ -538,7 +573,15 @@ export const useStreamsScreen = () => {
         navigateToPlayer(stream);
       }
     },
-    [settings.preferredPlayer, settings.useExternalPlayer, navigateToPlayer, openAlert, metadata, type, currentEpisode]
+    [
+      settings.preferredPlayer,
+      settings.useExternalPlayer,
+      navigateToPlayer,
+      openAlert,
+      metadata,
+      type,
+      currentEpisode,
+    ]
   );
 
   // Update providers when streams change
@@ -552,7 +595,9 @@ export const useStreamsScreen = () => {
       .map(([providerId]) => providerId);
 
     if (providersWithStreams.length > 0) {
-      const hasNewProviders = providersWithStreams.some(provider => !prevProvidersRef.current.has(provider));
+      const hasNewProviders = providersWithStreams.some(
+        provider => !prevProvidersRef.current.has(provider)
+      );
 
       if (hasNewProviders) {
         setAvailableProviders(prevProviders => {
@@ -579,7 +624,15 @@ export const useStreamsScreen = () => {
       });
       return changed ? nextLoading : prevLoading;
     });
-  }, [loadingStreams, loadingEpisodeStreams, groupedStreams, episodeStreams, type, metadata, selectedEpisode]);
+  }, [
+    loadingStreams,
+    loadingEpisodeStreams,
+    groupedStreams,
+    episodeStreams,
+    type,
+    metadata,
+    selectedEpisode,
+  ]);
 
   // Reset autoplay on episode change
   useEffect(() => {
@@ -605,7 +658,15 @@ export const useStreamsScreen = () => {
     if (!isAvailableProvider && !hasStreamsForProvider) {
       setSelectedProvider('all');
     }
-  }, [selectedProvider, availableProviders, episodeStreams, groupedStreams, type, metadata, selectedEpisode]);
+  }, [
+    selectedProvider,
+    availableProviders,
+    episodeStreams,
+    groupedStreams,
+    type,
+    metadata,
+    selectedEpisode,
+  ]);
 
   // Check providers and load streams
   useEffect(() => {
@@ -629,7 +690,8 @@ export const useStreamsScreen = () => {
 
       try {
         const hasStremioProviders = await stremioService.hasStreamProviders(type);
-        const hasLocalScrapers = settings.enableLocalScrapers && (await localScraperService.hasScrapers());
+        const hasLocalScrapers =
+          settings.enableLocalScrapers && (await localScraperService.hasScrapers());
         const hasProviders = hasStremioProviders || hasLocalScrapers;
 
         if (!isMounted.current) return;
@@ -726,7 +788,8 @@ export const useStreamsScreen = () => {
 
     const allProviders = new Set([
       ...Array.from(availableProviders).filter(
-        (provider: string) => streams[provider] && streams[provider].streams && streams[provider].streams.length > 0
+        (provider: string) =>
+          streams[provider] && streams[provider].streams && streams[provider].streams.length > 0
       ),
       ...providersWithStreams,
     ]);
@@ -799,7 +862,15 @@ export const useStreamsScreen = () => {
           return { id: provider, name: displayName };
         }),
     ];
-  }, [availableProviders, type, episodeStreams, groupedStreams, settings.streamDisplayMode, metadata, selectedEpisode]);
+  }, [
+    availableProviders,
+    type,
+    episodeStreams,
+    groupedStreams,
+    settings.streamDisplayMode,
+    metadata,
+    selectedEpisode,
+  ]);
 
   // Sections for stream list
   const sections = useMemo((): StreamSection[] => {
@@ -810,7 +881,11 @@ export const useStreamsScreen = () => {
       if (selectedProvider === 'all') return true;
 
       // Handle repository-based filtering (repo-{repoId})
-      if (settings.streamDisplayMode === 'grouped' && selectedProvider && selectedProvider.startsWith('repo-')) {
+      if (
+        settings.streamDisplayMode === 'grouped' &&
+        selectedProvider &&
+        selectedProvider.startsWith('repo-')
+      ) {
         const repoId = selectedProvider.replace('repo-', '');
         if (!repoId) return false;
 
@@ -819,7 +894,10 @@ export const useStreamsScreen = () => {
 
         // Check if this plugin belongs to the selected repository
         const repoInfo = localScraperService.getScraperRepository(addonId);
-        return !!(repoInfo && (repoInfo.id === repoId || repoInfo.id?.toLowerCase() === repoId?.toLowerCase()));
+        return !!(
+          repoInfo &&
+          (repoInfo.id === repoId || repoInfo.id?.toLowerCase() === repoId?.toLowerCase())
+        );
       }
 
       // Legacy: handle old grouped-plugins filter (fallback)
@@ -874,7 +952,7 @@ export const useStreamsScreen = () => {
         }
       });
 
-      let combinedStreams = [...addonStreams];
+      const combinedStreams = [...addonStreams];
 
       if (settings.streamSortMode === 'quality-then-scraper' && pluginStreams.length > 0) {
         combinedStreams.push(...sortStreamsByQuality(pluginStreams));
@@ -1019,7 +1097,13 @@ export const useStreamsScreen = () => {
   const createGradientColors = useCallback(
     (baseColor: string | null): [string, string, string, string, string] => {
       if (settings.enableStreamsBackdrop) {
-        return ['rgba(0,0,0,0)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)'];
+        return [
+          'rgba(0,0,0,0)',
+          'rgba(0,0,0,0.3)',
+          'rgba(0,0,0,0.6)',
+          'rgba(0,0,0,0.85)',
+          'rgba(0,0,0,0.95)',
+        ];
       }
 
       const themeBg = colors.darkBackground;
@@ -1037,7 +1121,13 @@ export const useStreamsScreen = () => {
       }
 
       if (!baseColor || baseColor === '#1a1a1a') {
-        return ['rgba(0,0,0,0)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)'];
+        return [
+          'rgba(0,0,0,0)',
+          'rgba(0,0,0,0.3)',
+          'rgba(0,0,0,0.6)',
+          'rgba(0,0,0,0.85)',
+          'rgba(0,0,0,0.95)',
+        ];
       }
 
       const r = parseInt(baseColor.substr(1, 2), 16);
@@ -1055,7 +1145,10 @@ export const useStreamsScreen = () => {
     [settings.enableStreamsBackdrop, colors.darkBackground]
   );
 
-  const gradientColors = useMemo(() => createGradientColors(dominantColor), [dominantColor, createGradientColors]);
+  const gradientColors = useMemo(
+    () => createGradientColors(dominantColor),
+    [dominantColor, createGradientColors]
+  );
 
   // Loading states
   // Loading states
@@ -1067,7 +1160,8 @@ export const useStreamsScreen = () => {
     Object.values(streams).every(provider => !provider.streams || provider.streams.length === 0);
   const loadElapsed = streamsLoadStart ? Date.now() - streamsLoadStart : 0;
   const isActuallyLoading = isLoading || activeFetchingScrapers.length > 0;
-  const showInitialLoading = streamsEmpty && isActuallyLoading && (streamsLoadStart === null || loadElapsed < 10000);
+  const showInitialLoading =
+    streamsEmpty && isActuallyLoading && (streamsLoadStart === null || loadElapsed < 10000);
   const showStillFetching = streamsEmpty && isActuallyLoading && loadElapsed >= 10000;
 
   return {

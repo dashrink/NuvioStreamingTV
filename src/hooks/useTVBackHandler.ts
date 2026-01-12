@@ -25,12 +25,16 @@
  * ```
  */
 
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { useCallback, useRef, useEffect } from 'react';
 import { Platform, BackHandler } from 'react-native';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+
 import { useTVEventHandler, isMenuEvent } from './useTVEventHandler';
+import {
+  setTVNavigationBackHandler,
+  clearTVNavigationBackHandler,
+} from '../components/tv/TVBackHandler';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
-import { setTVNavigationBackHandler, clearTVNavigationBackHandler } from '../components/tv/TVBackHandler';
 
 // =============================================================================
 // Types & Interfaces
@@ -98,9 +102,7 @@ const DEFAULT_ROOT_SCREENS = ['MainTabs', 'Home', 'Onboarding'];
  * @param options - Configuration options
  * @returns Object with back navigation functions
  */
-export function useTVBackHandler(
-  options: UseTVBackHandlerOptions = {}
-): UseTVBackHandlerReturn {
+export function useTVBackHandler(options: UseTVBackHandlerOptions = {}): UseTVBackHandlerReturn {
   const {
     enabled = Platform.isTV,
     onBackPress,
@@ -113,7 +115,7 @@ export function useTVBackHandler(
   const navigation = useNavigation();
 
   // Get current route name from navigation state
-  const currentRouteName = useNavigationState((state) => {
+  const currentRouteName = useNavigationState(state => {
     if (!state || !state.routes || state.routes.length === 0) {
       return undefined;
     }
@@ -121,7 +123,7 @@ export function useTVBackHandler(
   });
 
   // Check if we can go back
-  const canGoBack = useNavigationState((state) => {
+  const canGoBack = useNavigationState(state => {
     if (!state) return false;
     // Can go back if we have more than one screen in the stack
     return state.index > 0;
@@ -224,7 +226,7 @@ export function useTVBackHandler(
    */
   useTVEventHandler(
     useCallback(
-      (event) => {
+      event => {
         if (isMenuEvent(event)) {
           handleBackPress();
         }
@@ -248,10 +250,7 @@ export function useTVBackHandler(
     // Only add listener on Android TV
     if (Platform.OS !== 'android') return;
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress
-    );
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
     return () => {
       backHandler.remove();
@@ -363,14 +362,14 @@ export function useTVNavigationBackHandler(
 
   const navigation = useNavigation();
 
-  const currentRouteName = useNavigationState((state) => {
+  const currentRouteName = useNavigationState(state => {
     if (!state?.routes || state.routes.length === 0) {
       return undefined;
     }
     return state.routes[state.index]?.name;
   });
 
-  const canGoBack = useNavigationState((state) => {
+  const canGoBack = useNavigationState(state => {
     if (!state) return false;
     return state.index > 0;
   });

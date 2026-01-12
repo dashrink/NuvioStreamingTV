@@ -15,6 +15,28 @@
  * - tvParallaxProperties for Apple TV depth effects
  */
 
+import { MaterialIcons, Entypo, Feather } from '@expo/vector-icons';
+import { BlurView as CommunityBlurView } from '@react-native-community/blur';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView as ExpoBlurView } from 'expo-blur';
+
+// Optional iOS Glass effect
+let GlassViewComp: any = null;
+let liquidGlassAvailable = false;
+if (Platform.OS === 'ios') {
+  try {
+    const glass = require('expo-glass-effect');
+    GlassViewComp = glass.GlassView;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+  } catch {
+    GlassViewComp = null;
+    liquidGlassAvailable = false;
+  }
+}
+
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import {
   View,
@@ -27,28 +49,6 @@ import {
   Image,
   findNodeHandle,
 } from 'react-native';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
-
-import { MaterialIcons, Entypo, Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView as ExpoBlurView } from 'expo-blur';
-import { BlurView as CommunityBlurView } from '@react-native-community/blur';
-
-// Optional iOS Glass effect
-let GlassViewComp: any = null;
-let liquidGlassAvailable = false;
-if (Platform.OS === 'ios') {
-  try {
-    const glass = require('expo-glass-effect');
-    GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
-  } catch {
-    GlassViewComp = null;
-    liquidGlassAvailable = false;
-  }
-}
-
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 import Animated, {
   useAnimatedStyle,
   interpolate,
@@ -62,20 +62,25 @@ import Animated, {
   useDerivedValue,
   SharedValue,
 } from 'react-native-reanimated';
+
+import {
+  HERO_HEIGHT,
+  SCREEN_WIDTH as width,
+  IS_TABLET as isTablet,
+} from '../../constants/dimensions';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
-import { useTraktContext } from '../../contexts/TraktContext';
-import { useSettings } from '../../hooks/useSettings';
 import { useTrailer } from '../../contexts/TrailerContext';
-import { logger } from '../../utils/logger';
+import { useTraktContext } from '../../contexts/TraktContext';
+import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
+import { useSettings } from '../../hooks/useSettings';
 import { TMDBService } from '../../services/tmdbService';
 import TrailerService from '../../services/trailerService';
+import { logger } from '../../utils/logger';
+import Focusable, { FocusableRef } from '../common/Focusable';
 import TrailerPlayer from '../video/TrailerPlayer';
-import { HERO_HEIGHT, SCREEN_WIDTH as width, IS_TABLET as isTablet } from '../../constants/dimensions';
 
 // TV-specific imports
-import Focusable, { FocusableRef } from '../common/Focusable';
-import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
 
 const { height } = Dimensions.get('window');
 
@@ -109,7 +114,9 @@ interface HeroSectionProps {
   } | null;
   onStableLogoUriChange?: (logoUri: string | null) => void;
   type: 'movie' | 'series';
-  getEpisodeDetails: (episodeId: string) => { seasonNumber: string; episodeNumber: string; episodeName: string } | null;
+  getEpisodeDetails: (
+    episodeId: string
+  ) => { seasonNumber: string; episodeNumber: string; episodeName: string } | null;
   handleShowStreams: () => void;
   handleToggleLibrary: () => void;
   inLibrary: boolean;
@@ -137,370 +144,289 @@ interface HeroSectionProps {
 // TV-specific ActionButtons Component
 // =============================================================================
 
-const TVActionButtons = memo(({
-  handleShowStreams,
-  toggleLibrary,
-  inLibrary,
-  type,
-  id,
-  navigation,
-  playButtonText,
-  animatedStyle,
-  isWatched,
-  watchProgress,
-  groupedEpisodes,
-  metadata,
-  settings,
-  isAuthenticated,
-  isInWatchlist,
-  isInCollection,
-  onToggleWatchlist,
-  onToggleCollection,
-  // TV-specific props
-  hasTVPreferredFocus,
-  onFocusSection,
-  nextFocusDown,
-}: {
-  handleShowStreams: () => void;
-  toggleLibrary: () => void;
-  inLibrary: boolean;
-  type: 'movie' | 'series';
-  id: string;
-  navigation: any;
-  playButtonText: string;
-  animatedStyle: any;
-  isWatched: boolean;
-  watchProgress: any;
-  groupedEpisodes?: { [seasonNumber: number]: any[] };
-  metadata: any;
-  settings: any;
-  isAuthenticated?: boolean;
-  isInWatchlist?: boolean;
-  isInCollection?: boolean;
-  onToggleWatchlist?: () => void;
-  onToggleCollection?: () => void;
-  hasTVPreferredFocus?: boolean;
-  onFocusSection?: () => void;
-  nextFocusDown?: number | React.RefObject<any>;
-}) => {
-  const { currentTheme } = useTheme();
-  const { showSaved, showTraktSaved, showRemoved, showTraktRemoved, showSuccess, showInfo } = useToast();
-  const tvNav = useTVNavigationOptional();
+const TVActionButtons = memo(
+  ({
+    handleShowStreams,
+    toggleLibrary,
+    inLibrary,
+    type,
+    id,
+    navigation,
+    playButtonText,
+    animatedStyle,
+    isWatched,
+    watchProgress,
+    groupedEpisodes,
+    metadata,
+    settings,
+    isAuthenticated,
+    isInWatchlist,
+    isInCollection,
+    onToggleWatchlist,
+    onToggleCollection,
+    // TV-specific props
+    hasTVPreferredFocus,
+    onFocusSection,
+    nextFocusDown,
+  }: {
+    handleShowStreams: () => void;
+    toggleLibrary: () => void;
+    inLibrary: boolean;
+    type: 'movie' | 'series';
+    id: string;
+    navigation: any;
+    playButtonText: string;
+    animatedStyle: any;
+    isWatched: boolean;
+    watchProgress: any;
+    groupedEpisodes?: { [seasonNumber: number]: any[] };
+    metadata: any;
+    settings: any;
+    isAuthenticated?: boolean;
+    isInWatchlist?: boolean;
+    isInCollection?: boolean;
+    onToggleWatchlist?: () => void;
+    onToggleCollection?: () => void;
+    hasTVPreferredFocus?: boolean;
+    onFocusSection?: () => void;
+    nextFocusDown?: number | React.RefObject<any>;
+  }) => {
+    const { currentTheme } = useTheme();
+    const { showSaved, showTraktSaved, showRemoved, showTraktRemoved, showSuccess, showInfo } =
+      useToast();
+    const tvNav = useTVNavigationOptional();
 
-  // Refs for focus navigation between buttons
-  const playButtonRef = useRef<FocusableRef>(null);
-  const saveButtonRef = useRef<FocusableRef>(null);
-  const collectionButtonRef = useRef<FocusableRef>(null);
-  const ratingsButtonRef = useRef<FocusableRef>(null);
+    // Refs for focus navigation between buttons
+    const playButtonRef = useRef<FocusableRef>(null);
+    const saveButtonRef = useRef<FocusableRef>(null);
+    const collectionButtonRef = useRef<FocusableRef>(null);
+    const ratingsButtonRef = useRef<FocusableRef>(null);
 
-  // Theme colors
-  const themeColors = useMemo(() => ({
-    white: currentTheme.colors.white,
-    black: '#000',
-    primary: currentTheme.colors.primary
-  }), [currentTheme.colors.white, currentTheme.colors.primary]);
+    // Theme colors
+    const themeColors = useMemo(
+      () => ({
+        white: currentTheme.colors.white,
+        black: '#000',
+        primary: currentTheme.colors.primary,
+      }),
+      [currentTheme.colors.white, currentTheme.colors.primary]
+    );
 
-  // Handle ratings button press
-  const handleRatingsPress = useCallback(async () => {
-    if (!id) return;
+    // Handle ratings button press
+    const handleRatingsPress = useCallback(async () => {
+      if (!id) return;
 
-    let finalTmdbId: number | null = null;
+      let finalTmdbId: number | null = null;
 
-    if (id.startsWith('tmdb:')) {
-      const numericPart = id.split(':')[1];
-      const parsedId = parseInt(numericPart, 10);
-      if (!isNaN(parsedId)) {
-        finalTmdbId = parsedId;
-      }
-    } else if (id.startsWith('tt') && settings.enrichMetadataWithTMDB) {
-      try {
-        const tmdbService = TMDBService.getInstance();
-        const convertedId = await tmdbService.findTMDBIdByIMDB(id);
-        if (convertedId) {
-          finalTmdbId = convertedId;
+      if (id.startsWith('tmdb:')) {
+        const numericPart = id.split(':')[1];
+        const parsedId = parseInt(numericPart, 10);
+        if (!isNaN(parsedId)) {
+          finalTmdbId = parsedId;
         }
-      } catch (error) {
-        logger.error(`[HeroSection.tv] Error converting IMDb ID ${id}:`, error);
-      }
-    } else {
-      const parsedId = parseInt(id, 10);
-      if (!isNaN(parsedId)) {
-        finalTmdbId = parsedId;
-      }
-    }
-
-    if (finalTmdbId !== null) {
-      requestAnimationFrame(() => {
-        navigation.navigate('ShowRatings', { showId: finalTmdbId });
-      });
-    }
-  }, [id, navigation, settings.enrichMetadataWithTMDB]);
-
-  // Handle save action
-  const handleSaveAction = useCallback(async () => {
-    const wasInLibrary = inLibrary;
-    toggleLibrary();
-
-    if (isAuthenticated && onToggleWatchlist) {
-      await onToggleWatchlist();
-    }
-
-    if (isAuthenticated) {
-      if (wasInLibrary) {
-        showTraktRemoved();
-      } else {
-        showTraktSaved();
-      }
-    } else {
-      if (wasInLibrary) {
-        showRemoved();
-      } else {
-        showSaved();
-      }
-    }
-  }, [toggleLibrary, isAuthenticated, onToggleWatchlist, inLibrary, showSaved, showTraktSaved, showRemoved, showTraktRemoved]);
-
-  // Handle collection action
-  const handleCollectionAction = useCallback(async () => {
-    const wasInCollection = isInCollection;
-
-    if (onToggleCollection) {
-      await onToggleCollection();
-    }
-
-    if (wasInCollection) {
-      showInfo('Removed from Collection', 'Removed from your Trakt collection');
-    } else {
-      showSuccess('Added to Collection', 'Added to your Trakt collection');
-    }
-  }, [onToggleCollection, isInCollection, showSuccess, showInfo]);
-
-  // Play button style
-  const playButtonStyle = useMemo(() => {
-    if (isWatched && type === 'movie') {
-      return [styles.actionButton, styles.playButton, styles.watchedPlayButton];
-    }
-    return [styles.actionButton, styles.playButton];
-  }, [isWatched, type]);
-
-  const playButtonTextStyle = useMemo(() => {
-    if (isWatched && type === 'movie') {
-      return [styles.playButtonText, styles.watchedPlayButtonText];
-    }
-    return styles.playButtonText;
-  }, [isWatched, type]);
-
-  // Calculate final play button text
-  const finalPlayButtonText = useMemo(() => {
-    if (type === 'movie') {
-      return isWatched ? 'Watch Again' : playButtonText;
-    }
-
-    if (type === 'series' && watchProgress?.episodeId && groupedEpisodes) {
-      let seasonNum: number | null = null;
-      let episodeNum: number | null = null;
-
-      const parts = watchProgress.episodeId.split(':');
-
-      if (parts.length === 3) {
-        seasonNum = parseInt(parts[1], 10);
-        episodeNum = parseInt(parts[2], 10);
-      } else if (parts.length === 2) {
-        seasonNum = parseInt(parts[0], 10);
-        episodeNum = parseInt(parts[1], 10);
-      } else {
-        const match = watchProgress.episodeId.match(/s(\d+)e(\d+)/i);
-        if (match) {
-          seasonNum = parseInt(match[1], 10);
-          episodeNum = parseInt(match[2], 10);
-        }
-      }
-
-      if (seasonNum !== null && episodeNum !== null && !isNaN(seasonNum) && !isNaN(episodeNum)) {
-        if (isWatched) {
-          const nextEpisode = episodeNum + 1;
-          const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
-          const nextEpisodeExists = currentSeasonEpisodes.some(ep =>
-            ep.episode_number === nextEpisode
-          );
-
-          if (nextEpisodeExists) {
-            const seasonStr = seasonNum.toString().padStart(2, '0');
-            const episodeStr = nextEpisode.toString().padStart(2, '0');
-            return `Play S${seasonStr}E${episodeStr}`;
-          } else {
-            return 'Completed';
+      } else if (id.startsWith('tt') && settings.enrichMetadataWithTMDB) {
+        try {
+          const tmdbService = TMDBService.getInstance();
+          const convertedId = await tmdbService.findTMDBIdByIMDB(id);
+          if (convertedId) {
+            finalTmdbId = convertedId;
           }
+        } catch (error) {
+          logger.error(`[HeroSection.tv] Error converting IMDb ID ${id}:`, error);
+        }
+      } else {
+        const parsedId = parseInt(id, 10);
+        if (!isNaN(parsedId)) {
+          finalTmdbId = parsedId;
+        }
+      }
+
+      if (finalTmdbId !== null) {
+        requestAnimationFrame(() => {
+          navigation.navigate('ShowRatings', { showId: finalTmdbId });
+        });
+      }
+    }, [id, navigation, settings.enrichMetadataWithTMDB]);
+
+    // Handle save action
+    const handleSaveAction = useCallback(async () => {
+      const wasInLibrary = inLibrary;
+      toggleLibrary();
+
+      if (isAuthenticated && onToggleWatchlist) {
+        await onToggleWatchlist();
+      }
+
+      if (isAuthenticated) {
+        if (wasInLibrary) {
+          showTraktRemoved();
         } else {
-          const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
-          const currentEpisodeExists = currentSeasonEpisodes.some(ep =>
-            ep.episode_number === episodeNum
-          );
-
-          if (currentEpisodeExists) {
-            return playButtonText;
-          } else {
-            return 'Play';
-          }
+          showTraktSaved();
+        }
+      } else {
+        if (wasInLibrary) {
+          showRemoved();
+        } else {
+          showSaved();
         }
       }
+    }, [
+      toggleLibrary,
+      isAuthenticated,
+      onToggleWatchlist,
+      inLibrary,
+      showSaved,
+      showTraktSaved,
+      showRemoved,
+      showTraktRemoved,
+    ]);
 
-      return isWatched ? 'Play Next Episode' : playButtonText;
-    }
+    // Handle collection action
+    const handleCollectionAction = useCallback(async () => {
+      const wasInCollection = isInCollection;
 
-    return isWatched ? 'Play' : playButtonText;
-  }, [isWatched, playButtonText, type, watchProgress, groupedEpisodes]);
-
-  // Focus handlers
-  const handleButtonFocus = useCallback((buttonId: string) => {
-    if (tvNav) {
-      tvNav.setScreenFocus('hero-section', buttonId);
-      tvNav.setCurrentFocusId(buttonId);
-    }
-    onFocusSection?.();
-  }, [tvNav, onFocusSection]);
-
-  // Resolve nextFocusDown prop
-  const resolveNodeHandle = useCallback((value: number | React.RefObject<any> | undefined): number | undefined => {
-    if (value === undefined) return undefined;
-    if (typeof value === 'number') return value;
-    if (value.current) {
-      try {
-        return findNodeHandle(value.current) ?? undefined;
-      } catch {
-        return undefined;
+      if (onToggleCollection) {
+        await onToggleCollection();
       }
-    }
-    return undefined;
-  }, []);
 
-  // Button count calculation
-  const hasTraktCollection = isAuthenticated;
-  const hasRatings = type === 'series';
-  const additionalButtonCount = (hasTraktCollection ? 1 : 0) + (hasRatings ? 1 : 0);
+      if (wasInCollection) {
+        showInfo('Removed from Collection', 'Removed from your Trakt collection');
+      } else {
+        showSuccess('Added to Collection', 'Added to your Trakt collection');
+      }
+    }, [onToggleCollection, isInCollection, showSuccess, showInfo]);
 
-  return (
-    <Animated.View style={[styles.tvActionButtons, animatedStyle]}>
-      <View style={styles.singleRowLayout}>
-        {/* Play Button */}
-        <Focusable
-          ref={playButtonRef}
-          onPress={handleShowStreams}
-          onFocus={() => handleButtonFocus('play-button')}
-          hasTVPreferredFocus={hasTVPreferredFocus}
-          focusId="play-button"
-          style={[
-            playButtonStyle,
-            additionalButtonCount === 0 ? styles.singleRowPlayButtonFullWidth : styles.primaryActionButton
-          ]}
-          animationConfig={{
-            focusScale: 1.08,
-            unfocusedOpacity: 0.9,
-            showFocusBorder: true,
-            focusBorderColor: '#fff',
-            focusBorderWidth: 3,
-            animateShadow: Platform.OS === 'ios',
-          }}
-          tvParallaxProperties={{
-            enabled: Platform.OS === 'ios',
-            shiftDistanceX: 2,
-            shiftDistanceY: 2,
-            tiltAngle: 0.05,
-            magnification: 1.0,
-            pressMagnification: 1.02,
-            pressDuration: 0.3,
-          }}
-          nextFocus={{
-            nextFocusRight: saveButtonRef,
-            nextFocusDown,
-          }}
-          accessibilityLabel={finalPlayButtonText}
-          accessibilityHint="Press to play content"
-        >
-          <MaterialIcons
-            name={(() => {
-              if (isWatched) {
-                return type === 'movie' ? 'replay' : 'play-arrow';
-              }
-              return playButtonText === 'Resume' ? 'play-circle-outline' : 'play-arrow';
-            })()}
-            size={28}
-            color={isWatched && type === 'movie' ? "#fff" : "#000"}
-          />
-          <Text style={[playButtonTextStyle, styles.tvPlayButtonText]}>{finalPlayButtonText}</Text>
-        </Focusable>
+    // Play button style
+    const playButtonStyle = useMemo(() => {
+      if (isWatched && type === 'movie') {
+        return [styles.actionButton, styles.playButton, styles.watchedPlayButton];
+      }
+      return [styles.actionButton, styles.playButton];
+    }, [isWatched, type]);
 
-        {/* Save Button */}
-        <Focusable
-          ref={saveButtonRef}
-          onPress={handleSaveAction}
-          onFocus={() => handleButtonFocus('save-button')}
-          focusId="save-button"
-          style={[
-            styles.actionButton,
-            styles.infoButton,
-            additionalButtonCount === 0 ? styles.singleRowSaveButtonFullWidth : styles.primaryActionButton
-          ]}
-          animationConfig={{
-            focusScale: 1.08,
-            unfocusedOpacity: 0.9,
-            showFocusBorder: true,
-            focusBorderColor: currentTheme.colors.primary || '#007AFF',
-            focusBorderWidth: 3,
-            animateShadow: Platform.OS === 'ios',
-          }}
-          tvParallaxProperties={{
-            enabled: Platform.OS === 'ios',
-            shiftDistanceX: 2,
-            shiftDistanceY: 2,
-            tiltAngle: 0.05,
-            magnification: 1.0,
-            pressMagnification: 1.02,
-            pressDuration: 0.3,
-          }}
-          nextFocus={{
-            nextFocusLeft: playButtonRef,
-            nextFocusRight: hasTraktCollection ? collectionButtonRef : (hasRatings ? ratingsButtonRef : undefined),
-            nextFocusDown,
-          }}
-          accessibilityLabel={inLibrary ? 'Saved' : 'Save'}
-          accessibilityHint={inLibrary ? 'Press to remove from library' : 'Press to save to library'}
-        >
-          {Platform.OS === 'ios' ? (
-            GlassViewComp && liquidGlassAvailable ? (
-              <GlassViewComp
-                style={styles.blurBackground}
-                glassEffectStyle="regular"
-              />
-            ) : (
-              <ExpoBlurView intensity={80} style={styles.blurBackground} tint="dark" />
-            )
-          ) : (
-            <View style={styles.androidFallbackBlur} />
-          )}
-          <MaterialIcons
-            name={inLibrary ? "bookmark" : "bookmark-outline"}
-            size={28}
-            color={inLibrary ? (isAuthenticated && isInWatchlist ? "#E74C3C" : currentTheme.colors.white) : currentTheme.colors.white}
-          />
-          <Text style={[styles.infoButtonText, styles.tvInfoButtonText]}>
-            {inLibrary ? 'Saved' : 'Save'}
-          </Text>
-        </Focusable>
+    const playButtonTextStyle = useMemo(() => {
+      if (isWatched && type === 'movie') {
+        return [styles.playButtonText, styles.watchedPlayButtonText];
+      }
+      return styles.playButtonText;
+    }, [isWatched, type]);
 
-        {/* Trakt Collection Button */}
-        {hasTraktCollection && (
+    // Calculate final play button text
+    const finalPlayButtonText = useMemo(() => {
+      if (type === 'movie') {
+        return isWatched ? 'Watch Again' : playButtonText;
+      }
+
+      if (type === 'series' && watchProgress?.episodeId && groupedEpisodes) {
+        let seasonNum: number | null = null;
+        let episodeNum: number | null = null;
+
+        const parts = watchProgress.episodeId.split(':');
+
+        if (parts.length === 3) {
+          seasonNum = parseInt(parts[1], 10);
+          episodeNum = parseInt(parts[2], 10);
+        } else if (parts.length === 2) {
+          seasonNum = parseInt(parts[0], 10);
+          episodeNum = parseInt(parts[1], 10);
+        } else {
+          const match = watchProgress.episodeId.match(/s(\d+)e(\d+)/i);
+          if (match) {
+            seasonNum = parseInt(match[1], 10);
+            episodeNum = parseInt(match[2], 10);
+          }
+        }
+
+        if (seasonNum !== null && episodeNum !== null && !isNaN(seasonNum) && !isNaN(episodeNum)) {
+          if (isWatched) {
+            const nextEpisode = episodeNum + 1;
+            const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
+            const nextEpisodeExists = currentSeasonEpisodes.some(
+              ep => ep.episode_number === nextEpisode
+            );
+
+            if (nextEpisodeExists) {
+              const seasonStr = seasonNum.toString().padStart(2, '0');
+              const episodeStr = nextEpisode.toString().padStart(2, '0');
+              return `Play S${seasonStr}E${episodeStr}`;
+            } else {
+              return 'Completed';
+            }
+          } else {
+            const currentSeasonEpisodes = groupedEpisodes[seasonNum] || [];
+            const currentEpisodeExists = currentSeasonEpisodes.some(
+              ep => ep.episode_number === episodeNum
+            );
+
+            if (currentEpisodeExists) {
+              return playButtonText;
+            } else {
+              return 'Play';
+            }
+          }
+        }
+
+        return isWatched ? 'Play Next Episode' : playButtonText;
+      }
+
+      return isWatched ? 'Play' : playButtonText;
+    }, [isWatched, playButtonText, type, watchProgress, groupedEpisodes]);
+
+    // Focus handlers
+    const handleButtonFocus = useCallback(
+      (buttonId: string) => {
+        if (tvNav) {
+          tvNav.setScreenFocus('hero-section', buttonId);
+          tvNav.setCurrentFocusId(buttonId);
+        }
+        onFocusSection?.();
+      },
+      [tvNav, onFocusSection]
+    );
+
+    // Resolve nextFocusDown prop
+    const resolveNodeHandle = useCallback(
+      (value: number | React.RefObject<any> | undefined): number | undefined => {
+        if (value === undefined) return undefined;
+        if (typeof value === 'number') return value;
+        if (value.current) {
+          try {
+            return findNodeHandle(value.current) ?? undefined;
+          } catch {
+            return undefined;
+          }
+        }
+        return undefined;
+      },
+      []
+    );
+
+    // Button count calculation
+    const hasTraktCollection = isAuthenticated;
+    const hasRatings = type === 'series';
+    const additionalButtonCount = (hasTraktCollection ? 1 : 0) + (hasRatings ? 1 : 0);
+
+    return (
+      <Animated.View style={[styles.tvActionButtons, animatedStyle]}>
+        <View style={styles.singleRowLayout}>
+          {/* Play Button */}
           <Focusable
-            ref={collectionButtonRef}
-            onPress={handleCollectionAction}
-            onFocus={() => handleButtonFocus('collection-button')}
-            focusId="collection-button"
-            style={[styles.iconButton, styles.tvIconButton]}
+            ref={playButtonRef}
+            onPress={handleShowStreams}
+            onFocus={() => handleButtonFocus('play-button')}
+            hasTVPreferredFocus={hasTVPreferredFocus}
+            focusId="play-button"
+            style={[
+              playButtonStyle,
+              additionalButtonCount === 0
+                ? styles.singleRowPlayButtonFullWidth
+                : styles.primaryActionButton,
+            ]}
             animationConfig={{
-              focusScale: 1.12,
+              focusScale: 1.08,
               unfocusedOpacity: 0.9,
               showFocusBorder: true,
-              focusBorderColor: '#3498DB',
+              focusBorderColor: '#fff',
               focusBorderWidth: 3,
               animateShadow: Platform.OS === 'ios',
             }}
@@ -514,43 +440,42 @@ const TVActionButtons = memo(({
               pressDuration: 0.3,
             }}
             nextFocus={{
-              nextFocusLeft: saveButtonRef,
-              nextFocusRight: hasRatings ? ratingsButtonRef : undefined,
+              nextFocusRight: saveButtonRef,
               nextFocusDown,
             }}
-            accessibilityLabel={isInCollection ? 'In Collection' : 'Add to Collection'}
-            accessibilityHint="Press to toggle collection status"
+            accessibilityLabel={finalPlayButtonText}
+            accessibilityHint="Press to play content"
           >
-            {Platform.OS === 'ios' ? (
-              GlassViewComp && liquidGlassAvailable ? (
-                <GlassViewComp
-                  style={styles.blurBackgroundRound}
-                  glassEffectStyle="regular"
-                />
-              ) : (
-                <ExpoBlurView intensity={80} style={styles.blurBackgroundRound} tint="dark" />
-              )
-            ) : (
-              <View style={styles.androidFallbackBlurRound} />
-            )}
             <MaterialIcons
-              name="video-library"
+              name={(() => {
+                if (isWatched) {
+                  return type === 'movie' ? 'replay' : 'play-arrow';
+                }
+                return playButtonText === 'Resume' ? 'play-circle-outline' : 'play-arrow';
+              })()}
               size={28}
-              color={isInCollection ? "#3498DB" : currentTheme.colors.white}
+              color={isWatched && type === 'movie' ? '#fff' : '#000'}
             />
+            <Text style={[playButtonTextStyle, styles.tvPlayButtonText]}>
+              {finalPlayButtonText}
+            </Text>
           </Focusable>
-        )}
 
-        {/* Ratings Button (for series) */}
-        {hasRatings && (
+          {/* Save Button */}
           <Focusable
-            ref={ratingsButtonRef}
-            onPress={handleRatingsPress}
-            onFocus={() => handleButtonFocus('ratings-button')}
-            focusId="ratings-button"
-            style={[styles.iconButton, styles.tvIconButton]}
+            ref={saveButtonRef}
+            onPress={handleSaveAction}
+            onFocus={() => handleButtonFocus('save-button')}
+            focusId="save-button"
+            style={[
+              styles.actionButton,
+              styles.infoButton,
+              additionalButtonCount === 0
+                ? styles.singleRowSaveButtonFullWidth
+                : styles.primaryActionButton,
+            ]}
             animationConfig={{
-              focusScale: 1.12,
+              focusScale: 1.08,
               unfocusedOpacity: 0.9,
               showFocusBorder: true,
               focusBorderColor: currentTheme.colors.primary || '#007AFF',
@@ -567,759 +492,913 @@ const TVActionButtons = memo(({
               pressDuration: 0.3,
             }}
             nextFocus={{
-              nextFocusLeft: hasTraktCollection ? collectionButtonRef : saveButtonRef,
+              nextFocusLeft: playButtonRef,
+              nextFocusRight: hasTraktCollection
+                ? collectionButtonRef
+                : hasRatings
+                  ? ratingsButtonRef
+                  : undefined,
               nextFocusDown,
             }}
-            accessibilityLabel="Ratings"
-            accessibilityHint="Press to view ratings"
+            accessibilityLabel={inLibrary ? 'Saved' : 'Save'}
+            accessibilityHint={
+              inLibrary ? 'Press to remove from library' : 'Press to save to library'
+            }
           >
             {Platform.OS === 'ios' ? (
               GlassViewComp && liquidGlassAvailable ? (
-                <GlassViewComp
-                  style={styles.blurBackgroundRound}
-                  glassEffectStyle="regular"
-                />
+                <GlassViewComp style={styles.blurBackground} glassEffectStyle="regular" />
               ) : (
-                <ExpoBlurView intensity={80} style={styles.blurBackgroundRound} tint="dark" />
+                <ExpoBlurView intensity={80} style={styles.blurBackground} tint="dark" />
               )
             ) : (
-              <View style={styles.androidFallbackBlurRound} />
+              <View style={styles.androidFallbackBlur} />
             )}
             <MaterialIcons
-              name="assessment"
+              name={inLibrary ? 'bookmark' : 'bookmark-outline'}
               size={28}
-              color={currentTheme.colors.white}
+              color={
+                inLibrary
+                  ? isAuthenticated && isInWatchlist
+                    ? '#E74C3C'
+                    : currentTheme.colors.white
+                  : currentTheme.colors.white
+              }
             />
+            <Text style={[styles.infoButtonText, styles.tvInfoButtonText]}>
+              {inLibrary ? 'Saved' : 'Save'}
+            </Text>
           </Focusable>
-        )}
-      </View>
-    </Animated.View>
-  );
-});
+
+          {/* Trakt Collection Button */}
+          {hasTraktCollection && (
+            <Focusable
+              ref={collectionButtonRef}
+              onPress={handleCollectionAction}
+              onFocus={() => handleButtonFocus('collection-button')}
+              focusId="collection-button"
+              style={[styles.iconButton, styles.tvIconButton]}
+              animationConfig={{
+                focusScale: 1.12,
+                unfocusedOpacity: 0.9,
+                showFocusBorder: true,
+                focusBorderColor: '#3498DB',
+                focusBorderWidth: 3,
+                animateShadow: Platform.OS === 'ios',
+              }}
+              tvParallaxProperties={{
+                enabled: Platform.OS === 'ios',
+                shiftDistanceX: 2,
+                shiftDistanceY: 2,
+                tiltAngle: 0.05,
+                magnification: 1.0,
+                pressMagnification: 1.02,
+                pressDuration: 0.3,
+              }}
+              nextFocus={{
+                nextFocusLeft: saveButtonRef,
+                nextFocusRight: hasRatings ? ratingsButtonRef : undefined,
+                nextFocusDown,
+              }}
+              accessibilityLabel={isInCollection ? 'In Collection' : 'Add to Collection'}
+              accessibilityHint="Press to toggle collection status"
+            >
+              {Platform.OS === 'ios' ? (
+                GlassViewComp && liquidGlassAvailable ? (
+                  <GlassViewComp style={styles.blurBackgroundRound} glassEffectStyle="regular" />
+                ) : (
+                  <ExpoBlurView intensity={80} style={styles.blurBackgroundRound} tint="dark" />
+                )
+              ) : (
+                <View style={styles.androidFallbackBlurRound} />
+              )}
+              <MaterialIcons
+                name="video-library"
+                size={28}
+                color={isInCollection ? '#3498DB' : currentTheme.colors.white}
+              />
+            </Focusable>
+          )}
+
+          {/* Ratings Button (for series) */}
+          {hasRatings && (
+            <Focusable
+              ref={ratingsButtonRef}
+              onPress={handleRatingsPress}
+              onFocus={() => handleButtonFocus('ratings-button')}
+              focusId="ratings-button"
+              style={[styles.iconButton, styles.tvIconButton]}
+              animationConfig={{
+                focusScale: 1.12,
+                unfocusedOpacity: 0.9,
+                showFocusBorder: true,
+                focusBorderColor: currentTheme.colors.primary || '#007AFF',
+                focusBorderWidth: 3,
+                animateShadow: Platform.OS === 'ios',
+              }}
+              tvParallaxProperties={{
+                enabled: Platform.OS === 'ios',
+                shiftDistanceX: 2,
+                shiftDistanceY: 2,
+                tiltAngle: 0.05,
+                magnification: 1.0,
+                pressMagnification: 1.02,
+                pressDuration: 0.3,
+              }}
+              nextFocus={{
+                nextFocusLeft: hasTraktCollection ? collectionButtonRef : saveButtonRef,
+                nextFocusDown,
+              }}
+              accessibilityLabel="Ratings"
+              accessibilityHint="Press to view ratings"
+            >
+              {Platform.OS === 'ios' ? (
+                GlassViewComp && liquidGlassAvailable ? (
+                  <GlassViewComp style={styles.blurBackgroundRound} glassEffectStyle="regular" />
+                ) : (
+                  <ExpoBlurView intensity={80} style={styles.blurBackgroundRound} tint="dark" />
+                )
+              ) : (
+                <View style={styles.androidFallbackBlurRound} />
+              )}
+              <MaterialIcons name="assessment" size={28} color={currentTheme.colors.white} />
+            </Focusable>
+          )}
+        </View>
+      </Animated.View>
+    );
+  }
+);
 
 // =============================================================================
 // WatchProgress Component (same as non-TV version)
 // =============================================================================
 
-const WatchProgressDisplay = memo(({
-  watchProgress,
-  type,
-  getEpisodeDetails,
-  animatedStyle,
-  isWatched,
-  isTrailerPlaying,
-  trailerMuted,
-  trailerReady
-}: {
-  watchProgress: {
-    currentTime: number;
-    duration: number;
-    lastUpdated: number;
-    episodeId?: string;
-    traktSynced?: boolean;
-    traktProgress?: number;
-  } | null;
-  type: 'movie' | 'series';
-  getEpisodeDetails: (episodeId: string) => { seasonNumber: string; episodeNumber: string; episodeName: string } | null;
-  animatedStyle: any;
-  isWatched: boolean;
-  isTrailerPlaying: boolean;
-  trailerMuted: boolean;
-  trailerReady: boolean;
-}) => {
-  const { currentTheme } = useTheme();
-  const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
+const WatchProgressDisplay = memo(
+  ({
+    watchProgress,
+    type,
+    getEpisodeDetails,
+    animatedStyle,
+    isWatched,
+    isTrailerPlaying,
+    trailerMuted,
+    trailerReady,
+  }: {
+    watchProgress: {
+      currentTime: number;
+      duration: number;
+      lastUpdated: number;
+      episodeId?: string;
+      traktSynced?: boolean;
+      traktProgress?: number;
+    } | null;
+    type: 'movie' | 'series';
+    getEpisodeDetails: (
+      episodeId: string
+    ) => { seasonNumber: string; episodeNumber: string; episodeName: string } | null;
+    animatedStyle: any;
+    isWatched: boolean;
+    isTrailerPlaying: boolean;
+    trailerMuted: boolean;
+    trailerReady: boolean;
+  }) => {
+    const { currentTheme } = useTheme();
+    const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
 
-  const progressBoxOpacity = useSharedValue(0);
-  const progressBoxScale = useSharedValue(0.8);
-  const progressBoxTranslateY = useSharedValue(20);
+    const progressBoxOpacity = useSharedValue(0);
+    const progressBoxScale = useSharedValue(0.8);
+    const progressBoxTranslateY = useSharedValue(20);
 
-  const progressData = useMemo(() => {
-    if (isWatched) {
+    const progressData = useMemo(() => {
+      if (isWatched) {
+        let episodeInfo = '';
+        if (type === 'series' && watchProgress?.episodeId) {
+          const details = getEpisodeDetails(watchProgress.episodeId);
+          if (details) {
+            episodeInfo = ` • S${details.seasonNumber}:E${details.episodeNumber}${details.episodeName ? ` - ${details.episodeName}` : ''}`;
+          }
+        }
+
+        const watchedDate = watchProgress?.lastUpdated
+          ? new Date(watchProgress.lastUpdated).toLocaleDateString('en-US')
+          : new Date().toLocaleDateString('en-US');
+
+        const watchedViaTrakt =
+          isTraktAuthenticated &&
+          watchProgress?.traktProgress !== undefined &&
+          watchProgress.traktProgress >= 95;
+
+        return {
+          progressPercent: 100,
+          formattedTime: watchedDate,
+          episodeInfo,
+          displayText: watchedViaTrakt ? 'Watched on Trakt' : 'Watched',
+          syncStatus: '',
+          isTraktSynced: watchProgress?.traktSynced && isTraktAuthenticated,
+          isWatched: true,
+        };
+      }
+
+      if (!watchProgress || watchProgress.duration === 0) return null;
+
+      let progressPercent;
+      let isUsingTraktProgress = false;
+
+      if (isTraktAuthenticated && watchProgress.traktProgress !== undefined) {
+        progressPercent = watchProgress.traktProgress;
+        isUsingTraktProgress = true;
+      } else {
+        progressPercent = (watchProgress.currentTime / watchProgress.duration) * 100;
+      }
+      const formattedTime = new Date(watchProgress.lastUpdated).toLocaleDateString('en-US');
       let episodeInfo = '';
-      if (type === 'series' && watchProgress?.episodeId) {
+
+      if (type === 'series' && watchProgress.episodeId) {
         const details = getEpisodeDetails(watchProgress.episodeId);
         if (details) {
           episodeInfo = ` • S${details.seasonNumber}:E${details.episodeNumber}${details.episodeName ? ` - ${details.episodeName}` : ''}`;
         }
       }
 
-      const watchedDate = watchProgress?.lastUpdated
-        ? new Date(watchProgress.lastUpdated).toLocaleDateString('en-US')
-        : new Date().toLocaleDateString('en-US');
+      const displayText =
+        progressPercent >= 85 ? 'Watched' : `${Math.round(progressPercent)}% watched`;
+      let syncStatus = '';
 
-      const watchedViaTrakt = isTraktAuthenticated &&
-        watchProgress?.traktProgress !== undefined &&
-        watchProgress.traktProgress >= 95;
+      if (isTraktAuthenticated) {
+        if (isUsingTraktProgress) {
+          syncStatus = watchProgress.traktSynced
+            ? ' • Synced with Trakt'
+            : ' • Using Trakt progress';
+        } else if (watchProgress.traktSynced) {
+          syncStatus = ' • Synced with Trakt';
+        }
+      }
 
       return {
-        progressPercent: 100,
-        formattedTime: watchedDate,
+        progressPercent,
+        formattedTime,
         episodeInfo,
-        displayText: watchedViaTrakt ? 'Watched on Trakt' : 'Watched',
-        syncStatus: '',
-        isTraktSynced: watchProgress?.traktSynced && isTraktAuthenticated,
-        isWatched: true
+        displayText,
+        syncStatus,
+        isTraktSynced: watchProgress.traktSynced && isTraktAuthenticated,
+        isWatched: false,
       };
-    }
+    }, [watchProgress, type, getEpisodeDetails, isTraktAuthenticated, isWatched]);
 
-    if (!watchProgress || watchProgress.duration === 0) return null;
-
-    let progressPercent;
-    let isUsingTraktProgress = false;
-
-    if (isTraktAuthenticated && watchProgress.traktProgress !== undefined) {
-      progressPercent = watchProgress.traktProgress;
-      isUsingTraktProgress = true;
-    } else {
-      progressPercent = (watchProgress.currentTime / watchProgress.duration) * 100;
-    }
-    const formattedTime = new Date(watchProgress.lastUpdated).toLocaleDateString('en-US');
-    let episodeInfo = '';
-
-    if (type === 'series' && watchProgress.episodeId) {
-      const details = getEpisodeDetails(watchProgress.episodeId);
-      if (details) {
-        episodeInfo = ` • S${details.seasonNumber}:E${details.episodeNumber}${details.episodeName ? ` - ${details.episodeName}` : ''}`;
+    useEffect(() => {
+      if (progressData) {
+        progressBoxOpacity.value = withTiming(1, { duration: 400 });
+        progressBoxScale.value = withTiming(1, { duration: 400 });
+        progressBoxTranslateY.value = withTiming(0, { duration: 400 });
+      } else {
+        progressBoxOpacity.value = withTiming(0, { duration: 300 });
+        progressBoxScale.value = withTiming(0.8, { duration: 300 });
+        progressBoxTranslateY.value = withTiming(20, { duration: 300 });
       }
-    }
+    }, [progressData]);
 
-    let displayText = progressPercent >= 85 ? 'Watched' : `${Math.round(progressPercent)}% watched`;
-    let syncStatus = '';
+    const progressBoxAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: progressBoxOpacity.value,
+      transform: [{ scale: progressBoxScale.value }, { translateY: progressBoxTranslateY.value }],
+    }));
 
-    if (isTraktAuthenticated) {
-      if (isUsingTraktProgress) {
-        syncStatus = watchProgress.traktSynced ? ' • Synced with Trakt' : ' • Using Trakt progress';
-      } else if (watchProgress.traktSynced) {
-        syncStatus = ' • Synced with Trakt';
-      }
-    }
+    const isVisible = !!progressData && !(isTrailerPlaying && !trailerMuted && trailerReady);
+    if (!isVisible) return null;
 
-    return {
-      progressPercent,
-      formattedTime,
-      episodeInfo,
-      displayText,
-      syncStatus,
-      isTraktSynced: watchProgress.traktSynced && isTraktAuthenticated,
-      isWatched: false
-    };
-  }, [watchProgress, type, getEpisodeDetails, isTraktAuthenticated, isWatched]);
+    const isCompleted = progressData.isWatched || progressData.progressPercent >= 85;
 
-  useEffect(() => {
-    if (progressData) {
-      progressBoxOpacity.value = withTiming(1, { duration: 400 });
-      progressBoxScale.value = withTiming(1, { duration: 400 });
-      progressBoxTranslateY.value = withTiming(0, { duration: 400 });
-    } else {
-      progressBoxOpacity.value = withTiming(0, { duration: 300 });
-      progressBoxScale.value = withTiming(0.8, { duration: 300 });
-      progressBoxTranslateY.value = withTiming(20, { duration: 300 });
-    }
-  }, [progressData]);
-
-  const progressBoxAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: progressBoxOpacity.value,
-    transform: [
-      { scale: progressBoxScale.value },
-      { translateY: progressBoxTranslateY.value }
-    ],
-  }));
-
-  const isVisible = !!progressData && !(isTrailerPlaying && !trailerMuted && trailerReady);
-  if (!isVisible) return null;
-
-  const isCompleted = progressData.isWatched || progressData.progressPercent >= 85;
-
-  return (
-    <Animated.View style={[styles.tvWatchProgressContainer, animatedStyle]}>
-      <Animated.View style={[styles.tvProgressGlassBackground, progressBoxAnimatedStyle]}>
-        {Platform.OS === 'ios' ? (
-          GlassViewComp && liquidGlassAvailable ? (
-            <GlassViewComp
-              style={styles.blurBackground}
-              glassEffectStyle="regular"
-            />
+    return (
+      <Animated.View style={[styles.tvWatchProgressContainer, animatedStyle]}>
+        <Animated.View style={[styles.tvProgressGlassBackground, progressBoxAnimatedStyle]}>
+          {Platform.OS === 'ios' ? (
+            GlassViewComp && liquidGlassAvailable ? (
+              <GlassViewComp style={styles.blurBackground} glassEffectStyle="regular" />
+            ) : (
+              <ExpoBlurView intensity={20} style={styles.blurBackground} tint="dark" />
+            )
           ) : (
-            <ExpoBlurView intensity={20} style={styles.blurBackground} tint="dark" />
-          )
-        ) : (
-          <View style={styles.androidProgressBlur} />
-        )}
-
-        <View style={styles.watchProgressBarContainer}>
-          <View style={styles.watchProgressBar}>
-            <Animated.View
-              style={[
-                styles.watchProgressFill,
-                {
-                  width: `${progressData.progressPercent}%`,
-                  backgroundColor: isCompleted
-                    ? '#00ff88'
-                    : progressData.isTraktSynced
-                      ? '#E50914'
-                      : currentTheme.colors.primary,
-                }
-              ]}
-            />
-          </View>
-        </View>
-
-        <View style={styles.watchProgressTextContainer}>
-          <View style={styles.progressInfoMain}>
-            <Text style={[styles.tvWatchProgressMainText, {
-              color: isCompleted ? '#00ff88' : currentTheme.colors.white,
-              fontWeight: isCompleted ? '700' : '600'
-            }]}>
-              {progressData.displayText}
-            </Text>
-          </View>
-
-          {progressData.episodeInfo && (
-            <Text style={[styles.tvWatchProgressSubText, {
-              color: isCompleted ? 'rgba(0,255,136,0.7)' : currentTheme.colors.textMuted,
-            }]}>
-              {progressData.episodeInfo}
-            </Text>
+            <View style={styles.androidProgressBlur} />
           )}
-        </View>
+
+          <View style={styles.watchProgressBarContainer}>
+            <View style={styles.watchProgressBar}>
+              <Animated.View
+                style={[
+                  styles.watchProgressFill,
+                  {
+                    width: `${progressData.progressPercent}%`,
+                    backgroundColor: isCompleted
+                      ? '#00ff88'
+                      : progressData.isTraktSynced
+                        ? '#E50914'
+                        : currentTheme.colors.primary,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+
+          <View style={styles.watchProgressTextContainer}>
+            <View style={styles.progressInfoMain}>
+              <Text
+                style={[
+                  styles.tvWatchProgressMainText,
+                  {
+                    color: isCompleted ? '#00ff88' : currentTheme.colors.white,
+                    fontWeight: isCompleted ? '700' : '600',
+                  },
+                ]}
+              >
+                {progressData.displayText}
+              </Text>
+            </View>
+
+            {progressData.episodeInfo && (
+              <Text
+                style={[
+                  styles.tvWatchProgressSubText,
+                  {
+                    color: isCompleted ? 'rgba(0,255,136,0.7)' : currentTheme.colors.textMuted,
+                  },
+                ]}
+              >
+                {progressData.episodeInfo}
+              </Text>
+            )}
+          </View>
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
-  );
-});
+    );
+  }
+);
 
 // =============================================================================
 // Main HeroSection Component
 // =============================================================================
 
-const HeroSection: React.FC<HeroSectionProps> = memo(({
-  metadata,
-  bannerImage,
-  loadingBanner,
-  scrollY,
-  heroHeight,
-  heroOpacity,
-  logoOpacity,
-  buttonsOpacity,
-  buttonsTranslateY,
-  watchProgressOpacity,
-  watchProgress,
-  onStableLogoUriChange,
-  type,
-  getEpisodeDetails,
-  handleShowStreams,
-  handleToggleLibrary,
-  inLibrary,
-  id,
-  navigation,
-  getPlayButtonText,
-  setBannerImage,
-  groupedEpisodes,
-  dynamicBackgroundColor,
-  handleBack,
-  tmdbId,
-  isAuthenticated,
-  isInWatchlist,
-  isInCollection,
-  onToggleWatchlist,
-  onToggleCollection,
-  // TV-specific props
-  hasTVPreferredFocus = true,
-  onFocusSection,
-  nextFocusDown,
-}) => {
-  const { currentTheme } = useTheme();
-  const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
-  const { settings, updateSetting } = useSettings();
-  const { isTrailerPlaying: globalTrailerPlaying, setTrailerPlaying } = useTrailer();
-  const isFocused = useIsFocused();
-  const tvNav = useTVNavigationOptional();
+const HeroSection: React.FC<HeroSectionProps> = memo(
+  ({
+    metadata,
+    bannerImage,
+    loadingBanner,
+    scrollY,
+    heroHeight,
+    heroOpacity,
+    logoOpacity,
+    buttonsOpacity,
+    buttonsTranslateY,
+    watchProgressOpacity,
+    watchProgress,
+    onStableLogoUriChange,
+    type,
+    getEpisodeDetails,
+    handleShowStreams,
+    handleToggleLibrary,
+    inLibrary,
+    id,
+    navigation,
+    getPlayButtonText,
+    setBannerImage,
+    groupedEpisodes,
+    dynamicBackgroundColor,
+    handleBack,
+    tmdbId,
+    isAuthenticated,
+    isInWatchlist,
+    isInCollection,
+    onToggleWatchlist,
+    onToggleCollection,
+    // TV-specific props
+    hasTVPreferredFocus = true,
+    onFocusSection,
+    nextFocusDown,
+  }) => {
+    const { currentTheme } = useTheme();
+    const { isAuthenticated: isTraktAuthenticated } = useTraktContext();
+    const { settings, updateSetting } = useSettings();
+    const { isTrailerPlaying: globalTrailerPlaying, setTrailerPlaying } = useTrailer();
+    const isFocused = useIsFocused();
+    const tvNav = useTVNavigationOptional();
 
-  // Refs for TV focus navigation
-  const backButtonRef = useRef<FocusableRef>(null);
+    // Refs for TV focus navigation
+    const backButtonRef = useRef<FocusableRef>(null);
 
-  // State management
-  const interactionComplete = useRef(false);
-  const [shouldLoadSecondaryData, setShouldLoadSecondaryData] = useState(false);
-  const appState = useRef(AppState.currentState);
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
-  const [trailerLoading, setTrailerLoading] = useState(false);
-  const [trailerError, setTrailerError] = useState(false);
-  const trailerMuted = settings.trailerMuted;
-  const [trailerReady, setTrailerReady] = useState(false);
-  const [trailerPreloaded, setTrailerPreloaded] = useState(false);
-  const trailerVideoRef = useRef<any>(null);
-  const imageOpacity = useSharedValue(1);
-  const imageLoadOpacity = useSharedValue(0);
-  const trailerOpacity = useSharedValue(0);
-  const thumbnailOpacity = useSharedValue(1);
-  const pausedByScrollSV = useSharedValue(0);
-  const scrollGuardEnabledSV = useSharedValue(0);
-  const isPlayingSV = useSharedValue(0);
-  const isFocusedSV = useSharedValue(0);
-  const startedOnFocusRef = useRef(false);
-  const startedOnReadyRef = useRef(false);
-  const actionButtonsOpacity = useSharedValue(1);
-  const titleCardTranslateY = useSharedValue(0);
-  const genreOpacity = useSharedValue(1);
+    // State management
+    const interactionComplete = useRef(false);
+    const [shouldLoadSecondaryData, setShouldLoadSecondaryData] = useState(false);
+    const appState = useRef(AppState.currentState);
+    const [imageError, setImageError] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+    const [trailerLoading, setTrailerLoading] = useState(false);
+    const [trailerError, setTrailerError] = useState(false);
+    const trailerMuted = settings.trailerMuted;
+    const [trailerReady, setTrailerReady] = useState(false);
+    const [trailerPreloaded, setTrailerPreloaded] = useState(false);
+    const trailerVideoRef = useRef<any>(null);
+    const imageOpacity = useSharedValue(1);
+    const imageLoadOpacity = useSharedValue(0);
+    const trailerOpacity = useSharedValue(0);
+    const thumbnailOpacity = useSharedValue(1);
+    const pausedByScrollSV = useSharedValue(0);
+    const scrollGuardEnabledSV = useSharedValue(0);
+    const isPlayingSV = useSharedValue(0);
+    const isFocusedSV = useSharedValue(0);
+    const startedOnFocusRef = useRef(false);
+    const startedOnReadyRef = useRef(false);
+    const actionButtonsOpacity = useSharedValue(1);
+    const titleCardTranslateY = useSharedValue(0);
+    const genreOpacity = useSharedValue(1);
 
-  // Theme colors
-  const themeColors = useMemo(() => ({
-    black: currentTheme.colors.black,
-    darkBackground: currentTheme.colors.darkBackground,
-    highEmphasis: currentTheme.colors.highEmphasis,
-    text: currentTheme.colors.text
-  }), [currentTheme.colors.black, currentTheme.colors.darkBackground, currentTheme.colors.highEmphasis, currentTheme.colors.text]);
-
-  // Static styles
-  const staticStyles = useMemo(() => ({
-    heroWrapper: styles.heroWrapper,
-    heroSection: styles.heroSection,
-    absoluteFill: styles.absoluteFill,
-    thumbnailContainer: styles.thumbnailContainer,
-    thumbnailImage: styles.thumbnailImage,
-  }), []);
-
-  // Image source
-  const imageSource = useMemo(() =>
-    bannerImage || metadata.banner || metadata.poster
-  , [bannerImage, metadata.banner, metadata.poster]);
-
-  // Logo state
-  const [stableLogoUri, setStableLogoUri] = useState<string | null>(metadata?.logo || null);
-  const [logoHasLoadedSuccessfully, setLogoHasLoadedSuccessfully] = useState(false);
-  const logoLoadOpacity = useSharedValue(0);
-  const [shouldShowTextFallback, setShouldShowTextFallback] = useState<boolean>(!metadata?.logo);
-  const logoWaitTimerRef = useRef<any>(null);
-  const lastSyncedLogoRef = useRef<string | undefined>(metadata?.logo);
-
-  // Update stable logo URI when metadata logo changes
-  useEffect(() => {
-    const currentMetadataLogo = metadata?.logo;
-
-    if (currentMetadataLogo !== lastSyncedLogoRef.current) {
-      lastSyncedLogoRef.current = currentMetadataLogo;
-
-      if (logoWaitTimerRef.current) {
-        try { clearTimeout(logoWaitTimerRef.current); } catch (_e) {}
-        logoWaitTimerRef.current = null;
-      }
-
-      if (currentMetadataLogo) {
-        setStableLogoUri(currentMetadataLogo);
-        onStableLogoUriChange?.(currentMetadataLogo);
-        setLogoHasLoadedSuccessfully(false);
-        logoLoadOpacity.value = 0;
-        setShouldShowTextFallback(false);
-      } else {
-        setStableLogoUri(null);
-        onStableLogoUriChange?.(null);
-        setLogoHasLoadedSuccessfully(false);
-        setShouldShowTextFallback(false);
-        logoWaitTimerRef.current = setTimeout(() => {
-          setShouldShowTextFallback(true);
-        }, 600);
-      }
-    }
-
-    return () => {
-      if (logoWaitTimerRef.current) {
-        try { clearTimeout(logoWaitTimerRef.current); } catch (_e) {}
-        logoWaitTimerRef.current = null;
-      }
-    };
-  }, [metadata?.logo]);
-
-  const handleLogoLoad = useCallback(() => {
-    setLogoHasLoadedSuccessfully(true);
-    logoLoadOpacity.value = withTiming(1, { duration: 300 });
-  }, []);
-
-  const handleLogoError = useCallback(() => {
-    if (!logoHasLoadedSuccessfully) {
-      const addonLogo = (metadata as any)?.addonLogo;
-      if (addonLogo && stableLogoUri !== addonLogo) {
-        setStableLogoUri(addonLogo);
-        setLogoHasLoadedSuccessfully(false);
-        logoLoadOpacity.value = 0;
-      } else {
-        setStableLogoUri(null);
-      }
-    }
-  }, [logoHasLoadedSuccessfully, stableLogoUri, metadata, logoLoadOpacity]);
-
-  // Lazy loading setup
-  useEffect(() => {
-    const timer = InteractionManager.runAfterInteractions(() => {
-      if (!interactionComplete.current) {
-        interactionComplete.current = true;
-        setShouldLoadSecondaryData(true);
-      }
-    });
-
-    return () => timer.cancel();
-  }, []);
-
-  // Trailer handlers (simplified for TV)
-  const handleTrailerReady = useCallback(() => {
-    if (!isFocused) return;
-    if (!trailerPreloaded) {
-      setTrailerPreloaded(true);
-    }
-    setTrailerReady(true);
-
-    thumbnailOpacity.value = withTiming(0, { duration: 500 });
-    trailerOpacity.value = withTiming(1, { duration: 500 });
-    scrollGuardEnabledSV.value = 0;
-    setTimeout(() => { scrollGuardEnabledSV.value = 1; }, 1000);
-  }, [thumbnailOpacity, trailerOpacity, trailerPreloaded, isFocused]);
-
-  const handleTrailerError = useCallback(() => {
-    setTrailerError(true);
-    setTrailerReady(false);
-    setTrailerPlaying(false);
-
-    trailerOpacity.value = withTiming(0, { duration: 300 });
-    thumbnailOpacity.value = withTiming(1, { duration: 300 });
-  }, [trailerOpacity, thumbnailOpacity]);
-
-  const handleTrailerEnd = useCallback(async () => {
-    logger.info('HeroSection.tv', 'Trailer ended');
-    setTrailerPlaying(false);
-    setTrailerReady(false);
-    setTrailerPreloaded(false);
-
-    trailerOpacity.value = withTiming(0, { duration: 500 });
-    thumbnailOpacity.value = withTiming(1, { duration: 500 });
-    actionButtonsOpacity.value = withTiming(1, { duration: 500 });
-    genreOpacity.value = withTiming(1, { duration: 500 });
-    titleCardTranslateY.value = withTiming(0, { duration: 500 });
-    watchProgressOpacity.value = withTiming(1, { duration: 500 });
-  }, [trailerOpacity, thumbnailOpacity, actionButtonsOpacity, genreOpacity, titleCardTranslateY, watchProgressOpacity, setTrailerPlaying]);
-
-  // Image handlers
-  const handleImageError = useCallback(() => {
-    if (!shouldLoadSecondaryData) return;
-
-    runOnUI(() => {
-      imageOpacity.value = withTiming(0.6, { duration: 150 });
-      imageLoadOpacity.value = withTiming(0, { duration: 150 });
-    })();
-
-    setImageError(true);
-    setImageLoaded(false);
-
-    if (bannerImage !== metadata.banner && metadata.banner) {
-      setBannerImage(metadata.banner);
-    } else if (bannerImage !== metadata.poster && metadata.poster) {
-      setBannerImage(metadata.poster);
-    }
-  }, [shouldLoadSecondaryData, bannerImage, metadata.banner, metadata.poster, setBannerImage]);
-
-  const handleImageLoad = useCallback(() => {
-    runOnUI(() => {
-      imageOpacity.value = withTiming(1, { duration: 150 });
-      imageLoadOpacity.value = withTiming(1, { duration: 400 });
-    })();
-
-    setImageError(false);
-    setImageLoaded(true);
-  }, []);
-
-  // Animated styles
-  const heroAnimatedStyle = useAnimatedStyle(() => ({
-    height: heroHeight.value,
-    opacity: heroOpacity.value,
-  }), []);
-
-  const logoAnimatedStyle = useAnimatedStyle(() => {
-    const hasProgress = watchProgress && watchProgress.duration > 0;
-    const logoScale = hasProgress ? 0.85 : 1;
-
-    return {
-      opacity: logoOpacity.value,
-      transform: [
-        { scale: withTiming(logoScale, { duration: 300 }) }
+    // Theme colors
+    const themeColors = useMemo(
+      () => ({
+        black: currentTheme.colors.black,
+        darkBackground: currentTheme.colors.darkBackground,
+        highEmphasis: currentTheme.colors.highEmphasis,
+        text: currentTheme.colors.text,
+      }),
+      [
+        currentTheme.colors.black,
+        currentTheme.colors.darkBackground,
+        currentTheme.colors.highEmphasis,
+        currentTheme.colors.text,
       ]
-    };
-  }, [watchProgress]);
-
-  const logoFadeStyle = useAnimatedStyle(() => ({
-    opacity: logoLoadOpacity.value,
-  }));
-
-  const watchProgressAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: watchProgressOpacity.value,
-  }), []);
-
-  const backdropImageStyle = useAnimatedStyle(() => {
-    'worklet';
-    const scrollYValue = scrollY.value;
-
-    const DEFAULT_ZOOM = 1.1;
-    const SCROLL_UP_MULTIPLIER = 0.002;
-    const SCROLL_DOWN_MULTIPLIER = 0.0001;
-    const MAX_SCALE = 1.4;
-    const PARALLAX_FACTOR = 0.3;
-
-    const scrollUpScale = DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
-    const scrollDownScale = DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
-    const scale = Math.min(scrollYValue < 0 ? scrollUpScale : scrollDownScale, MAX_SCALE);
-
-    const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
-
-    return {
-      opacity: imageOpacity.value * imageLoadOpacity.value,
-      transform: [
-        { scale },
-        { translateY: parallaxOffset }
-      ],
-    };
-  }, []);
-
-  const buttonsAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: buttonsOpacity.value * actionButtonsOpacity.value,
-    transform: [{
-      translateY: interpolate(
-        buttonsTranslateY.value,
-        [0, 20],
-        [0, 20],
-        Extrapolate.CLAMP
-      )
-    }]
-  }), []);
-
-  const titleCardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: titleCardTranslateY.value }]
-  }), []);
-
-  const genreAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: genreOpacity.value
-  }), []);
-
-  // Genre elements
-  const genreElements = useMemo(() => {
-    if (!shouldLoadSecondaryData || !metadata?.genres?.length) return null;
-
-    const genresToDisplay = metadata.genres.slice(0, 3);
-    const elements: React.ReactNode[] = [];
-
-    genresToDisplay.forEach((genreName: string, index: number) => {
-      elements.push(
-        <Text
-          key={`genre-${index}`}
-          style={[styles.tvGenreText, { color: themeColors.text }]}
-        >
-          {genreName}
-        </Text>
-      );
-
-      if (index < genresToDisplay.length - 1) {
-        elements.push(
-          <Text
-            key={`dot-${index}`}
-            style={[styles.tvGenreDot, { color: themeColors.text }]}
-          >
-            •
-          </Text>
-        );
-      }
-    });
-
-    return (
-      <Animated.View
-        entering={FadeIn.duration(400).delay(200)}
-        style={{ flexDirection: 'row', alignItems: 'center' }}
-      >
-        {elements}
-      </Animated.View>
     );
-  }, [metadata.genres, themeColors.text, shouldLoadSecondaryData]);
 
-  // Play button text
-  const playButtonText = useMemo(() => getPlayButtonText(), [getPlayButtonText]);
+    // Static styles
+    const staticStyles = useMemo(
+      () => ({
+        heroWrapper: styles.heroWrapper,
+        heroSection: styles.heroSection,
+        absoluteFill: styles.absoluteFill,
+        thumbnailContainer: styles.thumbnailContainer,
+        thumbnailImage: styles.thumbnailImage,
+      }),
+      []
+    );
 
-  // Calculate if content is watched
-  const isWatched = useMemo(() => {
-    if (!watchProgress) return false;
+    // Image source
+    const imageSource = useMemo(
+      () => bannerImage || metadata.banner || metadata.poster,
+      [bannerImage, metadata.banner, metadata.poster]
+    );
 
-    if (isTraktAuthenticated && watchProgress.traktProgress !== undefined) {
-      return watchProgress.traktProgress >= 95;
-    }
+    // Logo state
+    const [stableLogoUri, setStableLogoUri] = useState<string | null>(metadata?.logo || null);
+    const [logoHasLoadedSuccessfully, setLogoHasLoadedSuccessfully] = useState(false);
+    const logoLoadOpacity = useSharedValue(0);
+    const [shouldShowTextFallback, setShouldShowTextFallback] = useState<boolean>(!metadata?.logo);
+    const logoWaitTimerRef = useRef<any>(null);
+    const lastSyncedLogoRef = useRef<string | undefined>(metadata?.logo);
 
-    if (watchProgress.duration === 0) return false;
-    const progressPercent = (watchProgress.currentTime / watchProgress.duration) * 100;
-    return progressPercent >= 85;
-  }, [watchProgress, isTraktAuthenticated]);
+    // Update stable logo URI when metadata logo changes
+    useEffect(() => {
+      const currentMetadataLogo = metadata?.logo;
 
-  // Focus effect
-  useFocusEffect(
-    useCallback(() => {
-      logger.info('HeroSection.tv', 'Screen focused');
+      if (currentMetadataLogo !== lastSyncedLogoRef.current) {
+        lastSyncedLogoRef.current = currentMetadataLogo;
+
+        if (logoWaitTimerRef.current) {
+          try {
+            clearTimeout(logoWaitTimerRef.current);
+          } catch (_e) {}
+          logoWaitTimerRef.current = null;
+        }
+
+        if (currentMetadataLogo) {
+          setStableLogoUri(currentMetadataLogo);
+          onStableLogoUriChange?.(currentMetadataLogo);
+          setLogoHasLoadedSuccessfully(false);
+          logoLoadOpacity.value = 0;
+          setShouldShowTextFallback(false);
+        } else {
+          setStableLogoUri(null);
+          onStableLogoUriChange?.(null);
+          setLogoHasLoadedSuccessfully(false);
+          setShouldShowTextFallback(false);
+          logoWaitTimerRef.current = setTimeout(() => {
+            setShouldShowTextFallback(true);
+          }, 600);
+        }
+      }
 
       return () => {
-        logger.info('HeroSection.tv', 'Screen unfocused - stopping trailer');
-        setTrailerPlaying(false);
-        isPlayingSV.value = 0;
-        startedOnFocusRef.current = false;
-        startedOnReadyRef.current = false;
+        if (logoWaitTimerRef.current) {
+          try {
+            clearTimeout(logoWaitTimerRef.current);
+          } catch (_e) {}
+          logoWaitTimerRef.current = null;
+        }
       };
-    }, [setTrailerPlaying])
-  );
+    }, [metadata?.logo]);
 
-  // =============================================================================
-  // Render
-  // =============================================================================
+    const handleLogoLoad = useCallback(() => {
+      setLogoHasLoadedSuccessfully(true);
+      logoLoadOpacity.value = withTiming(1, { duration: 300 });
+    }, []);
 
-  return (
-    <View style={staticStyles.heroWrapper}>
-      <Animated.View style={[staticStyles.heroSection, heroAnimatedStyle]}>
-        {/* Background */}
-        <View style={[staticStyles.absoluteFill, { backgroundColor: themeColors.black }]} />
+    const handleLogoError = useCallback(() => {
+      if (!logoHasLoadedSuccessfully) {
+        const addonLogo = (metadata as any)?.addonLogo;
+        if (addonLogo && stableLogoUri !== addonLogo) {
+          setStableLogoUri(addonLogo);
+          setLogoHasLoadedSuccessfully(false);
+          logoLoadOpacity.value = 0;
+        } else {
+          setStableLogoUri(null);
+        }
+      }
+    }, [logoHasLoadedSuccessfully, stableLogoUri, metadata, logoLoadOpacity]);
 
-        {/* Background thumbnail image */}
-        {shouldLoadSecondaryData && imageSource && !loadingBanner && (
-          <Animated.View style={[staticStyles.thumbnailContainer, {
-            opacity: thumbnailOpacity
-          }]}>
-            <Animated.Image
-              source={{ uri: imageSource }}
-              style={[staticStyles.thumbnailImage, backdropImageStyle]}
-              resizeMode="cover"
-              onError={handleImageError}
-              onLoad={handleImageLoad}
-            />
-          </Animated.View>
-        )}
+    // Lazy loading setup
+    useEffect(() => {
+      const timer = InteractionManager.runAfterInteractions(() => {
+        if (!interactionComplete.current) {
+          interactionComplete.current = true;
+          setShouldLoadSecondaryData(true);
+        }
+      });
 
-        {/* Focusable back button */}
-        <Animated.View style={styles.backButtonContainer}>
-          <Focusable
-            ref={backButtonRef}
-            onPress={handleBack}
-            focusId="back-button"
-            style={styles.tvBackButton}
-            animationConfig={{
-              focusScale: 1.15,
-              unfocusedOpacity: 0.8,
-              showFocusBorder: true,
-              focusBorderColor: '#fff',
-              focusBorderWidth: 2,
-            }}
-            accessibilityLabel="Go back"
-            accessibilityHint="Press to return to previous screen"
-          >
-            <MaterialIcons
-              name="arrow-back"
-              size={32}
-              color="#fff"
-              style={styles.backButtonIcon}
-            />
-          </Focusable>
-        </Animated.View>
+      return () => timer.cancel();
+    }, []);
 
-        {/* Gradient overlay */}
-        <LinearGradient
-          colors={[
-            'rgba(0,0,0,0)',
-            'rgba(0,0,0,0.05)',
-            'rgba(0,0,0,0.15)',
-            'rgba(0,0,0,0.35)',
-            'rgba(0,0,0,0.65)',
-            dynamicBackgroundColor || themeColors.darkBackground
-          ]}
-          locations={[0, 0.3, 0.55, 0.75, 0.9, 1]}
-          style={styles.heroGradient}
+    // Trailer handlers (simplified for TV)
+    const handleTrailerReady = useCallback(() => {
+      if (!isFocused) return;
+      if (!trailerPreloaded) {
+        setTrailerPreloaded(true);
+      }
+      setTrailerReady(true);
+
+      thumbnailOpacity.value = withTiming(0, { duration: 500 });
+      trailerOpacity.value = withTiming(1, { duration: 500 });
+      scrollGuardEnabledSV.value = 0;
+      setTimeout(() => {
+        scrollGuardEnabledSV.value = 1;
+      }, 1000);
+    }, [thumbnailOpacity, trailerOpacity, trailerPreloaded, isFocused]);
+
+    const handleTrailerError = useCallback(() => {
+      setTrailerError(true);
+      setTrailerReady(false);
+      setTrailerPlaying(false);
+
+      trailerOpacity.value = withTiming(0, { duration: 300 });
+      thumbnailOpacity.value = withTiming(1, { duration: 300 });
+    }, [trailerOpacity, thumbnailOpacity]);
+
+    const handleTrailerEnd = useCallback(async () => {
+      logger.info('HeroSection.tv', 'Trailer ended');
+      setTrailerPlaying(false);
+      setTrailerReady(false);
+      setTrailerPreloaded(false);
+
+      trailerOpacity.value = withTiming(0, { duration: 500 });
+      thumbnailOpacity.value = withTiming(1, { duration: 500 });
+      actionButtonsOpacity.value = withTiming(1, { duration: 500 });
+      genreOpacity.value = withTiming(1, { duration: 500 });
+      titleCardTranslateY.value = withTiming(0, { duration: 500 });
+      watchProgressOpacity.value = withTiming(1, { duration: 500 });
+    }, [
+      trailerOpacity,
+      thumbnailOpacity,
+      actionButtonsOpacity,
+      genreOpacity,
+      titleCardTranslateY,
+      watchProgressOpacity,
+      setTrailerPlaying,
+    ]);
+
+    // Image handlers
+    const handleImageError = useCallback(() => {
+      if (!shouldLoadSecondaryData) return;
+
+      runOnUI(() => {
+        imageOpacity.value = withTiming(0.6, { duration: 150 });
+        imageLoadOpacity.value = withTiming(0, { duration: 150 });
+      })();
+
+      setImageError(true);
+      setImageLoaded(false);
+
+      if (bannerImage !== metadata.banner && metadata.banner) {
+        setBannerImage(metadata.banner);
+      } else if (bannerImage !== metadata.poster && metadata.poster) {
+        setBannerImage(metadata.poster);
+      }
+    }, [shouldLoadSecondaryData, bannerImage, metadata.banner, metadata.poster, setBannerImage]);
+
+    const handleImageLoad = useCallback(() => {
+      runOnUI(() => {
+        imageOpacity.value = withTiming(1, { duration: 150 });
+        imageLoadOpacity.value = withTiming(1, { duration: 400 });
+      })();
+
+      setImageError(false);
+      setImageLoaded(true);
+    }, []);
+
+    // Animated styles
+    const heroAnimatedStyle = useAnimatedStyle(
+      () => ({
+        height: heroHeight.value,
+        opacity: heroOpacity.value,
+      }),
+      []
+    );
+
+    const logoAnimatedStyle = useAnimatedStyle(() => {
+      const hasProgress = watchProgress && watchProgress.duration > 0;
+      const logoScale = hasProgress ? 0.85 : 1;
+
+      return {
+        opacity: logoOpacity.value,
+        transform: [{ scale: withTiming(logoScale, { duration: 300 }) }],
+      };
+    }, [watchProgress]);
+
+    const logoFadeStyle = useAnimatedStyle(() => ({
+      opacity: logoLoadOpacity.value,
+    }));
+
+    const watchProgressAnimatedStyle = useAnimatedStyle(
+      () => ({
+        opacity: watchProgressOpacity.value,
+      }),
+      []
+    );
+
+    const backdropImageStyle = useAnimatedStyle(() => {
+      'worklet';
+      const scrollYValue = scrollY.value;
+
+      const DEFAULT_ZOOM = 1.1;
+      const SCROLL_UP_MULTIPLIER = 0.002;
+      const SCROLL_DOWN_MULTIPLIER = 0.0001;
+      const MAX_SCALE = 1.4;
+      const PARALLAX_FACTOR = 0.3;
+
+      const scrollUpScale = DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
+      const scrollDownScale = DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
+      const scale = Math.min(scrollYValue < 0 ? scrollUpScale : scrollDownScale, MAX_SCALE);
+
+      const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
+
+      return {
+        opacity: imageOpacity.value * imageLoadOpacity.value,
+        transform: [{ scale }, { translateY: parallaxOffset }],
+      };
+    }, []);
+
+    const buttonsAnimatedStyle = useAnimatedStyle(
+      () => ({
+        opacity: buttonsOpacity.value * actionButtonsOpacity.value,
+        transform: [
+          {
+            translateY: interpolate(buttonsTranslateY.value, [0, 20], [0, 20], Extrapolate.CLAMP),
+          },
+        ],
+      }),
+      []
+    );
+
+    const titleCardAnimatedStyle = useAnimatedStyle(
+      () => ({
+        transform: [{ translateY: titleCardTranslateY.value }],
+      }),
+      []
+    );
+
+    const genreAnimatedStyle = useAnimatedStyle(
+      () => ({
+        opacity: genreOpacity.value,
+      }),
+      []
+    );
+
+    // Genre elements
+    const genreElements = useMemo(() => {
+      if (!shouldLoadSecondaryData || !metadata?.genres?.length) return null;
+
+      const genresToDisplay = metadata.genres.slice(0, 3);
+      const elements: React.ReactNode[] = [];
+
+      genresToDisplay.forEach((genreName: string, index: number) => {
+        elements.push(
+          <Text key={`genre-${index}`} style={[styles.tvGenreText, { color: themeColors.text }]}>
+            {genreName}
+          </Text>
+        );
+
+        if (index < genresToDisplay.length - 1) {
+          elements.push(
+            <Text key={`dot-${index}`} style={[styles.tvGenreDot, { color: themeColors.text }]}>
+              •
+            </Text>
+          );
+        }
+      });
+
+      return (
+        <Animated.View
+          entering={FadeIn.duration(400).delay(200)}
+          style={{ flexDirection: 'row', alignItems: 'center' }}
         >
+          {elements}
+        </Animated.View>
+      );
+    }, [metadata.genres, themeColors.text, shouldLoadSecondaryData]);
+
+    // Play button text
+    const playButtonText = useMemo(() => getPlayButtonText(), [getPlayButtonText]);
+
+    // Calculate if content is watched
+    const isWatched = useMemo(() => {
+      if (!watchProgress) return false;
+
+      if (isTraktAuthenticated && watchProgress.traktProgress !== undefined) {
+        return watchProgress.traktProgress >= 95;
+      }
+
+      if (watchProgress.duration === 0) return false;
+      const progressPercent = (watchProgress.currentTime / watchProgress.duration) * 100;
+      return progressPercent >= 85;
+    }, [watchProgress, isTraktAuthenticated]);
+
+    // Focus effect
+    useFocusEffect(
+      useCallback(() => {
+        logger.info('HeroSection.tv', 'Screen focused');
+
+        return () => {
+          logger.info('HeroSection.tv', 'Screen unfocused - stopping trailer');
+          setTrailerPlaying(false);
+          isPlayingSV.value = 0;
+          startedOnFocusRef.current = false;
+          startedOnReadyRef.current = false;
+        };
+      }, [setTrailerPlaying])
+    );
+
+    // =============================================================================
+    // Render
+    // =============================================================================
+
+    return (
+      <View style={staticStyles.heroWrapper}>
+        <Animated.View style={[staticStyles.heroSection, heroAnimatedStyle]}>
+          {/* Background */}
+          <View style={[staticStyles.absoluteFill, { backgroundColor: themeColors.black }]} />
+
+          {/* Background thumbnail image */}
+          {shouldLoadSecondaryData && imageSource && !loadingBanner && (
+            <Animated.View
+              style={[
+                staticStyles.thumbnailContainer,
+                {
+                  opacity: thumbnailOpacity,
+                },
+              ]}
+            >
+              <Animated.Image
+                source={{ uri: imageSource }}
+                style={[staticStyles.thumbnailImage, backdropImageStyle]}
+                resizeMode="cover"
+                onError={handleImageError}
+                onLoad={handleImageLoad}
+              />
+            </Animated.View>
+          )}
+
+          {/* Focusable back button */}
+          <Animated.View style={styles.backButtonContainer}>
+            <Focusable
+              ref={backButtonRef}
+              onPress={handleBack}
+              focusId="back-button"
+              style={styles.tvBackButton}
+              animationConfig={{
+                focusScale: 1.15,
+                unfocusedOpacity: 0.8,
+                showFocusBorder: true,
+                focusBorderColor: '#fff',
+                focusBorderWidth: 2,
+              }}
+              accessibilityLabel="Go back"
+              accessibilityHint="Press to return to previous screen"
+            >
+              <MaterialIcons
+                name="arrow-back"
+                size={32}
+                color="#fff"
+                style={styles.backButtonIcon}
+              />
+            </Focusable>
+          </Animated.View>
+
+          {/* Gradient overlay */}
           <LinearGradient
             colors={[
-              'transparent',
-              `${dynamicBackgroundColor || themeColors.darkBackground}10`,
-              `${dynamicBackgroundColor || themeColors.darkBackground}25`,
-              `${dynamicBackgroundColor || themeColors.darkBackground}45`,
-              `${dynamicBackgroundColor || themeColors.darkBackground}65`,
-              `${dynamicBackgroundColor || themeColors.darkBackground}85`,
-              `${dynamicBackgroundColor || themeColors.darkBackground}95`,
-              dynamicBackgroundColor || themeColors.darkBackground
+              'rgba(0,0,0,0)',
+              'rgba(0,0,0,0.05)',
+              'rgba(0,0,0,0.15)',
+              'rgba(0,0,0,0.35)',
+              'rgba(0,0,0,0.65)',
+              dynamicBackgroundColor || themeColors.darkBackground,
             ]}
-            locations={[0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1]}
-            style={styles.bottomFadeGradient}
-            pointerEvents="none"
-          />
-
-          <View style={[styles.heroContent, styles.tvHeroContent]}>
-            {/* Logo/Title */}
-            <Animated.View style={[styles.logoContainer, titleCardAnimatedStyle]}>
-              <Animated.View style={[styles.titleLogoContainer, logoAnimatedStyle]}>
-                {metadata?.logo ? (
-                  <Animated.Image
-                    source={{ uri: stableLogoUri || (metadata?.logo as string) }}
-                    style={[styles.tvTitleLogo, logoFadeStyle]}
-                    resizeMode={'contain'}
-                    onLoad={handleLogoLoad}
-                    onError={handleLogoError}
-                  />
-                ) : shouldShowTextFallback ? (
-                  <Text style={[styles.tvHeroTitle, { color: themeColors.highEmphasis }]}>
-                    {metadata.name}
-                  </Text>
-                ) : (
-                  <View style={styles.tvTitleLogo} />
-                )}
-              </Animated.View>
-            </Animated.View>
-
-            {/* Watch Progress */}
-            <WatchProgressDisplay
-              watchProgress={watchProgress}
-              type={type}
-              getEpisodeDetails={getEpisodeDetails}
-              animatedStyle={watchProgressAnimatedStyle}
-              isWatched={isWatched}
-              isTrailerPlaying={globalTrailerPlaying}
-              trailerMuted={trailerMuted}
-              trailerReady={trailerReady}
+            locations={[0, 0.3, 0.55, 0.75, 0.9, 1]}
+            style={styles.heroGradient}
+          >
+            <LinearGradient
+              colors={[
+                'transparent',
+                `${dynamicBackgroundColor || themeColors.darkBackground}10`,
+                `${dynamicBackgroundColor || themeColors.darkBackground}25`,
+                `${dynamicBackgroundColor || themeColors.darkBackground}45`,
+                `${dynamicBackgroundColor || themeColors.darkBackground}65`,
+                `${dynamicBackgroundColor || themeColors.darkBackground}85`,
+                `${dynamicBackgroundColor || themeColors.darkBackground}95`,
+                dynamicBackgroundColor || themeColors.darkBackground,
+              ]}
+              locations={[0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1]}
+              style={styles.bottomFadeGradient}
+              pointerEvents="none"
             />
 
-            {/* Genre display */}
-            {shouldLoadSecondaryData && genreElements && (
-              <Animated.View style={[styles.tvGenreContainer, genreAnimatedStyle]}>
-                {genreElements}
+            <View style={[styles.heroContent, styles.tvHeroContent]}>
+              {/* Logo/Title */}
+              <Animated.View style={[styles.logoContainer, titleCardAnimatedStyle]}>
+                <Animated.View style={[styles.titleLogoContainer, logoAnimatedStyle]}>
+                  {metadata?.logo ? (
+                    <Animated.Image
+                      source={{ uri: stableLogoUri || (metadata?.logo as string) }}
+                      style={[styles.tvTitleLogo, logoFadeStyle]}
+                      resizeMode={'contain'}
+                      onLoad={handleLogoLoad}
+                      onError={handleLogoError}
+                    />
+                  ) : shouldShowTextFallback ? (
+                    <Text style={[styles.tvHeroTitle, { color: themeColors.highEmphasis }]}>
+                      {metadata.name}
+                    </Text>
+                  ) : (
+                    <View style={styles.tvTitleLogo} />
+                  )}
+                </Animated.View>
               </Animated.View>
-            )}
 
-            {/* TV Action Buttons */}
-            <TVActionButtons
-              handleShowStreams={handleShowStreams}
-              toggleLibrary={handleToggleLibrary}
-              inLibrary={inLibrary}
-              type={type}
-              id={id}
-              navigation={navigation}
-              playButtonText={playButtonText}
-              animatedStyle={buttonsAnimatedStyle}
-              isWatched={isWatched}
-              watchProgress={watchProgress}
-              groupedEpisodes={groupedEpisodes}
-              metadata={metadata}
-              settings={settings}
-              isAuthenticated={isAuthenticated}
-              isInWatchlist={isInWatchlist}
-              isInCollection={isInCollection}
-              onToggleWatchlist={onToggleWatchlist}
-              onToggleCollection={onToggleCollection}
-              hasTVPreferredFocus={hasTVPreferredFocus}
-              onFocusSection={onFocusSection}
-              nextFocusDown={nextFocusDown}
-            />
-          </View>
-        </LinearGradient>
-      </Animated.View>
-    </View>
-  );
-});
+              {/* Watch Progress */}
+              <WatchProgressDisplay
+                watchProgress={watchProgress}
+                type={type}
+                getEpisodeDetails={getEpisodeDetails}
+                animatedStyle={watchProgressAnimatedStyle}
+                isWatched={isWatched}
+                isTrailerPlaying={globalTrailerPlaying}
+                trailerMuted={trailerMuted}
+                trailerReady={trailerReady}
+              />
+
+              {/* Genre display */}
+              {shouldLoadSecondaryData && genreElements && (
+                <Animated.View style={[styles.tvGenreContainer, genreAnimatedStyle]}>
+                  {genreElements}
+                </Animated.View>
+              )}
+
+              {/* TV Action Buttons */}
+              <TVActionButtons
+                handleShowStreams={handleShowStreams}
+                toggleLibrary={handleToggleLibrary}
+                inLibrary={inLibrary}
+                type={type}
+                id={id}
+                navigation={navigation}
+                playButtonText={playButtonText}
+                animatedStyle={buttonsAnimatedStyle}
+                isWatched={isWatched}
+                watchProgress={watchProgress}
+                groupedEpisodes={groupedEpisodes}
+                metadata={metadata}
+                settings={settings}
+                isAuthenticated={isAuthenticated}
+                isInWatchlist={isInWatchlist}
+                isInCollection={isInCollection}
+                onToggleWatchlist={onToggleWatchlist}
+                onToggleCollection={onToggleCollection}
+                hasTVPreferredFocus={hasTVPreferredFocus}
+                onFocusSection={onFocusSection}
+                nextFocusDown={nextFocusDown}
+              />
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      </View>
+    );
+  }
+);
 
 // =============================================================================
 // Styles

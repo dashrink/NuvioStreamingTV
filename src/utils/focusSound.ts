@@ -1,7 +1,8 @@
-import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { mmkvStorage } from '../services/mmkvStorage';
+import { Platform } from 'react-native';
+
 import { settingsEmitter } from '../hooks/useSettings';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 /**
  * Focus feedback types for different interaction contexts
@@ -44,15 +45,13 @@ const loadFocusFeedbackSetting = async (): Promise<boolean> => {
     const scopedKey = `@user:${scope}:${SETTINGS_STORAGE_KEY}`;
 
     // Try scoped settings first, then fallback to legacy
-    const settingsJson = await mmkvStorage.getItem(scopedKey) ||
-                         await mmkvStorage.getItem(SETTINGS_STORAGE_KEY);
+    const settingsJson =
+      (await mmkvStorage.getItem(scopedKey)) || (await mmkvStorage.getItem(SETTINGS_STORAGE_KEY));
 
     if (settingsJson) {
       const settings = JSON.parse(settingsJson);
       // Return the setting value, defaulting to true if not set
-      return settings.enableFocusFeedback !== undefined
-        ? settings.enableFocusFeedback
-        : true;
+      return settings.enableFocusFeedback !== undefined ? settings.enableFocusFeedback : true;
     }
   } catch {
     // Return default on error
@@ -191,9 +190,7 @@ export const triggerFocusFeedback = async (
  * }
  * ```
  */
-export const triggerFocusFeedbackSync = (
-  type: FocusFeedbackType = 'navigation'
-): void => {
+export const triggerFocusFeedbackSync = (type: FocusFeedbackType = 'navigation'): void => {
   triggerFocusFeedback(type).catch(() => {
     // Silently ignore errors
   });

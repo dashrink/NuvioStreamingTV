@@ -10,6 +10,7 @@
  */
 
 import { renderHook, act } from '@testing-library/react-native';
+
 import {
   useTVEventHandler,
   useIsTV,
@@ -25,10 +26,7 @@ import {
   isSwipeEvent,
   TVRemoteEvent,
 } from '../../src/hooks/useTVEventHandler';
-import {
-  getTVEventHandlerMock,
-  advanceTimersAndFlush,
-} from '../setup';
+import { getTVEventHandlerMock, advanceTimersAndFlush } from '../setup';
 
 // Get reference to the mock
 const mockTVEventHandler = getTVEventHandlerMock();
@@ -74,10 +72,9 @@ describe('useTVEventHandler', () => {
     it('should enable/disable handler when enabled option changes', () => {
       const callback = jest.fn();
 
-      const { rerender } = renderHook(
-        ({ enabled }) => useTVEventHandler(callback, { enabled }),
-        { initialProps: { enabled: true } }
-      );
+      const { rerender } = renderHook(({ enabled }) => useTVEventHandler(callback, { enabled }), {
+        initialProps: { enabled: true },
+      });
 
       expect(mockTVEventHandler.enable).toHaveBeenCalledTimes(1);
 
@@ -96,10 +93,9 @@ describe('useTVEventHandler', () => {
       const callback1 = jest.fn();
       const callback2 = jest.fn();
 
-      const { rerender, unmount } = renderHook(
-        ({ callback }) => useTVEventHandler(callback),
-        { initialProps: { callback: callback1 } }
-      );
+      const { rerender, unmount } = renderHook(({ callback }) => useTVEventHandler(callback), {
+        initialProps: { callback: callback1 },
+      });
 
       expect(mockTVEventHandler.enable).toHaveBeenCalledTimes(1);
 
@@ -137,10 +133,9 @@ describe('useTVEventHandler', () => {
     it('should not call callback when handler is disabled', () => {
       const callback = jest.fn();
 
-      const { rerender } = renderHook(
-        ({ enabled }) => useTVEventHandler(callback, { enabled }),
-        { initialProps: { enabled: true } }
-      );
+      const { rerender } = renderHook(({ enabled }) => useTVEventHandler(callback, { enabled }), {
+        initialProps: { enabled: true },
+      });
 
       // Get the internal callback
       const enableCalls = mockTVEventHandler.enable.mock.calls;
@@ -165,11 +160,17 @@ describe('useTVEventHandler', () => {
       const internalCallback = enableCalls[0][1];
 
       const eventTypes = [
-        'up', 'down', 'left', 'right',
-        'select', 'menu', 'playPause', 'longSelect',
+        'up',
+        'down',
+        'left',
+        'right',
+        'select',
+        'menu',
+        'playPause',
+        'longSelect',
       ];
 
-      eventTypes.forEach((eventType) => {
+      eventTypes.forEach(eventType => {
         const event: TVRemoteEvent = { eventType: eventType as TVRemoteEvent['eventType'] };
         internalCallback(null, event);
       });
@@ -436,9 +437,7 @@ describe('useRapidInputProtectedTVEventHandler', () => {
   it('should clean up on unmount', () => {
     const callback = jest.fn();
 
-    const { unmount } = renderHook(() =>
-      useRapidInputProtectedTVEventHandler(callback)
-    );
+    const { unmount } = renderHook(() => useRapidInputProtectedTVEventHandler(callback));
 
     expect(mockTVEventHandler.enable).toHaveBeenCalled();
 

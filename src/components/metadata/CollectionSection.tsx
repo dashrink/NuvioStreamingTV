@@ -1,23 +1,15 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
-import { UnifiedSpinner } from '../loading';
 import FastImage from '@d11/react-native-fast-image';
-import { useNavigation, StackActions } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { StreamingContent } from '../../services/catalogService';
-import { useTheme } from '../../contexts/ThemeContext';
-import { TMDBService } from '../../services/tmdbService';
-import { catalogService } from '../../services/catalogService';
+import { useNavigation, StackActions, NavigationProp } from '@react-navigation/native';
+import React from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+
 import CustomAlert from '../../components/CustomAlert';
+import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { catalogService, StreamingContent } from '../../services/catalogService';
+import { TMDBService } from '../../services/tmdbService';
+import { UnifiedSpinner } from '../loading';
 
 const { width } = Dimensions.get('window');
 
@@ -35,10 +27,10 @@ interface CollectionSectionProps {
   loadingCollection: boolean;
 }
 
-export const CollectionSection: React.FC<CollectionSectionProps> = ({ 
-  collectionName, 
-  collectionMovies, 
-  loadingCollection 
+export const CollectionSection: React.FC<CollectionSectionProps> = ({
+  collectionName,
+  collectionMovies,
+  loadingCollection,
 }) => {
   const { currentTheme } = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -59,31 +51,43 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
   // Responsive spacing & sizes
   const horizontalPadding = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 32;
-      case 'largeTablet': return 28;
-      case 'tablet': return 24;
-      default: return 16;
+      case 'tv':
+        return 32;
+      case 'largeTablet':
+        return 28;
+      case 'tablet':
+        return 24;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
   const itemSpacing = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 14;
-      case 'largeTablet': return 12;
-      case 'tablet': return 12;
-      default: return 12;
+      case 'tv':
+        return 14;
+      case 'largeTablet':
+        return 12;
+      case 'tablet':
+        return 12;
+      default:
+        return 12;
     }
   }, [deviceType]);
 
   const backdropWidth = React.useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 240;
-      case 'largeTablet': return 220;
-      case 'tablet': return 200;
-      default: return 180;
+      case 'tv':
+        return 240;
+      case 'largeTablet':
+        return 220;
+      case 'tablet':
+        return 200;
+      default:
+        return 180;
     }
   }, [deviceType]);
-  const backdropHeight = React.useMemo(() => backdropWidth * (9/16), [backdropWidth]); // 16:9 aspect ratio
+  const backdropHeight = React.useMemo(() => backdropWidth * (9 / 16), [backdropWidth]); // 16:9 aspect ratio
 
   const [alertVisible, setAlertVisible] = React.useState(false);
   const [alertTitle, setAlertTitle] = React.useState('');
@@ -103,7 +107,7 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
         navigation.dispatch(
           StackActions.push('Metadata', {
             id: stremioId,
-            type: item.type
+            type: item.type,
           })
         );
       } else {
@@ -122,9 +126,9 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
   // Upcoming/unreleased movies without a year will be sorted last
   const sortedCollectionMovies = React.useMemo(() => {
     if (!collectionMovies) return [];
-    
+
     const FUTURE_YEAR_PLACEHOLDER = 9999; // Very large number to sort unreleased movies last
-    
+
     return [...collectionMovies].sort((a, b) => {
       // Treat missing years as future year placeholder (sorts last)
       const yearA = a.year ? parseInt(a.year.toString()) : FUTURE_YEAR_PLACEHOLDER;
@@ -134,32 +138,46 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
   }, [collectionMovies]);
 
   const renderItem = ({ item }: { item: StreamingContent }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.itemContainer, { width: backdropWidth, marginRight: itemSpacing }]}
       onPress={() => handleItemPress(item)}
     >
       <FastImage
         source={{ uri: item.banner || item.poster }}
-        style={[styles.backdrop, { 
-          backgroundColor: currentTheme.colors.elevation1, 
-          width: backdropWidth, 
-          height: backdropHeight, 
-          borderRadius: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 10 : 8 
-        }]}
+        style={[
+          styles.backdrop,
+          {
+            backgroundColor: currentTheme.colors.elevation1,
+            width: backdropWidth,
+            height: backdropHeight,
+            borderRadius: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 10 : 8,
+          },
+        ]}
         resizeMode={FastImage.resizeMode.cover}
       />
-      <Text style={[styles.title, { 
-        color: currentTheme.colors.mediumEmphasis, 
-        fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13, 
-        lineHeight: isTV ? 20 : 18 
-      }]} numberOfLines={2}>
+      <Text
+        style={[
+          styles.title,
+          {
+            color: currentTheme.colors.mediumEmphasis,
+            fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 13,
+            lineHeight: isTV ? 20 : 18,
+          },
+        ]}
+        numberOfLines={2}
+      >
         {item.name}
       </Text>
       {item.year && (
-        <Text style={[styles.year, { 
-          color: currentTheme.colors.textMuted, 
-          fontSize: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 11 : 11 
-        }]}>
+        <Text
+          style={[
+            styles.year,
+            {
+              color: currentTheme.colors.textMuted,
+              fontSize: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 11 : 11,
+            },
+          ]}
+        >
           {item.year}
         </Text>
       )}
@@ -179,24 +197,32 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
   }
 
   return (
-    <View style={[styles.container, { paddingLeft: 0 }] }>
-      <Text style={[styles.sectionTitle, { 
-        color: currentTheme.colors.highEmphasis, 
-        fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20, 
-        paddingHorizontal: horizontalPadding 
-      }]}>
+    <View style={[styles.container, { paddingLeft: 0 }]}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          {
+            color: currentTheme.colors.highEmphasis,
+            fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+            paddingHorizontal: horizontalPadding,
+          },
+        ]}
+      >
         {collectionName}
       </Text>
       <FlatList
         data={sortedCollectionMovies}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[styles.listContentContainer, { 
-          paddingHorizontal: horizontalPadding, 
-          paddingRight: horizontalPadding + itemSpacing 
-        }]}
+        contentContainerStyle={[
+          styles.listContentContainer,
+          {
+            paddingHorizontal: horizontalPadding,
+            paddingRight: horizontalPadding + itemSpacing,
+          },
+        ]}
       />
       <CustomAlert
         visible={alertVisible}

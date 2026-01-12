@@ -213,15 +213,12 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   // =============================================================================
 
   const pushFocusHistory = useCallback((entry: Omit<FocusHistoryEntry, 'timestamp'>) => {
-    setFocusHistory((prev) => [
-      ...prev,
-      { ...entry, timestamp: Date.now() },
-    ]);
+    setFocusHistory(prev => [...prev, { ...entry, timestamp: Date.now() }]);
   }, []);
 
   const popFocusHistory = useCallback((): FocusHistoryEntry | undefined => {
     let poppedEntry: FocusHistoryEntry | undefined;
-    setFocusHistory((prev) => {
+    setFocusHistory(prev => {
       if (prev.length === 0) return prev;
       poppedEntry = prev[prev.length - 1];
       return prev.slice(0, -1);
@@ -238,18 +235,21 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   // =============================================================================
 
   const setScreenFocus = useCallback((screenName: string, focusId: string) => {
-    setFocusMemory((prev) => ({
+    setFocusMemory(prev => ({
       ...prev,
       [screenName]: focusId,
     }));
   }, []);
 
-  const getScreenFocus = useCallback((screenName: string): string | null => {
-    return focusMemory[screenName] || null;
-  }, [focusMemory]);
+  const getScreenFocus = useCallback(
+    (screenName: string): string | null => {
+      return focusMemory[screenName] || null;
+    },
+    [focusMemory]
+  );
 
   const clearScreenFocus = useCallback((screenName: string) => {
-    setFocusMemory((prev) => {
+    setFocusMemory(prev => {
       const newMemory = { ...prev };
       delete newMemory[screenName];
       return newMemory;
@@ -265,7 +265,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   // =============================================================================
 
   const openVoiceSearch = useCallback(() => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       isOpen: true,
       query: '',
@@ -274,7 +274,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   }, []);
 
   const closeVoiceSearch = useCallback(() => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       isOpen: false,
       isListening: false,
@@ -284,21 +284,21 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   }, []);
 
   const setVoiceListening = useCallback((isListening: boolean) => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       isListening,
     }));
   }, []);
 
   const setVoiceQuery = useCallback((query: string) => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       query,
     }));
   }, []);
 
   const setVoiceError = useCallback((error: string | null) => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       error,
       isListening: false,
@@ -306,7 +306,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   }, []);
 
   const setVoiceAvailable = useCallback((isAvailable: boolean) => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       isAvailable,
       // Clear the reason if voice becomes available
@@ -315,7 +315,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   }, []);
 
   const setVoiceUnavailableReason = useCallback((reason: VoiceUnavailableReason) => {
-    setVoiceSearch((prev) => ({
+    setVoiceSearch(prev => ({
       ...prev,
       unavailableReason: reason,
       // If setting a reason, voice is not available
@@ -327,34 +327,40 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
   // Context Menu Actions
   // =============================================================================
 
-  const openContextMenu = useCallback((config: {
-    targetId: string;
-    items: ContextMenuItem[];
-    position?: { x: number; y: number };
-    title?: string;
-  }) => {
-    // Close any existing context menu before opening a new one
-    setContextMenu({
-      isOpen: true,
-      targetId: config.targetId,
-      items: config.items,
-      position: config.position || null,
-      title: config.title,
-    });
-  }, []);
+  const openContextMenu = useCallback(
+    (config: {
+      targetId: string;
+      items: ContextMenuItem[];
+      position?: { x: number; y: number };
+      title?: string;
+    }) => {
+      // Close any existing context menu before opening a new one
+      setContextMenu({
+        isOpen: true,
+        targetId: config.targetId,
+        items: config.items,
+        position: config.position || null,
+        title: config.title,
+      });
+    },
+    []
+  );
 
   const closeContextMenu = useCallback(() => {
     setContextMenu(defaultContextMenuState);
   }, []);
 
-  const selectContextMenuItem = useCallback((itemId: string) => {
-    const item = contextMenu.items.find((i) => i.id === itemId);
-    if (item && !item.disabled) {
-      item.onSelect();
-      // Auto-close the menu after selection
-      setContextMenu(defaultContextMenuState);
-    }
-  }, [contextMenu.items]);
+  const selectContextMenuItem = useCallback(
+    (itemId: string) => {
+      const item = contextMenu.items.find(i => i.id === itemId);
+      if (item && !item.disabled) {
+        item.onSelect();
+        // Auto-close the menu after selection
+        setContextMenu(defaultContextMenuState);
+      }
+    },
+    [contextMenu.items]
+  );
 
   // =============================================================================
   // Context Value
@@ -396,11 +402,7 @@ export function TVNavigationProvider({ children }: TVNavigationProviderProps) {
     setCurrentFocusId,
   };
 
-  return (
-    <TVNavigationContext.Provider value={value}>
-      {children}
-    </TVNavigationContext.Provider>
-  );
+  return <TVNavigationContext.Provider value={value}>{children}</TVNavigationContext.Provider>;
 }
 
 // =============================================================================

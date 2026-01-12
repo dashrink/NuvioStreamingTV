@@ -1,3 +1,5 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
@@ -7,8 +9,6 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import FastImage from '@d11/react-native-fast-image';
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -18,6 +18,7 @@ import Animated, {
   interpolate,
   Extrapolate,
 } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { isMDBListEnabled } from '../../screens/MDBListSettingsScreen';
 import { getAgeRatingColor } from '../../utils/ageRatingColors';
@@ -132,7 +133,9 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
 
   // Animate height changes
   const toggleDescription = () => {
-    const targetHeight = isFullDescriptionOpen ? measuredHeights.collapsed : measuredHeights.expanded;
+    const targetHeight = isFullDescriptionOpen
+      ? measuredHeights.collapsed
+      : measuredHeights.expanded;
     animatedHeight.value = withTiming(targetHeight, { duration: 300 });
     setIsFullDescriptionOpen(!isFullDescriptionOpen);
   };
@@ -182,7 +185,6 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
 
     // If not matched, return as is
     return runtime;
-
   }
 
   return (
@@ -200,57 +202,69 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
       )}
 
       {/* Meta Info */}
-      <View style={[
-        styles.metaInfo,
-        loadingMetadata && styles.dimmed,
-        {
-          paddingHorizontal: horizontalPadding,
-          gap: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18
-        }
-      ]}>
+      <View
+        style={[
+          styles.metaInfo,
+          loadingMetadata && styles.dimmed,
+          {
+            paddingHorizontal: horizontalPadding,
+            gap: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18,
+          },
+        ]}
+      >
         {metadata.year && (
-          <Text style={[
-            styles.metaText,
-            {
-              color: currentTheme.colors.text,
-              fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15
-            }
-          ]}>{metadata.year}</Text>
+          <Text
+            style={[
+              styles.metaText,
+              {
+                color: currentTheme.colors.text,
+                fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
+              },
+            ]}
+          >
+            {metadata.year}
+          </Text>
         )}
         {metadata.runtime && (
-          <Text style={[
-            styles.metaText,
-            {
-              color: currentTheme.colors.text,
-              fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15
-            }
-          ]}>
+          <Text
+            style={[
+              styles.metaText,
+              {
+                color: currentTheme.colors.text,
+                fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
+              },
+            ]}
+          >
             {formatRuntime(metadata.runtime)}
           </Text>
         )}
-        {metadata.certification && (
-          <AgeRatingBadge rating={metadata.certification} />
-        )}
+        {metadata.certification && <AgeRatingBadge rating={metadata.certification} />}
         {metadata.imdbRating && !isMDBEnabled && (
           <View style={styles.ratingContainer}>
             <FastImage
-              source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png' }}
+              source={{
+                uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png',
+              }}
               style={[
                 styles.imdbLogo,
                 {
                   width: isTV ? 42 : isLargeTablet ? 38 : isTablet ? 35 : 35,
-                  height: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18
-                }
+                  height: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18,
+                },
               ]}
               resizeMode={FastImage.resizeMode.contain}
             />
-            <Text style={[
-              styles.ratingText,
-              {
-                color: currentTheme.colors.text,
-                fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15
-              }
-            ]}>{metadata.imdbRating}</Text>
+            <Text
+              style={[
+                styles.ratingText,
+                {
+                  color: currentTheme.colors.text,
+                  fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
+                },
+              ]}
+            >
+              {metadata.imdbRating}
+            </Text>
           </View>
         )}
       </View>
@@ -264,59 +278,79 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
         style={[
           styles.creatorContainer,
           loadingMetadata && styles.dimmed,
-          { paddingHorizontal: horizontalPadding }
+          { paddingHorizontal: horizontalPadding },
         ]}
       >
         {metadata.directors && metadata.directors.length > 0 && (
-          <View style={[
-            styles.creatorSection,
-            {
-              height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-              marginBottom: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-            }
-          ]}>
-            <Text style={[
-              styles.creatorLabel,
+          <View
+            style={[
+              styles.creatorSection,
               {
-                color: currentTheme.colors.white,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20
-              }
-            ]}>Director{metadata.directors.length > 1 ? 's' : ''}:</Text>
-            <Text style={[
-              styles.creatorText,
-              {
-                color: currentTheme.colors.mediumEmphasis,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20
-              }
-            ]}>{metadata.directors.join(', ')}</Text>
+                height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                marginBottom: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.creatorLabel,
+                {
+                  color: currentTheme.colors.white,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                  lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                },
+              ]}
+            >
+              Director{metadata.directors.length > 1 ? 's' : ''}:
+            </Text>
+            <Text
+              style={[
+                styles.creatorText,
+                {
+                  color: currentTheme.colors.mediumEmphasis,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                  lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                },
+              ]}
+            >
+              {metadata.directors.join(', ')}
+            </Text>
           </View>
         )}
         {metadata.creators && metadata.creators.length > 0 && (
-          <View style={[
-            styles.creatorSection,
-            {
-              height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
-              marginBottom: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-            }
-          ]}>
-            <Text style={[
-              styles.creatorLabel,
+          <View
+            style={[
+              styles.creatorSection,
               {
-                color: currentTheme.colors.white,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20
-              }
-            ]}>Creator{metadata.creators.length > 1 ? 's' : ''}:</Text>
-            <Text style={[
-              styles.creatorText,
-              {
-                color: currentTheme.colors.mediumEmphasis,
-                fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20
-              }
-            ]}>{metadata.creators.join(', ')}</Text>
+                height: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                marginBottom: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.creatorLabel,
+                {
+                  color: currentTheme.colors.white,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                  lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                },
+              ]}
+            >
+              Creator{metadata.creators.length > 1 ? 's' : ''}:
+            </Text>
+            <Text
+              style={[
+                styles.creatorText,
+                {
+                  color: currentTheme.colors.mediumEmphasis,
+                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                  lineHeight: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20,
+                },
+              ]}
+            >
+              {metadata.creators.join(', ')}
+            </Text>
           </View>
         )}
       </Animated.View>
@@ -327,7 +361,7 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
           style={[
             styles.descriptionContainer,
             loadingMetadata && styles.dimmed,
-            { paddingHorizontal: horizontalPadding }
+            { paddingHorizontal: horizontalPadding },
           ]}
           entering={FadeIn.duration(300)}
         >
@@ -340,8 +374,8 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
                 position: 'absolute',
                 opacity: 0,
                 fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
-                lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24
-              }
+                lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24,
+              },
             ]}
             numberOfLines={3}
             onLayout={handleCollapsedTextLayout}
@@ -356,8 +390,8 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
                 position: 'absolute',
                 opacity: 0,
                 fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
-                lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24
-              }
+                lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24,
+              },
             ]}
             onLayout={handleExpandedTextLayout}
           >
@@ -376,8 +410,8 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
                   {
                     color: currentTheme.colors.mediumEmphasis,
                     fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
-                    lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24
-                  }
+                    lineHeight: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 24,
+                  },
                 ]}
                 numberOfLines={isFullDescriptionOpen ? undefined : 3}
                 onTextLayout={handleTextLayout}
@@ -386,24 +420,28 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
               </Text>
             </Animated.View>
             {(isTextTruncated || isFullDescriptionOpen) && (
-              <View style={[
-                styles.showMoreButton,
-                {
-                  marginTop: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-                  paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4
-                }
-              ]}>
-                <Text style={[
-                  styles.showMoreText,
+              <View
+                style={[
+                  styles.showMoreButton,
                   {
-                    color: currentTheme.colors.textMuted,
-                    fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14
-                  }
-                ]}>
+                    marginTop: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                    paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.showMoreText,
+                    {
+                      color: currentTheme.colors.textMuted,
+                      fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
+                    },
+                  ]}
+                >
                   {isFullDescriptionOpen ? 'Show Less' : 'Show More'}
                 </Text>
                 <MaterialIcons
-                  name={isFullDescriptionOpen ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                  name={isFullDescriptionOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                   size={isTV ? 22 : isLargeTablet ? 20 : isTablet ? 18 : 18}
                   color={currentTheme.colors.textMuted}
                 />
@@ -416,13 +454,47 @@ const MetadataDetails: React.FC<MetadataDetailsProps> = ({
         <View
           style={[
             styles.descriptionContainer,
-            { paddingHorizontal: horizontalPadding, minHeight: defaultCollapsedHeight }
+            { paddingHorizontal: horizontalPadding, minHeight: defaultCollapsedHeight },
           ]}
         >
-          <View style={[styles.descriptionSkeleton, { backgroundColor: currentTheme.colors.elevation1 }]}>
-            <View style={[styles.skeletonLine, { width: '100%', height: isTV ? 18 : 15, backgroundColor: currentTheme.colors.elevation1, marginBottom: 8 }]} />
-            <View style={[styles.skeletonLine, { width: '95%', height: isTV ? 18 : 15, backgroundColor: currentTheme.colors.elevation1, marginBottom: 8 }]} />
-            <View style={[styles.skeletonLine, { width: '80%', height: isTV ? 18 : 15, backgroundColor: currentTheme.colors.elevation1 }]} />
+          <View
+            style={[
+              styles.descriptionSkeleton,
+              { backgroundColor: currentTheme.colors.elevation1 },
+            ]}
+          >
+            <View
+              style={[
+                styles.skeletonLine,
+                {
+                  width: '100%',
+                  height: isTV ? 18 : 15,
+                  backgroundColor: currentTheme.colors.elevation1,
+                  marginBottom: 8,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.skeletonLine,
+                {
+                  width: '95%',
+                  height: isTV ? 18 : 15,
+                  backgroundColor: currentTheme.colors.elevation1,
+                  marginBottom: 8,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.skeletonLine,
+                {
+                  width: '80%',
+                  height: isTV ? 18 : 15,
+                  backgroundColor: currentTheme.colors.elevation1,
+                },
+              ]}
+            />
           </View>
         </View>
       )}
@@ -488,18 +560,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
-    height: 20
+    height: 20,
   },
   creatorLabel: {
     fontSize: 14,
     fontWeight: '600',
     marginRight: 8,
-    lineHeight: 20
+    lineHeight: 20,
   },
   creatorText: {
     fontSize: 14,
     flex: 1,
-    lineHeight: 20
+    lineHeight: 20,
   },
   descriptionContainer: {
     marginBottom: 16,
@@ -526,4 +598,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(MetadataDetails); 
+export default React.memo(MetadataDetails);

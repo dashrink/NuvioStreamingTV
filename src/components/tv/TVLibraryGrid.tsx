@@ -1,3 +1,6 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
 import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react';
 import {
   View,
@@ -7,19 +10,17 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons } from '@expo/vector-icons';
-import Focusable from '../common/Focusable';
-import { useSpatialNavigation } from '../../hooks/useSpatialNavigation';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../hooks/useSettings';
+import { useSpatialNavigation } from '../../hooks/useSpatialNavigation';
+import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
+import { scaleForTV } from '../../utils/tvStyles/helpers';
 import { TV_CATALOG } from '../../utils/tvStyles/layout';
 import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
-import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
-import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
-import { scaleForTV } from '../../utils/tvStyles/helpers';
+import Focusable from '../common/Focusable';
 
 /**
  * Grid item types supported by TVLibraryGrid
@@ -72,7 +73,9 @@ export interface TVLibraryGridProps {
 /**
  * Calculate optimal grid layout for TV
  */
-const getTVGridLayout = (screenWidth: number): { numColumns: number; itemWidth: number; horizontalPadding: number } => {
+const getTVGridLayout = (
+  screenWidth: number
+): { numColumns: number; itemWidth: number; horizontalPadding: number } => {
   const deviceType = getDeviceType(screenWidth);
   const horizontalPadding = TV_SPACING.screenPadding;
   const gutter = TV_SPACING.cardGap;
@@ -89,7 +92,7 @@ const getTVGridLayout = (screenWidth: number): { numColumns: number; itemWidth: 
     numColumns = 3;
   }
 
-  const availableWidth = screenWidth - (horizontalPadding * 2) - ((numColumns - 1) * gutter);
+  const availableWidth = screenWidth - horizontalPadding * 2 - (numColumns - 1) * gutter;
   const itemWidth = Math.floor(availableWidth / numColumns);
 
   return { numColumns, itemWidth, horizontalPadding };
@@ -109,143 +112,134 @@ const TVLibraryGridItem = React.memo<{
   onFocus: () => void;
   currentTheme: any;
   posterBorderRadius: number;
-}>(({
-  item,
-  index,
-  width,
-  isFocused,
-  showTitle,
-  onPress,
-  onLongPress,
-  onFocus,
-  currentTheme,
-  posterBorderRadius,
-}) => {
-  const isFolder = item.type === 'folder';
+}>(
+  ({
+    item,
+    index,
+    width,
+    isFocused,
+    showTitle,
+    onPress,
+    onLongPress,
+    onFocus,
+    currentTheme,
+    posterBorderRadius,
+  }) => {
+    const isFolder = item.type === 'folder';
 
-  return (
-    <Focusable
-      style={[
-        styles.itemContainer,
-        { width, marginBottom: TV_SPACING.lg },
-      ]}
-      onPress={onPress}
-      onLongPress={onLongPress}
-      onFocus={onFocus}
-      hasTVPreferredFocus={isFocused && index === 0}
-      scaleOnFocus={TV_FOCUS_CONFIG.focusScale}
-    >
-      <View>
-        <View
-          style={[
-            styles.posterContainer,
-            {
-              borderRadius: posterBorderRadius,
-              backgroundColor: isFolder
-                ? currentTheme.colors.elevation1
-                : 'rgba(255,255,255,0.03)',
-            },
-          ]}
-        >
-          {isFolder ? (
-            // Folder view with icon
-            <View style={styles.folderContent}>
-              <MaterialIcons
-                name={item.icon || 'folder'}
-                size={scaleForTV(48)}
-                color={currentTheme.colors.white}
-                style={styles.folderIcon}
-              />
-              <Text
-                style={[
-                  styles.folderTitle,
-                  { color: currentTheme.colors.white },
-                ]}
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
-              {item.itemCount !== undefined && (
-                <Text style={styles.folderCount}>
-                  {item.itemCount} items
+    return (
+      <Focusable
+        style={[styles.itemContainer, { width, marginBottom: TV_SPACING.lg }]}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        onFocus={onFocus}
+        hasTVPreferredFocus={isFocused && index === 0}
+        scaleOnFocus={TV_FOCUS_CONFIG.focusScale}
+      >
+        <View>
+          <View
+            style={[
+              styles.posterContainer,
+              {
+                borderRadius: posterBorderRadius,
+                backgroundColor: isFolder
+                  ? currentTheme.colors.elevation1
+                  : 'rgba(255,255,255,0.03)',
+              },
+            ]}
+          >
+            {isFolder ? (
+              // Folder view with icon
+              <View style={styles.folderContent}>
+                <MaterialIcons
+                  name={item.icon || 'folder'}
+                  size={scaleForTV(48)}
+                  color={currentTheme.colors.white}
+                  style={styles.folderIcon}
+                />
+                <Text
+                  style={[styles.folderTitle, { color: currentTheme.colors.white }]}
+                  numberOfLines={1}
+                >
+                  {item.name}
                 </Text>
-              )}
-            </View>
-          ) : item.poster ? (
-            // Poster image
-            <FastImage
-              source={{ uri: item.poster }}
-              style={[styles.poster, { borderRadius: posterBorderRadius }]}
-              resizeMode={FastImage.resizeMode.cover}
-            />
-          ) : (
-            // Placeholder
-            <View
-              style={[
-                styles.poster,
-                styles.posterPlaceholder,
-                { backgroundColor: currentTheme.colors.elevation1 },
-              ]}
-            >
-              <MaterialIcons
-                name={item.type === 'movie' ? 'movie' : 'tv'}
-                size={scaleForTV(36)}
-                color={currentTheme.colors.mediumGray}
+                {item.itemCount !== undefined && (
+                  <Text style={styles.folderCount}>{item.itemCount} items</Text>
+                )}
+              </View>
+            ) : item.poster ? (
+              // Poster image
+              <FastImage
+                source={{ uri: item.poster }}
+                style={[styles.poster, { borderRadius: posterBorderRadius }]}
+                resizeMode={FastImage.resizeMode.cover}
               />
-            </View>
-          )}
-
-          {/* Watched indicator */}
-          {item.watched && !isFolder && (
-            <View style={styles.watchedIndicator}>
-              <MaterialIcons
-                name="check-circle"
-                size={scaleForTV(22)}
-                color={currentTheme.colors.success || '#4CAF50'}
-              />
-            </View>
-          )}
-
-          {/* Progress bar */}
-          {item.progress !== undefined && item.progress > 0 && item.progress < 1 && (
-            <View style={styles.progressBarContainer}>
+            ) : (
+              // Placeholder
               <View
                 style={[
-                  styles.progressBar,
-                  {
-                    width: `${item.progress * 100}%`,
-                    backgroundColor: currentTheme.colors.primary,
-                  },
+                  styles.poster,
+                  styles.posterPlaceholder,
+                  { backgroundColor: currentTheme.colors.elevation1 },
                 ]}
-              />
-            </View>
-          )}
+              >
+                <MaterialIcons
+                  name={item.type === 'movie' ? 'movie' : 'tv'}
+                  size={scaleForTV(36)}
+                  color={currentTheme.colors.mediumGray}
+                />
+              </View>
+            )}
 
-          {/* Rating badge */}
-          {item.rating !== undefined && item.rating > 0 && (
-            <View style={styles.ratingBadge}>
-              <MaterialIcons name="star" size={12} color="#FFD700" />
-              <Text style={styles.ratingText}>{item.rating}</Text>
-            </View>
+            {/* Watched indicator */}
+            {item.watched && !isFolder && (
+              <View style={styles.watchedIndicator}>
+                <MaterialIcons
+                  name="check-circle"
+                  size={scaleForTV(22)}
+                  color={currentTheme.colors.success || '#4CAF50'}
+                />
+              </View>
+            )}
+
+            {/* Progress bar */}
+            {item.progress !== undefined && item.progress > 0 && item.progress < 1 && (
+              <View style={styles.progressBarContainer}>
+                <View
+                  style={[
+                    styles.progressBar,
+                    {
+                      width: `${item.progress * 100}%`,
+                      backgroundColor: currentTheme.colors.primary,
+                    },
+                  ]}
+                />
+              </View>
+            )}
+
+            {/* Rating badge */}
+            {item.rating !== undefined && item.rating > 0 && (
+              <View style={styles.ratingBadge}>
+                <MaterialIcons name="star" size={12} color="#FFD700" />
+                <Text style={styles.ratingText}>{item.rating}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Title below poster */}
+          {showTitle && !isFolder && (
+            <Text
+              style={[styles.itemTitle, { color: currentTheme.colors.mediumEmphasis }]}
+              numberOfLines={2}
+            >
+              {item.name}
+            </Text>
           )}
         </View>
-
-        {/* Title below poster */}
-        {showTitle && !isFolder && (
-          <Text
-            style={[
-              styles.itemTitle,
-              { color: currentTheme.colors.mediumEmphasis },
-            ]}
-            numberOfLines={2}
-          >
-            {item.name}
-          </Text>
-        )}
-      </View>
-    </Focusable>
-  );
-});
+      </Focusable>
+    );
+  }
+);
 
 TVLibraryGridItem.displayName = 'TVLibraryGridItem';
 
@@ -287,12 +281,7 @@ export const TVLibraryGrid: React.FC<TVLibraryGridProps> = ({
   );
 
   // Use spatial navigation for TV
-  const {
-    focusedIndex,
-    setFocusedIndex,
-    navigate,
-    getFocusableProps,
-  } = useSpatialNavigation(
+  const { focusedIndex, setFocusedIndex, navigate, getFocusableProps } = useSpatialNavigation(
     data.length,
     {
       itemsPerRow: numColumns,
@@ -305,7 +294,7 @@ export const TVLibraryGrid: React.FC<TVLibraryGridProps> = ({
       onEdgeReached: (direction, index) => {
         onEdgeReached?.(direction);
       },
-      onSelect: (index) => {
+      onSelect: index => {
         if (index >= 0 && index < data.length) {
           onItemPress?.(data[index], index);
         }
@@ -390,10 +379,7 @@ export const TVLibraryGrid: React.FC<TVLibraryGridProps> = ({
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator
-          size="large"
-          color={currentTheme.colors.primary}
-        />
+        <ActivityIndicator size="large" color={currentTheme.colors.primary} />
       </View>
     );
   }
@@ -403,13 +389,10 @@ export const TVLibraryGrid: React.FC<TVLibraryGridProps> = ({
       ref={listRef}
       data={data}
       renderItem={renderItem}
-      keyExtractor={(item) => `${item.type}-${item.id}`}
+      keyExtractor={item => `${item.type}-${item.id}`}
       numColumns={numColumns}
       estimatedItemSize={itemWidth * 1.5}
-      contentContainerStyle={[
-        styles.listContainer,
-        { paddingHorizontal: horizontalPadding },
-      ]}
+      contentContainerStyle={[styles.listContainer, { paddingHorizontal: horizontalPadding }]}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={ListHeaderComponent}
       ListEmptyComponent={ListEmptyComponent}

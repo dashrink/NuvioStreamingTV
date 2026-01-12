@@ -1,11 +1,12 @@
+import { parseISO, differenceInHours, isToday, addDays, isAfter, startOfToday } from 'date-fns';
 import * as Notifications from 'expo-notifications';
 import { Platform, AppState, AppStateStatus } from 'react-native';
-import { mmkvStorage } from './mmkvStorage';
-import { parseISO, differenceInHours, isToday, addDays, isAfter, startOfToday } from 'date-fns';
-import { stremioService } from './stremioService';
+
 import { catalogService } from './catalogService';
-import { traktService } from './traktService';
+import { mmkvStorage } from './mmkvStorage';
+import { stremioService } from './stremioService';
 import { tmdbService } from './tmdbService';
+import { traktService } from './traktService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
 
@@ -135,7 +136,10 @@ class NotificationService {
 
   private async saveScheduledNotifications(): Promise<void> {
     try {
-      await mmkvStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(this.scheduledNotifications));
+      await mmkvStorage.setItem(
+        NOTIFICATION_STORAGE_KEY,
+        JSON.stringify(this.scheduledNotifications)
+      );
     } catch (error) {
       logger.error('Error saving scheduled notifications:', error);
     }
@@ -158,7 +162,8 @@ class NotificationService {
 
     // Check if notification already exists for this episode
     const existingNotification = this.scheduledNotifications.find(
-      notification => notification.seriesId === item.seriesId &&
+      notification =>
+        notification.seriesId === item.seriesId &&
         notification.season === item.season &&
         notification.episode === item.episode
     );
@@ -268,7 +273,7 @@ class NotificationService {
   private setupLibraryIntegration(): void {
     try {
       // Subscribe to library updates from catalog service
-      const unsubUpdates = catalogService.subscribeToLibraryUpdates(async (libraryItems) => {
+      const unsubUpdates = catalogService.subscribeToLibraryUpdates(async libraryItems => {
         if (!this.settings.enabled) return;
 
         const now = Date.now();
@@ -283,13 +288,16 @@ class NotificationService {
       });
 
       // Subscribe to library add events
-      const unsubAdd = catalogService.subscribeToLibraryAdd(async (item) => {
+      const unsubAdd = catalogService.subscribeToLibraryAdd(async item => {
         if (item.type === 'series') {
           try {
             await this.updateNotificationsForSeries(item.id);
             logger.log(`[NotificationService] Auto-setup notifications for series: ${item.name}`);
           } catch (error) {
-            logger.error(`[NotificationService] Failed to setup notifications for ${item.name}:`, error);
+            logger.error(
+              `[NotificationService] Failed to setup notifications for ${item.name}:`,
+              error
+            );
           }
         }
       });
@@ -300,13 +308,20 @@ class NotificationService {
           try {
             // Cancel all notifications for this series
             const scheduledNotifications = this.getScheduledNotifications();
-            const seriesToCancel = scheduledNotifications.filter(notification => notification.seriesId === id);
+            const seriesToCancel = scheduledNotifications.filter(
+              notification => notification.seriesId === id
+            );
             for (const notification of seriesToCancel) {
               await this.cancelNotification(notification.id);
             }
-            logger.log(`[NotificationService] Cancelled ${seriesToCancel.length} notifications for removed series: ${id}`);
+            logger.log(
+              `[NotificationService] Cancelled ${seriesToCancel.length} notifications for removed series: ${id}`
+            );
           } catch (error) {
-            logger.error(`[NotificationService] Failed to cancel notifications for removed series ${id}:`, error);
+            logger.error(
+              `[NotificationService] Failed to cancel notifications for removed series ${id}:`,
+              error
+            );
           }
         }
       });
@@ -325,13 +340,16 @@ class NotificationService {
   // Setup background sync for notifications
   private setupBackgroundSync(): void {
     // Sync notifications every 12 hours to reduce background CPU usage
-    this.backgroundSyncInterval = setInterval(async () => {
-      if (this.settings.enabled) {
-        // Reduced logging verbosity
-        // logger.log('[NotificationService] Running background notification sync');
-        await this.performBackgroundSync();
-      }
-    }, 12 * 60 * 60 * 1000); // 12 hours
+    this.backgroundSyncInterval = setInterval(
+      async () => {
+        if (this.settings.enabled) {
+          // Reduced logging verbosity
+          // logger.log('[NotificationService] Running background notification sync');
+          await this.performBackgroundSync();
+        }
+      },
+      12 * 60 * 60 * 1000
+    ); // 12 hours
   }
 
   // Setup app state handling for foreground sync
@@ -359,7 +377,12 @@ class NotificationService {
   };
 
   // Immediate notifications for download progress (background only)
-  public async notifyDownloadProgress(title: string, progress: number, downloadedBytes?: number, totalBytes?: number): Promise<void> {
+  public async notifyDownloadProgress(
+    title: string,
+    progress: number,
+    downloadedBytes?: number,
+    totalBytes?: number
+  ): Promise<void> {
     try {
       if (!this.settings.enabled) return;
       if (AppState.currentState === 'active') return;
@@ -380,7 +403,7 @@ class NotificationService {
 
       const downloadedMb = Math.floor((downloadedBytes || 0) / (1024 * 1024));
       const totalMb = totalBytes ? Math.floor(totalBytes / (1024 * 1024)) : undefined;
-      const body = `${progress}%` + (totalMb !== undefined ? ` • ${downloadedMb}MB / ${totalMb}MB` : '');
+      const body = `${progress}%${totalMb !== undefined ? ` • ${downloadedMb}MB / ${totalMb}MB` : ''}`;
       await Notifications.scheduleNotificationAsync({
         content: {
           title: `Downloading ${title}`,
@@ -425,17 +448,22 @@ class NotificationService {
       const limitedSeries = memoryManager.limitArraySize(seriesItems, 50);
 
       if (limitedSeries.length < seriesItems.length) {
-        logger.warn(`[NotificationService] Limited series sync from ${seriesItems.length} to ${limitedSeries.length} to prevent memory issues`);
+        logger.warn(
+          `[NotificationService] Limited series sync from ${seriesItems.length} to ${limitedSeries.length} to prevent memory issues`
+        );
       }
 
       // Process in small batches with memory management
       await memoryManager.processArrayInBatches(
         limitedSeries,
-        async (series) => {
+        async series => {
           try {
             await this.updateNotificationsForSeries(series.id);
           } catch (error) {
-            logger.error(`[NotificationService] Failed to sync notifications for ${series.name || series.id}:`, error);
+            logger.error(
+              `[NotificationService] Failed to sync notifications for ${series.name || series.id}:`,
+              error
+            );
           }
         },
         3, // Very small batch size to prevent memory spikes
@@ -496,7 +524,7 @@ class NotificationService {
         traktService.getWatchlistShows(),
         traktService.getPlaybackProgress('shows'), // This is the continue watching data
         traktService.getWatchedShows(),
-        traktService.getCollectionShows()
+        traktService.getCollectionShows(),
       ]);
 
       // Combine and deduplicate shows using the same logic as calendar screen
@@ -511,7 +539,7 @@ class NotificationService {
               name: item.show.title,
               type: 'series',
               year: item.show.year,
-              source: 'trakt-watchlist'
+              source: 'trakt-watchlist',
             });
           }
         });
@@ -528,7 +556,7 @@ class NotificationService {
                 name: item.show.title,
                 type: 'series',
                 year: item.show.year,
-                source: 'trakt-continue-watching'
+                source: 'trakt-continue-watching',
               });
             }
           }
@@ -547,7 +575,7 @@ class NotificationService {
                 name: item.show.title,
                 type: 'series',
                 year: item.show.year,
-                source: 'trakt-watched'
+                source: 'trakt-watched',
               });
             }
           }
@@ -565,7 +593,7 @@ class NotificationService {
                 name: item.show.title,
                 type: 'series',
                 year: item.show.year,
-                source: 'trakt-collection'
+                source: 'trakt-collection',
               });
             }
           }
@@ -580,18 +608,23 @@ class NotificationService {
       const limitedTraktShows = memoryManager.limitArraySize(traktShows, 30); // Limit Trakt shows
 
       if (limitedTraktShows.length < traktShows.length) {
-        logger.warn(`[NotificationService] Limited Trakt shows sync from ${traktShows.length} to ${limitedTraktShows.length} to prevent memory issues`);
+        logger.warn(
+          `[NotificationService] Limited Trakt shows sync from ${traktShows.length} to ${limitedTraktShows.length} to prevent memory issues`
+        );
       }
 
       let syncedCount = 0;
       await memoryManager.processArrayInBatches(
         limitedTraktShows,
-        async (show) => {
+        async show => {
           try {
             await this.updateNotificationsForSeries(show.id);
             syncedCount++;
           } catch (error) {
-            logger.error(`[NotificationService] Failed to sync notifications for ${show.name}:`, error);
+            logger.error(
+              `[NotificationService] Failed to sync notifications for ${show.name}:`,
+              error
+            );
           }
         },
         2, // Even smaller batch size for Trakt shows
@@ -616,7 +649,7 @@ class NotificationService {
 
       // Use the new memory-efficient method to fetch only upcoming episodes
       const episodeData = await stremioService.getUpcomingEpisodes('series', seriesId, {
-        daysBack: 7,   // 1 week back for notifications
+        daysBack: 7, // 1 week back for notifications
         daysAhead: 28, // 4 weeks ahead for notifications
         maxEpisodes: 10, // Limit to 10 episodes per series for notifications
       });
@@ -669,9 +702,16 @@ class NotificationService {
             const fourWeeksLater = addDays(now, 28);
 
             // Check current and next seasons for upcoming episodes
-            for (let seasonNum = tmdbDetails.number_of_seasons; seasonNum >= Math.max(1, tmdbDetails.number_of_seasons - 2); seasonNum--) {
+            for (
+              let seasonNum = tmdbDetails.number_of_seasons;
+              seasonNum >= Math.max(1, tmdbDetails.number_of_seasons - 2);
+              seasonNum--
+            ) {
               try {
-                const seasonDetails = await tmdbService.getSeasonDetails(parseInt(tmdbId), seasonNum);
+                const seasonDetails = await tmdbService.getSeasonDetails(
+                  parseInt(tmdbId),
+                  seasonNum
+                );
                 if (seasonDetails && seasonDetails.episodes) {
                   const seasonUpcoming = seasonDetails.episodes.filter((episode: any) => {
                     if (!episode.air_date) return false;
@@ -679,13 +719,15 @@ class NotificationService {
                     return airDate > now && airDate < fourWeeksLater;
                   });
 
-                  upcomingEpisodes.push(...seasonUpcoming.map((episode: any) => ({
-                    id: `${tmdbId}-s${seasonNum}e${episode.episode_number}`,
-                    title: episode.name,
-                    season: seasonNum,
-                    episode: episode.episode_number,
-                    released: episode.air_date,
-                  })));
+                  upcomingEpisodes.push(
+                    ...seasonUpcoming.map((episode: any) => ({
+                      id: `${tmdbId}-s${seasonNum}e${episode.episode_number}`,
+                      title: episode.name,
+                      season: seasonNum,
+                      episode: episode.episode_number,
+                      released: episode.air_date,
+                    }))
+                  );
                 }
               } catch (seasonError) {
                 // Continue with other seasons if one fails
@@ -746,9 +788,11 @@ class NotificationService {
       if (episodeData) {
         memoryManager.clearObjects(episodeData.episodes);
       }
-
     } catch (error) {
-      logger.error(`[NotificationService] Error updating notifications for series ${seriesId}:`, error);
+      logger.error(
+        `[NotificationService] Error updating notifications for series ${seriesId}:`,
+        error
+      );
     } finally {
       // Force cleanup after each series to prevent accumulation
       memoryManager.forceGarbageCollection();
@@ -803,7 +847,7 @@ class NotificationService {
     return {
       total: this.scheduledNotifications.length,
       upcoming: upcoming.length,
-      thisWeek: thisWeek.length
+      thisWeek: thisWeek.length,
     };
   }
 

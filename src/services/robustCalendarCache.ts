@@ -22,15 +22,34 @@ const ERROR_CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes for error recovery
 
 class RobustCalendarCache {
   private generateHash(libraryItems: any[], traktCollections: TraktCollections): string {
-    const libraryIds = libraryItems.map(item => item.id).sort().join('|');
-    const watchlistIds = (traktCollections.watchlist || []).map(item => item.show?.ids?.imdb || '').filter(Boolean).sort().join('|');
-    const continueWatchingIds = (traktCollections.continueWatching || []).map(item => item.show?.ids?.imdb || '').filter(Boolean).sort().join('|');
-    const watchedIds = (traktCollections.watched || []).map(item => item.show?.ids?.imdb || '').filter(Boolean).sort().join('|');
-    
+    const libraryIds = libraryItems
+      .map(item => item.id)
+      .sort()
+      .join('|');
+    const watchlistIds = (traktCollections.watchlist || [])
+      .map(item => item.show?.ids?.imdb || '')
+      .filter(Boolean)
+      .sort()
+      .join('|');
+    const continueWatchingIds = (traktCollections.continueWatching || [])
+      .map(item => item.show?.ids?.imdb || '')
+      .filter(Boolean)
+      .sort()
+      .join('|');
+    const watchedIds = (traktCollections.watched || [])
+      .map(item => item.show?.ids?.imdb || '')
+      .filter(Boolean)
+      .sort()
+      .join('|');
+
     return `${libraryIds}:${watchlistIds}:${continueWatchingIds}:${watchedIds}`;
   }
 
-  private async getCachedData<T>(key: string, libraryItems: any[], traktCollections: TraktCollections): Promise<T | null> {
+  private async getCachedData<T>(
+    key: string,
+    libraryItems: any[],
+    traktCollections: TraktCollections
+  ): Promise<T | null> {
     try {
       const storedCache = await mmkvStorage.getItem(key);
       if (!storedCache) return null;
@@ -48,7 +67,7 @@ class RobustCalendarCache {
         logger.log(`[Cache] Cache expired for key ${key}`);
         return null;
       }
-      
+
       return cache.data;
     } catch (error) {
       logger.error(`[Cache] Error getting cached data for key ${key}:`, error);
@@ -56,7 +75,13 @@ class RobustCalendarCache {
     }
   }
 
-  private async setCachedData<T>(key: string, data: T, libraryItems: any[], traktCollections: TraktCollections, isErrorRecovery = false): Promise<void> {
+  private async setCachedData<T>(
+    key: string,
+    data: T,
+    libraryItems: any[],
+    traktCollections: TraktCollections,
+    isErrorRecovery = false
+  ): Promise<void> {
     try {
       const hash = this.generateHash(libraryItems, traktCollections);
       const cache: CachedData<T> = {
@@ -72,7 +97,7 @@ class RobustCalendarCache {
       } else {
         logger.log(`[Cache] Saving successful data to cache for key ${key}`);
       }
-      
+
       await mmkvStorage.setItem(key, JSON.stringify(cache));
     } catch (error) {
       logger.error(`[Cache] Error setting cached data for key ${key}:`, error);
@@ -80,22 +105,50 @@ class RobustCalendarCache {
   }
 
   // Methods for This Week section
-  public async getCachedThisWeekData(libraryItems: any[], traktCollections: TraktCollections): Promise<any[] | null> {
+  public async getCachedThisWeekData(
+    libraryItems: any[],
+    traktCollections: TraktCollections
+  ): Promise<any[] | null> {
     return this.getCachedData<any[]>(THIS_WEEK_CACHE_KEY, libraryItems, traktCollections);
   }
 
-  public async setCachedThisWeekData(data: any[], libraryItems: any[], traktCollections: TraktCollections, isErrorRecovery = false): Promise<void> {
-    await this.setCachedData<any[]>(THIS_WEEK_CACHE_KEY, data, libraryItems, traktCollections, isErrorRecovery);
+  public async setCachedThisWeekData(
+    data: any[],
+    libraryItems: any[],
+    traktCollections: TraktCollections,
+    isErrorRecovery = false
+  ): Promise<void> {
+    await this.setCachedData<any[]>(
+      THIS_WEEK_CACHE_KEY,
+      data,
+      libraryItems,
+      traktCollections,
+      isErrorRecovery
+    );
   }
 
   // Methods for Calendar screen
-  public async getCachedCalendarData(libraryItems: any[], traktCollections: TraktCollections): Promise<any[] | null> {
+  public async getCachedCalendarData(
+    libraryItems: any[],
+    traktCollections: TraktCollections
+  ): Promise<any[] | null> {
     return this.getCachedData<any[]>(CALENDAR_CACHE_KEY, libraryItems, traktCollections);
   }
 
-  public async setCachedCalendarData(data: any[], libraryItems: any[], traktCollections: TraktCollections, isErrorRecovery = false): Promise<void> {
-    await this.setCachedData<any[]>(CALENDAR_CACHE_KEY, data, libraryItems, traktCollections, isErrorRecovery);
+  public async setCachedCalendarData(
+    data: any[],
+    libraryItems: any[],
+    traktCollections: TraktCollections,
+    isErrorRecovery = false
+  ): Promise<void> {
+    await this.setCachedData<any[]>(
+      CALENDAR_CACHE_KEY,
+      data,
+      libraryItems,
+      traktCollections,
+      isErrorRecovery
+    );
   }
 }
 
-export const robustCalendarCache = new RobustCalendarCache(); 
+export const robustCalendarCache = new RobustCalendarCache();

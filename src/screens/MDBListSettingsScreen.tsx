@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -14,15 +15,15 @@ import {
   Clipboard,
   Switch,
 } from 'react-native';
-import { UnifiedSpinner } from '../components/loading';
-import CustomAlert from '../components/CustomAlert';
-import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { mmkvStorage } from '../services/mmkvStorage';
+
+import CustomAlert from '../components/CustomAlert';
+import { UnifiedSpinner } from '../components/loading';
+import { RATING_PROVIDERS } from '../components/metadata/RatingsSection';
 import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { mmkvStorage } from '../services/mmkvStorage';
 import { logger } from '../utils/logger';
-import { RATING_PROVIDERS } from '../components/metadata/RatingsSection';
 
 export const MDBLIST_API_KEY_STORAGE_KEY = 'mdblist_api_key';
 export const RATING_PROVIDERS_STORAGE_KEY = 'rating_providers_config';
@@ -48,7 +49,7 @@ export const getMDBListAPIKey = async (): Promise<string | null> => {
       logger.log('[MDBList] MDBList is disabled, not retrieving API key');
       return null;
     }
-    
+
     return await mmkvStorage.getItem(MDBLIST_API_KEY_STORAGE_KEY);
   } catch (error) {
     logger.error('[MDBList] Error retrieving API key:', error);
@@ -57,311 +58,312 @@ export const getMDBListAPIKey = async (): Promise<string | null> => {
 };
 
 // Create a styles creator function that accepts the theme colors
-const createStyles = (colors: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.darkBackground,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  backText: {
-    fontSize: 17,
-    fontWeight: '400',
-    color: colors.primary,
-    marginLeft: 0,
-  },
-  headerTitle: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: colors.white,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 8,
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.darkBackground,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 15,
-    color: colors.mediumGray,
-  },
-  card: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
-  },
-  statusCard: {
-    backgroundColor: colors.elevation1,
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  infoCard: {
-    backgroundColor: colors.elevation1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  statusIcon: {
-    marginRight: 12,
-  },
-  statusTextContainer: {
-    flex: 1,
-  },
-  statusTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 2,
-  },
-  statusDescription: {
-    fontSize: 13,
-    color: colors.mediumGray,
-    lineHeight: 18,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.lightGray,
-    marginBottom: 10,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.elevation2,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    color: colors.white,
-    fontSize: 15,
-  },
-  inputFocused: {
-    borderColor: colors.primary,
-  },
-  pasteButton: {
-    padding: 8,
-    marginRight: 2,
-  },
-  testResultContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    marginTop: 10,
-    borderWidth: 1,
-  },
-  testResultSuccess: {
-    backgroundColor: colors.success + '15',
-    borderColor: colors.success + '40',
-  },
-  testResultError: {
-    backgroundColor: colors.error + '15',
-    borderColor: colors.error + '40',
-  },
-  testResultText: {
-    marginLeft: 8,
-    fontSize: 13,
-    flex: 1,
-  },
-  buttonContainer: {
-    marginTop: 12,
-    gap: 10, 
-  },
-  buttonIcon: {
-    marginRight: 6,
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: colors.elevation2, 
-    opacity: 0.8,
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  clearButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.error + '40',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  clearButtonDisabled: {
-    borderColor: colors.border,
-  },
-  clearButtonText: {
-    color: colors.error,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  clearButtonTextDisabled: {
-    color: colors.darkGray,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  infoHeaderText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.white,
-    marginLeft: 8,
-  },
-  infoSteps: {
-    marginBottom: 12,
-    gap: 6, 
-  },
-  infoStep: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  infoStepNumber: {
-    fontSize: 13,
-    color: colors.mediumGray,
-    width: 20,
-  },
-  infoStepText: {
-    color: colors.mediumGray,
-    fontSize: 13,
-    flex: 1,
-    lineHeight: 18,
-  },
-  boldText: {
-    fontWeight: '600',
-    color: colors.lightGray,
-  },
-  websiteButton: {
-    backgroundColor: colors.primary + '20',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  websiteButtonText: {
-    color: colors.primary,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  websiteButtonDisabled: {
-    backgroundColor: colors.elevation1,
-  },
-  websiteButtonTextDisabled: {
-    color: colors.darkGray,
-  },
-  sectionDescription: {
-    fontSize: 13,
-    color: colors.mediumGray,
-    marginBottom: 12,
-  },
-  providerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  providerInfo: {
-    flex: 1,
-  },
-  providerName: {
-    fontSize: 15,
-    color: colors.white,
-    fontWeight: '500',
-  },
-  masterToggleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  masterToggleInfo: {
-    flex: 1,
-  },
-  masterToggleTitle: {
-    fontSize: 15,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  masterToggleDescription: {
-    fontSize: 13,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  disabledCard: {
-    opacity: 0.7,
-  },
-  disabledInput: {
-    borderColor: colors.border,
-    backgroundColor: colors.elevation1,
-  },
-  disabledText: {
-    color: colors.darkGray,
-  },
-  disabledBoldText: {
-    color: colors.darkGray,
-  },
-  darkGray: {
-    color: colors.darkGray || '#555555',
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.darkBackground,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 8,
+    },
+    backText: {
+      fontSize: 17,
+      fontWeight: '400',
+      color: colors.primary,
+      marginLeft: 0,
+    },
+    headerTitle: {
+      fontSize: 34,
+      fontWeight: '700',
+      color: colors.white,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+      paddingTop: 8,
+    },
+    content: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 20,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.darkBackground,
+    },
+    loadingText: {
+      marginTop: 12,
+      fontSize: 15,
+      color: colors.mediumGray,
+    },
+    card: {
+      backgroundColor: colors.elevation2,
+      borderRadius: 10,
+      padding: 12,
+      marginBottom: 16,
+    },
+    statusCard: {
+      backgroundColor: colors.elevation1,
+      borderRadius: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      marginBottom: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    infoCard: {
+      backgroundColor: colors.elevation1,
+      borderRadius: 10,
+      padding: 12,
+    },
+    statusIcon: {
+      marginRight: 12,
+    },
+    statusTextContainer: {
+      flex: 1,
+    },
+    statusTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 2,
+    },
+    statusDescription: {
+      fontSize: 13,
+      color: colors.mediumGray,
+      lineHeight: 18,
+    },
+    sectionTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.lightGray,
+      marginBottom: 10,
+    },
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.elevation2,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    input: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      color: colors.white,
+      fontSize: 15,
+    },
+    inputFocused: {
+      borderColor: colors.primary,
+    },
+    pasteButton: {
+      padding: 8,
+      marginRight: 2,
+    },
+    testResultContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: 6,
+      marginTop: 10,
+      borderWidth: 1,
+    },
+    testResultSuccess: {
+      backgroundColor: `${colors.success}15`,
+      borderColor: `${colors.success}40`,
+    },
+    testResultError: {
+      backgroundColor: `${colors.error}15`,
+      borderColor: `${colors.error}40`,
+    },
+    testResultText: {
+      marginLeft: 8,
+      fontSize: 13,
+      flex: 1,
+    },
+    buttonContainer: {
+      marginTop: 12,
+      gap: 10,
+    },
+    buttonIcon: {
+      marginRight: 6,
+    },
+    saveButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    saveButtonDisabled: {
+      backgroundColor: colors.elevation2,
+      opacity: 0.8,
+    },
+    saveButtonText: {
+      color: colors.white,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    clearButton: {
+      backgroundColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: `${colors.error}40`,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    clearButtonDisabled: {
+      borderColor: colors.border,
+    },
+    clearButtonText: {
+      color: colors.error,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    clearButtonTextDisabled: {
+      color: colors.darkGray,
+    },
+    infoHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    infoHeaderText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.white,
+      marginLeft: 8,
+    },
+    infoSteps: {
+      marginBottom: 12,
+      gap: 6,
+    },
+    infoStep: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+    },
+    infoStepNumber: {
+      fontSize: 13,
+      color: colors.mediumGray,
+      width: 20,
+    },
+    infoStepText: {
+      color: colors.mediumGray,
+      fontSize: 13,
+      flex: 1,
+      lineHeight: 18,
+    },
+    boldText: {
+      fontWeight: '600',
+      color: colors.lightGray,
+    },
+    websiteButton: {
+      backgroundColor: `${colors.primary}20`,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 12,
+    },
+    websiteButtonText: {
+      color: colors.primary,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    websiteButtonDisabled: {
+      backgroundColor: colors.elevation1,
+    },
+    websiteButtonTextDisabled: {
+      color: colors.darkGray,
+    },
+    sectionDescription: {
+      fontSize: 13,
+      color: colors.mediumGray,
+      marginBottom: 12,
+    },
+    providerItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    providerInfo: {
+      flex: 1,
+    },
+    providerName: {
+      fontSize: 15,
+      color: colors.white,
+      fontWeight: '500',
+    },
+    masterToggleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 4,
+    },
+    masterToggleInfo: {
+      flex: 1,
+    },
+    masterToggleTitle: {
+      fontSize: 15,
+      color: colors.white,
+      fontWeight: '600',
+    },
+    masterToggleDescription: {
+      fontSize: 13,
+      color: colors.mediumGray,
+      marginTop: 2,
+    },
+    disabledCard: {
+      opacity: 0.7,
+    },
+    disabledInput: {
+      borderColor: colors.border,
+      backgroundColor: colors.elevation1,
+    },
+    disabledText: {
+      color: colors.darkGray,
+    },
+    disabledBoldText: {
+      color: colors.darkGray,
+    },
+    darkGray: {
+      color: colors.darkGray || '#555555',
+    },
+  });
 
 const MDBListSettingsScreen = () => {
   const navigation = useNavigation();
   const { currentTheme } = useTheme();
   const colors = currentTheme.colors;
   const styles = createStyles(colors);
-  
+
   // Custom alert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
@@ -397,7 +399,9 @@ const MDBListSettingsScreen = () => {
         // Default to disabled if no setting found
         setIsMdbListEnabled(false);
         await mmkvStorage.setItem(MDBLIST_ENABLED_STORAGE_KEY, 'false');
-        logger.log('[MDBListSettingsScreen] MDBList enabled setting not found, defaulting to false');
+        logger.log(
+          '[MDBListSettingsScreen] MDBList enabled setting not found, defaulting to false'
+        );
       }
     } catch (error) {
       logger.error('[MDBListSettingsScreen] Failed to load MDBList enabled setting:', error);
@@ -444,10 +448,13 @@ const MDBListSettingsScreen = () => {
         setEnabledProviders(JSON.parse(savedSettings));
       } else {
         // Default all providers to enabled
-        const defaultSettings = Object.keys(RATING_PROVIDERS).reduce((acc, key) => {
-          acc[key] = true;
-          return acc;
-        }, {} as Record<string, boolean>);
+        const defaultSettings = Object.keys(RATING_PROVIDERS).reduce(
+          (acc, key) => {
+            acc[key] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        );
         setEnabledProviders(defaultSettings);
         await mmkvStorage.setItem(RATING_PROVIDERS_STORAGE_KEY, JSON.stringify(defaultSettings));
       }
@@ -460,7 +467,7 @@ const MDBListSettingsScreen = () => {
     try {
       const newSettings = {
         ...enabledProviders,
-        [providerId]: !enabledProviders[providerId]
+        [providerId]: !enabledProviders[providerId],
       };
       setEnabledProviders(newSettings);
       await mmkvStorage.setItem(RATING_PROVIDERS_STORAGE_KEY, JSON.stringify(newSettings));
@@ -472,7 +479,7 @@ const MDBListSettingsScreen = () => {
   const saveApiKey = async () => {
     logger.log('[MDBListSettingsScreen] Starting API key save');
     Keyboard.dismiss();
-    
+
     try {
       const trimmedKey = apiKey.trim();
       if (!trimmedKey) {
@@ -486,12 +493,11 @@ const MDBListSettingsScreen = () => {
       setIsKeySet(true);
       setTestResult({ success: true, message: 'API key saved successfully.' });
       logger.log('[MDBListSettingsScreen] API key saved successfully');
-      
     } catch (error) {
       logger.error('[MDBListSettingsScreen] Error saving API key:', error);
       setTestResult({
         success: false,
-        message: 'An error occurred while saving. Please try again.'
+        message: 'An error occurred while saving. Please try again.',
       });
     }
   };
@@ -501,7 +507,11 @@ const MDBListSettingsScreen = () => {
     setAlertTitle('Clear API Key');
     setAlertMessage('Are you sure you want to remove the saved API key?');
     setAlertActions([
-      { label: 'Cancel', onPress: () => setAlertVisible(false), style: { color: colors.mediumGray } },
+      {
+        label: 'Cancel',
+        onPress: () => setAlertVisible(false),
+        style: { color: colors.mediumGray },
+      },
       {
         label: 'Clear',
         onPress: async () => {
@@ -520,7 +530,7 @@ const MDBListSettingsScreen = () => {
             setAlertVisible(true);
           }
         },
-        style: { color: colors.error }
+        style: { color: colors.error },
       },
     ]);
     setAlertVisible(true);
@@ -577,32 +587,32 @@ const MDBListSettingsScreen = () => {
       </View>
       <Text style={styles.headerTitle}>Rating Sources</Text>
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.statusCard}>
-          <MaterialIcons 
-            name={isKeySet && isMdbListEnabled ? "check-circle" : "error-outline"} 
+          <MaterialIcons
+            name={isKeySet && isMdbListEnabled ? 'check-circle' : 'error-outline'}
             size={28}
-            color={isKeySet && isMdbListEnabled ? colors.success : colors.warning} 
+            color={isKeySet && isMdbListEnabled ? colors.success : colors.warning}
             style={styles.statusIcon}
           />
           <View style={styles.statusTextContainer}>
             <Text style={styles.statusTitle}>
-              {!isMdbListEnabled 
-                ? "MDBList Disabled" 
-                : isKeySet 
-                  ? "API Key Active" 
-                  : "API Key Required"}
+              {!isMdbListEnabled
+                ? 'MDBList Disabled'
+                : isKeySet
+                  ? 'API Key Active'
+                  : 'API Key Required'}
             </Text>
             <Text style={styles.statusDescription}>
               {!isMdbListEnabled
-                ? "MDBList functionality is currently disabled."
-                : isKeySet 
-                  ? "Ratings from MDBList are enabled."
-                  : "Add your key below to enable ratings."}
+                ? 'MDBList functionality is currently disabled.'
+                : isKeySet
+                  ? 'Ratings from MDBList are enabled.'
+                  : 'Add your key below to enable ratings.'}
             </Text>
           </View>
         </View>
@@ -621,7 +631,7 @@ const MDBListSettingsScreen = () => {
                 triggerMedium();
                 toggleMdbListEnabled();
               }}
-              trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
+              trackColor={{ false: colors.elevation1, true: `${colors.primary}50` }}
               thumbColor={isMdbListEnabled ? colors.primary : colors.mediumGray}
             />
           </View>
@@ -633,12 +643,12 @@ const MDBListSettingsScreen = () => {
             <TextInput
               ref={apiKeyInputRef}
               style={[
-                styles.input, 
+                styles.input,
                 isInputFocused && styles.inputFocused,
-                !isMdbListEnabled && styles.disabledText
+                !isMdbListEnabled && styles.disabledText,
               ]}
               value={apiKey}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setApiKey(text);
                 if (testResult) setTestResult(null);
               }}
@@ -659,35 +669,35 @@ const MDBListSettingsScreen = () => {
               }}
               disabled={!isMdbListEnabled}
             >
-               <MaterialIcons
-                 name="content-paste"
-                 size={20}
-                 color={!isMdbListEnabled ? colors.darkGray : colors.primary}
-               />
+              <MaterialIcons
+                name="content-paste"
+                size={20}
+                color={!isMdbListEnabled ? colors.darkGray : colors.primary}
+              />
             </TouchableOpacity>
           </View>
-          
+
           {testResult && (
-            <View style={[
-              styles.testResultContainer,
-              testResult.success ? styles.testResultSuccess : styles.testResultError
-            ]}>
-              <MaterialIcons 
-                name={testResult.success ? "check" : "warning"} 
+            <View
+              style={[
+                styles.testResultContainer,
+                testResult.success ? styles.testResultSuccess : styles.testResultError,
+              ]}
+            >
+              <MaterialIcons
+                name={testResult.success ? 'check' : 'warning'}
                 size={18}
-                color={testResult.success ? colors.success : colors.error} 
+                color={testResult.success ? colors.success : colors.error}
               />
-              <Text style={styles.testResultText}>
-                {testResult.message}
-              </Text>
+              <Text style={styles.testResultText}>{testResult.message}</Text>
             </View>
           )}
-          
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[
                 styles.saveButton,
-                (!apiKey.trim() || !isMdbListEnabled) && styles.saveButtonDisabled
+                (!apiKey.trim() || !isMdbListEnabled) && styles.saveButtonDisabled,
               ]}
               onPress={() => {
                 triggerMedium();
@@ -698,7 +708,7 @@ const MDBListSettingsScreen = () => {
               <MaterialIcons name="save" size={18} color={colors.white} style={styles.buttonIcon} />
               <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
-            
+
             {isKeySet && (
               <TouchableOpacity
                 style={[styles.clearButton, !isMdbListEnabled && styles.clearButtonDisabled]}
@@ -714,10 +724,12 @@ const MDBListSettingsScreen = () => {
                   color={!isMdbListEnabled ? colors.darkGray : colors.error}
                   style={styles.buttonIcon}
                 />
-                <Text style={[
-                  styles.clearButtonText,
-                  !isMdbListEnabled && styles.clearButtonTextDisabled
-                ]}>
+                <Text
+                  style={[
+                    styles.clearButtonText,
+                    !isMdbListEnabled && styles.clearButtonTextDisabled,
+                  ]}
+                >
                   Clear Key
                 </Text>
               </TouchableOpacity>
@@ -727,16 +739,11 @@ const MDBListSettingsScreen = () => {
 
         <View style={[styles.card, !isMdbListEnabled && styles.disabledCard]}>
           <Text style={styles.sectionTitle}>Rating Providers</Text>
-          <Text style={styles.sectionDescription}>
-            Choose which ratings to display in the app
-          </Text>
+          <Text style={styles.sectionDescription}>Choose which ratings to display in the app</Text>
           {Object.entries(RATING_PROVIDERS).map(([id, provider]) => (
             <View key={id} style={styles.providerItem}>
               <View style={styles.providerInfo}>
-                <Text style={[
-                  styles.providerName,
-                  !isMdbListEnabled && styles.disabledText
-                ]}>
+                <Text style={[styles.providerName, !isMdbListEnabled && styles.disabledText]}>
                   {provider.name}
                 </Text>
               </View>
@@ -746,7 +753,7 @@ const MDBListSettingsScreen = () => {
                   triggerMedium();
                   toggleProvider(id);
                 }}
-                trackColor={{ false: colors.elevation1, true: colors.primary + '50' }}
+                trackColor={{ false: colors.elevation1, true: `${colors.primary}50` }}
                 thumbColor={enabledProviders[id] ? colors.primary : colors.mediumGray}
                 disabled={!isMdbListEnabled}
               />
@@ -756,76 +763,55 @@ const MDBListSettingsScreen = () => {
 
         <View style={[styles.infoCard, !isMdbListEnabled && styles.disabledCard]}>
           <View style={styles.infoHeader}>
-            <MaterialIcons 
-              name="help-outline" 
-              size={20} 
-              color={!isMdbListEnabled ? colors.darkGray : colors.primary} 
+            <MaterialIcons
+              name="help-outline"
+              size={20}
+              color={!isMdbListEnabled ? colors.darkGray : colors.primary}
             />
-            <Text style={[
-              styles.infoHeaderText, 
-              !isMdbListEnabled && styles.disabledText
-            ]}>
+            <Text style={[styles.infoHeaderText, !isMdbListEnabled && styles.disabledText]}>
               How to get an API key
             </Text>
           </View>
           <View style={styles.infoSteps}>
             <View style={styles.infoStep}>
-              <Text style={[
-                styles.infoStepNumber, 
-                !isMdbListEnabled && styles.disabledText
-              ]}>
+              <Text style={[styles.infoStepNumber, !isMdbListEnabled && styles.disabledText]}>
                 1.
               </Text>
-              <Text style={[
-                styles.infoStepText,
-                !isMdbListEnabled && styles.disabledText
-              ]}>
-                Log in on the <Text style={[
-                  styles.boldText,
-                  !isMdbListEnabled && styles.disabledBoldText
-                ]}>MDBList website</Text>.
+              <Text style={[styles.infoStepText, !isMdbListEnabled && styles.disabledText]}>
+                Log in on the{' '}
+                <Text style={[styles.boldText, !isMdbListEnabled && styles.disabledBoldText]}>
+                  MDBList website
+                </Text>
+                .
               </Text>
-            </View>            
+            </View>
             <View style={styles.infoStep}>
-              <Text style={[
-                styles.infoStepNumber,
-                !isMdbListEnabled && styles.disabledText
-              ]}>
+              <Text style={[styles.infoStepNumber, !isMdbListEnabled && styles.disabledText]}>
                 2.
               </Text>
-              <Text style={[
-                styles.infoStepText,
-                !isMdbListEnabled && styles.disabledText
-              ]}>
-                Go to <Text style={[
-                  styles.boldText,
-                  !isMdbListEnabled && styles.disabledBoldText
-                ]}>Settings</Text> {'>'} <Text style={[
-                  styles.boldText,
-                  !isMdbListEnabled && styles.disabledBoldText
-                ]}>API</Text> section.
+              <Text style={[styles.infoStepText, !isMdbListEnabled && styles.disabledText]}>
+                Go to{' '}
+                <Text style={[styles.boldText, !isMdbListEnabled && styles.disabledBoldText]}>
+                  Settings
+                </Text>{' '}
+                {'>'}{' '}
+                <Text style={[styles.boldText, !isMdbListEnabled && styles.disabledBoldText]}>
+                  API
+                </Text>{' '}
+                section.
               </Text>
-            </View>            
+            </View>
             <View style={styles.infoStep}>
-              <Text style={[
-                styles.infoStepNumber,
-                !isMdbListEnabled && styles.disabledText
-              ]}>
+              <Text style={[styles.infoStepNumber, !isMdbListEnabled && styles.disabledText]}>
                 3.
               </Text>
-              <Text style={[
-                styles.infoStepText,
-                !isMdbListEnabled && styles.disabledText
-              ]}>
+              <Text style={[styles.infoStepText, !isMdbListEnabled && styles.disabledText]}>
                 Generate a new key and copy it.
               </Text>
             </View>
           </View>
           <TouchableOpacity
-            style={[
-              styles.websiteButton,
-              !isMdbListEnabled && styles.websiteButtonDisabled
-            ]}
+            style={[styles.websiteButton, !isMdbListEnabled && styles.websiteButtonDisabled]}
             onPress={() => {
               triggerLight();
               openMDBListWebsite();
@@ -838,24 +824,26 @@ const MDBListSettingsScreen = () => {
               color={!isMdbListEnabled ? colors.darkGray : colors.primary}
               style={styles.buttonIcon}
             />
-            <Text style={[
-              styles.websiteButtonText,
-              !isMdbListEnabled && styles.websiteButtonTextDisabled
-            ]}>
+            <Text
+              style={[
+                styles.websiteButtonText,
+                !isMdbListEnabled && styles.websiteButtonTextDisabled,
+              ]}
+            >
               Go to MDBList
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    <CustomAlert
-      visible={alertVisible}
-      title={alertTitle}
-      message={alertMessage}
-      onClose={() => setAlertVisible(false)}
-      actions={alertActions}
-    />
-  </SafeAreaView>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        actions={alertActions}
+      />
+    </SafeAreaView>
   );
 };
 
-export default MDBListSettingsScreen; 
+export default MDBListSettingsScreen;

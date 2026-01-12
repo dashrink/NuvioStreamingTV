@@ -1,6 +1,7 @@
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
+
 import { useFocusOptional } from '../contexts/FocusContext';
 
 /**
@@ -111,9 +112,7 @@ export interface UseFocusMemoryReturn {
  * }
  * ```
  */
-export const useFocusMemory = (
-  options: UseFocusMemoryOptions = {}
-): UseFocusMemoryReturn => {
+export const useFocusMemory = (options: UseFocusMemoryOptions = {}): UseFocusMemoryReturn => {
   const {
     screenName: customScreenName,
     autoRestore = true,
@@ -260,10 +259,7 @@ export const useFocusMemory = (
  * }
  * ```
  */
-export const useRestoreDefaultFocus = (
-  elementId: string,
-  delay: number = 100
-): void => {
+export const useRestoreDefaultFocus = (elementId: string, delay: number = 100): void => {
   const focusContext = useFocusOptional();
   const isTV = Platform.isTV === true;
   const hasRestoredRef = useRef(false);

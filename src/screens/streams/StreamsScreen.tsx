@@ -1,16 +1,16 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
 import { PaperProvider } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import TabletStreamsLayout from '../../components/TabletStreamsLayout';
-import CustomAlert from '../../components/CustomAlert';
 import { MobileStreamsLayout } from './components';
-import { useStreamsScreen } from './useStreamsScreen';
 import { createStyles } from './styles';
 import { StreamSection } from './types';
+import { useStreamsScreen } from './useStreamsScreen';
 import Focusable from '../../components/common/Focusable';
+import CustomAlert from '../../components/CustomAlert';
+import TabletStreamsLayout from '../../components/TabletStreamsLayout';
 
 export const StreamsScreen = () => {
   const insets = useSafeAreaInsets();
@@ -134,7 +134,11 @@ export const StreamsScreen = () => {
             showInitialLoading={showInitialLoading}
             showStillFetching={showStillFetching}
             sections={sections}
-            renderSectionHeader={({ section }: { section: { title: string; addonId: string; isEmptyDueToQualityFilter?: boolean } }) => (
+            renderSectionHeader={({
+              section,
+            }: {
+              section: { title: string; addonId: string; isEmptyDueToQualityFilter?: boolean };
+            }) => (
               <View style={styles.sectionHeaderContainer}>
                 <View style={styles.sectionHeaderContent}>
                   <Text style={styles.streamGroupTitle}>{section.title}</Text>

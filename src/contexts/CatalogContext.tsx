@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+
 import { StreamingContent } from '../services/catalogService';
 import { addonEmitter, ADDON_EVENTS } from '../services/stremioService';
 import { logger } from '../utils/logger';
@@ -16,7 +17,7 @@ const CatalogContext = createContext<CatalogContextType>({
   refreshCatalogs: () => {},
   addToLibrary: () => {},
   removeFromLibrary: () => {},
-  libraryItems: []
+  libraryItems: [],
 });
 
 export const useCatalogContext = () => useContext(CatalogContext);
@@ -58,14 +59,16 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   return (
-    <CatalogContext.Provider value={{ 
-      lastUpdate, 
-      refreshCatalogs,
-      addToLibrary,
-      removeFromLibrary,
-      libraryItems
-    }}>
+    <CatalogContext.Provider
+      value={{
+        lastUpdate,
+        refreshCatalogs,
+        addToLibrary,
+        removeFromLibrary,
+        libraryItems,
+      }}
+    >
       {children}
     </CatalogContext.Provider>
   );
-}; 
+};

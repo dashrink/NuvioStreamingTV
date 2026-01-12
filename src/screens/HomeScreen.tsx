@@ -1,3 +1,10 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect, NavigationProp } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import React, { useState, useEffect, useCallback, useRef, useMemo, useLayoutEffect } from 'react';
 import {
   View,
@@ -15,34 +22,36 @@ import {
   Pressable,
   Alert,
   InteractionManager,
-  AppState
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
+  AppState,
+, DeviceEventEmitter } from 'react-native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StreamingContent, CatalogContent, catalogService } from '../services/catalogService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { storageService } from '../services/storageService';
 import { stremioService } from '../services/stremioService';
 import { Stream } from '../types/metadata';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import Animated, { FadeIn, Layout, useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+  FadeIn,
+  Layout,
+  useSharedValue,
+  useAnimatedScrollHandler,
+} from 'react-native-reanimated';
 import {
+  PanGestureHandler,
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
+
 import { useCatalogContext } from '../contexts/CatalogContext';
 import { ThisWeekSection } from '../components/home/ThisWeekSection';
 import ContinueWatchingSection from '../components/home/ContinueWatchingSection';
 import Top10Section from '../components/home/Top10Section';
-import * as Haptics from 'expo-haptics';
+
+
 import { tmdbService } from '../services/tmdbService';
-import { logger } from '../utils/logger';
-import { storageService } from '../services/storageService';
 import { getCatalogDisplayName, clearCustomNameCache } from '../utils/catalogNameUtils';
+import { logger } from '../utils/logger';
 import { useHomeCatalogs } from '../hooks/useHomeCatalogs';
 import { useFeaturedContent } from '../hooks/useFeaturedContent';
 import { useSettings, settingsEmitter } from '../hooks/useSettings';
@@ -55,11 +64,13 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common';
 import homeStyles, { sharedStyles } from '../styles/homeStyles';
 import { useTheme } from '../contexts/ThemeContext';
+
 import type { Theme } from '../contexts/ThemeContext';
+
 import { useLoading } from '../contexts/LoadingContext';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { mmkvStorage } from '../services/mmkvStorage';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useToast } from '../contexts/ToastContext';
 import FirstTimeWelcome from '../components/FirstTimeWelcome';
 import { HeaderVisibility } from '../contexts/HeaderVisibility';
@@ -121,7 +132,9 @@ const HomeScreen = () => {
   const prevProfileIdRef = useRef<string | undefined>(profileId);
 
   const [showHeroSection, setShowHeroSection] = useState(settings.showHeroSection);
-  const [featuredContentSource, setFeaturedContentSource] = useState(settings.featuredContentSource);
+  const [featuredContentSource, setFeaturedContentSource] = useState(
+    settings.featuredContentSource
+  );
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [hasContinueWatching, setHasContinueWatching] = useState(false);
 
@@ -154,7 +167,7 @@ const HomeScreen = () => {
     isSaved,
     handleSaveToLibrary,
     isItemSaved,
-    refreshFeatured
+    refreshFeatured,
   } = useFeaturedContent();
 
   // Guard to prevent overlapping fetch calls
@@ -174,7 +187,10 @@ const HomeScreen = () => {
       let catalogSettings: Record<string, boolean> = {};
       const now = Date.now();
 
-      if (cachedCatalogSettings && (now - catalogSettingsCacheTimestamp) < CATALOG_SETTINGS_CACHE_TTL) {
+      if (
+        cachedCatalogSettings &&
+        now - catalogSettingsCacheTimestamp < CATALOG_SETTINGS_CACHE_TTL
+      ) {
         catalogSettings = cachedCatalogSettings;
       } else {
         // Load from storage
@@ -188,7 +204,7 @@ const HomeScreen = () => {
 
       const [addons, addonManifests] = await Promise.all([
         catalogService.getAllAddons(),
-        stremioService.getInstalledAddonsAsync()
+        stremioService.getInstalledAddonsAsync(),
       ]);
 
       // Set hasAddons state based on whether we have any addons - ensure on main thread
@@ -226,7 +242,12 @@ const HomeScreen = () => {
                   const manifest = addonManifests.find((a: any) => a.id === addon.id);
                   if (!manifest) return;
 
-                  const metas = await stremioService.getCatalog(manifest, catalog.type, catalog.id, 1);
+                  const metas = await stremioService.getCatalog(
+                    manifest,
+                    catalog.type,
+                    catalog.id,
+                    1
+                  );
                   if (metas && metas.length > 0) {
                     // Aggressively limit items per catalog on Android to reduce memory usage
                     const limit = Platform.OS === 'android' ? 18 : 30;
@@ -247,12 +268,17 @@ const HomeScreen = () => {
                       released: meta.released,
                       directors: meta.director,
                       creators: meta.creator,
-                      certification: meta.certification
+                      certification: meta.certification,
                     }));
 
                     // Resolve custom display name; if custom exists, use as-is
                     const originalName = catalog.name || catalog.id;
-                    let displayName = await getCatalogDisplayName(addon.id, catalog.type, catalog.id, originalName);
+                    let displayName = await getCatalogDisplayName(
+                      addon.id,
+                      catalog.type,
+                      catalog.id,
+                      originalName
+                    );
                     const isCustom = displayName !== originalName;
 
                     if (!isCustom) {
@@ -262,7 +288,10 @@ const HomeScreen = () => {
                       const seen = new Set<string>();
                       for (const w of words) {
                         const lw = w.toLowerCase();
-                        if (!seen.has(lw)) { uniqueWords.push(w); seen.add(lw); }
+                        if (!seen.has(lw)) {
+                          uniqueWords.push(w);
+                          seen.add(lw);
+                        }
                       }
                       displayName = uniqueWords.join(' ');
 
@@ -278,7 +307,7 @@ const HomeScreen = () => {
                       type: catalog.type,
                       id: catalog.id,
                       name: displayName,
-                      items
+                      items,
                     };
 
                     // Update the catalog at its specific position - ensure on main thread
@@ -291,7 +320,11 @@ const HomeScreen = () => {
                     });
                   }
                 } catch (error) {
-                  if (__DEV__) console.error(`[HomeScreen] Failed to load ${catalog.name} from ${addon.name}:`, error);
+                  if (__DEV__)
+                    console.error(
+                      `[HomeScreen] Failed to load ${catalog.name} from ${addon.name}:`,
+                      error
+                    );
                 } finally {
                   // Update loading count - ensure on main thread
                   InteractionManager.runAfterInteractions(() => {
@@ -349,7 +382,7 @@ const HomeScreen = () => {
     // Exit loading as soon as at least one catalog is ready, regardless of featured
     if (loadedCatalogCount > 0) return false;
     const heroLoading = showHeroSection ? featuredLoading : false;
-    return heroLoading && (catalogsLoading && loadedCatalogCount === 0);
+    return heroLoading && catalogsLoading && loadedCatalogCount === 0;
   }, [showHeroSection, featuredLoading, catalogsLoading, loadedCatalogCount]);
 
   // Update global loading state
@@ -403,7 +436,7 @@ const HomeScreen = () => {
           // Also show a global toast for consistency across screens
           // showInfo('Sign In Available', 'You can sign in anytime from Settings → Account');
         }
-      } catch { }
+      } catch {}
     })();
     return () => {
       if (hideTimer) clearTimeout(hideTimer);
@@ -432,7 +465,7 @@ const HomeScreen = () => {
     useCallback(() => {
       const statusBarConfig = () => {
         // Ensure status bar is fully transparent and doesn't take up space
-        StatusBar.setBarStyle("light-content");
+        StatusBar.setBarStyle('light-content');
         StatusBar.setTranslucent(true);
         StatusBar.setBackgroundColor('transparent');
 
@@ -445,7 +478,7 @@ const HomeScreen = () => {
       statusBarConfig();
 
       // Unlock orientation to allow free rotation
-      ScreenOrientation.unlockAsync().catch(() => { });
+      ScreenOrientation.unlockAsync().catch(() => {});
 
       return () => {
         // Stop trailer when screen loses focus (navigating to other screens)
@@ -506,7 +539,8 @@ const HomeScreen = () => {
       const MAX_IMAGES = 10; // Preload 10 most important images
 
       // Only preload poster images (skip banner and logo entirely)
-      const posterImages = content.slice(0, MAX_IMAGES)
+      const posterImages = content
+        .slice(0, MAX_IMAGES)
         .map(item => item.poster)
         .filter(Boolean) as string[];
 
@@ -514,7 +548,7 @@ const HomeScreen = () => {
       const sources = posterImages.map(uri => ({
         uri,
         priority: FastImage.priority.normal,
-        cache: FastImage.cacheControl.immutable
+        cache: FastImage.cacheControl.immutable,
       }));
 
       // Preload all images at once - FastImage handles batching internally
@@ -525,64 +559,69 @@ const HomeScreen = () => {
     }
   }, []);
 
-  const handleContentPress = useCallback((id: string, type: string) => {
-    navigation.navigate('Metadata', { id, type });
-  }, [navigation]);
+  const handleContentPress = useCallback(
+    (id: string, type: string) => {
+      navigation.navigate('Metadata', { id, type });
+    },
+    [navigation]
+  );
 
-  const handlePlayStream = useCallback(async (stream: Stream) => {
-    if (!featuredContent) return;
+  const handlePlayStream = useCallback(
+    async (stream: Stream) => {
+      if (!featuredContent) return;
 
-    try {
-      // Don't clear cache before player - causes broken images on return
-      // FastImage's native libraries handle memory efficiently
-
-      // Lock orientation to landscape before navigation to prevent glitches
       try {
-        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+        // Don't clear cache before player - causes broken images on return
+        // FastImage's native libraries handle memory efficiently
 
-        // Longer delay to ensure orientation is fully set before navigation
-        await new Promise(resolve => setTimeout(resolve, 200));
-      } catch (orientationError) {
-        // If orientation lock fails, continue anyway but log it
-        logger.warn('[HomeScreen] Orientation lock failed:', orientationError);
-        // Still add a small delay
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Lock orientation to landscape before navigation to prevent glitches
+        try {
+          await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
+          // Longer delay to ensure orientation is fully set before navigation
+          await new Promise(resolve => setTimeout(resolve, 200));
+        } catch (orientationError) {
+          // If orientation lock fails, continue anyway but log it
+          logger.warn('[HomeScreen] Orientation lock failed:', orientationError);
+          // Still add a small delay
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // @ts-ignore
+        navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
+          uri: stream.url as any,
+          title: featuredContent.name,
+          year: featuredContent.year,
+          quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
+          streamProvider: stream.name,
+          id: featuredContent.id,
+          type: featuredContent.type,
+        });
+      } catch (error) {
+        logger.error('[HomeScreen] Error in handlePlayStream:', error);
+
+        // Fallback: navigate anyway
+        // Fallback: navigate anyway
+        // @ts-ignore
+        navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
+          uri: stream.url as any,
+          title: featuredContent.name,
+          year: featuredContent.year,
+          quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
+          streamProvider: stream.name,
+          id: featuredContent.id,
+          type: featuredContent.type,
+        });
       }
-
-      // @ts-ignore
-      navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
-        uri: stream.url as any,
-        title: featuredContent.name,
-        year: featuredContent.year,
-        quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
-        streamProvider: stream.name,
-        id: featuredContent.id,
-        type: featuredContent.type
-      });
-    } catch (error) {
-      logger.error('[HomeScreen] Error in handlePlayStream:', error);
-
-      // Fallback: navigate anyway
-      // Fallback: navigate anyway
-      // @ts-ignore
-      navigation.navigate(Platform.OS === 'ios' ? 'PlayerIOS' : 'PlayerAndroid', {
-        uri: stream.url as any,
-        title: featuredContent.name,
-        year: featuredContent.year,
-        quality: stream.title?.match(/(\d+)p/)?.[1] || undefined,
-        streamProvider: stream.name,
-        id: featuredContent.id,
-        type: featuredContent.type
-      });
-    }
-  }, [featuredContent, navigation]);
+    },
+    [featuredContent, navigation]
+  );
 
   const refreshContinueWatching = useCallback(async () => {
     if (continueWatchingRef.current) {
       try {
         const hasContent = await continueWatchingRef.current.refresh();
         setHasContinueWatching(hasContent);
-
       } catch (error) {
         if (__DEV__) console.error('[HomeScreen] Error refreshing continue watching:', error);
         setHasContinueWatching(false);
@@ -642,11 +681,7 @@ const HomeScreen = () => {
     if (isLoading) {
       return (
         <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-          <StatusBar
-            barStyle="light-content"
-            backgroundColor="transparent"
-            translucent
-          />
+          <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
           <View style={styles.loadingMainContainer}>
             <LoadingSpinner size="large" offsetY={-20} />
           </View>
@@ -688,7 +723,10 @@ const HomeScreen = () => {
     });
 
     // Add a "Load More" button if there are more catalogs to show
-    if (catalogs.length > visibleCatalogCount && catalogs.filter(c => c).length > visibleCatalogCount) {
+    if (
+      catalogs.length > visibleCatalogCount &&
+      catalogs.filter(c => c).length > visibleCatalogCount
+    ) {
       data.push({ type: 'loadMore', key: 'load-more' });
     }
 
@@ -739,7 +777,7 @@ const HomeScreen = () => {
             loading={featuredLoading}
           />
           <LinearGradient
-            colors={["transparent", currentTheme.colors.darkBackground]}
+            colors={['transparent', currentTheme.colors.darkBackground]}
             locations={[0, 1]}
             style={{
               height: isTablet ? 40 : 30,
@@ -753,32 +791,62 @@ const HomeScreen = () => {
         </>
       );
     }
-  }, [isTablet, settings.heroStyle, showHeroSection, featuredContentSource, allFeaturedContent, featuredContent, isSaved, handleSaveToLibrary, featuredLoading]);
+  }, [
+    isTablet,
+    settings.heroStyle,
+    showHeroSection,
+    featuredContentSource,
+    allFeaturedContent,
+    featuredContent,
+    isSaved,
+    handleSaveToLibrary,
+    featuredLoading,
+  ]);
 
   const memoizedThisWeekSection = useMemo(() => <ThisWeekSection />, []);
-  const memoizedContinueWatchingSection = useMemo(() => <ContinueWatchingSection ref={continueWatchingRef} />, []);
-  const memoizedTop10MoviesSection = useMemo(() => (
-    <Top10Section
-      type="movie"
-      timeWindow={settings.top10Settings.timeWindow}
-      displayStyle={settings.top10Settings.displayStyle}
-      enabled={settings.top10Settings.enabled}
-    />
-  ), [settings.top10Settings.timeWindow, settings.top10Settings.displayStyle, settings.top10Settings.enabled]);
-  const memoizedTop10SeriesSection = useMemo(() => (
-    <Top10Section
-      type="tv"
-      timeWindow={settings.top10Settings.timeWindow}
-      displayStyle={settings.top10Settings.displayStyle}
-      enabled={settings.top10Settings.enabled}
-    />
-  ), [settings.top10Settings.timeWindow, settings.top10Settings.displayStyle, settings.top10Settings.enabled]);
-  const memoizedHeader = useMemo(() => (
-    <>
-      {showHeroSection ? memoizedFeaturedContent : null}
-      {memoizedContinueWatchingSection}
-    </>
-  ), [showHeroSection, memoizedFeaturedContent, memoizedContinueWatchingSection]);
+  const memoizedContinueWatchingSection = useMemo(
+    () => <ContinueWatchingSection ref={continueWatchingRef} />,
+    []
+  );
+  const memoizedTop10MoviesSection = useMemo(
+    () => (
+      <Top10Section
+        type="movie"
+        timeWindow={settings.top10Settings.timeWindow}
+        displayStyle={settings.top10Settings.displayStyle}
+        enabled={settings.top10Settings.enabled}
+      />
+    ),
+    [
+      settings.top10Settings.timeWindow,
+      settings.top10Settings.displayStyle,
+      settings.top10Settings.enabled,
+    ]
+  );
+  const memoizedTop10SeriesSection = useMemo(
+    () => (
+      <Top10Section
+        type="tv"
+        timeWindow={settings.top10Settings.timeWindow}
+        displayStyle={settings.top10Settings.displayStyle}
+        enabled={settings.top10Settings.enabled}
+      />
+    ),
+    [
+      settings.top10Settings.timeWindow,
+      settings.top10Settings.displayStyle,
+      settings.top10Settings.enabled,
+    ]
+  );
+  const memoizedHeader = useMemo(
+    () => (
+      <>
+        {showHeroSection ? memoizedFeaturedContent : null}
+        {memoizedContinueWatchingSection}
+      </>
+    ),
+    [showHeroSection, memoizedFeaturedContent, memoizedContinueWatchingSection]
+  );
   // Track scroll direction manually for reliable behavior across platforms
   const lastScrollYRef = useRef(0);
   const lastToggleRef = useRef(0);
@@ -793,107 +861,126 @@ const HomeScreen = () => {
   }, []);
 
   // Stabilize renderItem to prevent FlashList re-renders
-  const renderListItem = useCallback(({ item }: { item: HomeScreenListItem; index: number }) => {
-    switch (item.type) {
-      case 'thisWeek':
-        return memoizedThisWeekSection;
-      case 'continueWatching':
-        return null; // Moved to ListHeaderComponent to avoid remounts on scroll
-      case 'top10Movies':
-        return memoizedTop10MoviesSection;
-      case 'top10Series':
-        return memoizedTop10SeriesSection;
-      case 'catalog':
-        return <CatalogSection catalog={item.catalog} />;
-      case 'placeholder':
-        return (
-          <CatalogRowSkeleton
-            posterCount={4}
-            showTitle={true}
-            testID="catalog-placeholder-skeleton"
-          />
-        );
-      case 'loadMore':
-        return (
-          <View>
-            <View style={styles.loadMoreContainer}>
-              <TouchableOpacity
-                style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.primary }]}
-                onPress={handleLoadMoreCatalogs}
-              >
-                <MaterialIcons name="expand-more" size={20} color={currentTheme.colors.white} />
-                <Text style={[styles.loadMoreText, { color: currentTheme.colors.white }]}>
-                  Load More Catalogs
-                </Text>
-              </TouchableOpacity>
+  const renderListItem = useCallback(
+    ({ item }: { item: HomeScreenListItem; index: number }) => {
+      switch (item.type) {
+        case 'thisWeek':
+          return memoizedThisWeekSection;
+        case 'continueWatching':
+          return null; // Moved to ListHeaderComponent to avoid remounts on scroll
+        case 'top10Movies':
+          return memoizedTop10MoviesSection;
+        case 'top10Series':
+          return memoizedTop10SeriesSection;
+        case 'catalog':
+          return <CatalogSection catalog={item.catalog} />;
+        case 'placeholder':
+          return (
+            <CatalogRowSkeleton
+              posterCount={4}
+              showTitle={true}
+              testID="catalog-placeholder-skeleton"
+            />
+          );
+        case 'loadMore':
+          return (
+            <View>
+              <View style={styles.loadMoreContainer}>
+                <TouchableOpacity
+                  style={[styles.loadMoreButton, { backgroundColor: currentTheme.colors.primary }]}
+                  onPress={handleLoadMoreCatalogs}
+                >
+                  <MaterialIcons name="expand-more" size={20} color={currentTheme.colors.white} />
+                  <Text style={[styles.loadMoreText, { color: currentTheme.colors.white }]}>
+                    Load More Catalogs
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        );
-      case 'welcome':
-        return <FirstTimeWelcome />;
-      default:
-        return null;
-    }
-  }, [memoizedThisWeekSection, memoizedTop10MoviesSection, memoizedTop10SeriesSection, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
+          );
+        case 'welcome':
+          return <FirstTimeWelcome />;
+        default:
+          return null;
+      }
+    },
+    [
+      memoizedThisWeekSection,
+      memoizedTop10MoviesSection,
+      memoizedTop10SeriesSection,
+      currentTheme.colors.primary,
+      currentTheme.colors.white,
+      handleLoadMoreCatalogs,
+    ]
+  );
 
   // FlashList: using minimal props per installed version
 
-  const ListFooterComponent = useMemo(() => (
-    <>
-      {catalogsLoading && loadedCatalogCount > 0 && loadedCatalogCount < totalCatalogsRef.current && null}
-      {!catalogsLoading && catalogs.filter(c => c).length === 0 && (
-        <EmptyState
-          icon={{ name: 'movie-filter', library: 'MaterialIcons', size: 48 }}
-          title="No content available"
-          subtitle="Add catalogs to see your content here"
-          primaryAction={{
-            label: 'Add Catalogs',
-            onPress: () => navigation.navigate('Settings'),
-          }}
-          style={styles.emptyCatalogState}
-        />
-      )}
-    </>
-  ), [catalogsLoading, catalogs, loadedCatalogCount, totalCatalogsRef.current, navigation]);
+  const ListFooterComponent = useMemo(
+    () => (
+      <>
+        {catalogsLoading &&
+          loadedCatalogCount > 0 &&
+          loadedCatalogCount < totalCatalogsRef.current &&
+          null}
+        {!catalogsLoading && catalogs.filter(c => c).length === 0 && (
+          <EmptyState
+            icon={{ name: 'movie-filter', library: 'MaterialIcons', size: 48 }}
+            title="No content available"
+            subtitle="Add catalogs to see your content here"
+            primaryAction={{
+              label: 'Add Catalogs',
+              onPress: () => navigation.navigate('Settings'),
+            }}
+            style={styles.emptyCatalogState}
+          />
+        )}
+      </>
+    ),
+    [catalogsLoading, catalogs, loadedCatalogCount, totalCatalogsRef.current, navigation]
+  );
 
   // Memoize scroll handler with requestAnimationFrame throttling for better performance
-  const handleScroll = useCallback((event: any) => {
-    // Persist the event before using requestAnimationFrame to prevent event pooling issues
-    event.persist();
+  const handleScroll = useCallback(
+    (event: any) => {
+      // Persist the event before using requestAnimationFrame to prevent event pooling issues
+      event.persist();
 
-    // Cancel any pending animation frame
-    if (scrollAnimationFrameRef.current !== null) {
-      cancelAnimationFrame(scrollAnimationFrameRef.current);
-    }
-
-    // Capture scroll values immediately before async operation
-    const scrollYValue = event.nativeEvent.contentOffset.y;
-
-    // Update shared value for parallax (on UI thread)
-    scrollY.value = scrollYValue;
-
-    // Use requestAnimationFrame to throttle scroll handling
-    scrollAnimationFrameRef.current = requestAnimationFrame(() => {
-      const y = scrollYValue;
-      const dy = y - lastScrollYRef.current;
-      lastScrollYRef.current = y;
-
-      isScrollingRef.current = Math.abs(dy) > 0;
-
-      if (y <= 10) {
-        toggleHeader(false);
-        return;
-      }
-      // Threshold to avoid jitter
-      if (dy > 6) {
-        toggleHeader(true); // scrolling down
-      } else if (dy < -6) {
-        toggleHeader(false); // scrolling up
+      // Cancel any pending animation frame
+      if (scrollAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(scrollAnimationFrameRef.current);
       }
 
-      scrollAnimationFrameRef.current = null;
-    });
-  }, [toggleHeader]);
+      // Capture scroll values immediately before async operation
+      const scrollYValue = event.nativeEvent.contentOffset.y;
+
+      // Update shared value for parallax (on UI thread)
+      scrollY.value = scrollYValue;
+
+      // Use requestAnimationFrame to throttle scroll handling
+      scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+        const y = scrollYValue;
+        const dy = y - lastScrollYRef.current;
+        lastScrollYRef.current = y;
+
+        isScrollingRef.current = Math.abs(dy) > 0;
+
+        if (y <= 10) {
+          toggleHeader(false);
+          return;
+        }
+        // Threshold to avoid jitter
+        if (dy > 6) {
+          toggleHeader(true); // scrolling down
+        } else if (dy < -6) {
+          toggleHeader(false); // scrolling up
+        }
+
+        scrollAnimationFrameRef.current = null;
+      });
+    },
+    [toggleHeader]
+  );
 
   // Memoize content container style - use stable insets to prevent iOS shifting
   // Don't add paddingTop when using AppleTVHero as it handles its own top spacing
@@ -903,7 +990,7 @@ const HomeScreen = () => {
 
     return StyleSheet.flatten([
       styles.scrollContent,
-      { paddingTop: isUsingAppleTVHero ? 0 : stableInsetsTop }
+      { paddingTop: isUsingAppleTVHero ? 0 : stableInsetsTop },
     ]);
   }, [stableInsetsTop, settings.heroStyle, isTablet, showHeroSection]);
 
@@ -913,11 +1000,7 @@ const HomeScreen = () => {
 
     return (
       <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="transparent"
-          translucent
-        />
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <FlashList
           data={listData}
           renderItem={renderListItem}
@@ -945,7 +1028,7 @@ const HomeScreen = () => {
     memoizedHeader,
     ListFooterComponent,
     handleLoadMoreCatalogs,
-    handleScroll
+    handleScroll,
   ]);
 
   return isLoading ? renderLoadingScreen : renderMainContent;
@@ -983,7 +1066,7 @@ const calculatePosterLayout = (screenWidth: number) => {
     numFullPosters: bestLayout.numFullPosters,
     posterWidth: bestLayout.posterWidth,
     spacing: SPACING,
-    partialPosterWidth: bestLayout.posterWidth * 0.25 // 1/4 of next poster
+    partialPosterWidth: bestLayout.posterWidth * 0.25, // 1/4 of next poster
   };
 };
 
@@ -1463,7 +1546,6 @@ const styles = StyleSheet.create<any>({
   },
 });
 
-import { DeviceEventEmitter } from 'react-native';
 
 const HomeScreenWithFocusSync = (props: any) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -1477,4 +1559,3 @@ const HomeScreenWithFocusSync = (props: any) => {
 };
 
 export default React.memo(HomeScreenWithFocusSync);
-

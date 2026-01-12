@@ -1,3 +1,4 @@
+import FastImage from '@d11/react-native-fast-image';
 import React, { useCallback, useMemo } from 'react';
 import {
   View,
@@ -8,10 +9,8 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import FastImage from '@d11/react-native-fast-image';
-import Animated, {
-  FadeIn,
-} from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
 
@@ -41,7 +40,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
   // Enhanced responsive sizing for tablets and TV screens
   const deviceWidth = Dimensions.get('window').width;
   const deviceHeight = Dimensions.get('window').height;
-  
+
   // Determine device type based on width
   const getDeviceType = useCallback(() => {
     if (deviceWidth >= BREAKPOINTS.tv) return 'tv';
@@ -49,13 +48,13 @@ export const CastSection: React.FC<CastSectionProps> = ({
     if (deviceWidth >= BREAKPOINTS.tablet) return 'tablet';
     return 'phone';
   }, [deviceWidth]);
-  
+
   const deviceType = getDeviceType();
   const isTablet = deviceType === 'tablet';
   const isLargeTablet = deviceType === 'largeTablet';
   const isTV = deviceType === 'tv';
   const isLargeScreen = isTablet || isLargeTablet || isTV;
-  
+
   // Enhanced spacing and padding
   const horizontalPadding = useMemo(() => {
     switch (deviceType) {
@@ -69,7 +68,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
         return 16; // phone
     }
   }, [deviceType]);
-  
+
   // Enhanced cast card sizing
   const castCardWidth = useMemo(() => {
     switch (deviceType) {
@@ -83,7 +82,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
         return 90; // phone
     }
   }, [deviceType]);
-  
+
   const castImageSize = useMemo(() => {
     switch (deviceType) {
       case 'tv':
@@ -96,7 +95,7 @@ export const CastSection: React.FC<CastSectionProps> = ({
         return 80; // phone
     }
   }, [deviceType]);
-  
+
   const castCardSpacing = useMemo(() => {
     switch (deviceType) {
       case 'tv':
@@ -123,43 +122,36 @@ export const CastSection: React.FC<CastSectionProps> = ({
   }
 
   return (
-    <Animated.View 
-      style={styles.castSection}
-      entering={FadeIn.duration(300).delay(150)}
-    >
-      <View style={[
-        styles.sectionHeader,
-        { paddingHorizontal: horizontalPadding }
-      ]}>
-        <Text style={[
-          styles.sectionTitle, 
-          { 
-            color: currentTheme.colors.highEmphasis,
-            fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18,
-            marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12
-          }
-        ]}>Cast</Text>
+    <Animated.View style={styles.castSection} entering={FadeIn.duration(300).delay(150)}>
+      <View style={[styles.sectionHeader, { paddingHorizontal: horizontalPadding }]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            {
+              color: currentTheme.colors.highEmphasis,
+              fontSize: isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 18,
+              marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12,
+            },
+          ]}
+        >
+          Cast
+        </Text>
       </View>
       <FlatList
         horizontal
         data={cast}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.castList,
-          { paddingHorizontal: horizontalPadding }
-        ]}
-        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={[styles.castList, { paddingHorizontal: horizontalPadding }]}
+        keyExtractor={item => item.id.toString()}
         renderItem={({ item, index }) => (
-          <Animated.View 
-            entering={FadeIn.duration(300).delay(50 + index * 30)} 
-          >
+          <Animated.View entering={FadeIn.duration(300).delay(50 + index * 30)}>
             <TouchableOpacity
               style={[
                 styles.castCard,
                 {
                   width: castCardWidth,
-                  marginRight: castCardSpacing
-                }
+                  marginRight: castCardSpacing,
+                },
               ]}
               onPress={() => {
                 triggerLight();
@@ -167,15 +159,17 @@ export const CastSection: React.FC<CastSectionProps> = ({
               }}
               activeOpacity={0.7}
             >
-              <View style={[
-                styles.castImageContainer,
-                {
-                  width: castImageSize,
-                  height: castImageSize,
-                  borderRadius: castImageSize / 2,
-                  marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8
-                }
-              ]}>
+              <View
+                style={[
+                  styles.castImageContainer,
+                  {
+                    width: castImageSize,
+                    height: castImageSize,
+                    borderRadius: castImageSize / 2,
+                    marginBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+                  },
+                ]}
+              >
                 {item.profile_path ? (
                   <FastImage
                     source={{
@@ -185,43 +179,60 @@ export const CastSection: React.FC<CastSectionProps> = ({
                     resizeMode={FastImage.resizeMode.cover}
                   />
                 ) : (
-                  <View style={[
-                    styles.castImagePlaceholder, 
-                    { 
-                      backgroundColor: currentTheme.colors.darkBackground,
-                      borderRadius: castImageSize / 2
-                    }
-                  ]}>
-                    <Text style={[
-                      styles.placeholderText, 
-                      { 
-                        color: currentTheme.colors.textMuted,
-                        fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24
-                      }
-                    ]}>
-                      {item.name.split(' ').reduce((prev: string, current: string) => prev + current[0], '').substring(0, 2)}
+                  <View
+                    style={[
+                      styles.castImagePlaceholder,
+                      {
+                        backgroundColor: currentTheme.colors.darkBackground,
+                        borderRadius: castImageSize / 2,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.placeholderText,
+                        {
+                          color: currentTheme.colors.textMuted,
+                          fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24,
+                        },
+                      ]}
+                    >
+                      {item.name
+                        .split(' ')
+                        .reduce((prev: string, current: string) => prev + current[0], '')
+                        .substring(0, 2)}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={[
-                styles.castName, 
-                { 
-                  color: currentTheme.colors.text,
-                  fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
-                  width: castCardWidth
-                }
-              ]} numberOfLines={1}>{item.name}</Text>
-              {isTmdbEnrichmentEnabled && item.character && (
-                <Text style={[
-                  styles.characterName, 
-                  { 
-                    color: currentTheme.colors.textMuted,
-                    fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12,
+              <Text
+                style={[
+                  styles.castName,
+                  {
+                    color: currentTheme.colors.text,
+                    fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14,
                     width: castCardWidth,
-                    marginTop: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2
-                  }
-                ]} numberOfLines={1}>{item.character}</Text>
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+              {isTmdbEnrichmentEnabled && item.character && (
+                <Text
+                  style={[
+                    styles.characterName,
+                    {
+                      color: currentTheme.colors.textMuted,
+                      fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 12 : 12,
+                      width: castCardWidth,
+                      marginTop: isTV ? 4 : isLargeTablet ? 3 : isTablet ? 2 : 2,
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.character}
+                </Text>
               )}
             </TouchableOpacity>
           </Animated.View>
@@ -293,4 +304,4 @@ const styles = StyleSheet.create({
     width: 90,
     marginTop: 2,
   },
-}); 
+});

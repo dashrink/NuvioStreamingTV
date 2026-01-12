@@ -141,7 +141,6 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
 
-
   /* CloudStream Style - Center Controls */
   controls: {
     position: 'absolute',

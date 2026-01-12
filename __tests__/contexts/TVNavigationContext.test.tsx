@@ -12,8 +12,9 @@
  * - Error handling and edge cases
  */
 
-import React, { ReactNode } from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
+import React, { ReactNode } from 'react';
+
 import {
   TVNavigationProvider,
   useTVNavigation,
@@ -891,9 +892,7 @@ describe('Context Menu', () => {
       });
 
       const onSelectMock = jest.fn();
-      const items: ContextMenuItem[] = [
-        createMenuItem('add-to-list', 'Add to List', onSelectMock),
-      ];
+      const items: ContextMenuItem[] = [createMenuItem('add-to-list', 'Add to List', onSelectMock)];
 
       act(() => {
         result.current.openContextMenu({
@@ -947,9 +946,7 @@ describe('Context Menu', () => {
       });
 
       const onSelectMock = jest.fn();
-      const items: ContextMenuItem[] = [
-        createMenuItem('add-to-list', 'Add to List', onSelectMock),
-      ];
+      const items: ContextMenuItem[] = [createMenuItem('add-to-list', 'Add to List', onSelectMock)];
 
       act(() => {
         result.current.openContextMenu({
@@ -1352,13 +1349,16 @@ describe('Edge Cases', () => {
 describe('Multiple Consumers', () => {
   it('should share state between multiple consumers', () => {
     // Test that multiple calls to useTVNavigation within the same context share state
-    const { result } = renderHook(() => {
-      const nav1 = useTVNavigation();
-      const nav2 = useTVNavigation();
-      return { nav1, nav2 };
-    }, {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHook(
+      () => {
+        const nav1 = useTVNavigation();
+        const nav2 = useTVNavigation();
+        return { nav1, nav2 };
+      },
+      {
+        wrapper: createWrapper(),
+      }
+    );
 
     act(() => {
       result.current.nav1.setCurrentFocusId('shared-focus');
@@ -1379,13 +1379,16 @@ describe('Multiple Consumers', () => {
 
   it('should receive updates from any consumer', () => {
     // Test that multiple hooks see all state updates
-    const { result } = renderHook(() => {
-      const nav1 = useTVNavigation();
-      const nav2 = useTVNavigation();
-      return { nav1, nav2 };
-    }, {
-      wrapper: createWrapper(),
-    });
+    const { result } = renderHook(
+      () => {
+        const nav1 = useTVNavigation();
+        const nav2 = useTVNavigation();
+        return { nav1, nav2 };
+      },
+      {
+        wrapper: createWrapper(),
+      }
+    );
 
     act(() => {
       result.current.nav1.setScreenFocus('Screen1', 'focus-1');

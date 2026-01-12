@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { useTraktContext } from '../contexts/TraktContext';
+import { useState, useCallback, useEffect, useRef } from 'react';
+
 import { useProfileContext } from '../contexts/ProfileContext';
-import { logger } from '../utils/logger';
+import { useTraktContext } from '../contexts/TraktContext';
 import { storageService } from '../services/storageService';
+import { logger } from '../utils/logger';
 
 interface WatchProgressData {
   currentTime: number;
@@ -29,39 +30,44 @@ export const useWatchProgress = (
   episodesRef.current = episodes;
 
   // Function to get episode details from episodeId
-  const getEpisodeDetails = useCallback((episodeId: string): { seasonNumber: string; episodeNumber: string; episodeName: string } | null => {
-    const currentEpisodes = episodesRef.current;
-    // Try to parse from format "seriesId:season:episode"
-    const parts = episodeId.split(':');
-    if (parts.length === 3) {
-      const [, seasonNum, episodeNum] = parts;
-      // Find episode in our local episodes array
-      const episode = currentEpisodes.find(
-        ep => ep.season_number === parseInt(seasonNum) &&
-          ep.episode_number === parseInt(episodeNum)
-      );
+  const getEpisodeDetails = useCallback(
+    (
+      episodeId: string
+    ): { seasonNumber: string; episodeNumber: string; episodeName: string } | null => {
+      const currentEpisodes = episodesRef.current;
+      // Try to parse from format "seriesId:season:episode"
+      const parts = episodeId.split(':');
+      if (parts.length === 3) {
+        const [, seasonNum, episodeNum] = parts;
+        // Find episode in our local episodes array
+        const episode = currentEpisodes.find(
+          ep =>
+            ep.season_number === parseInt(seasonNum) && ep.episode_number === parseInt(episodeNum)
+        );
 
-      if (episode) {
+        if (episode) {
+          return {
+            seasonNumber: seasonNum,
+            episodeNumber: episodeNum,
+            episodeName: episode.name,
+          };
+        }
+      }
+
+      // If not found by season/episode, try stremioId
+      const episodeByStremioId = currentEpisodes.find(ep => ep.stremioId === episodeId);
+      if (episodeByStremioId) {
         return {
-          seasonNumber: seasonNum,
-          episodeNumber: episodeNum,
-          episodeName: episode.name
+          seasonNumber: episodeByStremioId.season_number.toString(),
+          episodeNumber: episodeByStremioId.episode_number.toString(),
+          episodeName: episodeByStremioId.name,
         };
       }
-    }
 
-    // If not found by season/episode, try stremioId
-    const episodeByStremioId = currentEpisodes.find(ep => ep.stremioId === episodeId);
-    if (episodeByStremioId) {
-      return {
-        seasonNumber: episodeByStremioId.season_number.toString(),
-        episodeNumber: episodeByStremioId.episode_number.toString(),
-        episodeName: episodeByStremioId.name
-      };
-    }
-
-    return null;
-  }, []); // Removed episodes dependency - using ref instead
+      return null;
+    },
+    []
+  ); // Removed episodes dependency - using ref instead
 
   // Enhanced load watch progress with Trakt integration and profile filtering
   const loadWatchProgress = useCallback(async () => {
@@ -79,7 +85,7 @@ export const useWatchProgress = (
             if (parts.length === 3) {
               return {
                 season: parseInt(parts[1]),
-                episode: parseInt(parts[2])
+                episode: parseInt(parts[2]),
               };
             }
             return null;
@@ -117,7 +123,7 @@ export const useWatchProgress = (
               }
               return {
                 episodeId: episodeIdFromKey,
-                progress: value
+                progress: value,
               };
             })
             .filter(({ episodeId, progress }) => {
@@ -135,7 +141,7 @@ export const useWatchProgress = (
                 ...progress,
                 episodeId,
                 traktSynced: progress.traktSynced,
-                traktProgress: progress.traktProgress
+                traktProgress: progress.traktProgress,
               });
             } else {
               setWatchProgress(null);
@@ -147,54 +153,57 @@ export const useWatchProgress = (
               return progressPercent < COMPLETION_THRESHOLD;
             });
             if (incompleteProgresses.length > 0) {
-              const sortedIncomplete = incompleteProgresses.sort((a, b) =>
-                b.progress.lastUpdated - a.progress.lastUpdated
+              const sortedIncomplete = incompleteProgresses.sort(
+                (a, b) => b.progress.lastUpdated - a.progress.lastUpdated
               );
               const mostRecentIncomplete = sortedIncomplete[0];
               setWatchProgress({
                 ...mostRecentIncomplete.progress,
                 episodeId: mostRecentIncomplete.episodeId,
                 traktSynced: mostRecentIncomplete.progress.traktSynced,
-                traktProgress: mostRecentIncomplete.progress.traktProgress
+                traktProgress: mostRecentIncomplete.progress.traktProgress,
               });
             } else if (seriesProgresses.length > 0) {
               const watchedEpisodeNumbers = seriesProgresses
-              .map(({ episodeId }) => getEpisodeNumber(episodeId))
-              .filter(Boolean)
-              .sort((a, b) => {
-                if (a!.season !== b!.season) return a!.season - b!.season;
-                return a!.episode - b!.episode;
-              });
-            if (watchedEpisodeNumbers.length > 0) {
-              const lastWatched = watchedEpisodeNumbers[watchedEpisodeNumbers.length - 1]!;
-              const currentEpisodes = episodesRef.current;
-              
-              const nextEpisode = currentEpisodes.find(ep => {
-                if (ep.season_number > lastWatched.season) return true;
-                if (ep.season_number === lastWatched.season && ep.episode_number > lastWatched.episode) return true;
-                return false;
-              });
-
-              if (nextEpisode) {
-                setWatchProgress({
-                  currentTime: 0,
-                  duration: nextEpisode.runtime * 60 || 0,
-                  lastUpdated: Date.now(),
-                  episodeId: `${id}:${nextEpisode.season_number}:${nextEpisode.episode_number}`,
-                  traktSynced: false,
-                  traktProgress: 0
+                .map(({ episodeId }) => getEpisodeNumber(episodeId))
+                .filter(Boolean)
+                .sort((a, b) => {
+                  if (a!.season !== b!.season) return a!.season - b!.season;
+                  return a!.episode - b!.episode;
                 });
+              if (watchedEpisodeNumbers.length > 0) {
+                const lastWatched = watchedEpisodeNumbers[watchedEpisodeNumbers.length - 1]!;
+                const currentEpisodes = episodesRef.current;
+
+                const nextEpisode = currentEpisodes.find(ep => {
+                  if (ep.season_number > lastWatched.season) return true;
+                  if (
+                    ep.season_number === lastWatched.season &&
+                    ep.episode_number > lastWatched.episode
+                  )
+                    return true;
+                  return false;
+                });
+
+                if (nextEpisode) {
+                  setWatchProgress({
+                    currentTime: 0,
+                    duration: nextEpisode.runtime * 60 || 0,
+                    lastUpdated: Date.now(),
+                    episodeId: `${id}:${nextEpisode.season_number}:${nextEpisode.episode_number}`,
+                    traktSynced: false,
+                    traktProgress: 0,
+                  });
+                } else {
+                  setWatchProgress(null);
+                }
               } else {
                 setWatchProgress(null);
               }
             } else {
               setWatchProgress(null);
             }
-          } else {
-            setWatchProgress(null);
           }
-        }
-        
         } else {
           // For movies - filter by active profile
           const progress = await storageService.getWatchProgress(id, type, episodeId, profileId);
@@ -205,7 +214,7 @@ export const useWatchProgress = (
               ...progress,
               episodeId,
               traktSynced: progress.traktSynced,
-              traktProgress: progress.traktProgress
+              traktProgress: progress.traktProgress,
             });
           } else {
             setWatchProgress(null);
@@ -230,7 +239,7 @@ export const useWatchProgress = (
       return 'Play';
     }
 
-    // If we have Trakt data and it differs significantly from local, show "Resume" 
+    // If we have Trakt data and it differs significantly from local, show "Resume"
     // but the UI will show the discrepancy
     return 'Resume';
   }, [watchProgress]);
@@ -285,6 +294,6 @@ export const useWatchProgress = (
     watchProgress,
     getEpisodeDetails,
     getPlayButtonText,
-    loadWatchProgress
+    loadWatchProgress,
   };
 };

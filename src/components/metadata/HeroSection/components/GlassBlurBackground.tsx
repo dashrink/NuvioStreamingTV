@@ -12,13 +12,14 @@
  * @module HeroSection/components/GlassBlurBackground
  */
 
+import { BlurView as ExpoBlurView } from 'expo-blur';
 import React, { memo } from 'react';
 import { Platform, View, StyleSheet, ViewStyle } from 'react-native';
-import { BlurView as ExpoBlurView } from 'expo-blur';
 
-import type { GlassBlurBackgroundProps } from '../types';
 import { BLUR_CONFIG } from '../constants';
 import { layoutStyles } from '../styles';
+
+import type { GlassBlurBackgroundProps } from '../types';
 
 // =============================================================================
 // iOS Glass Effect Support
@@ -46,9 +47,7 @@ if (Platform.OS === 'ios') {
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
     liquidGlassAvailable =
-      typeof glass.isLiquidGlassAvailable === 'function'
-        ? glass.isLiquidGlassAvailable()
-        : false;
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     // Package not available, use fallback
     GlassViewComp = null;
@@ -86,55 +85,34 @@ if (Platform.OS === 'ios') {
  * </GlassBlurBackground>
  * ```
  */
-const GlassBlurBackground = memo(function GlassBlurBackground({
-  intensity = BLUR_CONFIG.DEFAULT_INTENSITY,
-  style,
-  children,
-}: GlassBlurBackgroundProps) {
-  /**
-   * Renders the appropriate blur implementation based on platform capabilities
-   */
-  const renderBlurLayer = () => {
-    if (Platform.OS === 'ios') {
-      // iOS: Use GlassView if liquid glass is available, otherwise ExpoBlurView
-      if (GlassViewComp && liquidGlassAvailable) {
-        return (
-          <GlassViewComp
-            style={[styles.blurLayer, style]}
-            glassEffectStyle="regular"
-          />
-        );
+const GlassBlurBackground = memo(
+  ({ intensity = BLUR_CONFIG.DEFAULT_INTENSITY, style, children }: GlassBlurBackgroundProps) => {
+    /**
+     * Renders the appropriate blur implementation based on platform capabilities
+     */
+    const renderBlurLayer = () => {
+      if (Platform.OS === 'ios') {
+        // iOS: Use GlassView if liquid glass is available, otherwise ExpoBlurView
+        if (GlassViewComp && liquidGlassAvailable) {
+          return <GlassViewComp style={[styles.blurLayer, style]} glassEffectStyle="regular" />;
+        }
+
+        // Fallback to ExpoBlurView on iOS
+        return <ExpoBlurView intensity={intensity} style={[styles.blurLayer, style]} tint="dark" />;
       }
 
-      // Fallback to ExpoBlurView on iOS
-      return (
-        <ExpoBlurView
-          intensity={intensity}
-          style={[styles.blurLayer, style]}
-          tint="dark"
-        />
-      );
-    }
+      // Android: Use semi-transparent View fallback
+      return <View style={[styles.blurLayer, styles.androidFallback, style]} />;
+    };
 
-    // Android: Use semi-transparent View fallback
     return (
-      <View
-        style={[
-          styles.blurLayer,
-          styles.androidFallback,
-          style,
-        ]}
-      />
+      <>
+        {renderBlurLayer()}
+        {children}
+      </>
     );
-  };
-
-  return (
-    <>
-      {renderBlurLayer()}
-      {children}
-    </>
-  );
-});
+  }
+);
 
 // =============================================================================
 // Styles

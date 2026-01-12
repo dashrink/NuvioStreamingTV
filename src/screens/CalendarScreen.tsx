@@ -1,3 +1,17 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import {
+  format,
+  parseISO,
+  isThisWeek,
+  isAfter,
+  startOfToday,
+  addWeeks,
+  isBefore,
+  isSameDay,
+} from 'date-fns';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -11,26 +25,22 @@ import {
   StatusBar,
   Dimensions,
   SectionList,
-  Platform
-} from 'react-native';
-import { InteractionManager } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../contexts/ThemeContext';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useLibrary } from '../hooks/useLibrary';
-import { useTraktContext } from '../contexts/TraktContext';
-import { format, parseISO, isThisWeek, isAfter, startOfToday, addWeeks, isBefore, isSameDay } from 'date-fns';
+  Platform,
+, InteractionManager } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+
 import { CalendarSection as CalendarSectionComponent } from '../components/calendar/CalendarSection';
+import { useTheme } from '../contexts/ThemeContext';
+import { useTraktContext } from '../contexts/TraktContext';
+import { useCalendarData } from '../hooks/useCalendarData';
+import { triggerLight } from '../hooks/useHaptics';
+import { useLibrary } from '../hooks/useLibrary';
+import { RootStackParamList } from '../navigation/AppNavigator';
+
+
 import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
 import { memoryManager } from '../utils/memoryManager';
-import { useCalendarData } from '../hooks/useCalendarData';
-import { triggerLight } from '../hooks/useHaptics';
 
 const { width } = Dimensions.get('window');
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
@@ -66,10 +76,12 @@ const CalendarScreen = () => {
     watchedShows,
     watchlistShows,
     continueWatching,
-    loadAllCollections
+    loadAllCollections,
   } = useTraktContext();
-  
-  logger.log(`[Calendar] Initial load - Library has ${libraryItems?.length || 0} items, loading: ${libraryLoading}`);
+
+  logger.log(
+    `[Calendar] Initial load - Library has ${libraryItems?.length || 0} items, loading: ${libraryLoading}`
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [uiReady, setUiReady] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -90,50 +102,56 @@ const CalendarScreen = () => {
     });
     return () => task.cancel();
   }, []);
-  
-  const handleSeriesPress = useCallback((seriesId: string, episode?: CalendarEpisode) => {
-    triggerLight();
-    navigation.navigate('Metadata', {
-      id: seriesId,
-      type: 'series',
-      episodeId: episode ? `${episode.seriesId}:${episode.season}:${episode.episode}` : undefined
-    });
-  }, [navigation]);
-  
-  const handleEpisodePress = useCallback((episode: CalendarEpisode) => {
-    // For series without episode dates, just go to the series page
-    if (!episode.releaseDate) {
-      handleSeriesPress(episode.seriesId, episode);
-      return;
-    }
 
-    // For episodes with dates, go to the stream screen
-    triggerLight();
-    const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
-    navigation.navigate('Streams', {
-      id: episode.seriesId,
-      type: 'series',
-      episodeId
-    });
-  }, [navigation, handleSeriesPress]);
-  
+  const handleSeriesPress = useCallback(
+    (seriesId: string, episode?: CalendarEpisode) => {
+      triggerLight();
+      navigation.navigate('Metadata', {
+        id: seriesId,
+        type: 'series',
+        episodeId: episode ? `${episode.seriesId}:${episode.season}:${episode.episode}` : undefined,
+      });
+    },
+    [navigation]
+  );
+
+  const handleEpisodePress = useCallback(
+    (episode: CalendarEpisode) => {
+      // For series without episode dates, just go to the series page
+      if (!episode.releaseDate) {
+        handleSeriesPress(episode.seriesId, episode);
+        return;
+      }
+
+      // For episodes with dates, go to the stream screen
+      triggerLight();
+      const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
+      navigation.navigate('Streams', {
+        id: episode.seriesId,
+        type: 'series',
+        episodeId,
+      });
+    },
+    [navigation, handleSeriesPress]
+  );
+
   const renderEpisodeItem = ({ item }: { item: CalendarEpisode }) => {
     const hasReleaseDate = !!item.releaseDate;
     const releaseDate = hasReleaseDate ? parseISO(item.releaseDate) : null;
     const formattedDate = releaseDate ? format(releaseDate, 'MMM d, yyyy') : '';
     const isFuture = releaseDate ? isAfter(releaseDate, new Date()) : false;
-    
+
     // Use episode still image if available, fallback to series poster
-    const imageUrl = item.still_path ? 
-      tmdbService.getImageUrl(item.still_path) : 
-      (item.season_poster_path ? 
-        tmdbService.getImageUrl(item.season_poster_path) : 
-        item.poster);
-    
+    const imageUrl = item.still_path
+      ? tmdbService.getImageUrl(item.still_path)
+      : item.season_poster_path
+        ? tmdbService.getImageUrl(item.season_poster_path)
+        : item.poster;
+
     return (
       <Animated.View entering={FadeIn.duration(300).delay(100)}>
-        <TouchableOpacity 
-          style={[styles.episodeItem, { borderBottomColor: currentTheme.colors.border + '20' }]}
+        <TouchableOpacity
+          style={[styles.episodeItem, { borderBottomColor: `${currentTheme.colors.border}20` }]}
           onPress={() => handleEpisodePress(item)}
           activeOpacity={0.7}
         >
@@ -147,41 +165,48 @@ const CalendarScreen = () => {
               resizeMode={FastImage.resizeMode.cover}
             />
           </TouchableOpacity>
-          
+
           <View style={styles.episodeDetails}>
-            <Text style={[styles.seriesName, { color: currentTheme.colors.text }]} numberOfLines={1}>
+            <Text
+              style={[styles.seriesName, { color: currentTheme.colors.text }]}
+              numberOfLines={1}
+            >
               {item.seriesName}
             </Text>
-            
+
             {hasReleaseDate ? (
               <>
-                <Text style={[styles.episodeTitle, { color: currentTheme.colors.lightGray }]} numberOfLines={2}>
+                <Text
+                  style={[styles.episodeTitle, { color: currentTheme.colors.lightGray }]}
+                  numberOfLines={2}
+                >
                   S{item.season}:E{item.episode} - {item.title}
                 </Text>
-                
+
                 {item.overview ? (
-                  <Text style={[styles.overview, { color: currentTheme.colors.lightGray }]} numberOfLines={2}>
+                  <Text
+                    style={[styles.overview, { color: currentTheme.colors.lightGray }]}
+                    numberOfLines={2}
+                  >
                     {item.overview}
                   </Text>
                 ) : null}
-                
+
                 <View style={styles.metadataContainer}>
                   <View style={styles.dateContainer}>
-                    <MaterialIcons 
-                      name={isFuture ? "event" : "event-available"} 
-                      size={16} 
-                      color={currentTheme.colors.lightGray} 
+                    <MaterialIcons
+                      name={isFuture ? 'event' : 'event-available'}
+                      size={16}
+                      color={currentTheme.colors.lightGray}
                     />
-                    <Text style={[styles.date, { color: currentTheme.colors.lightGray }]}>{formattedDate}</Text>
+                    <Text style={[styles.date, { color: currentTheme.colors.lightGray }]}>
+                      {formattedDate}
+                    </Text>
                   </View>
-                  
+
                   {item.vote_average > 0 && (
                     <View style={styles.ratingContainer}>
-                      <MaterialIcons 
-                        name="star" 
-                        size={16} 
-                        color={currentTheme.colors.primary} 
-                      />
+                      <MaterialIcons name="star" size={16} color={currentTheme.colors.primary} />
                       <Text style={[styles.rating, { color: currentTheme.colors.primary }]}>
                         {item.vote_average.toFixed(1)}
                       </Text>
@@ -195,12 +220,14 @@ const CalendarScreen = () => {
                   No scheduled episodes
                 </Text>
                 <View style={styles.dateContainer}>
-                  <MaterialIcons 
-                    name="event-busy" 
-                    size={16} 
-                    color={currentTheme.colors.lightGray} 
+                  <MaterialIcons
+                    name="event-busy"
+                    size={16}
+                    color={currentTheme.colors.lightGray}
                   />
-                  <Text style={[styles.date, { color: currentTheme.colors.lightGray }]}>Check back later</Text>
+                  <Text style={[styles.date, { color: currentTheme.colors.lightGray }]}>
+                    Check back later
+                  </Text>
                 </View>
               </>
             )}
@@ -209,18 +236,23 @@ const CalendarScreen = () => {
       </Animated.View>
     );
   };
-  
+
   const renderSectionHeader = ({ section }: { section: CalendarSection }) => (
-    <View style={[styles.sectionHeader, { 
-      backgroundColor: currentTheme.colors.darkBackground,
-      borderBottomColor: currentTheme.colors.border 
-    }]}>
+    <View
+      style={[
+        styles.sectionHeader,
+        {
+          backgroundColor: currentTheme.colors.darkBackground,
+          borderBottomColor: currentTheme.colors.border,
+        },
+      ]}
+    >
       <Text style={[styles.sectionTitle, { color: currentTheme.colors.text }]}>
         {section.title}
       </Text>
     </View>
   );
-  
+
   // Process all episodes once data is loaded - using memory-efficient approach
   const allEpisodes = React.useMemo(() => {
     if (!uiReady) return [] as CalendarEpisode[];
@@ -232,16 +264,22 @@ const CalendarScreen = () => {
     // Global cap to keep memory bounded
     return memoryManager.limitArraySize(episodes, 1500);
   }, [calendarData, uiReady]);
-  
+
   // Log when rendering with relevant state info
-  logger.log(`[Calendar] Rendering: loading=${loading}, calendarData sections=${calendarData.length}, allEpisodes=${allEpisodes.length}`);
+  logger.log(
+    `[Calendar] Rendering: loading=${loading}, calendarData sections=${calendarData.length}, allEpisodes=${allEpisodes.length}`
+  );
 
   // Log section details
   if (calendarData.length > 0) {
     calendarData.forEach((section, index) => {
-      logger.log(`[Calendar] Section ${index}: "${section.title}" with ${section.data.length} episodes`);
+      logger.log(
+        `[Calendar] Section ${index}: "${section.title}" with ${section.data.length} episodes`
+      );
       if (section.data && section.data.length > 0) {
-        logger.log(`[Calendar] First episode in "${section.title}": ${section.data[0].seriesName} - ${section.data[0].title} (${section.data[0].releaseDate})`);
+        logger.log(
+          `[Calendar] First episode in "${section.title}": ${section.data[0].seriesName} - ${section.data[0].title} (${section.data[0].releaseDate})`
+        );
       } else {
         logger.log(`[Calendar] Section "${section.title}" has empty or undefined data array`);
       }
@@ -249,23 +287,26 @@ const CalendarScreen = () => {
   } else {
     logger.log(`[Calendar] No calendarData sections available`);
   }
-  
+
   // Handle date selection from calendar
-  const handleDateSelect = useCallback((date: Date) => {
-    triggerLight();
-    logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
-    setSelectedDate(date);
-    
-    // Filter episodes for the selected date
-    const filtered = allEpisodes.filter(episode => {
-      if (!episode.releaseDate) return false;
-      const episodeDate = parseISO(episode.releaseDate);
-      return isSameDay(episodeDate, date);
-    });
-    
-    logger.log(`[Calendar] Filtered episodes for selected date: ${filtered.length}`);
-    setFilteredEpisodes(filtered);
-  }, [allEpisodes]);
+  const handleDateSelect = useCallback(
+    (date: Date) => {
+      triggerLight();
+      logger.log(`[Calendar] Date selected: ${format(date, 'yyyy-MM-dd')}`);
+      setSelectedDate(date);
+
+      // Filter episodes for the selected date
+      const filtered = allEpisodes.filter(episode => {
+        if (!episode.releaseDate) return false;
+        const episodeDate = parseISO(episode.releaseDate);
+        return isSameDay(episodeDate, date);
+      });
+
+      logger.log(`[Calendar] Filtered episodes for selected date: ${filtered.length}`);
+      setFilteredEpisodes(filtered);
+    },
+    [allEpisodes]
+  );
 
   // Reset date filter
   const clearDateFilter = useCallback(() => {
@@ -274,10 +315,12 @@ const CalendarScreen = () => {
     setSelectedDate(null);
     setFilteredEpisodes([]);
   }, []);
-  
+
   if ((loading || !uiReady) && !refreshing) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+      >
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={currentTheme.colors.primary} />
@@ -286,11 +329,13 @@ const CalendarScreen = () => {
       </SafeAreaView>
     );
   }
-  
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <StatusBar barStyle="light-content" />
-      
+
       <View style={[styles.header, { borderBottomColor: currentTheme.colors.border }]}>
         <TouchableOpacity
           style={styles.backButton}
@@ -304,9 +349,11 @@ const CalendarScreen = () => {
         <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Calendar</Text>
         <View style={{ width: 40 }} />
       </View>
-      
+
       {selectedDate && filteredEpisodes.length > 0 && (
-        <View style={[styles.filterInfoContainer, { borderBottomColor: currentTheme.colors.border }]}>
+        <View
+          style={[styles.filterInfoContainer, { borderBottomColor: currentTheme.colors.border }]}
+        >
           <Text style={[styles.filterInfoText, { color: currentTheme.colors.text }]}>
             Showing episodes for {format(selectedDate, 'MMMM d, yyyy')}
           </Text>
@@ -315,16 +362,13 @@ const CalendarScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-      
-      <CalendarSectionComponent 
-        episodes={allEpisodes}
-        onSelectDate={handleDateSelect}
-      />
-      
+
+      <CalendarSectionComponent episodes={allEpisodes} onSelectDate={handleDateSelect} />
+
       {selectedDate && filteredEpisodes.length > 0 ? (
         <FlatList
           data={filteredEpisodes}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={renderEpisodeItem}
           contentContainerStyle={styles.listContent}
           initialNumToRender={8}
@@ -347,8 +391,11 @@ const CalendarScreen = () => {
           <Text style={[styles.emptyFilterText, { color: currentTheme.colors.text }]}>
             No episodes for {format(selectedDate, 'MMMM d, yyyy')}
           </Text>
-          <TouchableOpacity 
-            style={[styles.clearFilterButtonLarge, { backgroundColor: currentTheme.colors.primary }]}
+          <TouchableOpacity
+            style={[
+              styles.clearFilterButtonLarge,
+              { backgroundColor: currentTheme.colors.primary },
+            ]}
             onPress={clearDateFilter}
           >
             <Text style={[styles.clearFilterButtonText, { color: currentTheme.colors.text }]}>
@@ -359,7 +406,7 @@ const CalendarScreen = () => {
       ) : calendarData.length > 0 ? (
         <SectionList
           sections={calendarData}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={renderEpisodeItem}
           renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.listContent}
@@ -556,4 +603,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CalendarScreen; 
+export default CalendarScreen;

@@ -15,9 +15,10 @@
  * @module TVIntegrationTests
  */
 
+import { Dimensions, Platform } from 'react-native';
+
 import { mmkvStorage } from '../../services/mmkvStorage';
 import { logger } from '../../utils/logger';
-import { Dimensions, Platform } from 'react-native';
 
 // Storage keys
 const PROFILE_STORAGE_KEY = 'user_profiles';
@@ -82,7 +83,7 @@ export class TVIntegrationTester {
       name: 'TV Protected Profile',
       avatar: 'tv-avatar',
       isActive: false,
-      createdAt: timestamp
+      createdAt: timestamp,
     };
 
     const unprotectedProfile: Profile = {
@@ -90,7 +91,7 @@ export class TVIntegrationTester {
       name: 'TV Open Profile',
       avatar: 'open-avatar',
       isActive: true,
-      createdAt: timestamp + 1
+      createdAt: timestamp + 1,
     };
 
     this.protectedProfileId = protectedProfile.id;
@@ -98,7 +99,9 @@ export class TVIntegrationTester {
 
     // Load existing profiles and add test profiles
     const existingProfilesJson = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
-    const existingProfiles: Profile[] = existingProfilesJson ? JSON.parse(existingProfilesJson) : [];
+    const existingProfiles: Profile[] = existingProfilesJson
+      ? JSON.parse(existingProfilesJson)
+      : [];
 
     this.profiles = [...existingProfiles, protectedProfile, unprotectedProfile];
     await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(this.profiles));
@@ -117,7 +120,7 @@ export class TVIntegrationTester {
         protectedProfileId: protectedProfile.id,
         unprotectedProfileId: unprotectedProfile.id,
         pinEnabled: true,
-      }
+      },
     };
   }
 
@@ -147,7 +150,7 @@ export class TVIntegrationTester {
       message: isTV
         ? `Running on TV platform (${width}x${height})`
         : `Running on mobile/tablet platform (${width}x${height})`,
-      details
+      details,
     };
   }
 
@@ -189,7 +192,7 @@ export class TVIntegrationTester {
         requiredTVProps,
         profilesCreated: true,
         pinStorageConfigured: hasPinStorage,
-      }
+      },
     };
   }
 
@@ -201,8 +204,8 @@ export class TVIntegrationTester {
     const profiles: Profile[] = JSON.parse(storedProfiles || '[]');
 
     // Find our test profiles
-    const testProfiles = profiles.filter(p =>
-      p.id === this.protectedProfileId || p.id === this.unprotectedProfileId
+    const testProfiles = profiles.filter(
+      p => p.id === this.protectedProfileId || p.id === this.unprotectedProfileId
     );
 
     if (testProfiles.length < 2) {
@@ -227,7 +230,8 @@ export class TVIntegrationTester {
     // Simulate left d-pad press - move back to first
     focusOrder.push(testProfiles[0].id);
 
-    const navigationWorks = focusOrder.length === 3 &&
+    const navigationWorks =
+      focusOrder.length === 3 &&
       focusOrder[0] === testProfiles[0].id &&
       focusOrder[1] === testProfiles[1].id &&
       focusOrder[2] === testProfiles[0].id;
@@ -244,7 +248,7 @@ export class TVIntegrationTester {
         focusOrder,
         profilesAvailable: testProfiles.length,
         navigationSteps: 3,
-      }
+      },
     };
   }
 
@@ -269,7 +273,7 @@ export class TVIntegrationTester {
     // Simulate selection by updating active profile
     const updatedProfiles = profiles.map(p => ({
       ...p,
-      isActive: p.id === this.unprotectedProfileId
+      isActive: p.id === this.unprotectedProfileId,
     }));
 
     await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
@@ -293,7 +297,7 @@ export class TVIntegrationTester {
         selectedProfileId: this.unprotectedProfileId,
         activeProfileId: activeProfile?.id,
         selectionSuccessful,
-      }
+      },
     };
   }
 
@@ -327,7 +331,7 @@ export class TVIntegrationTester {
 
       const updatedProfiles = profiles.map(p => ({
         ...p,
-        isActive: p.id === this.protectedProfileId
+        isActive: p.id === this.protectedProfileId,
       }));
 
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
@@ -341,7 +345,11 @@ export class TVIntegrationTester {
 
     const passed = incorrectPinRejected && correctPinAccepted && switchedToProtected;
 
-    logger.log('[TVIntegrationTest] PIN entry verification:', { incorrectPinRejected, correctPinAccepted, switchedToProtected });
+    logger.log('[TVIntegrationTest] PIN entry verification:', {
+      incorrectPinRejected,
+      correctPinAccepted,
+      switchedToProtected,
+    });
 
     return {
       testName: 'TV PIN Entry and Profile Switch',
@@ -354,7 +362,7 @@ export class TVIntegrationTester {
         correctPinAccepted,
         switchedToProtected,
         activeProfileId: activeProfile?.id,
-      }
+      },
     };
   }
 
@@ -371,7 +379,7 @@ export class TVIntegrationTester {
     // Switch back to unprotected profile
     const updatedProfiles = profiles.map(p => ({
       ...p,
-      isActive: p.id === this.unprotectedProfileId
+      isActive: p.id === this.unprotectedProfileId,
     }));
 
     await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(updatedProfiles));
@@ -395,7 +403,7 @@ export class TVIntegrationTester {
         switchTimeMs: switchTime,
         thresholdMs: 200,
         meetsPerformanceTarget: isUnderThreshold,
-      }
+      },
     };
   }
 
@@ -441,7 +449,7 @@ export class TVIntegrationTester {
         expectedAccessibilityFeatures,
         profilesHaveNames,
         profileCount: profiles.length,
-      }
+      },
     };
   }
 
@@ -485,7 +493,7 @@ export class TVIntegrationTester {
         isTV,
         tvStyleDifferences,
         activeStyleSet: isTV ? 'TV' : 'Mobile',
-      }
+      },
     };
   }
 
@@ -499,8 +507,8 @@ export class TVIntegrationTester {
     const storedProfiles = await mmkvStorage.getItem(PROFILE_STORAGE_KEY);
     if (storedProfiles) {
       const profiles: Profile[] = JSON.parse(storedProfiles);
-      const cleanedProfiles = profiles.filter(p =>
-        p.id !== this.protectedProfileId && p.id !== this.unprotectedProfileId
+      const cleanedProfiles = profiles.filter(
+        p => p.id !== this.protectedProfileId && p.id !== this.unprotectedProfileId
       );
       await mmkvStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(cleanedProfiles));
     }
@@ -554,13 +562,12 @@ export class TVIntegrationTester {
 
       // Step 9: Verify TV styling
       results.push(await this.verifyTVStyling());
-
     } catch (error: any) {
       results.push({
         testName: 'Test Suite Error',
         passed: false,
         message: `Error during test execution: ${error.message}`,
-        details: { error: error.stack }
+        details: { error: error.stack },
       });
     } finally {
       // Clean up test data
@@ -580,7 +587,9 @@ export class TVIntegrationTester {
     logger.log('[TVIntegrationTest] Test Suite Complete');
     logger.log(`[TVIntegrationTest] Platform: ${testSuite.platform}`);
     logger.log(`[TVIntegrationTest] Overall Result: ${allPassed ? 'PASSED' : 'FAILED'}`);
-    logger.log(`[TVIntegrationTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`);
+    logger.log(
+      `[TVIntegrationTest] Tests Passed: ${results.filter(r => r.passed).length}/${results.length}`
+    );
 
     return testSuite;
   }

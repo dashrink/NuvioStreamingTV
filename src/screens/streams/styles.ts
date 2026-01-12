@@ -1,4 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
+
 import { SCREEN_WIDTH, HERO_HEIGHT, MOVIE_TITLE_HEIGHT } from './constants';
 
 export const createStyles = (colors: any) =>

@@ -15,18 +15,14 @@
  * @module HeroSection/components/TrailerControls
  */
 
-import React, { memo } from 'react';
-import {
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  ViewStyle,
-} from 'react-native';
 import { MaterialIcons, Entypo } from '@expo/vector-icons';
+import React, { memo } from 'react';
+import { TouchableOpacity, StyleSheet, Platform, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import type { TrailerControlsProps } from '../types';
 import { isTablet, spacing } from '../styles';
+
+import type { TrailerControlsProps } from '../types';
 
 // =============================================================================
 // Constants
@@ -103,80 +99,64 @@ const BUTTON_GAP = 8;
  * />
  * ```
  */
-const TrailerControls = memo(function TrailerControls({
-  isMuted,
-  onToggleMute,
-  onFullscreen,
-  onAIChat,
-  animatedStyle,
-}: TrailerControlsProps) {
-  /**
-   * Prevents touch event propagation to parent elements.
-   * Ensures button presses don't trigger underlying touch handlers.
-   */
-  const handlePressIn = (e: React.BaseSyntheticEvent) => e.stopPropagation();
-  const handlePressOut = (e: React.BaseSyntheticEvent) => e.stopPropagation();
+const TrailerControls = memo(
+  ({ isMuted, onToggleMute, onFullscreen, onAIChat, animatedStyle }: TrailerControlsProps) => {
+    /**
+     * Prevents touch event propagation to parent elements.
+     * Ensures button presses don't trigger underlying touch handlers.
+     */
+    const handlePressIn = (e: React.BaseSyntheticEvent) => e.stopPropagation();
+    const handlePressOut = (e: React.BaseSyntheticEvent) => e.stopPropagation();
 
-  return (
-    <Animated.View style={[styles.container, animatedStyle]}>
-      {/* Fullscreen Button */}
-      <TouchableOpacity
-        onPress={onFullscreen}
-        activeOpacity={0.7}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={styles.controlButton}
-        accessibilityRole="button"
-        accessibilityLabel="Toggle fullscreen"
-        accessibilityHint="Opens trailer in fullscreen mode"
-      >
-        <MaterialIcons
-          name="fullscreen"
-          size={ICON_SIZE}
-          color="white"
-        />
-      </TouchableOpacity>
-
-      {/* Mute/Unmute Button */}
-      <TouchableOpacity
-        onPress={onToggleMute}
-        activeOpacity={0.7}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={styles.controlButton}
-        accessibilityRole="button"
-        accessibilityLabel={isMuted ? 'Unmute trailer' : 'Mute trailer'}
-        accessibilityHint={isMuted ? 'Turns trailer audio on' : 'Turns trailer audio off'}
-      >
-        <Entypo
-          name={isMuted ? 'sound-mute' : 'sound'}
-          size={ICON_SIZE}
-          color="white"
-        />
-      </TouchableOpacity>
-
-      {/* AI Chat Button (optional) */}
-      {onAIChat && (
+    return (
+      <Animated.View style={[styles.container, animatedStyle]}>
+        {/* Fullscreen Button */}
         <TouchableOpacity
-          onPress={onAIChat}
+          onPress={onFullscreen}
           activeOpacity={0.7}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           style={styles.controlButton}
           accessibilityRole="button"
-          accessibilityLabel="Open AI Chat"
-          accessibilityHint="Discuss this content with AI assistant"
+          accessibilityLabel="Toggle fullscreen"
+          accessibilityHint="Opens trailer in fullscreen mode"
         >
-          <MaterialIcons
-            name="smart-toy"
-            size={ICON_SIZE}
-            color="white"
-          />
+          <MaterialIcons name="fullscreen" size={ICON_SIZE} color="white" />
         </TouchableOpacity>
-      )}
-    </Animated.View>
-  );
-});
+
+        {/* Mute/Unmute Button */}
+        <TouchableOpacity
+          onPress={onToggleMute}
+          activeOpacity={0.7}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          style={styles.controlButton}
+          accessibilityRole="button"
+          accessibilityLabel={isMuted ? 'Unmute trailer' : 'Mute trailer'}
+          accessibilityHint={isMuted ? 'Turns trailer audio on' : 'Turns trailer audio off'}
+        >
+          <Entypo name={isMuted ? 'sound-mute' : 'sound'} size={ICON_SIZE} color="white" />
+        </TouchableOpacity>
+
+        {/* AI Chat Button (optional) */}
+        {onAIChat && (
+          <TouchableOpacity
+            onPress={onAIChat}
+            activeOpacity={0.7}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            style={styles.controlButton}
+            accessibilityRole="button"
+            accessibilityLabel="Open AI Chat"
+            accessibilityHint="Discuss this content with AI assistant"
+          >
+            <MaterialIcons name="smart-toy" size={ICON_SIZE} color="white" />
+          </TouchableOpacity>
+        )}
+      </Animated.View>
+    );
+  }
+);
 
 // =============================================================================
 // Styles

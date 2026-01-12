@@ -27,23 +27,17 @@
  * ```
  */
 
-import React, { useCallback, useRef, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Animated,
-  StyleSheet,
-  Platform,
-  Dimensions,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Feather from 'react-native-vector-icons/Feather';
-import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
-import { styles as playerStyles } from '../utils/playerStyles';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
+import { View, Text, Animated, StyleSheet, Platform, Dimensions } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+
 import { useTheme } from '../../../contexts/ThemeContext';
-import Focusable from '../../common/Focusable';
 import { useTVEventHandler, TVRemoteEvent } from '../../../hooks/useTVEventHandler';
+import Focusable from '../../common/Focusable';
+import { styles as playerStyles } from '../utils/playerStyles';
 
 // =============================================================================
 // Types & Interfaces
@@ -235,84 +229,98 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   // Animation Handlers
   // =============================================================================
 
-  const handleSeekWithAnimation = useCallback((seconds: number) => {
-    const isForward = seconds > 0;
+  const handleSeekWithAnimation = useCallback(
+    (seconds: number) => {
+      const isForward = seconds > 0;
 
-    if (isForward) {
-      setShowForwardSign(true);
-    } else {
-      setShowBackwardSign(true);
-    }
-
-    const pressAnim = isForward ? forwardPressAnim : backwardPressAnim;
-    const slideAnim = isForward ? forwardSlideAnim : backwardSlideAnim;
-    const scaleAnim = isForward ? forwardScaleAnim : backwardScaleAnim;
-    const arcOpacity = isForward ? forwardArcOpacity : backwardArcOpacity;
-    const arcRotation = isForward ? forwardArcRotation : backwardArcRotation;
-
-    Animated.parallel([
-      Animated.sequence([
-        Animated.timing(pressAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pressAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.sequence([
-        Animated.timing(slideAnim, {
-          toValue: isForward ? seekButtonSize * 0.75 : -seekButtonSize * 0.75,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 120,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.15,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.parallel([
-        Animated.timing(arcOpacity, {
-          toValue: 1,
-          duration: 50,
-          useNativeDriver: true,
-        }),
-        Animated.timing(arcRotation, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start(() => {
       if (isForward) {
-        setShowForwardSign(false);
+        setShowForwardSign(true);
       } else {
-        setShowBackwardSign(false);
+        setShowBackwardSign(true);
       }
-      arcOpacity.setValue(0);
-      arcRotation.setValue(0);
-    });
 
-    skip(seconds);
-  }, [skip, seekButtonSize, backwardPressAnim, backwardSlideAnim, backwardScaleAnim,
-      backwardArcOpacity, backwardArcRotation, forwardPressAnim, forwardSlideAnim,
-      forwardScaleAnim, forwardArcOpacity, forwardArcRotation]);
+      const pressAnim = isForward ? forwardPressAnim : backwardPressAnim;
+      const slideAnim = isForward ? forwardSlideAnim : backwardSlideAnim;
+      const scaleAnim = isForward ? forwardScaleAnim : backwardScaleAnim;
+      const arcOpacity = isForward ? forwardArcOpacity : backwardArcOpacity;
+      const arcRotation = isForward ? forwardArcRotation : backwardArcRotation;
+
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(pressAnim, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pressAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(slideAnim, {
+            toValue: isForward ? seekButtonSize * 0.75 : -seekButtonSize * 0.75,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 120,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(scaleAnim, {
+            toValue: 1.15,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(arcOpacity, {
+            toValue: 1,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+          Animated.timing(arcRotation, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start(() => {
+        if (isForward) {
+          setShowForwardSign(false);
+        } else {
+          setShowBackwardSign(false);
+        }
+        arcOpacity.setValue(0);
+        arcRotation.setValue(0);
+      });
+
+      skip(seconds);
+    },
+    [
+      skip,
+      seekButtonSize,
+      backwardPressAnim,
+      backwardSlideAnim,
+      backwardScaleAnim,
+      backwardArcOpacity,
+      backwardArcRotation,
+      forwardPressAnim,
+      forwardSlideAnim,
+      forwardScaleAnim,
+      forwardArcOpacity,
+      forwardArcRotation,
+    ]
+  );
 
   const handlePlayPauseWithAnimation = useCallback(() => {
     Animated.sequence([
@@ -559,10 +567,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 
         {/* Center Controls - Play/Pause and Seek */}
         <View
-          style={[
-            playerStyles.controls,
-            { transform: [{ translateY: -(playButtonSize / 2) }] },
-          ]}
+          style={[playerStyles.controls, { transform: [{ translateY: -(playButtonSize / 2) }] }]}
         >
           {/* Backward Seek Button (-10s) */}
           <Focusable
@@ -673,7 +678,12 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             accessibilityLabel={paused ? 'Play' : 'Pause'}
             accessibilityHint={paused ? 'Press to play video' : 'Press to pause video'}
           >
-            <View style={[playerStyles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}>
+            <View
+              style={[
+                playerStyles.playButtonCircle,
+                { width: playButtonSize, height: playButtonSize },
+              ]}
+            >
               <Animated.View
                 style={[
                   playerStyles.playPressCircle,

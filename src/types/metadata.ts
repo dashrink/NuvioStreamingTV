@@ -1,5 +1,5 @@
-import { TMDBEpisode } from '../services/tmdbService';
 import { StreamingContent } from '../services/catalogService';
+import { TMDBEpisode } from '../services/tmdbService';
 
 // Re-export StreamingContent for convenience
 export { StreamingContent };
@@ -13,7 +13,7 @@ export type RouteParams = {
 
 // Stream related types - aligned with Stremio protocol
 export interface Subtitle {
-  id: string;           // Required per protocol
+  id: string; // Required per protocol
   url: string;
   lang: string;
   fps?: number;
@@ -24,17 +24,17 @@ export interface Subtitle {
 
 export interface Stream {
   // Primary stream source - one of these must be provided per protocol
-  url?: string;                    // Direct HTTP URL (now optional)
-  ytId?: string;                   // YouTube video ID
-  infoHash?: string;               // BitTorrent info hash
-  externalUrl?: string;            // External URL to open in browser
+  url?: string; // Direct HTTP URL (now optional)
+  ytId?: string; // YouTube video ID
+  infoHash?: string; // BitTorrent info hash
+  externalUrl?: string; // External URL to open in browser
 
   // Display information
   name?: string;
   title?: string;
   description?: string;
 
-  // Addon identification  
+  // Addon identification
   addon?: string;
   addonId?: string;
   addonName?: string;
@@ -132,4 +132,4 @@ export type RootStackParamList = {
   };
   ShowRatings: { showId: number };
   // ... other screens
-}; 
+};

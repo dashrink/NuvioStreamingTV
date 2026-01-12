@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import ToastManager from '../components/ui/ToastManager';
+
 import { ToastConfig } from '../components/ui/Toast';
+import ToastManager from '../components/ui/ToastManager';
 import { toastService } from '../services/toastService';
 
 interface ToastContextType {
@@ -69,4 +70,3 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     </ToastContext.Provider>
   );
 };
-

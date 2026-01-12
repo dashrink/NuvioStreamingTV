@@ -119,11 +119,7 @@ export { useShimmerProgress } from './ShimmerSkeleton';
 
 // Skeleton group - Multiple skeletons with synchronized animation
 export { default as SkeletonGroup } from './SkeletonGroup';
-export {
-  CastSkeletonGroup,
-  EpisodeSkeletonGroup,
-  CatalogRowSkeletonGroup,
-} from './SkeletonGroup';
+export { CastSkeletonGroup, EpisodeSkeletonGroup, CatalogRowSkeletonGroup } from './SkeletonGroup';
 
 // Full-screen loading overlay with modal
 export { default as LoadingOverlayScreen } from './LoadingOverlayScreen';
@@ -182,10 +178,6 @@ export type { TraktLoadingSpinnerProps } from '../common/TraktLoadingSpinner';
  * await syncData();
  * hideLoading();
  */
-export {
-  LoadingProvider,
-  useLoading,
-  useGlobalLoading,
-} from '../../contexts/LoadingContext';
+export { LoadingProvider, useLoading, useGlobalLoading } from '../../contexts/LoadingContext';
 
 export type { GlobalLoadingOptions } from '../../contexts/LoadingContext';

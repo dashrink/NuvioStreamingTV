@@ -1,7 +1,8 @@
 import React from 'react';
+
+import ADSvg from '../../assets/qualitybadge/AD.svg';
 import HDSvg from '../../assets/qualitybadge/HD.svg';
 import VISIONSvg from '../../assets/qualitybadge/VISION.svg';
-import ADSvg from '../../assets/qualitybadge/AD.svg';
 
 interface QualityBadgeProps {
   type: 'HD' | 'VISION' | 'AD';
@@ -11,7 +12,7 @@ const QualityBadge: React.FC<QualityBadgeProps> = ({ type }) => {
   const svgProps = {
     width: 32,
     height: 32,
-    preserveAspectRatio: "xMidYMid meet"
+    preserveAspectRatio: 'xMidYMid meet',
   };
 
   switch (type) {
@@ -26,4 +27,4 @@ const QualityBadge: React.FC<QualityBadgeProps> = ({ type }) => {
   }
 };
 
-export default QualityBadge; 
+export default QualityBadge;

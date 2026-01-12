@@ -15,6 +15,12 @@
  * - tvParallaxProperties for Apple TV depth effects
  */
 
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
 import {
   View,
@@ -31,25 +37,20 @@ import {
   Platform,
   findNodeHandle,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FlashList, FlashListRef } from '@shopify/flash-list';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useSettings } from '../../hooks/useSettings';
-import { Episode } from '../../types/metadata';
-import { tmdbService, IMDbRatings } from '../../services/tmdbService';
-import { storageService } from '../../services/storageService';
-import { useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
-import { TraktService } from '../../services/traktService';
-import { watchedService } from '../../services/watchedService';
-import { logger } from '../../utils/logger';
-import { mmkvStorage } from '../../services/mmkvStorage';
-import Focusable from '../common/Focusable';
+
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTVNavigationOptional } from '../../contexts/TVNavigationContext';
 import { useContextMenu } from '../../hooks/useContextMenu';
+import { useSettings } from '../../hooks/useSettings';
+import { mmkvStorage } from '../../services/mmkvStorage';
+import { storageService } from '../../services/storageService';
+import { tmdbService, IMDbRatings } from '../../services/tmdbService';
+import { TraktService } from '../../services/traktService';
+import { watchedService } from '../../services/watchedService';
+import { Episode } from '../../types/metadata';
+import { logger } from '../../utils/logger';
+import Focusable from '../common/Focusable';
 
 // =============================================================================
 // Types & Interfaces
@@ -83,8 +84,10 @@ const BREAKPOINTS = {
 
 const DEFAULT_PLACEHOLDER = 'https://via.placeholder.com/300x450/1a1a1a/666666?text=No+Image';
 const EPISODE_PLACEHOLDER = 'https://via.placeholder.com/500x280/1a1a1a/666666?text=No+Preview';
-const TMDB_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
-const IMDb_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png';
+const TMDB_LOGO =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Tmdb.new.logo.svg/512px-Tmdb.new.logo.svg.png?20200406190906';
+const IMDb_LOGO =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/575px-IMDB_Logo_2016.svg.png';
 
 // =============================================================================
 // Component Implementation
@@ -131,64 +134,92 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   // Responsive sizing values
   const horizontalPadding = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 32;
-      case 'largeTablet': return 28;
-      case 'tablet': return 24;
-      default: return 16;
+      case 'tv':
+        return 32;
+      case 'largeTablet':
+        return 28;
+      case 'tablet':
+        return 24;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
   const horizontalCardWidth = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return Math.min(deviceWidth * 0.25, 400);
-      case 'largeTablet': return Math.min(deviceWidth * 0.35, 350);
-      case 'tablet': return Math.min(deviceWidth * 0.46, 300);
-      default: return width * 0.75;
+      case 'tv':
+        return Math.min(deviceWidth * 0.25, 400);
+      case 'largeTablet':
+        return Math.min(deviceWidth * 0.35, 350);
+      case 'tablet':
+        return Math.min(deviceWidth * 0.46, 300);
+      default:
+        return width * 0.75;
     }
   }, [deviceType, deviceWidth, width]);
 
   const horizontalCardHeight = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 280;
-      case 'largeTablet': return 250;
-      case 'tablet': return 220;
-      default: return 180;
+      case 'tv':
+        return 280;
+      case 'largeTablet':
+        return 250;
+      case 'tablet':
+        return 220;
+      default:
+        return 180;
     }
   }, [deviceType]);
 
   const horizontalItemSpacing = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 20;
-      case 'largeTablet': return 18;
-      case 'tablet': return 16;
-      default: return 16;
+      case 'tv':
+        return 20;
+      case 'largeTablet':
+        return 18;
+      case 'tablet':
+        return 16;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
   const seasonPosterWidth = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 140;
-      case 'largeTablet': return 130;
-      case 'tablet': return 120;
-      default: return 100;
+      case 'tv':
+        return 140;
+      case 'largeTablet':
+        return 130;
+      case 'tablet':
+        return 120;
+      default:
+        return 100;
     }
   }, [deviceType]);
 
   const seasonPosterHeight = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 210;
-      case 'largeTablet': return 195;
-      case 'tablet': return 180;
-      default: return 150;
+      case 'tv':
+        return 210;
+      case 'largeTablet':
+        return 195;
+      case 'tablet':
+        return 180;
+      default:
+        return 150;
     }
   }, [deviceType]);
 
   const seasonButtonSpacing = useMemo(() => {
     switch (deviceType) {
-      case 'tv': return 20;
-      case 'largeTablet': return 18;
-      case 'tablet': return 16;
-      default: return 16;
+      case 'tv':
+        return 20;
+      case 'largeTablet':
+        return 18;
+      case 'tablet':
+        return 16;
+      default:
+        return 16;
     }
   }, [deviceType]);
 
@@ -196,9 +227,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   // State
   // =============================================================================
 
-  const [episodeProgress, setEpisodeProgress] = useState<{ [key: string]: { currentTime: number; duration: number; lastUpdated: number } }>({});
+  const [episodeProgress, setEpisodeProgress] = useState<{
+    [key: string]: { currentTime: number; duration: number; lastUpdated: number };
+  }>({});
   const [enableItemAnimations, setEnableItemAnimations] = useState(false);
-  const [tmdbEpisodeOverrides, setTmdbEpisodeOverrides] = useState<{ [epKey: string]: { vote_average?: number; runtime?: number; still_path?: string } }>({});
+  const [tmdbEpisodeOverrides, setTmdbEpisodeOverrides] = useState<{
+    [epKey: string]: { vote_average?: number; runtime?: number; still_path?: string };
+  }>({});
   const [imdbRatingsMap, setImdbRatingsMap] = useState<{ [key: string]: number }>({});
   const [seasonViewMode, setSeasonViewMode] = useState<'posters' | 'text'>('posters');
   const [posterViewVisible, setPosterViewVisible] = useState(true);
@@ -244,13 +279,16 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return episodeRefs.current.get(episodeIndex)!;
   }, []);
 
-  const saveFocusState = useCallback((section: string, index: number) => {
-    if (tvNav && index >= 0) {
-      const focusId = `${section}-${index}`;
-      tvNav.setScreenFocus(section, focusId);
-      tvNav.setCurrentFocusId(focusId);
-    }
-  }, [tvNav]);
+  const saveFocusState = useCallback(
+    (section: string, index: number) => {
+      if (tvNav && index >= 0) {
+        const focusId = `${section}-${index}`;
+        tvNav.setScreenFocus(section, focusId);
+        tvNav.setCurrentFocusId(focusId);
+      }
+    },
+    [tvNav]
+  );
 
   // =============================================================================
   // Load/Save View Mode Preference
@@ -293,16 +331,19 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     if (!metadata?.id) return;
 
     const allProgress = await storageService.getAllWatchProgress();
-    const progress: { [key: string]: { currentTime: number; duration: number; lastUpdated: number } } = {};
+    const progress: {
+      [key: string]: { currentTime: number; duration: number; lastUpdated: number };
+    } = {};
 
     episodes.forEach(episode => {
-      const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
       const key = `series:${metadata.id}:${episodeId}`;
       if (allProgress[key]) {
         progress[episodeId] = {
           currentTime: allProgress[key].currentTime,
           duration: allProgress[key].duration,
-          lastUpdated: allProgress[key].lastUpdated
+          lastUpdated: allProgress[key].lastUpdated,
         };
       }
     });
@@ -323,7 +364,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
         allHistoryItems.forEach(item => {
           if (item.type !== 'episode') return;
-          const showImdb = item.show?.ids?.imdb ? `tt${item.show.ids.imdb.replace(/^tt/, '')}` : null;
+          const showImdb = item.show?.ids?.imdb
+            ? `tt${item.show.ids.imdb.replace(/^tt/, '')}`
+            : null;
           if (!showImdb || showImdb !== metadata.id) return;
 
           const season = item.episode?.season;
@@ -350,7 +393,11 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
   // Scroll to most recently watched episode
   const scrollToMostRecentEpisode = useCallback(() => {
-    if (!metadata?.id || !settings?.episodeLayoutStyle || settings.episodeLayoutStyle !== 'horizontal') {
+    if (
+      !metadata?.id ||
+      !settings?.episodeLayoutStyle ||
+      settings.episodeLayoutStyle !== 'horizontal'
+    ) {
       return;
     }
 
@@ -361,7 +408,8 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     let mostRecentTimestamp = 0;
 
     currentSeasonEpisodes.forEach((episode, index) => {
-      const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
       const progress = episodeProgress[episodeId];
       if (progress && progress.lastUpdated > mostRecentTimestamp && progress.currentTime > 0) {
         mostRecentTimestamp = progress.lastUpdated;
@@ -374,11 +422,17 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         horizontalEpisodeScrollViewRef.current?.scrollToIndex({
           index: mostRecentEpisodeIndex,
           animated: true,
-          viewPosition: 0
+          viewPosition: 0,
         });
       }, 500);
     }
-  }, [metadata?.id, settings?.episodeLayoutStyle, groupedEpisodes, selectedSeason, episodeProgress]);
+  }, [
+    metadata?.id,
+    settings?.episodeLayoutStyle,
+    groupedEpisodes,
+    selectedSeason,
+    episodeProgress,
+  ]);
 
   // =============================================================================
   // Effects
@@ -434,7 +488,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         const currentSeasonEpisodes = groupedEpisodes[selectedSeason] || [];
         if (currentSeasonEpisodes.length === 0) return;
 
-        const needsHydration = currentSeasonEpisodes.some(ep => !(ep as any).runtime || !(ep as any).vote_average);
+        const needsHydration = currentSeasonEpisodes.some(
+          ep => !(ep as any).runtime || !(ep as any).vote_average
+        );
         if (!needsHydration) return;
 
         let tmdbShowId: number | null = null;
@@ -446,7 +502,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         if (!tmdbShowId) return;
 
         const all = await tmdbService.getAllEpisodes(tmdbShowId);
-        const overrides: { [k: string]: { vote_average?: number; runtime?: number; still_path?: string } } = {};
+        const overrides: {
+          [k: string]: { vote_average?: number; runtime?: number; still_path?: string };
+        } = {};
         const seasonEpisodes = all?.[selectedSeason] || [];
         seasonEpisodes.forEach((tmdbEp: any) => {
           const key = `${metadata.id}:${tmdbEp.season_number}:${tmdbEp.episode_number}`;
@@ -480,7 +538,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
   useEffect(() => {
     if (selectedSeason && seasonScrollViewRef.current && Object.keys(groupedEpisodes).length > 0) {
-      const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => a - b);
+      const seasons = Object.keys(groupedEpisodes)
+        .map(Number)
+        .sort((a, b) => a - b);
       const selectedIndex = seasons.findIndex(season => season === selectedSeason);
 
       if (selectedIndex !== -1) {
@@ -499,24 +559,37 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     if (Object.keys(episodeProgress).length > 0 && selectedSeason && settings?.episodeLayoutStyle) {
       scrollToMostRecentEpisode();
     }
-  }, [selectedSeason, episodeProgress, settings?.episodeLayoutStyle, groupedEpisodes, scrollToMostRecentEpisode]);
+  }, [
+    selectedSeason,
+    episodeProgress,
+    settings?.episodeLayoutStyle,
+    groupedEpisodes,
+    scrollToMostRecentEpisode,
+  ]);
 
   // =============================================================================
   // Helpers
   // =============================================================================
 
-  const getIMDbRating = useCallback((seasonNumber: number, episodeNumber: number): number | null => {
-    const key = `${seasonNumber}:${episodeNumber}`;
-    return imdbRatingsMap[key] ?? null;
-  }, [imdbRatingsMap]);
+  const getIMDbRating = useCallback(
+    (seasonNumber: number, episodeNumber: number): number | null => {
+      const key = `${seasonNumber}:${episodeNumber}`;
+      return imdbRatingsMap[key] ?? null;
+    },
+    [imdbRatingsMap]
+  );
 
-  const isEpisodeWatched = useCallback((episode: Episode): boolean => {
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const progress = episodeProgress[episodeId];
-    if (!progress) return false;
-    const progressPercent = (progress.currentTime / progress.duration) * 100;
-    return progressPercent >= 85;
-  }, [episodeProgress, metadata?.id]);
+  const isEpisodeWatched = useCallback(
+    (episode: Episode): boolean => {
+      const episodeId =
+        episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+      const progress = episodeProgress[episodeId];
+      if (!progress) return false;
+      const progressPercent = (progress.currentTime / progress.duration) * 100;
+      return progressPercent >= 85;
+    },
+    [episodeProgress, metadata?.id]
+  );
 
   const isSeasonWatched = useCallback((): boolean => {
     const seasonEpisodes = groupedEpisodes[selectedSeason] || [];
@@ -534,107 +607,117 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   // Episode Long Press / Context Menu (TV)
   // =============================================================================
 
-  const handleEpisodeLongPress = useCallback((episode: Episode, episodeIndex: number) => {
-    if (Platform.isTV) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+  const handleEpisodeLongPress = useCallback(
+    (episode: Episode, episodeIndex: number) => {
+      if (Platform.isTV) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
 
-    if (isContextMenuAvailable) {
-      const epId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-      const watched = isEpisodeWatched(episode);
+      if (isContextMenuAvailable) {
+        const epId =
+          episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+        const watched = isEpisodeWatched(episode);
 
-      openContextMenu({
-        targetId: `episode-${epId}`,
-        title: `S${episode.season_number}E${episode.episode_number} - ${episode.name}`,
-        mediaItem: {
-          id: epId,
-          title: episode.name,
-          type: 'episode',
-          isWatched: watched,
-        },
-        actions: watched
-          ? ['markUnwatched', 'play', 'info']
-          : ['markWatched', 'play', 'info'],
-        onMarkWatched: async () => {
-          await handleMarkEpisodeAsWatched(episode);
-        },
-        onMarkUnwatched: async () => {
-          await handleMarkEpisodeAsUnwatched(episode);
-        },
-        onPlay: () => {
-          onSelectEpisode(episode);
-        },
-        onGetInfo: () => {
-          onSelectEpisode(episode);
-        },
-      });
-    } else {
-      // Fall back to modal for non-TV
-      setSelectedEpisodeForAction(episode);
-      setEpisodeActionMenuVisible(true);
-    }
-  }, [isContextMenuAvailable, openContextMenu, metadata?.id, isEpisodeWatched, onSelectEpisode]);
+        openContextMenu({
+          targetId: `episode-${epId}`,
+          title: `S${episode.season_number}E${episode.episode_number} - ${episode.name}`,
+          mediaItem: {
+            id: epId,
+            title: episode.name,
+            type: 'episode',
+            isWatched: watched,
+          },
+          actions: watched ? ['markUnwatched', 'play', 'info'] : ['markWatched', 'play', 'info'],
+          onMarkWatched: async () => {
+            await handleMarkEpisodeAsWatched(episode);
+          },
+          onMarkUnwatched: async () => {
+            await handleMarkEpisodeAsUnwatched(episode);
+          },
+          onPlay: () => {
+            onSelectEpisode(episode);
+          },
+          onGetInfo: () => {
+            onSelectEpisode(episode);
+          },
+        });
+      } else {
+        // Fall back to modal for non-TV
+        setSelectedEpisodeForAction(episode);
+        setEpisodeActionMenuVisible(true);
+      }
+    },
+    [isContextMenuAvailable, openContextMenu, metadata?.id, isEpisodeWatched, onSelectEpisode]
+  );
 
   // =============================================================================
   // Mark Watched/Unwatched Handlers
   // =============================================================================
 
-  const handleMarkEpisodeAsWatched = useCallback(async (episode: Episode) => {
-    if (!metadata?.id) return;
+  const handleMarkEpisodeAsWatched = useCallback(
+    async (episode: Episode) => {
+      if (!metadata?.id) return;
 
-    const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
-    setEpisodeProgress(prev => ({
-      ...prev,
-      [episodeId]: { currentTime: 1, duration: 1, lastUpdated: Date.now() }
-    }));
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      setEpisodeProgress(prev => ({
+        ...prev,
+        [episodeId]: { currentTime: 1, duration: 1, lastUpdated: Date.now() },
+      }));
 
-    if (Platform.isTV) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
+      if (Platform.isTV) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
 
-    const showImdbId = imdbId || metadata.id;
-    try {
-      await watchedService.markEpisodeAsWatched(
-        showImdbId,
-        metadata.id,
-        episode.season_number,
-        episode.episode_number
-      );
-      loadEpisodesProgress();
-    } catch (error) {
-      logger.error('[SeriesContent.tv] Error marking episode as watched:', error);
-      loadEpisodesProgress();
-    }
-  }, [metadata?.id, imdbId]);
+      const showImdbId = imdbId || metadata.id;
+      try {
+        await watchedService.markEpisodeAsWatched(
+          showImdbId,
+          metadata.id,
+          episode.season_number,
+          episode.episode_number
+        );
+        loadEpisodesProgress();
+      } catch (error) {
+        logger.error('[SeriesContent.tv] Error marking episode as watched:', error);
+        loadEpisodesProgress();
+      }
+    },
+    [metadata?.id, imdbId]
+  );
 
-  const handleMarkEpisodeAsUnwatched = useCallback(async (episode: Episode) => {
-    if (!metadata?.id) return;
+  const handleMarkEpisodeAsUnwatched = useCallback(
+    async (episode: Episode) => {
+      if (!metadata?.id) return;
 
-    const episodeId = episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
-    setEpisodeProgress(prev => {
-      const newState = { ...prev };
-      delete newState[episodeId];
-      return newState;
-    });
+      const episodeId =
+        episode.stremioId || `${metadata.id}:${episode.season_number}:${episode.episode_number}`;
+      setEpisodeProgress(prev => {
+        const newState = { ...prev };
+        delete newState[episodeId];
+        return newState;
+      });
 
-    if (Platform.isTV) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
+      if (Platform.isTV) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
 
-    const showImdbId = imdbId || metadata.id;
-    try {
-      await watchedService.unmarkEpisodeAsWatched(
-        showImdbId,
-        metadata.id,
-        episode.season_number,
-        episode.episode_number
-      );
-      loadEpisodesProgress();
-    } catch (error) {
-      logger.error('[SeriesContent.tv] Error unmarking episode as watched:', error);
-      loadEpisodesProgress();
-    }
-  }, [metadata?.id, imdbId]);
+      const showImdbId = imdbId || metadata.id;
+      try {
+        await watchedService.unmarkEpisodeAsWatched(
+          showImdbId,
+          metadata.id,
+          episode.season_number,
+          episode.episode_number
+        );
+        loadEpisodesProgress();
+      } catch (error) {
+        logger.error('[SeriesContent.tv] Error unmarking episode as watched:', error);
+        loadEpisodesProgress();
+      }
+    },
+    [metadata?.id, imdbId]
+  );
 
   const handleMarkAsWatched = useCallback(async () => {
     if (!selectedEpisodeForAction) return;
@@ -674,7 +757,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
     const showImdbId = imdbId || metadata.id;
     try {
-      await watchedService.markSeasonAsWatched(showImdbId, metadata.id, currentSeason, episodeNumbers);
+      await watchedService.markSeasonAsWatched(
+        showImdbId,
+        metadata.id,
+        currentSeason,
+        episodeNumbers
+      );
       loadEpisodesProgress();
     } catch (error) {
       logger.error('[SeriesContent.tv] Error marking season as watched:', error);
@@ -706,7 +794,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
     const showImdbId = imdbId || metadata.id;
     try {
-      await watchedService.unmarkSeasonAsWatched(showImdbId, metadata.id, currentSeason, episodeNumbers);
+      await watchedService.unmarkSeasonAsWatched(
+        showImdbId,
+        metadata.id,
+        currentSeason,
+        episodeNumbers
+      );
       loadEpisodesProgress();
     } catch (error) {
       logger.error('[SeriesContent.tv] Error unmarking season as watched:', error);
@@ -723,35 +816,41 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   // TV Focus Handlers
   // =============================================================================
 
-  const handleSeasonFocus = useCallback((seasonIndex: number, season: number) => {
-    setFocusedSeasonIndex(seasonIndex);
-    saveFocusState(seasonsSectionId, seasonIndex);
-    onFocusEnter?.();
+  const handleSeasonFocus = useCallback(
+    (seasonIndex: number, season: number) => {
+      setFocusedSeasonIndex(seasonIndex);
+      saveFocusState(seasonsSectionId, seasonIndex);
+      onFocusEnter?.();
 
-    // Scroll to keep focused season visible
-    if (seasonScrollViewRef.current) {
-      seasonScrollViewRef.current.scrollToIndex({
-        index: seasonIndex,
-        animated: true,
-        viewPosition: 0.3,
-      });
-    }
-  }, [seasonsSectionId, saveFocusState, onFocusEnter]);
+      // Scroll to keep focused season visible
+      if (seasonScrollViewRef.current) {
+        seasonScrollViewRef.current.scrollToIndex({
+          index: seasonIndex,
+          animated: true,
+          viewPosition: 0.3,
+        });
+      }
+    },
+    [seasonsSectionId, saveFocusState, onFocusEnter]
+  );
 
-  const handleEpisodeFocus = useCallback((episodeIndex: number) => {
-    setFocusedEpisodeIndex(episodeIndex);
-    saveFocusState(episodesSectionId, episodeIndex);
-    onFocusEnter?.();
+  const handleEpisodeFocus = useCallback(
+    (episodeIndex: number) => {
+      setFocusedEpisodeIndex(episodeIndex);
+      saveFocusState(episodesSectionId, episodeIndex);
+      onFocusEnter?.();
 
-    // Scroll to keep focused episode visible
-    if (settings?.episodeLayoutStyle === 'horizontal' && horizontalEpisodeScrollViewRef.current) {
-      horizontalEpisodeScrollViewRef.current.scrollToIndex({
-        index: episodeIndex,
-        animated: true,
-        viewPosition: 0.3,
-      });
-    }
-  }, [episodesSectionId, saveFocusState, settings?.episodeLayoutStyle, onFocusEnter]);
+      // Scroll to keep focused episode visible
+      if (settings?.episodeLayoutStyle === 'horizontal' && horizontalEpisodeScrollViewRef.current) {
+        horizontalEpisodeScrollViewRef.current.scrollToIndex({
+          index: episodeIndex,
+          animated: true,
+          viewPosition: 0.3,
+        });
+      }
+    },
+    [episodesSectionId, saveFocusState, settings?.episodeLayoutStyle, onFocusEnter]
+  );
 
   const handleViewModeToggleFocus = useCallback(() => {
     onFocusEnter?.();
@@ -761,18 +860,21 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   // Resolve NextFocus Props
   // =============================================================================
 
-  const resolveNodeHandle = useCallback((value: number | React.RefObject<any> | undefined): number | undefined => {
-    if (value === undefined) return undefined;
-    if (typeof value === 'number') return value;
-    if (value.current) {
-      try {
-        return findNodeHandle(value.current) ?? undefined;
-      } catch {
-        return undefined;
+  const resolveNodeHandle = useCallback(
+    (value: number | React.RefObject<any> | undefined): number | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value === 'number') return value;
+      if (value.current) {
+        try {
+          return findNodeHandle(value.current) ?? undefined;
+        } catch {
+          return undefined;
+        }
       }
-    }
-    return undefined;
-  }, []);
+      return undefined;
+    },
+    []
+  );
 
   // =============================================================================
   // Loading / Empty States
@@ -782,7 +884,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color={currentTheme.colors.primary} />
-        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>Loading episodes...</Text>
+        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>
+          Loading episodes...
+        </Text>
       </View>
     );
   }
@@ -791,7 +895,9 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
     return (
       <View style={styles.centeredContainer}>
         <MaterialIcons name="error-outline" size={48} color={currentTheme.colors.textMuted} />
-        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>No episodes available</Text>
+        <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>
+          No episodes available
+        </Text>
       </View>
     );
   }
@@ -805,11 +911,13 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
       return null;
     }
 
-    const seasons = Object.keys(groupedEpisodes).map(Number).sort((a, b) => {
-      if (a === 0) return 1;
-      if (b === 0) return -1;
-      return a - b;
-    });
+    const seasons = Object.keys(groupedEpisodes)
+      .map(Number)
+      .sort((a, b) => {
+        if (a === 0) return 1;
+        if (b === 0) return -1;
+        return a - b;
+      });
 
     const renderSeasonItem = ({ item: season, index }: { item: number; index: number }) => {
       const seasonEpisodes = groupedEpisodes[season] || [];
@@ -861,7 +969,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 style={[
                   styles.seasonTextButtonText,
                   { color: currentTheme.colors.highEmphasis },
-                  isSelected && [styles.selectedSeasonTextButtonText, { color: currentTheme.colors.highEmphasis }],
+                  isSelected && [
+                    styles.selectedSeasonTextButtonText,
+                    { color: currentTheme.colors.highEmphasis },
+                  ],
                 ]}
                 numberOfLines={1}
               >
@@ -885,7 +996,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             style={[
               styles.seasonButton,
               { marginRight: seasonButtonSpacing, width: seasonPosterWidth },
-              isSelected && [styles.selectedSeasonButton, { borderColor: currentTheme.colors.primary }],
+              isSelected && [
+                styles.selectedSeasonButton,
+                { borderColor: currentTheme.colors.primary },
+              ],
             ]}
             animationConfig={{
               focusScale: 1.05,
@@ -927,7 +1041,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 <View
                   style={[
                     styles.selectedSeasonIndicator,
-                    { backgroundColor: currentTheme.colors.primary, height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4 },
+                    {
+                      backgroundColor: currentTheme.colors.primary,
+                      height: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
+                    },
                   ]}
                 />
               )}
@@ -935,8 +1052,14 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             <Text
               style={[
                 styles.seasonButtonText,
-                { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 14 },
-                isSelected && [styles.selectedSeasonButtonText, { color: currentTheme.colors.primary }],
+                {
+                  color: currentTheme.colors.mediumEmphasis,
+                  fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 14,
+                },
+                isSelected && [
+                  styles.selectedSeasonButtonText,
+                  { color: currentTheme.colors.primary },
+                ],
               ]}
             >
               {season === 0 ? 'Specials' : `Season ${season}`}
@@ -948,11 +1071,19 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
 
     return (
       <View style={[styles.seasonSelectorWrapper, { paddingHorizontal: horizontalPadding }]}>
-        <View style={[styles.seasonSelectorHeader, { marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12 }]}>
+        <View
+          style={[
+            styles.seasonSelectorHeader,
+            { marginBottom: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12 },
+          ]}
+        >
           <Text
             style={[
               styles.seasonSelectorTitle,
-              { color: currentTheme.colors.highEmphasis, fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 18 },
+              {
+                color: currentTheme.colors.highEmphasis,
+                fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 18,
+              },
             ]}
           >
             Seasons
@@ -971,8 +1102,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             style={[
               styles.seasonViewToggle,
               {
-                backgroundColor: seasonViewMode === 'posters' ? currentTheme.colors.elevation2 : currentTheme.colors.elevation3,
-                borderColor: seasonViewMode === 'posters' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.3)',
+                backgroundColor:
+                  seasonViewMode === 'posters'
+                    ? currentTheme.colors.elevation2
+                    : currentTheme.colors.elevation3,
+                borderColor:
+                  seasonViewMode === 'posters' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.3)',
                 paddingHorizontal: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
                 paddingVertical: isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4,
                 borderRadius: isTV ? 10 : isLargeTablet ? 8 : isTablet ? 6 : 6,
@@ -993,7 +1128,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               style={[
                 styles.seasonViewToggleText,
                 {
-                  color: seasonViewMode === 'posters' ? currentTheme.colors.mediumEmphasis : currentTheme.colors.highEmphasis,
+                  color:
+                    seasonViewMode === 'posters'
+                      ? currentTheme.colors.mediumEmphasis
+                      : currentTheme.colors.highEmphasis,
                   fontSize: isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 12,
                 },
               ]}
@@ -1009,13 +1147,16 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.seasonSelectorContainer}
-          contentContainerStyle={[styles.seasonSelectorContent, { paddingBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8 }]}
+          contentContainerStyle={[
+            styles.seasonSelectorContent,
+            { paddingBottom: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8 },
+          ]}
           initialNumToRender={5}
           maxToRenderPerBatch={5}
           windowSize={3}
           renderItem={renderSeasonItem}
           keyExtractor={season => season.toString()}
-          onScrollToIndexFailed={(info) => {
+          onScrollToIndexFailed={info => {
             setTimeout(() => {
               seasonScrollViewRef.current?.scrollToOffset({
                 offset: info.index * (seasonPosterWidth + seasonButtonSpacing),
@@ -1067,159 +1208,40 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
   };
 
   // Vertical episode card (Traditional)
-  const renderVerticalEpisodeCard = useCallback(({ item: episode, index }: { item: Episode; index: number }) => {
-    let episodeImage = resolveEpisodeImage(episode);
-    const episodeNumber = typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
-    const seasonNumber = typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
-    const episodeString = seasonNumber && episodeNumber ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}` : '';
+  const renderVerticalEpisodeCard = useCallback(
+    ({ item: episode, index }: { item: Episode; index: number }) => {
+      let episodeImage = resolveEpisodeImage(episode);
+      const episodeNumber =
+        typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
+      const seasonNumber =
+        typeof episode.season_number === 'number' ? episode.season_number.toString() : '';
+      const episodeString =
+        seasonNumber && episodeNumber
+          ? `S${seasonNumber.padStart(2, '0')}E${episodeNumber.padStart(2, '0')}`
+          : '';
 
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const tmdbOverride = tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
-    const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
-    const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
-    const effectiveVote = imdbRating ?? tmdbRating ?? 0;
-    const isImdbRating = imdbRating !== null;
-    const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
+      const episodeId =
+        episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+      const tmdbOverride =
+        tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
+      const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
+      const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
+      const effectiveVote = imdbRating ?? tmdbRating ?? 0;
+      const isImdbRating = imdbRating !== null;
+      const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
 
-    if (!episode.still_path && tmdbOverride?.still_path) {
-      const tmdbUrl = tmdbService.getImageUrl(tmdbOverride.still_path, 'original');
-      if (tmdbUrl) episodeImage = tmdbUrl;
-    }
+      if (!episode.still_path && tmdbOverride?.still_path) {
+        const tmdbUrl = tmdbService.getImageUrl(tmdbOverride.still_path, 'original');
+        if (tmdbUrl) episodeImage = tmdbUrl;
+      }
 
-    const progress = episodeProgress[episodeId];
-    const progressPercent = progress ? (progress.currentTime / progress.duration) * 100 : 0;
-    const showProgress = progress && progressPercent < 85;
+      const progress = episodeProgress[episodeId];
+      const progressPercent = progress ? (progress.currentTime / progress.duration) * 100 : 0;
+      const showProgress = progress && progressPercent < 85;
 
-    const episodeFocusId = `${episodesSectionId}-${index}`;
+      const episodeFocusId = `${episodesSectionId}-${index}`;
 
-    return (
-      <Focusable
-        ref={getEpisodeRef(index)}
-        key={episode.id}
-        onPress={() => onSelectEpisode(episode)}
-        onLongPress={() => handleEpisodeLongPress(episode, index)}
-        onFocus={() => handleEpisodeFocus(index)}
-        hasTVPreferredFocus={index === 0}
-        isTVSelectable={true}
-        focusId={episodeFocusId}
-        style={[
-          styles.episodeCardVertical,
-          {
-            backgroundColor: currentTheme.colors.elevation2,
-            borderRadius: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-            marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-            height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
-          },
-        ]}
-        animationConfig={{
-          focusScale: 1.03,
-          unfocusedOpacity: 0.9,
-          showFocusBorder: true,
-          focusBorderColor: currentTheme.colors.primary || '#007AFF',
-          focusBorderWidth: 3,
-          animateShadow: Platform.OS === 'ios',
-        }}
-        tvParallaxProperties={{
-          enabled: Platform.OS === 'ios',
-          shiftDistanceX: 2,
-          shiftDistanceY: 2,
-          tiltAngle: 0.03,
-          magnification: 1.0,
-          pressMagnification: 1.01,
-          pressDuration: 0.3,
-        }}
-        accessibilityLabel={`${episodeString} ${episode.name}`}
-        accessibilityHint="Press to play. Long press for more options."
-      >
-        <View style={[styles.episodeImageContainer, { width: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120, height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120 }]}>
-          <FastImage source={{ uri: episodeImage }} style={styles.episodeImage} resizeMode={FastImage.resizeMode.cover} />
-          <View style={[styles.episodeNumberBadge, { paddingHorizontal: isTV ? 8 : 6, paddingVertical: isTV ? 4 : 2, borderRadius: isTV ? 6 : 4 }]}>
-            <Text style={[styles.episodeNumberText, { fontSize: isTV ? 13 : 11, fontWeight: '600' }]}>{episodeString}</Text>
-          </View>
-          {showProgress && (
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary }]} />
-            </View>
-          )}
-          {progressPercent >= 85 && (
-            <View style={[styles.completedBadge, { backgroundColor: currentTheme.colors.primary, width: isTV ? 24 : 20, height: isTV ? 24 : 20, borderRadius: isTV ? 12 : 10 }]}>
-              <MaterialIcons name="check" size={isTV ? 14 : 12} color={currentTheme.colors.white} />
-            </View>
-          )}
-          {(!progress || progressPercent === 0) && (
-            <View style={{ position: 'absolute', top: 8, left: 8, width: isTV ? 24 : 20, height: isTV ? 24 : 20, borderRadius: isTV ? 12 : 10, borderWidth: 2, borderStyle: 'dashed', borderColor: currentTheme.colors.textMuted, opacity: 0.85 }} />
-          )}
-        </View>
-
-        <View style={[styles.episodeInfo, { paddingLeft: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12, flex: 1, justifyContent: 'center' }]}>
-          <View style={[styles.episodeHeader, { marginBottom: isTV ? 8 : 4 }]}>
-            <Text style={[styles.episodeTitle, { color: currentTheme.colors.text, fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15, lineHeight: isTV ? 24 : 18, marginBottom: isTV ? 4 : 2 }]} numberOfLines={isLargeScreen ? 3 : 2}>
-              {episode.name}
-            </Text>
-            <View style={[styles.episodeMetadata, { gap: isTV ? 12 : 8, flexWrap: 'wrap' }]}>
-              {effectiveRuntime && (
-                <View style={styles.runtimeContainer}>
-                  <MaterialIcons name="schedule" size={isTV ? 16 : 14} color={currentTheme.colors.textMuted} />
-                  <Text style={[styles.runtimeText, { color: currentTheme.colors.textMuted, fontSize: isTV ? 14 : 13 }]}>{formatRuntime(effectiveRuntime)}</Text>
-                </View>
-              )}
-              {effectiveVote > 0 && (
-                <View style={styles.ratingContainer}>
-                  {isImdbRating ? (
-                    <>
-                      <FastImage source={{ uri: IMDb_LOGO }} style={[styles.imdbLogo, { width: isTV ? 32 : 28, height: isTV ? 17 : 15 }]} resizeMode={FastImage.resizeMode.contain} />
-                      <Text style={[styles.ratingText, { color: '#F5C518', fontSize: isTV ? 14 : 13, fontWeight: '600' }]}>{effectiveVote.toFixed(1)}</Text>
-                    </>
-                  ) : (
-                    <>
-                      <FastImage source={{ uri: TMDB_LOGO }} style={[styles.tmdbLogo, { width: isTV ? 22 : 20, height: isTV ? 16 : 14 }]} resizeMode={FastImage.resizeMode.contain} />
-                      <Text style={[styles.ratingText, { color: currentTheme.colors.textMuted, fontSize: isTV ? 14 : 13 }]}>{effectiveVote.toFixed(1)}</Text>
-                    </>
-                  )}
-                </View>
-              )}
-              {episode.air_date && (
-                <Text style={[styles.airDateText, { color: currentTheme.colors.textMuted, fontSize: isTV ? 13 : 12 }]}>{formatDate(episode.air_date)}</Text>
-              )}
-            </View>
-          </View>
-          <Text style={[styles.episodeOverview, { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 15 : 13, lineHeight: isTV ? 22 : 18 }]} numberOfLines={isLargeScreen ? 4 : 2}>
-            {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
-          </Text>
-        </View>
-      </Focusable>
-    );
-  }, [
-    metadata?.id, episodeProgress, tmdbEpisodeOverrides, imdbRatingsMap, settings?.enrichMetadataWithTMDB,
-    currentTheme, isTV, isLargeTablet, isTablet, isLargeScreen, episodesSectionId,
-    onSelectEpisode, handleEpisodeLongPress, handleEpisodeFocus, getEpisodeRef, getIMDbRating,
-  ]);
-
-  // Horizontal episode card (Netflix-style)
-  const renderHorizontalEpisodeCard = useCallback(({ item: episode, index }: { item: Episode; index: number }) => {
-    let episodeImage = resolveEpisodeImage(episode);
-    const episodeNumber = typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
-    const episodeString = episodeNumber ? `EPISODE ${episodeNumber}` : '';
-
-    const episodeId = episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
-    const tmdbOverride = tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
-    const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
-    const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
-    const effectiveVote = imdbRating ?? tmdbRating ?? 0;
-    const isImdbRating = imdbRating !== null;
-    const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
-
-    const progress = episodeProgress[episodeId];
-    const progressPercent = progress ? (progress.currentTime / progress.duration) * 100 : 0;
-    const showProgress = progress && progressPercent < 85;
-
-    const episodeFocusId = `${episodesSectionId}-h-${index}`;
-
-    return (
-      <Animated.View
-        entering={enableItemAnimations ? FadeIn.duration(300).delay(100 + index * 30) : undefined as any}
-        style={[styles.episodeCardWrapperHorizontal, { width: horizontalCardWidth, marginRight: horizontalItemSpacing }]}
-      >
+      return (
         <Focusable
           ref={getEpisodeRef(index)}
           key={episode.id}
@@ -1230,16 +1252,16 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           isTVSelectable={true}
           focusId={episodeFocusId}
           style={[
-            styles.episodeCardHorizontal,
+            styles.episodeCardVertical,
             {
+              backgroundColor: currentTheme.colors.elevation2,
               borderRadius: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
-              height: horizontalCardHeight,
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.12)',
+              marginBottom: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+              height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
             },
           ]}
           animationConfig={{
-            focusScale: 1.05,
+            focusScale: 1.03,
             unfocusedOpacity: 0.9,
             showFocusBorder: true,
             focusBorderColor: currentTheme.colors.primary || '#007AFF',
@@ -1248,90 +1270,528 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
           }}
           tvParallaxProperties={{
             enabled: Platform.OS === 'ios',
-            shiftDistanceX: 3,
-            shiftDistanceY: 3,
-            tiltAngle: 0.05,
+            shiftDistanceX: 2,
+            shiftDistanceY: 2,
+            tiltAngle: 0.03,
             magnification: 1.0,
-            pressMagnification: 1.02,
+            pressMagnification: 1.01,
             pressDuration: 0.3,
           }}
           accessibilityLabel={`${episodeString} ${episode.name}`}
           accessibilityHint="Press to play. Long press for more options."
         >
-          <FastImage source={{ uri: episodeImage }} style={styles.episodeBackgroundImage} resizeMode={FastImage.resizeMode.cover} />
-
-          <LinearGradient
-            colors={['rgba(0,0,0,0.05)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,0.95)']}
-            locations={[0, 0.2, 0.5, 0.8, 1]}
-            style={styles.episodeGradient}
+          <View
+            style={[
+              styles.episodeImageContainer,
+              {
+                width: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
+                height: isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 120,
+              },
+            ]}
           >
-            <View style={[styles.episodeContent, { padding: isTV ? 20 : 12, paddingBottom: isTV ? 24 : 16 }]}>
-              <View style={[styles.episodeNumberBadgeHorizontal, { paddingHorizontal: isTV ? 10 : 6, paddingVertical: isTV ? 5 : 3, borderRadius: isTV ? 8 : 4, marginBottom: isTV ? 10 : 6 }]}>
-                <Text style={[styles.episodeNumberHorizontal, { fontSize: isTV ? 14 : 10, fontWeight: isTV ? '700' : '600' }]}>{episodeString}</Text>
+            <FastImage
+              source={{ uri: episodeImage }}
+              style={styles.episodeImage}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+            <View
+              style={[
+                styles.episodeNumberBadge,
+                {
+                  paddingHorizontal: isTV ? 8 : 6,
+                  paddingVertical: isTV ? 4 : 2,
+                  borderRadius: isTV ? 6 : 4,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.episodeNumberText, { fontSize: isTV ? 13 : 11, fontWeight: '600' }]}
+              >
+                {episodeString}
+              </Text>
+            </View>
+            {showProgress && (
+              <View style={styles.progressBarContainer}>
+                <View
+                  style={[
+                    styles.progressBar,
+                    { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary },
+                  ]}
+                />
               </View>
+            )}
+            {progressPercent >= 85 && (
+              <View
+                style={[
+                  styles.completedBadge,
+                  {
+                    backgroundColor: currentTheme.colors.primary,
+                    width: isTV ? 24 : 20,
+                    height: isTV ? 24 : 20,
+                    borderRadius: isTV ? 12 : 10,
+                  },
+                ]}
+              >
+                <MaterialIcons
+                  name="check"
+                  size={isTV ? 14 : 12}
+                  color={currentTheme.colors.white}
+                />
+              </View>
+            )}
+            {(!progress || progressPercent === 0) && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  width: isTV ? 24 : 20,
+                  height: isTV ? 24 : 20,
+                  borderRadius: isTV ? 12 : 10,
+                  borderWidth: 2,
+                  borderStyle: 'dashed',
+                  borderColor: currentTheme.colors.textMuted,
+                  opacity: 0.85,
+                }}
+              />
+            )}
+          </View>
 
-              <Text style={[styles.episodeTitleHorizontal, { fontSize: isTV ? 20 : 15, fontWeight: isTV ? '800' : '700', lineHeight: isTV ? 26 : 18, marginBottom: isTV ? 8 : 4 }]} numberOfLines={2}>
+          <View
+            style={[
+              styles.episodeInfo,
+              {
+                paddingLeft: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 12,
+                flex: 1,
+                justifyContent: 'center',
+              },
+            ]}
+          >
+            <View style={[styles.episodeHeader, { marginBottom: isTV ? 8 : 4 }]}>
+              <Text
+                style={[
+                  styles.episodeTitle,
+                  {
+                    color: currentTheme.colors.text,
+                    fontSize: isTV ? 18 : isLargeTablet ? 17 : isTablet ? 16 : 15,
+                    lineHeight: isTV ? 24 : 18,
+                    marginBottom: isTV ? 4 : 2,
+                  },
+                ]}
+                numberOfLines={isLargeScreen ? 3 : 2}
+              >
                 {episode.name}
               </Text>
-
-              <Text style={[styles.episodeDescriptionHorizontal, { fontSize: isTV ? 16 : 12, lineHeight: isTV ? 22 : 16, marginBottom: isTV ? 12 : 8, opacity: isTV ? 0.95 : 0.9 }]} numberOfLines={isLargeScreen ? 4 : 3}>
-                {(episode.overview || (episode as any).description || (episode as any).plot || (episode as any).synopsis || 'No description available')}
-              </Text>
-
-              <View style={[styles.episodeMetadataRowHorizontal, { gap: isTV ? 16 : 12 }]}>
+              <View style={[styles.episodeMetadata, { gap: isTV ? 12 : 8, flexWrap: 'wrap' }]}>
                 {effectiveRuntime && (
-                  <View style={styles.runtimeContainerHorizontal}>
-                    <MaterialIcons name="schedule" size={isTV ? 16 : 14} color={currentTheme.colors.mediumEmphasis} />
-                    <Text style={[styles.runtimeTextHorizontal, { fontSize: isTV ? 13 : 11, fontWeight: isTV ? '600' : '500', color: currentTheme.colors.mediumEmphasis }]}>
+                  <View style={styles.runtimeContainer}>
+                    <MaterialIcons
+                      name="schedule"
+                      size={isTV ? 16 : 14}
+                      color={currentTheme.colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.runtimeText,
+                        { color: currentTheme.colors.textMuted, fontSize: isTV ? 14 : 13 },
+                      ]}
+                    >
                       {formatRuntime(effectiveRuntime)}
                     </Text>
                   </View>
                 )}
                 {effectiveVote > 0 && (
-                  <View style={styles.ratingContainerHorizontal}>
+                  <View style={styles.ratingContainer}>
                     {isImdbRating ? (
                       <>
-                        <FastImage source={{ uri: IMDb_LOGO }} style={[styles.imdbLogoHorizontal, { width: isTV ? 32 : 28, height: isTV ? 17 : 15 }]} resizeMode={FastImage.resizeMode.contain} />
-                        <Text style={[styles.ratingTextHorizontal, { fontSize: isTV ? 13 : 11, fontWeight: '600', color: '#F5C518' }]}>{effectiveVote.toFixed(1)}</Text>
+                        <FastImage
+                          source={{ uri: IMDb_LOGO }}
+                          style={[
+                            styles.imdbLogo,
+                            { width: isTV ? 32 : 28, height: isTV ? 17 : 15 },
+                          ]}
+                          resizeMode={FastImage.resizeMode.contain}
+                        />
+                        <Text
+                          style={[
+                            styles.ratingText,
+                            { color: '#F5C518', fontSize: isTV ? 14 : 13, fontWeight: '600' },
+                          ]}
+                        >
+                          {effectiveVote.toFixed(1)}
+                        </Text>
                       </>
                     ) : (
                       <>
-                        <MaterialIcons name="star" size={isTV ? 16 : 14} color="#FFD700" />
-                        <Text style={[styles.ratingTextHorizontal, { fontSize: isTV ? 13 : 11, fontWeight: '600' }]}>{effectiveVote.toFixed(1)}</Text>
+                        <FastImage
+                          source={{ uri: TMDB_LOGO }}
+                          style={[
+                            styles.tmdbLogo,
+                            { width: isTV ? 22 : 20, height: isTV ? 16 : 14 },
+                          ]}
+                          resizeMode={FastImage.resizeMode.contain}
+                        />
+                        <Text
+                          style={[
+                            styles.ratingText,
+                            { color: currentTheme.colors.textMuted, fontSize: isTV ? 14 : 13 },
+                          ]}
+                        >
+                          {effectiveVote.toFixed(1)}
+                        </Text>
                       </>
                     )}
                   </View>
                 )}
                 {episode.air_date && (
-                  <Text style={[styles.airDateTextHorizontal, { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 13 : 11 }]}>{formatDate(episode.air_date)}</Text>
+                  <Text
+                    style={[
+                      styles.airDateText,
+                      { color: currentTheme.colors.textMuted, fontSize: isTV ? 13 : 12 },
+                    ]}
+                  >
+                    {formatDate(episode.air_date)}
+                  </Text>
                 )}
               </View>
             </View>
-
-            {showProgress && (
-              <View style={styles.progressBarContainerHorizontal}>
-                <View style={[styles.progressBarHorizontal, { width: `${progressPercent}%`, backgroundColor: currentTheme.colors.primary }]} />
-              </View>
-            )}
-
-            {progressPercent >= 85 && (
-              <View style={[styles.completedBadgeHorizontal, { backgroundColor: currentTheme.colors.primary, width: isTV ? 32 : 24, height: isTV ? 32 : 24, borderRadius: isTV ? 16 : 12, top: isTV ? 16 : 12, left: isTV ? 16 : 12 }]}>
-                <MaterialIcons name="check" size={isTV ? 20 : 16} color="#fff" />
-              </View>
-            )}
-            {(!progress || progressPercent === 0) && (
-              <View style={{ position: 'absolute', top: isTV ? 16 : 12, left: isTV ? 16 : 12, width: isTV ? 32 : 24, height: isTV ? 32 : 24, borderRadius: isTV ? 16 : 12, borderWidth: 2, borderStyle: 'dashed', borderColor: currentTheme.colors.textMuted, opacity: 0.9 }} />
-            )}
-          </LinearGradient>
+            <Text
+              style={[
+                styles.episodeOverview,
+                {
+                  color: currentTheme.colors.mediumEmphasis,
+                  fontSize: isTV ? 15 : 13,
+                  lineHeight: isTV ? 22 : 18,
+                },
+              ]}
+              numberOfLines={isLargeScreen ? 4 : 2}
+            >
+              {episode.overview ||
+                (episode as any).description ||
+                (episode as any).plot ||
+                (episode as any).synopsis ||
+                'No description available'}
+            </Text>
+          </View>
         </Focusable>
-      </Animated.View>
-    );
-  }, [
-    metadata?.id, episodeProgress, tmdbEpisodeOverrides, imdbRatingsMap, settings?.enrichMetadataWithTMDB,
-    currentTheme, isTV, isLargeTablet, isTablet, isLargeScreen, episodesSectionId,
-    horizontalCardWidth, horizontalCardHeight, horizontalItemSpacing, enableItemAnimations,
-    onSelectEpisode, handleEpisodeLongPress, handleEpisodeFocus, getEpisodeRef, getIMDbRating,
-  ]);
+      );
+    },
+    [
+      metadata?.id,
+      episodeProgress,
+      tmdbEpisodeOverrides,
+      imdbRatingsMap,
+      settings?.enrichMetadataWithTMDB,
+      currentTheme,
+      isTV,
+      isLargeTablet,
+      isTablet,
+      isLargeScreen,
+      episodesSectionId,
+      onSelectEpisode,
+      handleEpisodeLongPress,
+      handleEpisodeFocus,
+      getEpisodeRef,
+      getIMDbRating,
+    ]
+  );
+
+  // Horizontal episode card (Netflix-style)
+  const renderHorizontalEpisodeCard = useCallback(
+    ({ item: episode, index }: { item: Episode; index: number }) => {
+      const episodeImage = resolveEpisodeImage(episode);
+      const episodeNumber =
+        typeof episode.episode_number === 'number' ? episode.episode_number.toString() : '';
+      const episodeString = episodeNumber ? `EPISODE ${episodeNumber}` : '';
+
+      const episodeId =
+        episode.stremioId || `${metadata?.id}:${episode.season_number}:${episode.episode_number}`;
+      const tmdbOverride =
+        tmdbEpisodeOverrides[`${metadata?.id}:${episode.season_number}:${episode.episode_number}`];
+      const imdbRating = getIMDbRating(episode.season_number, episode.episode_number);
+      const tmdbRating = tmdbOverride?.vote_average ?? episode.vote_average;
+      const effectiveVote = imdbRating ?? tmdbRating ?? 0;
+      const isImdbRating = imdbRating !== null;
+      const effectiveRuntime = tmdbOverride?.runtime ?? (episode as any).runtime;
+
+      const progress = episodeProgress[episodeId];
+      const progressPercent = progress ? (progress.currentTime / progress.duration) * 100 : 0;
+      const showProgress = progress && progressPercent < 85;
+
+      const episodeFocusId = `${episodesSectionId}-h-${index}`;
+
+      return (
+        <Animated.View
+          entering={
+            enableItemAnimations ? FadeIn.duration(300).delay(100 + index * 30) : (undefined as any)
+          }
+          style={[
+            styles.episodeCardWrapperHorizontal,
+            { width: horizontalCardWidth, marginRight: horizontalItemSpacing },
+          ]}
+        >
+          <Focusable
+            ref={getEpisodeRef(index)}
+            key={episode.id}
+            onPress={() => onSelectEpisode(episode)}
+            onLongPress={() => handleEpisodeLongPress(episode, index)}
+            onFocus={() => handleEpisodeFocus(index)}
+            hasTVPreferredFocus={index === 0}
+            isTVSelectable={true}
+            focusId={episodeFocusId}
+            style={[
+              styles.episodeCardHorizontal,
+              {
+                borderRadius: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 16 : 16,
+                height: horizontalCardHeight,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.12)',
+              },
+            ]}
+            animationConfig={{
+              focusScale: 1.05,
+              unfocusedOpacity: 0.9,
+              showFocusBorder: true,
+              focusBorderColor: currentTheme.colors.primary || '#007AFF',
+              focusBorderWidth: 3,
+              animateShadow: Platform.OS === 'ios',
+            }}
+            tvParallaxProperties={{
+              enabled: Platform.OS === 'ios',
+              shiftDistanceX: 3,
+              shiftDistanceY: 3,
+              tiltAngle: 0.05,
+              magnification: 1.0,
+              pressMagnification: 1.02,
+              pressDuration: 0.3,
+            }}
+            accessibilityLabel={`${episodeString} ${episode.name}`}
+            accessibilityHint="Press to play. Long press for more options."
+          >
+            <FastImage
+              source={{ uri: episodeImage }}
+              style={styles.episodeBackgroundImage}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+
+            <LinearGradient
+              colors={[
+                'rgba(0,0,0,0.05)',
+                'rgba(0,0,0,0.2)',
+                'rgba(0,0,0,0.6)',
+                'rgba(0,0,0,0.85)',
+                'rgba(0,0,0,0.95)',
+              ]}
+              locations={[0, 0.2, 0.5, 0.8, 1]}
+              style={styles.episodeGradient}
+            >
+              <View
+                style={[
+                  styles.episodeContent,
+                  { padding: isTV ? 20 : 12, paddingBottom: isTV ? 24 : 16 },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.episodeNumberBadgeHorizontal,
+                    {
+                      paddingHorizontal: isTV ? 10 : 6,
+                      paddingVertical: isTV ? 5 : 3,
+                      borderRadius: isTV ? 8 : 4,
+                      marginBottom: isTV ? 10 : 6,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.episodeNumberHorizontal,
+                      { fontSize: isTV ? 14 : 10, fontWeight: isTV ? '700' : '600' },
+                    ]}
+                  >
+                    {episodeString}
+                  </Text>
+                </View>
+
+                <Text
+                  style={[
+                    styles.episodeTitleHorizontal,
+                    {
+                      fontSize: isTV ? 20 : 15,
+                      fontWeight: isTV ? '800' : '700',
+                      lineHeight: isTV ? 26 : 18,
+                      marginBottom: isTV ? 8 : 4,
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {episode.name}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.episodeDescriptionHorizontal,
+                    {
+                      fontSize: isTV ? 16 : 12,
+                      lineHeight: isTV ? 22 : 16,
+                      marginBottom: isTV ? 12 : 8,
+                      opacity: isTV ? 0.95 : 0.9,
+                    },
+                  ]}
+                  numberOfLines={isLargeScreen ? 4 : 3}
+                >
+                  {episode.overview ||
+                    (episode as any).description ||
+                    (episode as any).plot ||
+                    (episode as any).synopsis ||
+                    'No description available'}
+                </Text>
+
+                <View style={[styles.episodeMetadataRowHorizontal, { gap: isTV ? 16 : 12 }]}>
+                  {effectiveRuntime && (
+                    <View style={styles.runtimeContainerHorizontal}>
+                      <MaterialIcons
+                        name="schedule"
+                        size={isTV ? 16 : 14}
+                        color={currentTheme.colors.mediumEmphasis}
+                      />
+                      <Text
+                        style={[
+                          styles.runtimeTextHorizontal,
+                          {
+                            fontSize: isTV ? 13 : 11,
+                            fontWeight: isTV ? '600' : '500',
+                            color: currentTheme.colors.mediumEmphasis,
+                          },
+                        ]}
+                      >
+                        {formatRuntime(effectiveRuntime)}
+                      </Text>
+                    </View>
+                  )}
+                  {effectiveVote > 0 && (
+                    <View style={styles.ratingContainerHorizontal}>
+                      {isImdbRating ? (
+                        <>
+                          <FastImage
+                            source={{ uri: IMDb_LOGO }}
+                            style={[
+                              styles.imdbLogoHorizontal,
+                              { width: isTV ? 32 : 28, height: isTV ? 17 : 15 },
+                            ]}
+                            resizeMode={FastImage.resizeMode.contain}
+                          />
+                          <Text
+                            style={[
+                              styles.ratingTextHorizontal,
+                              { fontSize: isTV ? 13 : 11, fontWeight: '600', color: '#F5C518' },
+                            ]}
+                          >
+                            {effectiveVote.toFixed(1)}
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <MaterialIcons name="star" size={isTV ? 16 : 14} color="#FFD700" />
+                          <Text
+                            style={[
+                              styles.ratingTextHorizontal,
+                              { fontSize: isTV ? 13 : 11, fontWeight: '600' },
+                            ]}
+                          >
+                            {effectiveVote.toFixed(1)}
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  )}
+                  {episode.air_date && (
+                    <Text
+                      style={[
+                        styles.airDateTextHorizontal,
+                        { color: currentTheme.colors.mediumEmphasis, fontSize: isTV ? 13 : 11 },
+                      ]}
+                    >
+                      {formatDate(episode.air_date)}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {showProgress && (
+                <View style={styles.progressBarContainerHorizontal}>
+                  <View
+                    style={[
+                      styles.progressBarHorizontal,
+                      {
+                        width: `${progressPercent}%`,
+                        backgroundColor: currentTheme.colors.primary,
+                      },
+                    ]}
+                  />
+                </View>
+              )}
+
+              {progressPercent >= 85 && (
+                <View
+                  style={[
+                    styles.completedBadgeHorizontal,
+                    {
+                      backgroundColor: currentTheme.colors.primary,
+                      width: isTV ? 32 : 24,
+                      height: isTV ? 32 : 24,
+                      borderRadius: isTV ? 16 : 12,
+                      top: isTV ? 16 : 12,
+                      left: isTV ? 16 : 12,
+                    },
+                  ]}
+                >
+                  <MaterialIcons name="check" size={isTV ? 20 : 16} color="#fff" />
+                </View>
+              )}
+              {(!progress || progressPercent === 0) && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: isTV ? 16 : 12,
+                    left: isTV ? 16 : 12,
+                    width: isTV ? 32 : 24,
+                    height: isTV ? 32 : 24,
+                    borderRadius: isTV ? 16 : 12,
+                    borderWidth: 2,
+                    borderStyle: 'dashed',
+                    borderColor: currentTheme.colors.textMuted,
+                    opacity: 0.9,
+                  }}
+                />
+              )}
+            </LinearGradient>
+          </Focusable>
+        </Animated.View>
+      );
+    },
+    [
+      metadata?.id,
+      episodeProgress,
+      tmdbEpisodeOverrides,
+      imdbRatingsMap,
+      settings?.enrichMetadataWithTMDB,
+      currentTheme,
+      isTV,
+      isLargeTablet,
+      isTablet,
+      isLargeScreen,
+      episodesSectionId,
+      horizontalCardWidth,
+      horizontalCardHeight,
+      horizontalItemSpacing,
+      enableItemAnimations,
+      onSelectEpisode,
+      handleEpisodeLongPress,
+      handleEpisodeFocus,
+      getEpisodeRef,
+      getIMDbRating,
+    ]
+  );
 
   const currentSeasonEpisodes = groupedEpisodes[selectedSeason] || [];
 
@@ -1346,20 +1806,35 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
       </Animated.View>
 
       <Animated.View entering={FadeIn.duration(300).delay(100)}>
-        <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis, fontSize: isTV ? 24 : 20, marginBottom: isTV ? 20 : 16, paddingHorizontal: horizontalPadding }]}>
-          {currentSeasonEpisodes.length} {currentSeasonEpisodes.length === 1 ? 'Episode' : 'Episodes'}
+        <Text
+          style={[
+            styles.sectionTitle,
+            {
+              color: currentTheme.colors.highEmphasis,
+              fontSize: isTV ? 24 : 20,
+              marginBottom: isTV ? 20 : 16,
+              paddingHorizontal: horizontalPadding,
+            },
+          ]}
+        >
+          {currentSeasonEpisodes.length}{' '}
+          {currentSeasonEpisodes.length === 1 ? 'Episode' : 'Episodes'}
         </Text>
 
         {currentSeasonEpisodes.length === 0 && (
           <View style={styles.centeredContainer}>
             <MaterialIcons name="schedule" size={48} color={currentTheme.colors.textMuted} />
-            <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>No episodes available for Season {selectedSeason}</Text>
-            <Text style={[styles.centeredSubText, { color: currentTheme.colors.textMuted }]}>Episodes may not be released yet</Text>
+            <Text style={[styles.centeredText, { color: currentTheme.colors.text }]}>
+              No episodes available for Season {selectedSeason}
+            </Text>
+            <Text style={[styles.centeredSubText, { color: currentTheme.colors.textMuted }]}>
+              Episodes may not be released yet
+            </Text>
           </View>
         )}
 
-        {currentSeasonEpisodes.length > 0 && (
-          settings?.episodeLayoutStyle === 'horizontal' ? (
+        {currentSeasonEpisodes.length > 0 &&
+          (settings?.episodeLayoutStyle === 'horizontal' ? (
             <FlatList
               key={`episodes-${settings?.episodeLayoutStyle}-${selectedSeason}`}
               ref={horizontalEpisodeScrollViewRef}
@@ -1368,7 +1843,10 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               keyExtractor={episode => episode.id.toString()}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={[styles.episodeListContentHorizontal, { paddingLeft: horizontalPadding, paddingRight: horizontalPadding }]}
+              contentContainerStyle={[
+                styles.episodeListContentHorizontal,
+                { paddingLeft: horizontalPadding, paddingRight: horizontalPadding },
+              ]}
               removeClippedSubviews
               initialNumToRender={3}
               maxToRenderPerBatch={5}
@@ -1378,13 +1856,15 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               decelerationRate="fast"
               getItemLayout={(data, index) => ({
                 length: horizontalCardWidth + horizontalItemSpacing,
-                offset: horizontalPadding + ((horizontalCardWidth + horizontalItemSpacing) * index),
+                offset: horizontalPadding + (horizontalCardWidth + horizontalItemSpacing) * index,
                 index,
               })}
-              onScrollToIndexFailed={(info) => {
+              onScrollToIndexFailed={info => {
                 setTimeout(() => {
                   horizontalEpisodeScrollViewRef.current?.scrollToOffset({
-                    offset: horizontalPadding + ((horizontalCardWidth + horizontalItemSpacing) * info.index),
+                    offset:
+                      horizontalPadding +
+                      (horizontalCardWidth + horizontalItemSpacing) * info.index,
                     animated: true,
                   });
                 }, 500);
@@ -1397,12 +1877,14 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
               data={currentSeasonEpisodes}
               renderItem={renderVerticalEpisodeCard}
               keyExtractor={episode => episode.id.toString()}
-              contentContainerStyle={{ paddingHorizontal: horizontalPadding, paddingBottom: isTV ? 32 : 8 }}
+              contentContainerStyle={{
+                paddingHorizontal: horizontalPadding,
+                paddingBottom: isTV ? 32 : 8,
+              }}
               estimatedItemSize={isTV ? 200 : 120}
               removeClippedSubviews
             />
-          )
-        )}
+          ))}
       </Animated.View>
 
       {/* Episode Action Menu Modal (fallback for non-TV) */}
@@ -1415,10 +1897,23 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
         supportedOrientations={['portrait', 'landscape']}
       >
         <Pressable style={styles.modalOverlay} onPress={closeEpisodeActionMenu}>
-          <Pressable style={[styles.modalContent, { borderRadius: isTV ? 20 : 16, padding: isTV ? 24 : 20, width: isTV ? 400 : '100%', maxWidth: 400 }]} onPress={(e) => e.stopPropagation()}>
+          <Pressable
+            style={[
+              styles.modalContent,
+              {
+                borderRadius: isTV ? 20 : 16,
+                padding: isTV ? 24 : 20,
+                width: isTV ? 400 : '100%',
+                maxWidth: 400,
+              },
+            ]}
+            onPress={e => e.stopPropagation()}
+          >
             <View style={{ marginBottom: isTV ? 20 : 16 }}>
               <Text style={styles.modalTitle}>
-                {selectedEpisodeForAction ? `S${selectedEpisodeForAction.season_number}E${selectedEpisodeForAction.episode_number}` : ''}
+                {selectedEpisodeForAction
+                  ? `S${selectedEpisodeForAction.season_number}E${selectedEpisodeForAction.episode_number}`
+                  : ''}
               </Text>
               <Text style={styles.modalSubtitle} numberOfLines={1}>
                 {selectedEpisodeForAction?.name || ''}
@@ -1426,17 +1921,29 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
             </View>
 
             <View style={{ gap: isTV ? 12 : 10 }}>
-              {selectedEpisodeForAction && (
-                isEpisodeWatched(selectedEpisodeForAction) ? (
+              {selectedEpisodeForAction &&
+                (isEpisodeWatched(selectedEpisodeForAction) ? (
                   <Focusable
                     onPress={handleMarkAsUnwatched}
                     isTVSelectable={true}
                     disabled={markingAsWatched}
                     style={[styles.modalButton, { opacity: markingAsWatched ? 0.5 : 1 }]}
-                    animationConfig={{ focusScale: 1.02, showFocusBorder: true, focusBorderColor: currentTheme.colors.primary, focusBorderWidth: 2 }}
+                    animationConfig={{
+                      focusScale: 1.02,
+                      showFocusBorder: true,
+                      focusBorderColor: currentTheme.colors.primary,
+                      focusBorderWidth: 2,
+                    }}
                   >
-                    <MaterialIcons name="visibility-off" size={isTV ? 24 : 22} color="#FFFFFF" style={{ marginRight: 12 }} />
-                    <Text style={styles.modalButtonText}>{markingAsWatched ? 'Removing...' : 'Mark as Unwatched'}</Text>
+                    <MaterialIcons
+                      name="visibility-off"
+                      size={isTV ? 24 : 22}
+                      color="#FFFFFF"
+                      style={{ marginRight: 12 }}
+                    />
+                    <Text style={styles.modalButtonText}>
+                      {markingAsWatched ? 'Removing...' : 'Mark as Unwatched'}
+                    </Text>
                   </Focusable>
                 ) : (
                   <Focusable
@@ -1444,14 +1951,31 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                     isTVSelectable={true}
                     hasTVPreferredFocus={true}
                     disabled={markingAsWatched}
-                    style={[styles.modalButtonPrimary, { backgroundColor: currentTheme.colors.primary, opacity: markingAsWatched ? 0.5 : 1 }]}
-                    animationConfig={{ focusScale: 1.02, showFocusBorder: true, focusBorderColor: '#fff', focusBorderWidth: 2 }}
+                    style={[
+                      styles.modalButtonPrimary,
+                      {
+                        backgroundColor: currentTheme.colors.primary,
+                        opacity: markingAsWatched ? 0.5 : 1,
+                      },
+                    ]}
+                    animationConfig={{
+                      focusScale: 1.02,
+                      showFocusBorder: true,
+                      focusBorderColor: '#fff',
+                      focusBorderWidth: 2,
+                    }}
                   >
-                    <MaterialIcons name="check-circle" size={isTV ? 24 : 22} color="#FFFFFF" style={{ marginRight: 12 }} />
-                    <Text style={styles.modalButtonTextPrimary}>{markingAsWatched ? 'Marking...' : 'Mark as Watched'}</Text>
+                    <MaterialIcons
+                      name="check-circle"
+                      size={isTV ? 24 : 22}
+                      color="#FFFFFF"
+                      style={{ marginRight: 12 }}
+                    />
+                    <Text style={styles.modalButtonTextPrimary}>
+                      {markingAsWatched ? 'Marking...' : 'Mark as Watched'}
+                    </Text>
                   </Focusable>
-                )
-              )}
+                ))}
 
               {isSeasonWatched() ? (
                 <Focusable
@@ -1459,9 +1983,19 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   isTVSelectable={true}
                   disabled={markingAsWatched}
                   style={[styles.modalButton, { opacity: markingAsWatched ? 0.5 : 1 }]}
-                  animationConfig={{ focusScale: 1.02, showFocusBorder: true, focusBorderColor: currentTheme.colors.primary, focusBorderWidth: 2 }}
+                  animationConfig={{
+                    focusScale: 1.02,
+                    showFocusBorder: true,
+                    focusBorderColor: currentTheme.colors.primary,
+                    focusBorderWidth: 2,
+                  }}
                 >
-                  <MaterialIcons name="playlist-remove" size={isTV ? 24 : 22} color="#FFFFFF" style={{ marginRight: 12 }} />
+                  <MaterialIcons
+                    name="playlist-remove"
+                    size={isTV ? 24 : 22}
+                    color="#FFFFFF"
+                    style={{ marginRight: 12 }}
+                  />
                   <Text style={[styles.modalButtonText, { flex: 1 }]} numberOfLines={1}>
                     {markingAsWatched ? 'Removing...' : `Unmark Season ${selectedSeason}`}
                   </Text>
@@ -1472,9 +2006,19 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                   isTVSelectable={true}
                   disabled={markingAsWatched}
                   style={[styles.modalButton, { opacity: markingAsWatched ? 0.5 : 1 }]}
-                  animationConfig={{ focusScale: 1.02, showFocusBorder: true, focusBorderColor: currentTheme.colors.primary, focusBorderWidth: 2 }}
+                  animationConfig={{
+                    focusScale: 1.02,
+                    showFocusBorder: true,
+                    focusBorderColor: currentTheme.colors.primary,
+                    focusBorderWidth: 2,
+                  }}
                 >
-                  <MaterialIcons name="playlist-add-check" size={isTV ? 24 : 22} color="#FFFFFF" style={{ marginRight: 12 }} />
+                  <MaterialIcons
+                    name="playlist-add-check"
+                    size={isTV ? 24 : 22}
+                    color="#FFFFFF"
+                    style={{ marginRight: 12 }}
+                  />
                   <Text style={[styles.modalButtonText, { flex: 1 }]} numberOfLines={1}>
                     {markingAsWatched ? 'Marking...' : `Mark Season ${selectedSeason}`}
                   </Text>
@@ -1485,7 +2029,12 @@ const SeriesContentComponent: React.FC<SeriesContentProps> = ({
                 onPress={closeEpisodeActionMenu}
                 isTVSelectable={true}
                 style={styles.modalCancelButton}
-                animationConfig={{ focusScale: 1.02, showFocusBorder: true, focusBorderColor: currentTheme.colors.primary, focusBorderWidth: 2 }}
+                animationConfig={{
+                  focusScale: 1.02,
+                  showFocusBorder: true,
+                  focusBorderColor: currentTheme.colors.primary,
+                  focusBorderWidth: 2,
+                }}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </Focusable>

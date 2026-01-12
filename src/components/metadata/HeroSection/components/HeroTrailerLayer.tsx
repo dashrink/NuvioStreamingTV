@@ -23,9 +23,10 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import TrailerPlayer from '../../../video/TrailerPlayer';
-import type { HeroTrailerLayerProps } from '../types';
 import { TRAILER_PARALLAX } from '../constants';
 import { layoutStyles } from '../styles';
+
+import type { HeroTrailerLayerProps } from '../types';
 
 /**
  * Trailer video layer with parallax scroll effects and opacity transitions.
@@ -81,127 +82,124 @@ import { layoutStyles } from '../styles';
  * ```
  */
 const HeroTrailerLayer = memo(
-  forwardRef<any, HeroTrailerLayerProps>(function HeroTrailerLayer(
-    {
-      trailerUrl,
-      isReady,
-      isVisible,
-      isMuted,
-      scrollY,
-      onReady,
-      onEnd,
-      onError,
-      animatedStyle,
-      autoPlay = false,
-      onPlaybackStatusUpdate,
-      onFullscreenToggle,
-    },
-    ref
-  ) {
-    /**
-     * Animated style for parallax effects.
-     *
-     * The parallax calculation creates visual depth through two mechanisms:
-     * 1. Scale: Video zooms based on scroll direction and amount
-     *    - Pulling down (scrollY < 0): More aggressive zoom (SCROLL_UP_MULTIPLIER)
-     *    - Scrolling up (scrollY > 0): Subtle zoom (SCROLL_DOWN_MULTIPLIER)
-     * 2. TranslateY: Vertical offset creates parallax movement effect
-     *
-     * Both effects are bounded to prevent extreme values.
-     */
-    const parallaxStyle = useAnimatedStyle(() => {
-      'worklet';
-      const scrollYValue = scrollY.value;
+  forwardRef<any, HeroTrailerLayerProps>(
+    (
+      {
+        trailerUrl,
+        isReady,
+        isVisible,
+        isMuted,
+        scrollY,
+        onReady,
+        onEnd,
+        onError,
+        animatedStyle,
+        autoPlay = false,
+        onPlaybackStatusUpdate,
+        onFullscreenToggle,
+      },
+      ref
+    ) => {
+      /**
+       * Animated style for parallax effects.
+       *
+       * The parallax calculation creates visual depth through two mechanisms:
+       * 1. Scale: Video zooms based on scroll direction and amount
+       *    - Pulling down (scrollY < 0): More aggressive zoom (SCROLL_UP_MULTIPLIER)
+       *    - Scrolling up (scrollY > 0): Subtle zoom (SCROLL_DOWN_MULTIPLIER)
+       * 2. TranslateY: Vertical offset creates parallax movement effect
+       *
+       * Both effects are bounded to prevent extreme values.
+       */
+      const parallaxStyle = useAnimatedStyle(() => {
+        'worklet';
+        const scrollYValue = scrollY.value;
 
-      // Destructure constants for cleaner code in worklet
-      const {
-        DEFAULT_ZOOM,
-        SCROLL_UP_MULTIPLIER,
-        SCROLL_DOWN_MULTIPLIER,
-        MAX_SCALE,
-        PARALLAX_FACTOR,
-      } = TRAILER_PARALLAX;
+        // Destructure constants for cleaner code in worklet
+        const {
+          DEFAULT_ZOOM,
+          SCROLL_UP_MULTIPLIER,
+          SCROLL_DOWN_MULTIPLIER,
+          MAX_SCALE,
+          PARALLAX_FACTOR,
+        } = TRAILER_PARALLAX;
 
-      // Calculate scale based on scroll direction
-      // Negative scroll (pulling down) = more aggressive zoom
-      // Positive scroll (scrolling up) = subtle zoom
-      const scrollUpScale =
-        DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
-      const scrollDownScale =
-        DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
-      const scale = Math.min(
-        scrollYValue < 0 ? scrollUpScale : scrollDownScale,
-        MAX_SCALE
-      );
+        // Calculate scale based on scroll direction
+        // Negative scroll (pulling down) = more aggressive zoom
+        // Positive scroll (scrolling up) = subtle zoom
+        const scrollUpScale = DEFAULT_ZOOM + Math.abs(scrollYValue) * SCROLL_UP_MULTIPLIER;
+        const scrollDownScale = DEFAULT_ZOOM + scrollYValue * SCROLL_DOWN_MULTIPLIER;
+        const scale = Math.min(scrollYValue < 0 ? scrollUpScale : scrollDownScale, MAX_SCALE);
 
-      // Calculate parallax vertical offset
-      const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
+        // Calculate parallax vertical offset
+        const parallaxOffset = scrollYValue * PARALLAX_FACTOR;
 
-      return {
-        transform: [{ scale }, { translateY: parallaxOffset }],
-      };
-    }, []);
+        return {
+          transform: [{ scale }, { translateY: parallaxOffset }],
+        };
+      }, []);
 
-    /**
-     * Combined styles for the visible trailer container.
-     * Merges absoluteFill, parallax effects, and parent-provided animated styles.
-     */
-    const visibleContainerStyle = useMemo(() => {
-      return [styles.container, parallaxStyle, animatedStyle];
-    }, [parallaxStyle, animatedStyle]);
+      /**
+       * Combined styles for the visible trailer container.
+       * Merges absoluteFill, parallax effects, and parent-provided animated styles.
+       */
+      const visibleContainerStyle = useMemo(() => {
+        return [styles.container, parallaxStyle, animatedStyle];
+      }, [parallaxStyle, animatedStyle]);
 
-    // Don't render if no trailer URL is provided
-    if (!trailerUrl) {
+      // Don't render if no trailer URL is provided
+      if (!trailerUrl) {
+        return null;
+      }
+
+      // Preload mode: Hidden player that loads in the background
+      // This allows the video to buffer before becoming visible
+      if (!isReady && !isVisible) {
+        return (
+          <View style={styles.preloadContainer}>
+            <TrailerPlayer
+              key={`preload-${trailerUrl}`}
+              trailerUrl={trailerUrl}
+              autoPlay={false}
+              muted={true}
+              style={styles.player}
+              hideLoadingSpinner={true}
+              hideControls={true}
+              onLoad={onReady}
+              onError={onError ? (error: string) => onError() : undefined}
+            />
+          </View>
+        );
+      }
+
+      // Visible mode: Player with parallax and opacity transitions
+      // Only render when preloaded (isReady) and should be visible
+      if (isReady && isVisible) {
+        return (
+          <Animated.View style={visibleContainerStyle}>
+            <TrailerPlayer
+              key={`visible-${trailerUrl}`}
+              ref={ref}
+              trailerUrl={trailerUrl}
+              autoPlay={autoPlay}
+              muted={isMuted}
+              style={styles.player}
+              hideLoadingSpinner={true}
+              hideControls={true}
+              onLoad={onReady}
+              onError={onError ? (error: string) => onError() : undefined}
+              onEnd={onEnd}
+              onFullscreenToggle={onFullscreenToggle}
+              onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+            />
+          </Animated.View>
+        );
+      }
+
+      // Don't render anything if in an intermediate state
       return null;
     }
-
-    // Preload mode: Hidden player that loads in the background
-    // This allows the video to buffer before becoming visible
-    if (!isReady && !isVisible) {
-      return (
-        <View style={styles.preloadContainer}>
-          <TrailerPlayer
-            key={`preload-${trailerUrl}`}
-            trailerUrl={trailerUrl}
-            autoPlay={false}
-            muted={true}
-            style={styles.player}
-            hideLoadingSpinner={true}
-            hideControls={true}
-            onLoad={onReady}
-            onError={onError ? (error: string) => onError() : undefined}
-          />
-        </View>
-      );
-    }
-
-    // Visible mode: Player with parallax and opacity transitions
-    // Only render when preloaded (isReady) and should be visible
-    if (isReady && isVisible) {
-      return (
-        <Animated.View style={visibleContainerStyle}>
-          <TrailerPlayer
-            key={`visible-${trailerUrl}`}
-            ref={ref}
-            trailerUrl={trailerUrl}
-            autoPlay={autoPlay}
-            muted={isMuted}
-            style={styles.player}
-            hideLoadingSpinner={true}
-            hideControls={true}
-            onLoad={onReady}
-            onError={onError ? (error: string) => onError() : undefined}
-            onEnd={onEnd}
-            onFullscreenToggle={onFullscreenToggle}
-            onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-          />
-        </Animated.View>
-      );
-    }
-
-    // Don't render anything if in an intermediate state
-    return null;
-  })
+  )
 );
 
 const styles = StyleSheet.create({

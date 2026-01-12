@@ -2,6 +2,7 @@
  * PinSetupModal - Modal for setting up or changing a profile PIN
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
@@ -13,7 +14,7 @@ import {
   Vibration,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { PIN_CONFIG } from '../../types/profile';
 
@@ -71,18 +72,21 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
     }
   }, [shakeAnim]);
 
-  const handleDigitPress = useCallback((digit: string) => {
-    if (pin.length >= PIN_CONFIG.pinMaxLength) return;
+  const handleDigitPress = useCallback(
+    (digit: string) => {
+      if (pin.length >= PIN_CONFIG.pinMaxLength) return;
 
-    const newPin = pin + digit;
-    setPin(newPin);
-    setError(null);
+      const newPin = pin + digit;
+      setPin(newPin);
+      setError(null);
 
-    // Auto-proceed when PIN reaches required length
-    if (newPin.length >= PIN_CONFIG.pinMinLength) {
-      setTimeout(() => handlePinComplete(newPin), 100);
-    }
-  }, [pin]);
+      // Auto-proceed when PIN reaches required length
+      if (newPin.length >= PIN_CONFIG.pinMinLength) {
+        setTimeout(() => handlePinComplete(newPin), 100);
+      }
+    },
+    [pin]
+  );
 
   const handleBackspace = useCallback(() => {
     if (pin.length > 0) {
@@ -91,68 +95,80 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
     }
   }, [pin]);
 
-  const handlePinComplete = useCallback(async (completedPin: string) => {
-    if (isLoading) return;
+  const handlePinComplete = useCallback(
+    async (completedPin: string) => {
+      if (isLoading) return;
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    try {
-      // If requiring current PIN verification
-      if (requireCurrentPin && !currentPinVerified && onVerifyCurrentPin) {
-        const verified = await onVerifyCurrentPin(completedPin);
-        if (verified) {
-          setCurrentPinVerified(true);
-          setPin('');
-          setStep('enter');
-        } else {
-          shake();
-          setPin('');
-          setError('Incorrect current PIN');
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 1: Enter new PIN
-      if (step === 'enter') {
-        setFirstPin(completedPin);
-        setPin('');
-        setStep('confirm');
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 2: Confirm PIN
-      if (step === 'confirm') {
-        if (completedPin !== firstPin) {
-          shake();
-          setPin('');
-          setError('PINs do not match');
-          setStep('enter');
-          setFirstPin('');
+      try {
+        // If requiring current PIN verification
+        if (requireCurrentPin && !currentPinVerified && onVerifyCurrentPin) {
+          const verified = await onVerifyCurrentPin(completedPin);
+          if (verified) {
+            setCurrentPinVerified(true);
+            setPin('');
+            setStep('enter');
+          } else {
+            shake();
+            setPin('');
+            setError('Incorrect current PIN');
+          }
           setIsLoading(false);
           return;
         }
 
-        // PINs match - complete setup
-        const success = await onComplete(completedPin);
-        if (!success) {
-          shake();
+        // Step 1: Enter new PIN
+        if (step === 'enter') {
+          setFirstPin(completedPin);
           setPin('');
-          setError('Failed to set PIN');
-          setStep('enter');
-          setFirstPin('');
+          setStep('confirm');
+          setIsLoading(false);
+          return;
         }
-        // If successful, parent will close modal
+
+        // Step 2: Confirm PIN
+        if (step === 'confirm') {
+          if (completedPin !== firstPin) {
+            shake();
+            setPin('');
+            setError('PINs do not match');
+            setStep('enter');
+            setFirstPin('');
+            setIsLoading(false);
+            return;
+          }
+
+          // PINs match - complete setup
+          const success = await onComplete(completedPin);
+          if (!success) {
+            shake();
+            setPin('');
+            setError('Failed to set PIN');
+            setStep('enter');
+            setFirstPin('');
+          }
+          // If successful, parent will close modal
+        }
+      } catch (err) {
+        shake();
+        setError('An error occurred');
+        setPin('');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      shake();
-      setError('An error occurred');
-      setPin('');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoading, requireCurrentPin, currentPinVerified, onVerifyCurrentPin, step, firstPin, onComplete, shake]);
+    },
+    [
+      isLoading,
+      requireCurrentPin,
+      currentPinVerified,
+      onVerifyCurrentPin,
+      step,
+      firstPin,
+      onComplete,
+      shake,
+    ]
+  );
 
   const getTitle = () => {
     if (requireCurrentPin && !currentPinVerified) {
@@ -180,9 +196,8 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
           style={[
             styles.dot,
             {
-              backgroundColor: i < pin.length
-                ? currentTheme.colors.primary
-                : currentTheme.colors.border,
+              backgroundColor:
+                i < pin.length ? currentTheme.colors.primary : currentTheme.colors.border,
             },
           ]}
         />
@@ -218,11 +233,7 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
                     ]}
                     onPress={handleBackspace}
                   >
-                    <MaterialIcons
-                      name="backspace"
-                      size={24}
-                      color={currentTheme.colors.text}
-                    />
+                    <MaterialIcons name="backspace" size={24} color={currentTheme.colors.text} />
                   </TouchableOpacity>
                 );
               }
@@ -230,10 +241,7 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
               return (
                 <TouchableOpacity
                   key={keyIndex}
-                  style={[
-                    styles.keypadButton,
-                    { backgroundColor: currentTheme.colors.elevation2 },
-                  ]}
+                  style={[styles.keypadButton, { backgroundColor: currentTheme.colors.elevation2 }]}
                   onPress={() => handleDigitPress(key)}
                 >
                   <Text style={[styles.keypadButtonText, { color: currentTheme.colors.text }]}>
@@ -273,21 +281,14 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
 
           {/* Title and subtitle */}
           <View style={styles.titleContainer}>
-            <View
-              style={[
-                styles.iconCircle,
-                { backgroundColor: currentTheme.colors.primary },
-              ]}
-            >
+            <View style={[styles.iconCircle, { backgroundColor: currentTheme.colors.primary }]}>
               <MaterialIcons
                 name={step === 'confirm' ? 'check' : 'lock'}
                 size={28}
                 color="#FFFFFF"
               />
             </View>
-            <Text style={[styles.title, { color: currentTheme.colors.text }]}>
-              {getTitle()}
-            </Text>
+            <Text style={[styles.title, { color: currentTheme.colors.text }]}>{getTitle()}</Text>
             <Text style={[styles.subtitle, { color: currentTheme.colors.textMuted }]}>
               {getSubtitle()}
             </Text>
@@ -300,9 +301,10 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
                 style={[
                   styles.stepDot,
                   {
-                    backgroundColor: step === 'enter' || step === 'confirm'
-                      ? currentTheme.colors.primary
-                      : currentTheme.colors.border,
+                    backgroundColor:
+                      step === 'enter' || step === 'confirm'
+                        ? currentTheme.colors.primary
+                        : currentTheme.colors.border,
                   },
                 ]}
               />
@@ -310,9 +312,8 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
                 style={[
                   styles.stepLine,
                   {
-                    backgroundColor: step === 'confirm'
-                      ? currentTheme.colors.primary
-                      : currentTheme.colors.border,
+                    backgroundColor:
+                      step === 'confirm' ? currentTheme.colors.primary : currentTheme.colors.border,
                   },
                 ]}
               />
@@ -320,9 +321,8 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
                 style={[
                   styles.stepDot,
                   {
-                    backgroundColor: step === 'confirm'
-                      ? currentTheme.colors.primary
-                      : currentTheme.colors.border,
+                    backgroundColor:
+                      step === 'confirm' ? currentTheme.colors.primary : currentTheme.colors.border,
                   },
                 ]}
               />
@@ -330,15 +330,11 @@ export const PinSetupModal: React.FC<PinSetupModalProps> = ({
           ) : null}
 
           {/* PIN dots */}
-          <View style={styles.dotsContainer}>
-            {renderPinDots()}
-          </View>
+          <View style={styles.dotsContainer}>{renderPinDots()}</View>
 
           {/* Error message */}
           {error ? (
-            <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>
-              {error}
-            </Text>
+            <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{error}</Text>
           ) : (
             <View style={styles.errorPlaceholder} />
           )}

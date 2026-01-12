@@ -1,5 +1,5 @@
-import { logger } from '../../../utils/logger';
 import { SubtitleCue, SubtitleSegment } from './playerTypes';
+import { logger } from '../../../utils/logger';
 
 const DEBUG_MODE = false;
 
@@ -16,12 +16,15 @@ export function detectSubtitleFormat(content: string, url?: string): 'srt' | 'vt
 
   // Check content patterns
   const first100Chars = content.trim().substring(0, 100);
-  
+
   // WebVTT typically starts with "WEBVTT" and has " --> " separator
-  if (first100Chars.includes('WEBVTT') || first100Chars.match(/\d{2}:\d{2}:\d{2}\.\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}\.\d{3}/)) {
+  if (
+    first100Chars.includes('WEBVTT') ||
+    first100Chars.match(/\d{2}:\d{2}:\d{2}\.\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}\.\d{3}/)
+  ) {
     return 'vtt';
   }
-  
+
   // SRT typically has " --> " separator and uses different timestamp format
   if (first100Chars.match(/\d{1,2}:\d{2}:\d{2}[,.]\d{3}\s*-->\s*\d{1,2}:\d{2}:\d{2}[,.]\d{3}/)) {
     return 'srt';
@@ -37,11 +40,13 @@ export function detectSubtitleFormat(content: string, url?: string): 'srt' | 'vt
 function parseSRTTimestamp(timestamp: string): number {
   const match = timestamp.match(/(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})/);
   if (!match) return 0;
-  
-  return parseInt(match[1]) * 3600 + 
-         parseInt(match[2]) * 60 + 
-         parseInt(match[3]) + 
-         parseInt(match[4]) / 1000;
+
+  return (
+    parseInt(match[1]) * 3600 +
+    parseInt(match[2]) * 60 +
+    parseInt(match[3]) +
+    parseInt(match[4]) / 1000
+  );
 }
 
 /**
@@ -56,22 +61,22 @@ function parseSRTPositionTag(text: string): { x?: number; y?: number; align?: st
   if (!match) return undefined;
 
   const pos = parseInt(match[1]);
-  
+
   // Map numpad to alignment
   const alignments: Record<number, string> = {
-    1: 'left',     // bottom-left
-    2: 'center',   // bottom-center
-    3: 'right',    // bottom-right
-    4: 'left',     // left
-    5: 'center',   // center (default)
-    6: 'right',    // right
-    7: 'left',     // top-left
-    8: 'center',   // top-center
-    9: 'right',    // top-right
+    1: 'left', // bottom-left
+    2: 'center', // bottom-center
+    3: 'right', // bottom-right
+    4: 'left', // left
+    5: 'center', // center (default)
+    6: 'right', // right
+    7: 'left', // top-left
+    8: 'center', // top-center
+    9: 'right', // top-right
   };
 
   const verticalPos = pos <= 3 ? 'bottom' : pos <= 6 ? 'middle' : 'top';
-  
+
   return {
     align: alignments[pos] || 'center',
     // Could add x/y positioning here if needed
@@ -83,10 +88,10 @@ function parseSRTPositionTag(text: string): { x?: number; y?: number; align?: st
  */
 function parseSubtitleFormatting(text: string): SubtitleSegment[] {
   const segments: SubtitleSegment[] = [];
-  let currentIndex = 0;
+  const currentIndex = 0;
   let tagStack: Array<{ tag: string; attrs?: Record<string, string>; position: number }> = [];
   let segmentText = '';
-  
+
   // Process text character by character or in chunks
   const regex = /<(i|b|u|font)(\s+[^>]*)?>|<\/(i|b|u|font)>|{\\an[1-9]}/gi;
   let match;
@@ -100,7 +105,7 @@ function parseSubtitleFormatting(text: string): SubtitleSegment[] {
   });
 
   // Remove position tags from text before processing
-  let cleanText = text.replace(/\{\\an[1-9]\}/gi, '');
+  const cleanText = text.replace(/\{\\an[1-9]\}/gi, '');
 
   // Parse HTML tags
   while ((match = regex.exec(cleanText)) !== null) {
@@ -120,7 +125,7 @@ function parseSubtitleFormatting(text: string): SubtitleSegment[] {
       // Closing tag
       const tagName = match[3].toLowerCase();
       tagStack = tagStack.filter(t => t.tag !== tagName);
-      
+
       // If this closes the last tag, create a segment
       if (tagStack.length === 0 && segmentText) {
         segments.push({
@@ -135,7 +140,7 @@ function parseSubtitleFormatting(text: string): SubtitleSegment[] {
       // Opening tag
       const tagName = match[1].toLowerCase();
       const attrs = match[2] ? parseAttributes(match[2]) : {};
-      
+
       // Create segment if we have text and this is first tag
       if (segmentText && tagStack.length === 0) {
         segments.push({
@@ -144,9 +149,9 @@ function parseSubtitleFormatting(text: string): SubtitleSegment[] {
         });
         segmentText = '';
       }
-      
+
       tagStack.push({ tag: tagName, attrs, position: match.index });
-      
+
       // Handle font color
       if (tagName === 'font' && attrs.color) {
         const lastSegment = segments[segments.length - 1];
@@ -202,13 +207,13 @@ function parseAttributes(attrString: string): Record<string, string> {
  */
 function getSegmentProps(tagStack: Array<{ tag: string }>): Partial<SubtitleSegment> {
   const props: Partial<SubtitleSegment> = {};
-  
+
   tagStack.forEach(tag => {
     if (tag.tag === 'i') props.italic = true;
     if (tag.tag === 'b') props.bold = true;
     if (tag.tag === 'u') props.underline = true;
   });
-  
+
   return props;
 }
 
@@ -217,17 +222,14 @@ function getSegmentProps(tagStack: Array<{ tag: string }>): Partial<SubtitleSegm
  */
 export function parseSRT(content: string): SubtitleCue[] {
   const cues: SubtitleCue[] = [];
-  
+
   if (!content || content.trim().length === 0) {
     if (DEBUG_MODE) logger.log('[SubtitleParser] Empty content provided');
     return cues;
   }
 
   // Normalize line endings
-  const normalizedContent = content
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    .trim();
+  const normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
 
   // Split by double newlines
   const blocks = normalizedContent.split(/\n\s*\n/).filter(block => block.trim().length > 0);
@@ -238,43 +240,48 @@ export function parseSRT(content: string): SubtitleCue[] {
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i].trim();
-    const lines = block.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
+    const lines = block
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
     if (lines.length < 3) continue;
 
     // Find timestamp line
     let timeLineIndex = -1;
     let timeMatch = null;
-    
+
     for (let j = 0; j < Math.min(3, lines.length); j++) {
-      timeMatch = lines[j].match(/(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})/);
+      timeMatch = lines[j].match(
+        /(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})/
+      );
       if (timeMatch) {
         timeLineIndex = j;
         break;
       }
     }
-    
+
     if (!timeMatch || timeLineIndex === -1) continue;
 
     try {
       const startTime = parseSRTTimestamp(lines[timeLineIndex]);
       const endTime = parseSRTTimestamp(lines[timeLineIndex].split(' --> ')[1]);
-      
+
       // Get text lines
       const textLines = lines.slice(timeLineIndex + 1);
       if (textLines.length === 0) continue;
 
       const rawText = textLines.join('\n');
-      
+
       // Parse position tags
       const position = parseSRTPositionTag(rawText);
-      
+
       // Parse formatting
       const formattedSegments = parseSubtitleFormatting(rawText);
-      
+
       // Get plain text for backward compatibility
       const plainText = formattedSegments.map(s => s.text).join('') || rawText;
-      
+
       cues.push({
         start: startTime,
         end: endTime,
@@ -283,9 +290,11 @@ export function parseSRT(content: string): SubtitleCue[] {
         formattedSegments: formattedSegments.length > 0 ? formattedSegments : undefined,
         position,
       });
-      
+
       if (DEBUG_MODE && (i < 5 || cues.length <= 10)) {
-        logger.log(`[SubtitleParser] Cue ${cues.length}: ${startTime.toFixed(3)}s-${endTime.toFixed(3)}s: "${plainText.substring(0, 50)}"`);
+        logger.log(
+          `[SubtitleParser] Cue ${cues.length}: ${startTime.toFixed(3)}s-${endTime.toFixed(3)}s: "${plainText.substring(0, 50)}"`
+        );
       }
     } catch (error) {
       if (DEBUG_MODE) {
@@ -297,7 +306,9 @@ export function parseSRT(content: string): SubtitleCue[] {
   if (DEBUG_MODE) {
     logger.log(`[SubtitleParser] Successfully parsed ${cues.length} cues`);
     if (cues.length > 0) {
-      logger.log(`[SubtitleParser] Time range: ${cues[0].start.toFixed(1)}s to ${cues[cues.length-1].end.toFixed(1)}s`);
+      logger.log(
+        `[SubtitleParser] Time range: ${cues[0].start.toFixed(1)}s to ${cues[cues.length - 1].end.toFixed(1)}s`
+      );
     }
   }
 
@@ -310,11 +321,13 @@ export function parseSRT(content: string): SubtitleCue[] {
 function parseVTTTimestamp(timestamp: string): number {
   const match = timestamp.match(/(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})/);
   if (!match) return 0;
-  
-  return parseInt(match[1]) * 3600 + 
-         parseInt(match[2]) * 60 + 
-         parseInt(match[3]) + 
-         parseInt(match[4]) / 1000;
+
+  return (
+    parseInt(match[1]) * 3600 +
+    parseInt(match[2]) * 60 +
+    parseInt(match[3]) +
+    parseInt(match[4]) / 1000
+  );
 }
 
 /**
@@ -328,18 +341,16 @@ function parseVTTAlignment(settings: string): string {
 
 export function parseWebVTT(content: string): SubtitleCue[] {
   const cues: SubtitleCue[] = [];
-  
+
   if (!content || content.trim().length === 0) {
     return cues;
   }
 
   // Normalize line endings
-  const normalizedContent = content
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
+  const normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // Skip WEBVTT header and any note/comment blocks
-  let lines = normalizedContent.split('\n');
+  const lines = normalizedContent.split('\n');
   let skipHeader = true;
   let inNote = false;
 
@@ -348,7 +359,7 @@ export function parseWebVTT(content: string): SubtitleCue[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    
+
     if (skipHeader) {
       if (line.startsWith('WEBVTT')) {
         skipHeader = false;
@@ -385,12 +396,16 @@ export function parseWebVTT(content: string): SubtitleCue[] {
     if (lines.length < 2) continue;
 
     // Parse timestamp
-    const timeMatch = lines[0].match(/(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})(\s+.*)?/);
+    const timeMatch = lines[0].match(
+      /(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})(\s+.*)?/
+    );
     if (!timeMatch) continue;
 
     const startTime = parseVTTTimestamp(timeMatch[0].split(' --> ')[0]);
     const endTime = parseVTTTimestamp(timeMatch[0].split(' --> ')[1].split(' ')[0]);
-    const settings = timeMatch[0].includes(' --> ') ? timeMatch[0].split(' --> ')[1].split(' ').slice(1).join(' ') : '';
+    const settings = timeMatch[0].includes(' --> ')
+      ? timeMatch[0].split(' --> ')[1].split(' ').slice(1).join(' ')
+      : '';
 
     // Get text
     const textLines = lines.slice(1);
@@ -419,7 +434,7 @@ export function parseWebVTT(content: string): SubtitleCue[] {
  */
 export function parseSubtitle(content: string, url?: string): SubtitleCue[] {
   const format = detectSubtitleFormat(content, url);
-  
+
   if (DEBUG_MODE) {
     logger.log(`[SubtitleParser] Detected format: ${format}`);
   }
@@ -432,4 +447,3 @@ export function parseSubtitle(content: string, url?: string): SubtitleCue[] {
       return parseSRT(content);
   }
 }
-

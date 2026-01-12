@@ -1,3 +1,7 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
@@ -10,27 +14,24 @@ import {
   TextStyle,
   ImageStyle,
   ActivityIndicator,
-  Platform
+  Platform,
 } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
-import FastImage from '@d11/react-native-fast-image';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   Easing,
-  withDelay
+  withDelay,
 } from 'react-native-reanimated';
-import { StreamingContent } from '../../services/catalogService';
+
 import { SkeletonFeatured } from './SkeletonLoaders';
-import { hasValidLogoFormat, isTmdbUrl } from '../../utils/logoUtils';
-import { logger } from '../../utils/logger';
 import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { StreamingContent } from '../../services/catalogService';
+import { logger } from '../../utils/logger';
+import { hasValidLogoFormat, isTmdbUrl } from '../../utils/logoUtils';
 
 interface FeaturedContentProps {
   featuredContent: StreamingContent | null;
@@ -92,19 +93,21 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
       borderRadius: 30,
       backgroundColor: currentTheme.colors.elevation3,
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     noContentButtonText: {
       color: currentTheme.colors.highEmphasis,
       fontWeight: '600',
       fontSize: 14,
-    }
+    },
   });
 
   return (
     <View style={styles.noContentContainer}>
       <MaterialIcons name="theaters" size={48} color={currentTheme.colors.mediumEmphasis} />
-      <Text style={styles.noContentTitle}>{onRetry ? 'Couldn\'t load featured content' : 'No Featured Content'}</Text>
+      <Text style={styles.noContentTitle}>
+        {onRetry ? "Couldn't load featured content" : 'No Featured Content'}
+      </Text>
       <Text style={styles.noContentText}>
         {onRetry
           ? 'There was a problem fetching featured content. Please check your connection and try again.'
@@ -119,7 +122,9 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
               onRetry();
             }}
           >
-            <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Retry</Text>
+            <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>
+              Retry
+            </Text>
           </TouchableOpacity>
         ) : (
           <>
@@ -130,7 +135,9 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
                 navigation.navigate('Addons');
               }}
             >
-              <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>Install Addons</Text>
+              <Text style={[styles.noContentButtonText, { color: currentTheme.colors.white }]}>
+                Install Addons
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.noContentButton}
@@ -148,7 +155,13 @@ const NoFeaturedContent = ({ onRetry }: { onRetry?: () => void }) => {
   );
 };
 
-const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loading, onRetry }: FeaturedContentProps) => {
+const FeaturedContent = ({
+  featuredContent,
+  isSaved,
+  handleSaveToLibrary,
+  loading,
+  onRetry,
+}: FeaturedContentProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
@@ -185,10 +198,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
   // Animation values
   const posterAnimatedStyle = useAnimatedStyle(() => ({
     opacity: posterOpacity.value,
-    transform: [
-      { scale: posterScale.value },
-      { translateY: posterTranslateY.value }
-    ],
+    transform: [{ scale: posterScale.value }, { translateY: posterTranslateY.value }],
   }));
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
@@ -245,7 +255,11 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
     } catch (error) {
       // Clear any partial cache entry on error
       delete imageCache[url];
-      logger.warn('[FeaturedContent] preloadImage:error', { url, duration: since(t0), error: String(error) });
+      logger.warn('[FeaturedContent] preloadImage:error', {
+        url,
+        duration: since(t0),
+        error: String(error),
+      });
       return false;
     }
   };
@@ -269,9 +283,9 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
       id: featuredContent.id,
       name: featuredContent.name,
       hasLogo: Boolean(logo),
-      logo: logo,
+      logo,
       logoSource: logo ? (isTmdbUrl(logo) ? 'tmdb' : 'addon') : 'none',
-      type: featuredContent.type
+      type: featuredContent.type,
     });
 
     setLogoUrl(logo || null);
@@ -287,7 +301,12 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
     const contentId = featuredContent.id;
     const isContentChange = contentId !== prevContentIdRef.current;
     const t0 = nowMs();
-    logger.info('[FeaturedContent] content:update', { id: contentId, isContentChange, posterUrlExists: Boolean(posterUrl), sinceMount: since(firstRenderTsRef.current) });
+    logger.info('[FeaturedContent] content:update', {
+      id: contentId,
+      isContentChange,
+      posterUrlExists: Boolean(posterUrl),
+      sinceMount: since(firstRenderTsRef.current),
+    });
 
     // Enhanced content change detection and animations
     if (isContentChange) {
@@ -295,23 +314,23 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
       if (prevContentIdRef.current) {
         posterOpacity.value = withTiming(0, {
           duration: 300,
-          easing: Easing.out(Easing.cubic)
+          easing: Easing.out(Easing.cubic),
         });
         posterScale.value = withTiming(0.95, {
           duration: 300,
-          easing: Easing.out(Easing.cubic)
+          easing: Easing.out(Easing.cubic),
         });
         overlayOpacity.value = withTiming(0.6, {
           duration: 300,
-          easing: Easing.out(Easing.cubic)
+          easing: Easing.out(Easing.cubic),
         });
         contentOpacity.value = withTiming(0.3, {
           duration: 200,
-          easing: Easing.out(Easing.cubic)
+          easing: Easing.out(Easing.cubic),
         });
         buttonsOpacity.value = withTiming(0.3, {
           duration: 200,
-          easing: Easing.out(Easing.cubic)
+          easing: Easing.out(Easing.cubic),
         });
       } else {
         // Initial load - start from 0 but don't animate if we're just mounting
@@ -334,7 +353,9 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
     // Load images with enhanced animations
     const loadImages = async () => {
       // Small delay to allow fade out animation to complete
-      await new Promise(resolve => setTimeout(resolve, isContentChange && prevContentIdRef.current ? 300 : 0));
+      await new Promise(resolve =>
+        setTimeout(resolve, isContentChange && prevContentIdRef.current ? 300 : 0)
+      );
 
       // Load poster with enhanced transition
       if (posterUrl) {
@@ -344,27 +365,36 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
           // Animate in new poster with scale and fade
           posterScale.value = withTiming(1, {
             duration: 800,
-            easing: Easing.out(Easing.cubic)
+            easing: Easing.out(Easing.cubic),
           });
           posterOpacity.value = withTiming(1, {
             duration: 700,
-            easing: Easing.out(Easing.cubic)
+            easing: Easing.out(Easing.cubic),
           });
           overlayOpacity.value = withTiming(0.15, {
             duration: 600,
-            easing: Easing.out(Easing.cubic)
+            easing: Easing.out(Easing.cubic),
           });
-          logger.debug('[FeaturedContent] poster:ready', { id: contentId, duration: since(tPoster) });
+          logger.debug('[FeaturedContent] poster:ready', {
+            id: contentId,
+            duration: since(tPoster),
+          });
 
           // Animate content back in with delay
-          contentOpacity.value = withDelay(200, withTiming(1, {
-            duration: 600,
-            easing: Easing.out(Easing.cubic)
-          }));
-          buttonsOpacity.value = withDelay(400, withTiming(1, {
-            duration: 500,
-            easing: Easing.out(Easing.cubic)
-          }));
+          contentOpacity.value = withDelay(
+            200,
+            withTiming(1, {
+              duration: 600,
+              easing: Easing.out(Easing.cubic),
+            })
+          );
+          buttonsOpacity.value = withDelay(
+            400,
+            withTiming(1, {
+              duration: 500,
+              easing: Easing.out(Easing.cubic),
+            })
+          );
         } else {
           // If preload fails, still show the image but without animation
           posterOpacity.value = 1;
@@ -381,16 +411,25 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
         // Try to preload but don't fail if it times out - still show the logo
         const logoSuccess = await preloadImage(logoUrl);
         if (logoSuccess) {
-          logger.debug('[FeaturedContent] logo:preload:success', { id: contentId, duration: since(tLogo) });
+          logger.debug('[FeaturedContent] logo:preload:success', {
+            id: contentId,
+            duration: since(tLogo),
+          });
         } else {
-          logger.debug('[FeaturedContent] logo:preload:failed', { id: contentId, duration: since(tLogo) });
+          logger.debug('[FeaturedContent] logo:preload:failed', {
+            id: contentId,
+            duration: since(tLogo),
+          });
         }
 
         // Always animate in the logo since we have the URL
-        logoOpacity.value = withDelay(500, withTiming(1, {
-          duration: 600,
-          easing: Easing.out(Easing.cubic)
-        }));
+        logoOpacity.value = withDelay(
+          500,
+          withTiming(1, {
+            duration: 600,
+            easing: Easing.out(Easing.cubic),
+          })
+        );
         logger.debug('[FeaturedContent] logo:animated', { id: contentId });
       }
       logger.info('[FeaturedContent] images:load:done', { id: contentId, total: since(t0) });
@@ -409,20 +448,24 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
     if (featuredContent) {
       navigation.navigate('Metadata', {
         id: featuredContent.id,
-        type: featuredContent.type
+        type: featuredContent.type,
       });
     }
   };
 
   // Show skeleton only if we're loading AND no content is available yet
   if (loading && !featuredContent) {
-    logger.debug('[FeaturedContent] render:loading', { sinceMount: since(firstRenderTsRef.current) });
+    logger.debug('[FeaturedContent] render:loading', {
+      sinceMount: since(firstRenderTsRef.current),
+    });
     return <SkeletonFeatured />;
   }
 
   if (!featuredContent) {
     // Suppress empty state while loading to avoid flash on startup/hydration
-    logger.debug('[FeaturedContent] render:no-featured-content', { sinceMount: since(firstRenderTsRef.current) });
+    logger.debug('[FeaturedContent] render:no-featured-content', {
+      sinceMount: since(firstRenderTsRef.current),
+    });
     return <NoFeaturedContent onRetry={onRetry} />;
   }
 
@@ -439,7 +482,7 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
             triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
-              type: featuredContent.type
+              type: featuredContent.type,
             });
           }}
           style={styles.tabletFullContainer as ViewStyle}
@@ -454,10 +497,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
               <LinearGradient
                 colors={[
                   'transparent',
-                  'transparent', 
+                  'transparent',
                   'rgba(0,0,0,0.3)',
                   'rgba(0,0,0,0.7)',
-                  'rgba(0,0,0,0.95)'
+                  'rgba(0,0,0,0.95)',
                 ]}
                 locations={[0, 0.3, 0.6, 0.8, 1]}
                 style={styles.tabletImageGradient as ViewStyle}
@@ -470,10 +513,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
           {logoUrl && !logoLoadError ? (
             <Animated.View style={logoAnimatedStyle}>
               <FastImage
-                source={{ 
+                source={{
                   uri: logoUrl,
                   priority: FastImage.priority.high,
-                  cache: FastImage.cacheControl.immutable
+                  cache: FastImage.cacheControl.immutable,
                 }}
                 style={styles.tabletLogo as any}
                 resizeMode={FastImage.resizeMode.contain}
@@ -489,58 +532,96 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
           <View style={styles.tabletGenreContainer as ViewStyle}>
             {featuredContent.genres?.slice(0, 4).map((genre, index, array) => (
               <React.Fragment key={index}>
-                <Text style={[styles.tabletGenreText as TextStyle, { color: currentTheme.colors.white }]}>
+                <Text
+                  style={[
+                    styles.tabletGenreText as TextStyle,
+                    { color: currentTheme.colors.white },
+                  ]}
+                >
                   {genre}
                 </Text>
                 {index < array.length - 1 && (
-                  <Text style={[styles.tabletGenreDot as TextStyle, { color: currentTheme.colors.white }]}>•</Text>
+                  <Text
+                    style={[
+                      styles.tabletGenreDot as TextStyle,
+                      { color: currentTheme.colors.white },
+                    ]}
+                  >
+                    •
+                  </Text>
                 )}
               </React.Fragment>
             ))}
           </View>
 
           {featuredContent.description && (
-            <Text style={[styles.tabletDescription as TextStyle, { color: currentTheme.colors.white }]} numberOfLines={3}>
+            <Text
+              style={[styles.tabletDescription as TextStyle, { color: currentTheme.colors.white }]}
+              numberOfLines={3}
+            >
               {featuredContent.description}
             </Text>
           )}
 
           <Animated.View style={[styles.tabletButtons as ViewStyle, buttonsAnimatedStyle]}>
             <TouchableOpacity
-              style={[styles.tabletPlayButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
+              style={[
+                styles.tabletPlayButton as ViewStyle,
+                { backgroundColor: currentTheme.colors.white },
+              ]}
               onPress={() => {
                 triggerMedium();
                 if (featuredContent) {
                   navigation.navigate('Streams', {
                     id: featuredContent.id,
-                    type: featuredContent.type
+                    type: featuredContent.type,
                   });
                 }
               }}
               activeOpacity={0.8}
             >
               <MaterialIcons name="play-arrow" size={28} color={currentTheme.colors.black} />
-              <Text style={[styles.tabletPlayButtonText as TextStyle, { color: currentTheme.colors.black }]}>
+              <Text
+                style={[
+                  styles.tabletPlayButtonText as TextStyle,
+                  { color: currentTheme.colors.black },
+                ]}
+              >
                 Play Now
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.3)' }]}
+              style={[
+                styles.tabletSecondaryButton as ViewStyle,
+                { backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.3)' },
+              ]}
               onPress={() => {
                 triggerMedium();
                 handleSaveToLibrary();
               }}
               activeOpacity={0.7}
             >
-              <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={20} color={currentTheme.colors.white} />
-              <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                {isSaved ? "Saved" : "My List"}
+              <MaterialIcons
+                name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={currentTheme.colors.white}
+              />
+              <Text
+                style={[
+                  styles.tabletSecondaryButtonText as TextStyle,
+                  { color: currentTheme.colors.white },
+                ]}
+              >
+                {isSaved ? 'Saved' : 'My List'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.tabletSecondaryButton as ViewStyle, { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)' }]}
+              style={[
+                styles.tabletSecondaryButton as ViewStyle,
+                { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)' },
+              ]}
               onPress={() => {
                 triggerLight();
                 handleInfoPress();
@@ -548,19 +629,21 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
               activeOpacity={0.7}
             >
               <MaterialIcons name="info-outline" size={20} color={currentTheme.colors.white} />
-              <Text style={[styles.tabletSecondaryButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+              <Text
+                style={[
+                  styles.tabletSecondaryButtonText as TextStyle,
+                  { color: currentTheme.colors.white },
+                ]}
+              >
                 More Info
               </Text>
             </TouchableOpacity>
           </Animated.View>
         </Animated.View>
-        
+
         {/* Bottom fade to blend with background */}
         <LinearGradient
-          colors={[
-            'transparent',
-            currentTheme.colors.darkBackground
-          ]}
+          colors={['transparent', currentTheme.colors.darkBackground]}
           locations={[0, 1]}
           style={styles.tabletBottomFade as ViewStyle}
           pointerEvents="none"
@@ -570,16 +653,14 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
   } else {
     // Phone layout: original vertical stack
     return (
-      <Animated.View
-        entering={FadeIn.duration(400).easing(Easing.out(Easing.cubic))}
-      >
+      <Animated.View entering={FadeIn.duration(400).easing(Easing.out(Easing.cubic))}>
         <TouchableOpacity
           activeOpacity={0.95}
           onPress={() => {
             triggerLight();
             navigation.navigate('Metadata', {
               id: featuredContent.id,
-              type: featuredContent.type
+              type: featuredContent.type,
             });
           }}
           style={styles.featuredContainer as ViewStyle}
@@ -608,10 +689,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                   {logoUrl && !logoLoadError ? (
                     <Animated.View style={logoAnimatedStyle}>
                       <FastImage
-                        source={{ 
+                        source={{
                           uri: logoUrl,
                           priority: FastImage.priority.high,
-                          cache: FastImage.cacheControl.immutable
+                          cache: FastImage.cacheControl.immutable,
                         }}
                         style={styles.featuredLogo as any}
                         resizeMode={FastImage.resizeMode.contain}
@@ -619,18 +700,35 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                       />
                     </Animated.View>
                   ) : (
-                    <Text style={[styles.featuredTitleText as TextStyle, { color: currentTheme.colors.highEmphasis }]}>
+                    <Text
+                      style={[
+                        styles.featuredTitleText as TextStyle,
+                        { color: currentTheme.colors.highEmphasis },
+                      ]}
+                    >
                       {featuredContent.name}
                     </Text>
                   )}
                   <View style={styles.genreContainer as ViewStyle}>
                     {featuredContent.genres?.slice(0, 3).map((genre, index, array) => (
                       <React.Fragment key={index}>
-                        <Text style={[styles.genreText as TextStyle, { color: currentTheme.colors.white }]}>
+                        <Text
+                          style={[
+                            styles.genreText as TextStyle,
+                            { color: currentTheme.colors.white },
+                          ]}
+                        >
                           {genre}
                         </Text>
                         {index < array.length - 1 && (
-                          <Text style={[styles.genreDot as TextStyle, { color: currentTheme.colors.white }]}>•</Text>
+                          <Text
+                            style={[
+                              styles.genreDot as TextStyle,
+                              { color: currentTheme.colors.white },
+                            ]}
+                          >
+                            •
+                          </Text>
                         )}
                       </React.Fragment>
                     ))}
@@ -646,27 +744,44 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                     }}
                     activeOpacity={0.7}
                   >
-                    <MaterialIcons name={isSaved ? "bookmark" : "bookmark-outline"} size={24} color={currentTheme.colors.white} />
-                    <Text style={[styles.myListButtonText as TextStyle, { color: currentTheme.colors.white }]}>
-                      {isSaved ? "Saved" : "Save"}
+                    <MaterialIcons
+                      name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                      size={24}
+                      color={currentTheme.colors.white}
+                    />
+                    <Text
+                      style={[
+                        styles.myListButtonText as TextStyle,
+                        { color: currentTheme.colors.white },
+                      ]}
+                    >
+                      {isSaved ? 'Saved' : 'Save'}
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.playButton as ViewStyle, { backgroundColor: currentTheme.colors.white }]}
+                    style={[
+                      styles.playButton as ViewStyle,
+                      { backgroundColor: currentTheme.colors.white },
+                    ]}
                     onPress={() => {
                       triggerMedium();
                       if (featuredContent) {
                         navigation.navigate('Streams', {
                           id: featuredContent.id,
-                          type: featuredContent.type
+                          type: featuredContent.type,
                         });
                       }
                     }}
                     activeOpacity={0.8}
                   >
                     <MaterialIcons name="play-arrow" size={24} color={currentTheme.colors.black} />
-                    <Text style={[styles.playButtonText as TextStyle, { color: currentTheme.colors.black }]}>
+                    <Text
+                      style={[
+                        styles.playButtonText as TextStyle,
+                        { color: currentTheme.colors.black },
+                      ]}
+                    >
                       Play
                     </Text>
                   </TouchableOpacity>
@@ -679,8 +794,17 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
                     }}
                     activeOpacity={0.7}
                   >
-                    <MaterialIcons name="info-outline" size={24} color={currentTheme.colors.white} />
-                    <Text style={[styles.infoButtonText as TextStyle, { color: currentTheme.colors.white }]}>
+                    <MaterialIcons
+                      name="info-outline"
+                      size={24}
+                      color={currentTheme.colors.white}
+                    />
+                    <Text
+                      style={[
+                        styles.infoButtonText as TextStyle,
+                        { color: currentTheme.colors.white },
+                      ]}
+                    >
                       Info
                     </Text>
                   </TouchableOpacity>
@@ -689,13 +813,10 @@ const FeaturedContent = ({ featuredContent, isSaved, handleSaveToLibrary, loadin
             </ImageBackground>
           </Animated.View>
         </TouchableOpacity>
-        
+
         {/* Bottom fade to blend with background */}
         <LinearGradient
-          colors={[
-            'transparent',
-            currentTheme.colors.darkBackground
-          ]}
+          colors={['transparent', currentTheme.colors.darkBackground]}
           locations={[0, 1]}
           style={styles.phoneBottomFade as ViewStyle}
           pointerEvents="none"

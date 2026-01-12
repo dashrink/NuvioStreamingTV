@@ -1,9 +1,9 @@
 import React, { memo, useEffect } from 'react';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
-  withDelay 
+  withDelay,
 } from 'react-native-reanimated';
 
 interface AnimatedViewProps {
@@ -12,11 +12,7 @@ interface AnimatedViewProps {
   delay?: number;
 }
 
-const AnimatedView = memo(({
-  children,
-  style,
-  delay = 0
-}: AnimatedViewProps) => {
+const AnimatedView = memo(({ children, style, delay = 0 }: AnimatedViewProps) => {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(20);
 
@@ -38,11 +34,7 @@ const AnimatedView = memo(({
     };
   }, []);
 
-  return (
-    <Animated.View style={[style, animatedStyle]}>
-      {children}
-    </Animated.View>
-  );
+  return <Animated.View style={[style, animatedStyle]}>{children}</Animated.View>;
 });
 
 export default AnimatedView;

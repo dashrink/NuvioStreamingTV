@@ -14,8 +14,10 @@
  * - Empty list fallback handling
  */
 
-import * as React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
+import * as React from 'react';
+
+import { TVNavigationProvider, useTVNavigation } from '../../src/contexts/TVNavigationContext';
 import {
   useSpatialNavigation,
   useFocusableRef,
@@ -28,7 +30,6 @@ import {
   type NextFocusConfig,
   type GridNavigationConfig,
 } from '../../src/hooks/useSpatialNavigation';
-import { TVNavigationProvider, useTVNavigation } from '../../src/contexts/TVNavigationContext';
 import { advanceTimersAndFlush } from '../setup';
 
 // ============================================================================
@@ -274,14 +275,8 @@ describe('useSpatialNavigation', () => {
     });
 
     it('should maintain separate focus memory per screen', async () => {
-      const { result: screen1 } = renderHook(
-        () => useSpatialNavigation('Screen1'),
-        { wrapper }
-      );
-      const { result: screen2 } = renderHook(
-        () => useSpatialNavigation('Screen2'),
-        { wrapper }
-      );
+      const { result: screen1 } = renderHook(() => useSpatialNavigation('Screen1'), { wrapper });
+      const { result: screen2 } = renderHook(() => useSpatialNavigation('Screen2'), { wrapper });
 
       act(() => {
         screen1.current.saveFocus('button-a');
@@ -307,9 +302,11 @@ describe('useSpatialNavigation', () => {
 
     it('should work with local storage fallback (without provider)', async () => {
       // Render without wrapper
-      const { result } = renderHook(() => useSpatialNavigation('TestScreen', {
-        enableRapidInputProtection: false,
-      }));
+      const { result } = renderHook(() =>
+        useSpatialNavigation('TestScreen', {
+          enableRapidInputProtection: false,
+        })
+      );
 
       act(() => {
         result.current.saveFocus('localButton');
@@ -405,10 +402,9 @@ describe('useSpatialNavigation', () => {
     });
 
     it('should return false when hook is disabled', () => {
-      const { result } = renderHook(
-        () => useSpatialNavigation('TestScreen', { enabled: false }),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useSpatialNavigation('TestScreen', { enabled: false }), {
+        wrapper,
+      });
       const mockRef = createMockRef('button1');
 
       act(() => {
@@ -619,10 +615,9 @@ describe('useSpatialNavigation', () => {
     });
 
     it('should return false when disabled', () => {
-      const { result } = renderHook(
-        () => useSpatialNavigation('TestScreen', { enabled: false }),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useSpatialNavigation('TestScreen', { enabled: false }), {
+        wrapper,
+      });
       const mockRef = createMockRef('button1');
 
       act(() => {
@@ -761,10 +756,7 @@ describe('useSpatialNavigation', () => {
 
   describe('cleanup on unmount', () => {
     it('should clear all refs and handles on unmount', async () => {
-      const { result, unmount } = renderHook(
-        () => useSpatialNavigation('TestScreen'),
-        { wrapper }
-      );
+      const { result, unmount } = renderHook(() => useSpatialNavigation('TestScreen'), { wrapper });
       const mockRef = createMockRef('button1');
 
       act(() => {
@@ -782,10 +774,7 @@ describe('useSpatialNavigation', () => {
     });
 
     it('should clear pending timers on unmount', async () => {
-      const { result, unmount } = renderHook(
-        () => useSpatialNavigation('TestScreen'),
-        { wrapper }
-      );
+      const { result, unmount } = renderHook(() => useSpatialNavigation('TestScreen'), { wrapper });
 
       act(() => {
         result.current.saveFocus('button1');
@@ -815,10 +804,9 @@ describe('useSpatialNavigation', () => {
     });
 
     it('should respect enabled option', () => {
-      const { result } = renderHook(
-        () => useSpatialNavigation('TestScreen', { enabled: false }),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useSpatialNavigation('TestScreen', { enabled: false }), {
+        wrapper,
+      });
 
       expect(result.current.isTV).toBe(true); // Platform is still TV
       // But focus operations should return false when disabled
@@ -841,10 +829,9 @@ describe('useFocusableRef', () => {
   });
 
   it('should create and register a ref', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { result: refResult } = renderHook(
       () => useFocusableRef(spatialNavResult.current, 'testButton'),
@@ -856,32 +843,28 @@ describe('useFocusableRef', () => {
   });
 
   it('should register next focus configuration', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const nextFocus: NextFocusConfig = { right: 'otherButton' };
 
-    renderHook(
-      () => useFocusableRef(spatialNavResult.current, 'testButton', nextFocus),
-      { wrapper }
-    );
+    renderHook(() => useFocusableRef(spatialNavResult.current, 'testButton', nextFocus), {
+      wrapper,
+    });
 
     // The next focus should be set
     // We can't easily verify this without accessing internal state
   });
 
   it('should unregister on unmount', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
-    const { unmount } = renderHook(
-      () => useFocusableRef(spatialNavResult.current, 'testButton'),
-      { wrapper }
-    );
+    const { unmount } = renderHook(() => useFocusableRef(spatialNavResult.current, 'testButton'), {
+      wrapper,
+    });
 
     unmount();
 
@@ -905,10 +888,9 @@ describe('useFocusHandlers', () => {
   });
 
   it('should return onFocus and onBlur handlers', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { result: handlersResult } = renderHook(
       () => useFocusHandlers(spatialNavResult.current, 'testButton'),
@@ -920,10 +902,9 @@ describe('useFocusHandlers', () => {
   });
 
   it('should save focus on onFocus', async () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { result: handlersResult } = renderHook(
       () => useFocusHandlers(spatialNavResult.current, 'testButton'),
@@ -942,10 +923,9 @@ describe('useFocusHandlers', () => {
   });
 
   it('should call custom onFocus callback', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const customOnFocus = jest.fn();
 
@@ -962,10 +942,9 @@ describe('useFocusHandlers', () => {
   });
 
   it('should call custom onBlur callback', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const customOnBlur = jest.fn();
 
@@ -997,10 +976,9 @@ describe('useGridNavigation', () => {
   });
 
   it('should set up next focus for grid layout', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const gridConfig: GridNavigationConfig = {
       columns: 3,
@@ -1016,10 +994,7 @@ describe('useGridNavigation', () => {
       });
     }
 
-    renderHook(
-      () => useGridNavigation(spatialNavResult.current, gridConfig),
-      { wrapper }
-    );
+    renderHook(() => useGridNavigation(spatialNavResult.current, gridConfig), { wrapper });
 
     // Check that next focus is set for middle item (index 4)
     const props = spatialNavResult.current.getNextFocusProps('grid-item-4');
@@ -1032,10 +1007,9 @@ describe('useGridNavigation', () => {
   });
 
   it('should handle top-left corner (no up or left)', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const gridConfig: GridNavigationConfig = {
       columns: 3,
@@ -1050,10 +1024,7 @@ describe('useGridNavigation', () => {
       });
     }
 
-    renderHook(
-      () => useGridNavigation(spatialNavResult.current, gridConfig),
-      { wrapper }
-    );
+    renderHook(() => useGridNavigation(spatialNavResult.current, gridConfig), { wrapper });
 
     // Check top-left corner (index 0)
     const props = spatialNavResult.current.getNextFocusProps('grid-item-0');
@@ -1065,10 +1036,9 @@ describe('useGridNavigation', () => {
   });
 
   it('should handle bottom-right corner (no down or right)', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const gridConfig: GridNavigationConfig = {
       columns: 3,
@@ -1083,10 +1053,7 @@ describe('useGridNavigation', () => {
       });
     }
 
-    renderHook(
-      () => useGridNavigation(spatialNavResult.current, gridConfig),
-      { wrapper }
-    );
+    renderHook(() => useGridNavigation(spatialNavResult.current, gridConfig), { wrapper });
 
     // Check bottom-right corner (index 8)
     const props = spatialNavResult.current.getNextFocusProps('grid-item-8');
@@ -1098,10 +1065,9 @@ describe('useGridNavigation', () => {
   });
 
   it('should support horizontal wrapping', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const gridConfig: GridNavigationConfig = {
       columns: 3,
@@ -1117,10 +1083,7 @@ describe('useGridNavigation', () => {
       });
     }
 
-    renderHook(
-      () => useGridNavigation(spatialNavResult.current, gridConfig),
-      { wrapper }
-    );
+    renderHook(() => useGridNavigation(spatialNavResult.current, gridConfig), { wrapper });
 
     // With wrapHorizontal, first item on row 2 (index 3) should wrap left
     const props = spatialNavResult.current.getNextFocusProps('grid-item-3');
@@ -1145,10 +1108,9 @@ describe('useEmptyListFocusFallback', () => {
   });
 
   it('should trigger fallback when list becomes empty', async () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const fallbackRef = createMockRef('searchBar');
     act(() => {
@@ -1157,11 +1119,12 @@ describe('useEmptyListFocusFallback', () => {
 
     // Start with non-empty
     const { rerender } = renderHook(
-      ({ isEmpty }) => useEmptyListFocusFallback(spatialNavResult.current, {
-        isEmpty,
-        isLoading: false,
-        fallbackFocusIds: ['searchBar'],
-      }),
+      ({ isEmpty }) =>
+        useEmptyListFocusFallback(spatialNavResult.current, {
+          isEmpty,
+          isLoading: false,
+          fallbackFocusIds: ['searchBar'],
+        }),
       { wrapper, initialProps: { isEmpty: false } }
     );
 
@@ -1177,10 +1140,9 @@ describe('useEmptyListFocusFallback', () => {
   });
 
   it('should not trigger fallback during loading', async () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const fallbackRef = createMockRef('searchBar');
     act(() => {
@@ -1188,11 +1150,12 @@ describe('useEmptyListFocusFallback', () => {
     });
 
     renderHook(
-      () => useEmptyListFocusFallback(spatialNavResult.current, {
-        isEmpty: true,
-        isLoading: true, // Still loading
-        fallbackFocusIds: ['searchBar'],
-      }),
+      () =>
+        useEmptyListFocusFallback(spatialNavResult.current, {
+          isEmpty: true,
+          isLoading: true, // Still loading
+          fallbackFocusIds: ['searchBar'],
+        }),
       { wrapper }
     );
 
@@ -1204,20 +1167,20 @@ describe('useEmptyListFocusFallback', () => {
   });
 
   it('should call onNoFallbackAvailable when no fallback works', async () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const onNoFallbackAvailable = jest.fn();
 
     const { rerender } = renderHook(
-      ({ isEmpty }) => useEmptyListFocusFallback(spatialNavResult.current, {
-        isEmpty,
-        isLoading: false,
-        fallbackFocusIds: ['nonexistent1', 'nonexistent2'],
-        onNoFallbackAvailable,
-      }),
+      ({ isEmpty }) =>
+        useEmptyListFocusFallback(spatialNavResult.current, {
+          isEmpty,
+          isLoading: false,
+          fallbackFocusIds: ['nonexistent1', 'nonexistent2'],
+          onNoFallbackAvailable,
+        }),
       { wrapper, initialProps: { isEmpty: false } }
     );
 
@@ -1232,10 +1195,11 @@ describe('useEmptyListFocusFallback', () => {
 
   it('should try fallbacks in order', async () => {
     const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen', {
-        enableRapidInputProtection: false,
-        autoRestoreFocus: false,
-      }),
+      () =>
+        useSpatialNavigation('TestScreen', {
+          enableRapidInputProtection: false,
+          autoRestoreFocus: false,
+        }),
       { wrapper }
     );
 
@@ -1246,11 +1210,12 @@ describe('useEmptyListFocusFallback', () => {
     });
 
     const { rerender } = renderHook(
-      ({ isEmpty }) => useEmptyListFocusFallback(spatialNavResult.current, {
-        isEmpty,
-        isLoading: false,
-        fallbackFocusIds: ['searchBar', 'navTabs'], // searchBar not registered
-      }),
+      ({ isEmpty }) =>
+        useEmptyListFocusFallback(spatialNavResult.current, {
+          isEmpty,
+          isLoading: false,
+          fallbackFocusIds: ['searchBar', 'navTabs'], // searchBar not registered
+        }),
       { wrapper, initialProps: { isEmpty: false } }
     );
 
@@ -1281,10 +1246,9 @@ describe('useFocusableFallbackRefs', () => {
   });
 
   it('should return refs map and focusFirstAvailable function', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { result: fallbackResult } = renderHook(
       () => useFocusableFallbackRefs(spatialNavResult.current, ['search', 'filter']),
@@ -1296,10 +1260,9 @@ describe('useFocusableFallbackRefs', () => {
   });
 
   it('should register all fallback IDs', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { result: fallbackResult } = renderHook(
       () => useFocusableFallbackRefs(spatialNavResult.current, ['search', 'filter', 'back']),
@@ -1312,10 +1275,9 @@ describe('useFocusableFallbackRefs', () => {
   });
 
   it('should unregister on unmount', () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const { unmount } = renderHook(
       () => useFocusableFallbackRefs(spatialNavResult.current, ['search', 'filter']),
@@ -1345,10 +1307,9 @@ describe('useLoadingStateFocus', () => {
   });
 
   it('should handle transition from loading to loaded', async () => {
-    const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen'),
-      { wrapper }
-    );
+    const { result: spatialNavResult } = renderHook(() => useSpatialNavigation('TestScreen'), {
+      wrapper,
+    });
 
     const contentRef = createMockRef('content');
     act(() => {
@@ -1357,10 +1318,11 @@ describe('useLoadingStateFocus', () => {
 
     // Start with loading
     const { rerender } = renderHook(
-      ({ isLoading }) => useLoadingStateFocus(spatialNavResult.current, {
-        isLoading,
-        contentFocusId: 'content',
-      }),
+      ({ isLoading }) =>
+        useLoadingStateFocus(spatialNavResult.current, {
+          isLoading,
+          contentFocusId: 'content',
+        }),
       { wrapper, initialProps: { isLoading: true } }
     );
 
@@ -1377,10 +1339,11 @@ describe('useLoadingStateFocus', () => {
 
   it('should try fallbacks if content focus fails', async () => {
     const { result: spatialNavResult } = renderHook(
-      () => useSpatialNavigation('TestScreen', {
-        enableRapidInputProtection: false,
-        autoRestoreFocus: false,
-      }),
+      () =>
+        useSpatialNavigation('TestScreen', {
+          enableRapidInputProtection: false,
+          autoRestoreFocus: false,
+        }),
       { wrapper }
     );
 
@@ -1391,11 +1354,12 @@ describe('useLoadingStateFocus', () => {
     });
 
     const { rerender } = renderHook(
-      ({ isLoading }) => useLoadingStateFocus(spatialNavResult.current, {
-        isLoading,
-        contentFocusId: 'nonexistent',
-        fallbackFocusIds: ['fallback'],
-      }),
+      ({ isLoading }) =>
+        useLoadingStateFocus(spatialNavResult.current, {
+          isLoading,
+          contentFocusId: 'nonexistent',
+          fallbackFocusIds: ['fallback'],
+        }),
       { wrapper, initialProps: { isLoading: true } }
     );
 
@@ -1526,15 +1490,17 @@ describe('edge cases', () => {
 
   it('should handle concurrent hooks on different screens', async () => {
     const { result: hook1 } = renderHook(
-      () => useSpatialNavigation('Screen1', {
-        enableRapidInputProtection: false, // Disable debouncing for this test
-      }),
+      () =>
+        useSpatialNavigation('Screen1', {
+          enableRapidInputProtection: false, // Disable debouncing for this test
+        }),
       { wrapper }
     );
     const { result: hook2 } = renderHook(
-      () => useSpatialNavigation('Screen2', {
-        enableRapidInputProtection: false, // Disable debouncing for this test
-      }),
+      () =>
+        useSpatialNavigation('Screen2', {
+          enableRapidInputProtection: false, // Disable debouncing for this test
+        }),
       { wrapper }
     );
 

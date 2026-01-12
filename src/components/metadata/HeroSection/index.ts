@@ -124,10 +124,7 @@ export { default as useTrailerPlayback } from './hooks/useTrailerPlayback';
 
 // Animation styles
 export { default as useHeroAnimations } from './hooks/useHeroAnimations';
-export type {
-  UseHeroAnimationsProps,
-  UseHeroAnimationsReturn,
-} from './hooks/useHeroAnimations';
+export type { UseHeroAnimationsProps, UseHeroAnimationsReturn } from './hooks/useHeroAnimations';
 
 // Backdrop parallax effects
 export { default as useBackdropParallax } from './hooks/useBackdropParallax';

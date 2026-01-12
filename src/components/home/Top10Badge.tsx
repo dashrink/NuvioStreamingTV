@@ -1,6 +1,7 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 export type BadgeStyle = 'disney' | 'appletv' | 'numbered' | 'minimal';
@@ -54,20 +55,21 @@ export const Top10Badge: React.FC<Top10BadgeProps> = ({ rank, style = 'disney' }
 
   const renderNumberedStyle = () => (
     <View style={[styles.numberedContainer, { backgroundColor: currentTheme.colors.primary }]}>
-      <Text style={[styles.numberedText, { color: currentTheme.colors.primaryText }]}>
-        #{rank}
-      </Text>
+      <Text style={[styles.numberedText, { color: currentTheme.colors.primaryText }]}>#{rank}</Text>
     </View>
   );
 
   const renderMinimalStyle = () => (
-    <View style={[styles.minimalContainer, {
-      backgroundColor: currentTheme.colors.background,
-      borderColor: currentTheme.colors.primary
-    }]}>
-      <Text style={[styles.minimalText, { color: currentTheme.colors.text }]}>
-        {rank}
-      </Text>
+    <View
+      style={[
+        styles.minimalContainer,
+        {
+          backgroundColor: currentTheme.colors.background,
+          borderColor: currentTheme.colors.primary,
+        },
+      ]}
+    >
+      <Text style={[styles.minimalText, { color: currentTheme.colors.text }]}>{rank}</Text>
     </View>
   );
 

@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useRef,
-  ReactNode,
-} from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -102,7 +95,10 @@ export interface FocusContextValue {
 
   // ===== Focus Memory =====
   /** Save current focus state for a screen */
-  saveFocusMemory: (screenName: string, scrollPosition?: FocusMemoryEntry['scrollPosition']) => void;
+  saveFocusMemory: (
+    screenName: string,
+    scrollPosition?: FocusMemoryEntry['scrollPosition']
+  ) => void;
   /** Restore focus state for a screen */
   restoreFocusMemory: (screenName: string) => boolean;
   /** Clear focus memory for a screen */
@@ -171,7 +167,7 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
 
   // Force update counter for when we need to trigger re-render on group changes
   const [, forceUpdate] = useState(0);
-  const triggerUpdate = useCallback(() => forceUpdate((c) => c + 1), []);
+  const triggerUpdate = useCallback(() => forceUpdate(c => c + 1), []);
 
   // ===== Focus Management =====
 
@@ -271,7 +267,7 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
   const setActiveGroup = useCallback(
     (groupId: string) => {
       // Deactivate all groups first
-      focusGroupsRef.current.forEach((group) => {
+      focusGroupsRef.current.forEach(group => {
         group.isActive = false;
       });
       // Activate the specified group
@@ -446,12 +442,9 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
   /**
    * Get stored focus memory for a screen
    */
-  const getFocusMemory = useCallback(
-    (screenName: string): FocusMemoryEntry | null => {
-      return focusMemoryRef.current.get(screenName) || null;
-    },
-    []
-  );
+  const getFocusMemory = useCallback((screenName: string): FocusMemoryEntry | null => {
+    return focusMemoryRef.current.get(screenName) || null;
+  }, []);
 
   /**
    * Clear all focus memory (useful for app reset or logout)
@@ -496,9 +489,7 @@ export const FocusProvider: React.FC<FocusProviderProps> = ({
     clearAllFocusMemory,
   };
 
-  return (
-    <FocusContext.Provider value={value}>{children}</FocusContext.Provider>
-  );
+  return <FocusContext.Provider value={value}>{children}</FocusContext.Provider>;
 };
 
 // =============================================================================

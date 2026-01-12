@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { mmkvStorage } from '../services/mmkvStorage';
 import { logger } from '../utils/logger';
 
@@ -13,13 +14,15 @@ interface CustomNamesCache {
 let cache: CustomNamesCache | null = null;
 
 export function useCustomCatalogNames() {
-  const [customNames, setCustomNames] = useState<{ [key: string]: string } | null>(cache?.names || null);
+  const [customNames, setCustomNames] = useState<{ [key: string]: string } | null>(
+    cache?.names || null
+  );
   const [isLoading, setIsLoading] = useState(!cache); // Only loading if cache is empty
 
   const loadCustomNames = useCallback(async () => {
     // Check if cache is recent enough (e.g., within last 5 minutes) - adjust as needed
     const now = Date.now();
-    if (cache && (now - cache.lastUpdate < 5 * 60 * 1000)) {
+    if (cache && now - cache.lastUpdate < 5 * 60 * 1000) {
       if (!customNames) setCustomNames(cache.names); // Ensure state is updated if cache existed
       setIsLoading(false);
       return;
@@ -44,14 +47,17 @@ export function useCustomCatalogNames() {
     loadCustomNames();
   }, [loadCustomNames]); // Load on mount and if load function changes
 
-  const getCustomName = useCallback((addonId: string, type: string, catalogId: string, originalName: string): string => {
-    if (isLoading || !customNames) {
-      // Return original name while loading or if loading failed
-      return originalName;
-    }
-    const key = `${addonId}:${type}:${catalogId}`;
-    return customNames[key] || originalName;
-  }, [customNames, isLoading]);
+  const getCustomName = useCallback(
+    (addonId: string, type: string, catalogId: string, originalName: string): string => {
+      if (isLoading || !customNames) {
+        // Return original name while loading or if loading failed
+        return originalName;
+      }
+      const key = `${addonId}:${type}:${catalogId}`;
+      return customNames[key] || originalName;
+    },
+    [customNames, isLoading]
+  );
 
   return { getCustomName, isLoadingCustomNames: isLoading, refreshCustomNames: loadCustomNames };
-} 
+}

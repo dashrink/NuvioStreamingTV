@@ -32,9 +32,10 @@
  * ```
  */
 
+import { useFocusEffect, NavigationProp, RouteProp } from '@react-navigation/native';
 import { useCallback, useRef, useMemo } from 'react';
 import { Platform } from 'react-native';
-import { useFocusEffect, NavigationProp, RouteProp } from '@react-navigation/native';
+
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
 
 // =============================================================================
@@ -128,7 +129,7 @@ const DEFAULT_RESTORE_DELAY_MS = 50;
  */
 export function useTVFocusRestoration<
   ParamList extends Record<string, TVFocusRouteParams>,
-  RouteName extends keyof ParamList
+  RouteName extends keyof ParamList,
 >(
   navigation: NavigationProp<ParamList>,
   route: RouteProp<ParamList, RouteName>,

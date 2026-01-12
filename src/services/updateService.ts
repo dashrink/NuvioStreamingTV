@@ -18,7 +18,7 @@ export class UpdateService {
   private readonly MAX_LOGS = 100; // Keep last 100 logs
   private updateCheckCallbacks: UpdateCheckCallback[] = [];
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): UpdateService {
     if (!UpdateService.instance) {
@@ -71,7 +71,10 @@ export class UpdateService {
    */
   public onUpdateCheck(callback: UpdateCheckCallback): void {
     this.updateCheckCallbacks.push(callback);
-    this.addLog(`Registered update check callback (${this.updateCheckCallbacks.length} total)`, 'INFO');
+    this.addLog(
+      `Registered update check callback (${this.updateCheckCallbacks.length} total)`,
+      'INFO'
+    );
   }
 
   /**
@@ -81,7 +84,10 @@ export class UpdateService {
     const index = this.updateCheckCallbacks.indexOf(callback);
     if (index > -1) {
       this.updateCheckCallbacks.splice(index, 1);
-      this.addLog(`Unregistered update check callback (${this.updateCheckCallbacks.length} remaining)`, 'INFO');
+      this.addLog(
+        `Unregistered update check callback (${this.updateCheckCallbacks.length} remaining)`,
+        'INFO'
+      );
     }
   }
 
@@ -89,12 +95,18 @@ export class UpdateService {
    * Notify all registered callbacks about an update check result
    */
   private notifyUpdateCheckCallbacks(updateInfo: UpdateInfo): void {
-    this.addLog(`Notifying ${this.updateCheckCallbacks.length} callback(s) about update check result`, 'INFO');
+    this.addLog(
+      `Notifying ${this.updateCheckCallbacks.length} callback(s) about update check result`,
+      'INFO'
+    );
     this.updateCheckCallbacks.forEach(callback => {
       try {
         callback(updateInfo);
       } catch (error) {
-        this.addLog(`Callback notification failed: ${error instanceof Error ? error.message : String(error)}`, 'ERROR');
+        this.addLog(
+          `Callback notification failed: ${error instanceof Error ? error.message : String(error)}`,
+          'ERROR'
+        );
       }
     });
   }
@@ -120,7 +132,10 @@ export class UpdateService {
       });
 
       this.addLog(`Response status: ${response.status}`, 'INFO');
-      this.addLog(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`, 'INFO');
+      this.addLog(
+        `Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
+        'INFO'
+      );
 
       if (response.ok) {
         this.addLog('Update server is reachable', 'INFO');
@@ -130,12 +145,18 @@ export class UpdateService {
           const responseText = await response.text();
           this.addLog(`Response body preview: ${responseText.substring(0, 500)}...`, 'INFO');
         } catch (bodyError) {
-          this.addLog(`Could not read response body: ${bodyError instanceof Error ? bodyError.message : String(bodyError)}`, 'WARN');
+          this.addLog(
+            `Could not read response body: ${bodyError instanceof Error ? bodyError.message : String(bodyError)}`,
+            'WARN'
+          );
         }
 
         return true;
       } else {
-        this.addLog(`Update server returned error: ${response.status} ${response.statusText}`, 'ERROR');
+        this.addLog(
+          `Update server returned error: ${response.status} ${response.statusText}`,
+          'ERROR'
+        );
         return false;
       }
     } catch (error) {
@@ -157,7 +178,10 @@ export class UpdateService {
       });
 
       this.addLog(`Asset response status: ${response.status}`, 'INFO');
-      this.addLog(`Asset response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`, 'INFO');
+      this.addLog(
+        `Asset response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
+        'INFO'
+      );
 
       if (response.ok) {
         this.addLog('Asset URL is accessible', 'INFO');
@@ -193,7 +217,10 @@ export class UpdateService {
         for (let i = 0; i < update.manifest.assets.length; i++) {
           const asset = update.manifest.assets[i];
           if (asset.url) {
-            this.addLog(`Testing asset ${i + 1}/${update.manifest.assets.length}: ${asset.key || 'unknown'}`, 'INFO');
+            this.addLog(
+              `Testing asset ${i + 1}/${update.manifest.assets.length}: ${asset.key || 'unknown'}`,
+              'INFO'
+            );
             const isAccessible = await this.testAssetUrl(asset.url);
             if (!isAccessible) {
               this.addLog(`Asset ${i + 1} is not accessible: ${asset.url}`, 'ERROR');
@@ -215,7 +242,6 @@ export class UpdateService {
       } else {
         this.addLog('No launch asset URL found', 'ERROR');
       }
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.addLog(`Failed to test asset URLs: ${errorMessage}`, 'ERROR');
@@ -256,7 +282,10 @@ export class UpdateService {
         try {
           this.addLog('Starting deferred update check...', 'INFO');
           const updateInfo = await this.checkForUpdates();
-          this.addLog(`Initial update check completed - Updates available: ${updateInfo.isAvailable}`, 'INFO');
+          this.addLog(
+            `Initial update check completed - Updates available: ${updateInfo.isAvailable}`,
+            'INFO'
+          );
 
           if (updateInfo.isAvailable) {
             this.addLog('Update available! The popup will be shown to the user.', 'INFO');
@@ -267,7 +296,10 @@ export class UpdateService {
           // Notify registered callbacks about the update check result
           this.notifyUpdateCheckCallbacks(updateInfo);
         } catch (checkError) {
-          this.addLog(`Initial update check failed: ${checkError instanceof Error ? checkError.message : String(checkError)}`, 'ERROR');
+          this.addLog(
+            `Initial update check failed: ${checkError instanceof Error ? checkError.message : String(checkError)}`,
+            'ERROR'
+          );
 
           // Notify callbacks about the failed check
           this.notifyUpdateCheckCallbacks({ isAvailable: false });
@@ -278,7 +310,10 @@ export class UpdateService {
 
       this.addLog('UpdateService initialization completed successfully', 'INFO');
     } catch (error) {
-      this.addLog(`Initialization failed: ${error instanceof Error ? error.message : String(error)}`, 'ERROR');
+      this.addLog(
+        `Initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+        'ERROR'
+      );
       console.error('Update service initialization failed:', error);
     }
   }
@@ -313,9 +348,15 @@ export class UpdateService {
 
         // Check if we can actually install updates
         if (__DEV__) {
-          this.addLog('WARNING: Update found but in development mode - installation will be skipped', 'WARN');
+          this.addLog(
+            'WARNING: Update found but in development mode - installation will be skipped',
+            'WARN'
+          );
         } else if (!Updates.isEnabled) {
-          this.addLog('WARNING: Update found but updates disabled - installation will be skipped', 'WARN');
+          this.addLog(
+            'WARNING: Update found but updates disabled - installation will be skipped',
+            'WARN'
+          );
         } else {
           this.addLog('Update found and installation is possible', 'INFO');
         }
@@ -324,7 +365,7 @@ export class UpdateService {
           isAvailable: true,
           manifest: update.manifest,
           isNew: false, // Default value since isNew is not available in the type
-          isEmbeddedLaunch: false // Default value since isEmbeddedLaunch is not available in the type
+          isEmbeddedLaunch: false, // Default value since isEmbeddedLaunch is not available in the type
         };
       }
 
@@ -347,8 +388,14 @@ export class UpdateService {
     try {
       // Check environment and updates status first
       if (__DEV__) {
-        this.addLog('Running in development mode - update installation may have limitations', 'WARN');
-        this.addLog('In development mode, Updates.checkForUpdateAsync() may not work properly', 'WARN');
+        this.addLog(
+          'Running in development mode - update installation may have limitations',
+          'WARN'
+        );
+        this.addLog(
+          'In development mode, Updates.checkForUpdateAsync() may not work properly',
+          'WARN'
+        );
         // Don't return false - allow attempting updates in dev mode for testing
       }
 
@@ -367,7 +414,10 @@ export class UpdateService {
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
-        this.addLog(`Update found, starting download. ID: ${update.manifest?.id || 'unknown'}`, 'INFO');
+        this.addLog(
+          `Update found, starting download. ID: ${update.manifest?.id || 'unknown'}`,
+          'INFO'
+        );
         this.addLog(`Manifest details: ${JSON.stringify(update.manifest, null, 2)}`, 'INFO');
 
         const downloadStartTime = Date.now();
@@ -385,9 +435,13 @@ export class UpdateService {
           this.addLog('Update installation completed successfully', 'INFO');
           return true;
         } catch (fetchError) {
-          const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+          const errorMessage =
+            fetchError instanceof Error ? fetchError.message : String(fetchError);
           this.addLog(`Update fetch failed: ${errorMessage}`, 'ERROR');
-          this.addLog(`Fetch error stack: ${fetchError instanceof Error ? fetchError.stack : 'No stack available'}`, 'ERROR');
+          this.addLog(
+            `Fetch error stack: ${fetchError instanceof Error ? fetchError.stack : 'No stack available'}`,
+            'ERROR'
+          );
           throw fetchError; // Re-throw to be caught by outer catch block
         }
       }
@@ -398,7 +452,10 @@ export class UpdateService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.addLog(`Update installation failed: ${errorMessage}`, 'ERROR');
-      this.addLog(`Error stack: ${error instanceof Error ? error.stack : 'No stack available'}`, 'ERROR');
+      this.addLog(
+        `Error stack: ${error instanceof Error ? error.stack : 'No stack available'}`,
+        'ERROR'
+      );
       console.error('Failed to download/install update:', error);
       return false;
     }
@@ -426,10 +483,13 @@ export class UpdateService {
         isAvailable: Updates.isEmbeddedLaunch === false,
         manifest: Updates.manifest,
         isNew: false, // Default value since Updates.isNew is not available
-        isEmbeddedLaunch: Updates.isEmbeddedLaunch
+        isEmbeddedLaunch: Updates.isEmbeddedLaunch,
       };
 
-      this.addLog(`Current update info - Available: ${info.isAvailable}, Embedded: ${info.isEmbeddedLaunch}`, 'INFO');
+      this.addLog(
+        `Current update info - Available: ${info.isAvailable}, Embedded: ${info.isEmbeddedLaunch}`,
+        'INFO'
+      );
 
       if (info.manifest) {
         this.addLog(`Current manifest ID: ${info.manifest.id || 'unknown'}`, 'INFO');
@@ -451,7 +511,10 @@ export class UpdateService {
    * Updates are now only checked on app start and manual trigger
    */
   private startPeriodicUpdateChecks(): void {
-    this.addLog('Periodic update checks are disabled - only checking on app start and manual trigger', 'INFO');
+    this.addLog(
+      'Periodic update checks are disabled - only checking on app start and manual trigger',
+      'INFO'
+    );
     // Method kept for compatibility but no longer starts automatic checks
   }
 
@@ -483,6 +546,3 @@ export class UpdateService {
 }
 
 export default UpdateService.getInstance();
-
-
-

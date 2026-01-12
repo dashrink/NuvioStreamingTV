@@ -27,7 +27,7 @@ class ToastService {
     this.listeners.push(listener);
     // Immediately call with current toasts
     listener([...this.toasts]);
-    
+
     // Return unsubscribe function
     return () => {
       const index = this.listeners.indexOf(listener);
@@ -120,27 +120,15 @@ class ToastService {
   }
 
   showNetworkError(): string {
-    return this.error(
-      'Network Error',
-      'Please check your internet connection',
-      { duration: 8000 }
-    );
+    return this.error('Network Error', 'Please check your internet connection', { duration: 8000 });
   }
 
   showAuthError(): string {
-    return this.error(
-      'Authentication Error',
-      'Please log in to Trakt again',
-      { duration: 8000 }
-    );
+    return this.error('Authentication Error', 'Please log in to Trakt again', { duration: 8000 });
   }
 
   showSyncSuccess(count: number): string {
-    return this.success(
-      'Sync Complete',
-      `Synced ${count} items to Trakt`,
-      { duration: 3000 }
-    );
+    return this.success('Sync Complete', `Synced ${count} items to Trakt`, { duration: 3000 });
   }
 
   showProgressSaved(): string {
@@ -150,4 +138,3 @@ class ToastService {
 
 export const toastService = ToastService.getInstance();
 export default toastService;
-

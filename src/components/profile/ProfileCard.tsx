@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -9,10 +10,10 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { Profile, AVATAR_OPTIONS, KIDS_AVATAR_OPTIONS } from '../../types/profile';
-import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 
 // TV detection breakpoint - matches ProfileSwitcherBottomSheet
 const TV_BREAKPOINT = 1440;
@@ -196,7 +197,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       testID={testID || `profile-card-${profile.id}`}
       // TV-specific props for focus management
       {...(isTV && {
-        hasTVPreferredFocus: hasTVPreferredFocus,
+        hasTVPreferredFocus,
         isTVSelectable: true,
       })}
     >

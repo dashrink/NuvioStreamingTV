@@ -1,3 +1,7 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import debounce from 'lodash/debounce';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
@@ -11,34 +15,31 @@ import {
   Dimensions,
   ScrollView,
   Platform,
+  DeviceEventEmitter,
+  Share,
 } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import {
-  catalogService,
-  StreamingContent,
-  GroupedSearchResults,
-  AddonSearchResults,
-} from '../services/catalogService';
-import FastImage from '@d11/react-native-fast-image';
-import debounce from 'lodash/debounce';
-import { DropUpMenu } from '../components/home/DropUpMenu';
-import { DeviceEventEmitter, Share } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { logger } from '../utils/logger';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { UnifiedSpinner } from '../components/loading';
+
 import ScreenHeader from '../components/common/ScreenHeader';
+import { DropUpMenu } from '../components/home/DropUpMenu';
+import { UnifiedSpinner } from '../components/loading';
+import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight } from '../hooks/useHaptics';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import {
+  catalogService,
+  StreamingContent,
+  GroupedSearchResults,
+  AddonSearchResults,
+} from '../services/catalogService';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { logger } from '../utils/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -548,7 +549,7 @@ const SearchScreen = () => {
               height: undefined, // Let aspect ratio control height or keep fixed height with width?
               // Actually, since we derived width from fixed height, we can keep height fixed or use aspect.
               // Using aspect ratio is safer if baseHeight changes.
-              aspectRatio: aspectRatio,
+              aspectRatio,
               backgroundColor: currentTheme.colors.darkBackground,
               borderColor: 'rgba(255,255,255,0.05)',
             },

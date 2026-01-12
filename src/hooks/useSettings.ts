@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { mmkvStorage } from '../services/mmkvStorage';
 
 // Simple event emitter for settings changes
@@ -41,7 +42,14 @@ export interface AppSettings {
   enableBackgroundPlayback: boolean;
   cacheLimit: number;
   useExternalPlayer: boolean;
-  preferredPlayer: 'internal' | 'vlc' | 'infuse' | 'outplayer' | 'vidhub' | 'infuse_livecontainer' | 'external';
+  preferredPlayer:
+    | 'internal'
+    | 'vlc'
+    | 'infuse'
+    | 'outplayer'
+    | 'vidhub'
+    | 'infuse_livecontainer'
+    | 'external';
   showHeroSection: boolean;
   featuredContentSource: 'tmdb' | 'catalogs';
   heroStyle: 'legacy' | 'carousel' | 'appletv';
@@ -195,7 +203,7 @@ export const useSettings = () => {
     try {
       // Use cached settings if available and fresh
       const now = Date.now();
-      if (cachedSettings && (now - settingsCacheTimestamp) < SETTINGS_CACHE_TTL) {
+      if (cachedSettings && now - settingsCacheTimestamp < SETTINGS_CACHE_TTL) {
         setSettings(cachedSettings);
         setIsLoaded(true);
         return;
@@ -222,7 +230,7 @@ export const useSettings = () => {
         if (scoped) {
           try {
             merged = JSON.parse(scoped);
-          } catch { }
+          } catch {}
         }
       }
 
@@ -237,47 +245,48 @@ export const useSettings = () => {
       if (__DEV__) console.error('Failed to load settings:', error);
       // Fallback to default settings on error
       setSettings(DEFAULT_SETTINGS);
-    }
-    finally {
+    } finally {
       // Mark settings as loaded so UI can render with correct values without flicker
       setIsLoaded(true);
     }
   };
 
-  const updateSetting = useCallback(async <K extends keyof AppSettings>(
-    key: K,
-    value: AppSettings[K],
-    emitEvent: boolean = true
-  ) => {
-    const newSettings = { ...settings, [key]: value };
-    try {
-      const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
-      const scopedKey = `@user:${scope}:${SETTINGS_STORAGE_KEY}`;
-      // Write to both scoped key (multi-user aware) and legacy key for backward compatibility
-      await Promise.all([
-        mmkvStorage.setItem(scopedKey, JSON.stringify(newSettings)),
-        mmkvStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings)),
-      ]);
-      // Ensure a current scope exists to avoid future loads missing the chosen scope
-      await mmkvStorage.setItem('@user:current', scope);
+  const updateSetting = useCallback(
+    async <K extends keyof AppSettings>(
+      key: K,
+      value: AppSettings[K],
+      emitEvent: boolean = true
+    ) => {
+      const newSettings = { ...settings, [key]: value };
+      try {
+        const scope = (await mmkvStorage.getItem('@user:current')) || 'local';
+        const scopedKey = `@user:${scope}:${SETTINGS_STORAGE_KEY}`;
+        // Write to both scoped key (multi-user aware) and legacy key for backward compatibility
+        await Promise.all([
+          mmkvStorage.setItem(scopedKey, JSON.stringify(newSettings)),
+          mmkvStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings)),
+        ]);
+        // Ensure a current scope exists to avoid future loads missing the chosen scope
+        await mmkvStorage.setItem('@user:current', scope);
 
-      // Update cache
-      cachedSettings = newSettings;
-      settingsCacheTimestamp = Date.now();
+        // Update cache
+        cachedSettings = newSettings;
+        settingsCacheTimestamp = Date.now();
 
-      setSettings(newSettings);
-      if (__DEV__) console.log(`Setting updated: ${key}`, value);
+        setSettings(newSettings);
+        if (__DEV__) console.log(`Setting updated: ${key}`, value);
 
-      // Notify all subscribers that settings have changed (if requested)
-      if (emitEvent) {
-        if (__DEV__) console.log('Emitting settings change event');
-        settingsEmitter.emit();
+        // Notify all subscribers that settings have changed (if requested)
+        if (emitEvent) {
+          if (__DEV__) console.log('Emitting settings change event');
+          settingsEmitter.emit();
+        }
+      } catch (error) {
+        if (__DEV__) console.error('Failed to save settings:', error);
       }
-
-    } catch (error) {
-      if (__DEV__) console.error('Failed to save settings:', error);
-    }
-  }, [settings]);
+    },
+    [settings]
+  );
 
   return {
     settings,

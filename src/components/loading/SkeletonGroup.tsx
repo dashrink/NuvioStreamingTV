@@ -48,6 +48,7 @@ import Animated, {
   Easing,
   SharedValue,
 } from 'react-native-reanimated';
+
 import ShimmerSkeleton, { useShimmerProgress } from './ShimmerSkeleton';
 import {
   SkeletonGroupProps,
@@ -84,10 +85,7 @@ interface PresetConfig {
  * Get preset configuration for each skeleton type
  * Dimensions are responsive based on device type
  */
-function getPresetConfig(
-  preset: SkeletonPreset,
-  deviceType: DeviceType
-): PresetConfig {
+function getPresetConfig(preset: SkeletonPreset, deviceType: DeviceType): PresetConfig {
   const isTV = deviceType === 'tv';
   const isLargeTablet = deviceType === 'largeTablet';
   const isTablet = deviceType === 'tablet';
@@ -255,9 +253,7 @@ const SkeletonItem: React.FC<SkeletonItemProps> = ({
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: fadeOpacity.value,
-    transform: [
-      { translateY: interpolate(fadeOpacity.value, [0, 1], [10, 0]) },
-    ],
+    transform: [{ translateY: interpolate(fadeOpacity.value, [0, 1], [10, 0]) }],
   }));
 
   return (
@@ -376,9 +372,7 @@ const SkeletonGroup: React.FC<SkeletonGroupProps> = ({
       {Array.from({ length: count }, (_, index) => {
         // Get width (varies for textBlock preset)
         const itemWidth =
-          preset === 'textBlock'
-            ? getTextBlockWidth(index, count)
-            : presetConfig.width;
+          preset === 'textBlock' ? getTextBlockWidth(index, count) : presetConfig.width;
 
         return (
           <SkeletonItem
@@ -537,11 +531,7 @@ export const CatalogRowSkeletonGroup: React.FC<{
         shimmerProgress={shimmerProgress}
       />
       {/* Poster row */}
-      <SkeletonGroup
-        count={posterCount}
-        preset="poster"
-        style={styles.posterRow}
-      />
+      <SkeletonGroup count={posterCount} preset="poster" style={styles.posterRow} />
     </View>
   );
 };

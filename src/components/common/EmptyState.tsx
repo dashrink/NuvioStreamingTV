@@ -1,6 +1,7 @@
+import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 type IconLibrary = 'MaterialIcons' | 'Ionicons' | 'MaterialCommunityIcons';
@@ -79,16 +80,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.iconContainer}>
-        {renderIcon()}
-      </View>
-      <Text style={[styles.title, { color: currentTheme.colors.white }]}>
-        {title}
-      </Text>
+      <View style={styles.iconContainer}>{renderIcon()}</View>
+      <Text style={[styles.title, { color: currentTheme.colors.white }]}>{title}</Text>
       {subtitle && (
-        <Text style={[styles.subtitle, { color: currentTheme.colors.lightGray }]}>
-          {subtitle}
-        </Text>
+        <Text style={[styles.subtitle, { color: currentTheme.colors.lightGray }]}>{subtitle}</Text>
       )}
       {primaryAction && (
         <TouchableOpacity

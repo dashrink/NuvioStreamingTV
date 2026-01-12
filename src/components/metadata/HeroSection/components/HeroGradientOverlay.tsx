@@ -12,13 +12,14 @@
  * @module HeroSection/components/HeroGradientOverlay
  */
 
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { useTheme } from '../../../../contexts/ThemeContext';
-import type { HeroGradientOverlayProps } from '../types';
 import { isTablet, spacing, sizes } from '../styles';
+
+import type { HeroGradientOverlayProps } from '../types';
 
 /**
  * Gradient overlay component that wraps hero content with fade effects.
@@ -44,74 +45,74 @@ import { isTablet, spacing, sizes } from '../styles';
  * </HeroGradientOverlay>
  * ```
  */
-const HeroGradientOverlay = memo(function HeroGradientOverlay({
-  dynamicBackgroundColor,
-  // animatedStyle is available for future use but currently the gradient itself
-  // is static - animations are applied to the parent container or child elements
-  children,
-}: HeroGradientOverlayProps) {
-  const { currentTheme } = useTheme();
+const HeroGradientOverlay = memo(
+  ({
+    dynamicBackgroundColor,
+    // animatedStyle is available for future use but currently the gradient itself
+    // is static - animations are applied to the parent container or child elements
+    children,
+  }: HeroGradientOverlayProps) => {
+    const { currentTheme } = useTheme();
 
-  // Determine the background color to use for the gradient
-  const backgroundColor = dynamicBackgroundColor || currentTheme.colors.darkBackground;
+    // Determine the background color to use for the gradient
+    const backgroundColor = dynamicBackgroundColor || currentTheme.colors.darkBackground;
 
-  /**
-   * Memoized colors for the outer gradient layer.
-   * Fades from transparent at top to the background color at bottom.
-   */
-  const outerGradientColors = useMemo(
-    () =>
-      [
-        'rgba(0,0,0,0)',
-        'rgba(0,0,0,0.05)',
-        'rgba(0,0,0,0.15)',
-        'rgba(0,0,0,0.35)',
-        'rgba(0,0,0,0.65)',
-        backgroundColor,
-      ] as const,
-    [backgroundColor]
-  );
+    /**
+     * Memoized colors for the outer gradient layer.
+     * Fades from transparent at top to the background color at bottom.
+     */
+    const outerGradientColors = useMemo(
+      () =>
+        [
+          'rgba(0,0,0,0)',
+          'rgba(0,0,0,0.05)',
+          'rgba(0,0,0,0.15)',
+          'rgba(0,0,0,0.35)',
+          'rgba(0,0,0,0.65)',
+          backgroundColor,
+        ] as const,
+      [backgroundColor]
+    );
 
-  /**
-   * Memoized colors for the inner bottom fade gradient.
-   * Provides enhanced fade effect with more color stops for smoother transition.
-   */
-  const innerGradientColors = useMemo(
-    () =>
-      [
-        'transparent',
-        `${backgroundColor}10`, // 10% opacity
-        `${backgroundColor}25`, // 25% opacity
-        `${backgroundColor}45`, // 45% opacity
-        `${backgroundColor}65`, // 65% opacity
-        `${backgroundColor}85`, // 85% opacity
-        `${backgroundColor}95`, // 95% opacity
-        backgroundColor, // 100% opacity
-      ] as const,
-    [backgroundColor]
-  );
+    /**
+     * Memoized colors for the inner bottom fade gradient.
+     * Provides enhanced fade effect with more color stops for smoother transition.
+     */
+    const innerGradientColors = useMemo(
+      () =>
+        [
+          'transparent',
+          `${backgroundColor}10`, // 10% opacity
+          `${backgroundColor}25`, // 25% opacity
+          `${backgroundColor}45`, // 45% opacity
+          `${backgroundColor}65`, // 65% opacity
+          `${backgroundColor}85`, // 85% opacity
+          `${backgroundColor}95`, // 95% opacity
+          backgroundColor, // 100% opacity
+        ] as const,
+      [backgroundColor]
+    );
 
-  return (
-    <LinearGradient
-      colors={outerGradientColors}
-      locations={[0, 0.3, 0.55, 0.75, 0.9, 1]}
-      style={styles.heroGradient}
-    >
-      {/* Enhanced bottom fade with stronger gradient */}
+    return (
       <LinearGradient
-        colors={innerGradientColors}
-        locations={[0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1]}
-        style={styles.bottomFadeGradient}
-        pointerEvents="none"
-      />
+        colors={outerGradientColors}
+        locations={[0, 0.3, 0.55, 0.75, 0.9, 1]}
+        style={styles.heroGradient}
+      >
+        {/* Enhanced bottom fade with stronger gradient */}
+        <LinearGradient
+          colors={innerGradientColors}
+          locations={[0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1]}
+          style={styles.bottomFadeGradient}
+          pointerEvents="none"
+        />
 
-      {/* Hero content container */}
-      <View style={[styles.heroContent, isTablet && styles.tabletHeroContent]}>
-        {children}
-      </View>
-    </LinearGradient>
-  );
-});
+        {/* Hero content container */}
+        <View style={[styles.heroContent, isTablet && styles.tabletHeroContent]}>{children}</View>
+      </LinearGradient>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   /**

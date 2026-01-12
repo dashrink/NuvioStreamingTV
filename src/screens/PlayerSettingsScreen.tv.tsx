@@ -13,6 +13,7 @@
  * This file is automatically loaded when APP_VARIANT=tv (Metro file resolution).
  */
 
+import { useNavigation } from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import {
   View,
@@ -24,13 +25,13 @@ import {
   StatusBar,
   Switch,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSettings, AppSettings } from '../hooks/useSettings';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useTheme } from '../contexts/ThemeContext';
+
 import Focusable from '../components/common/Focusable';
-import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
+import { useTheme } from '../contexts/ThemeContext';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { useSettings, AppSettings } from '../hooks/useSettings';
+import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -82,32 +83,13 @@ const SettingItem: React.FC<SettingItemProps> = ({
       accessibilityHint={description || 'Press to select this option'}
     >
       <View style={styles.settingContent}>
-        <View style={[
-          styles.settingIconContainer,
-          { backgroundColor: 'rgba(255,255,255,0.1)' }
-        ]}>
-          <MaterialIcons
-            name={icon}
-            size={20}
-            color={currentTheme.colors.primary}
-          />
+        <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+          <MaterialIcons name={icon} size={20} color={currentTheme.colors.primary} />
         </View>
         <View style={styles.settingText}>
-          <Text
-            style={[
-              styles.settingTitle,
-              { color: currentTheme.colors.text },
-            ]}
-          >
-            {title}
-          </Text>
+          <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>{title}</Text>
           {description && (
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: currentTheme.colors.textMuted },
-              ]}
-            >
+            <Text style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}>
               {description}
             </Text>
           )}
@@ -178,32 +160,13 @@ const ToggleSettingItem: React.FC<ToggleSettingItemProps> = ({
       accessibilityHint={description || 'Press to toggle'}
     >
       <View style={styles.settingContent}>
-        <View style={[
-          styles.settingIconContainer,
-          { backgroundColor: 'rgba(255,255,255,0.1)' }
-        ]}>
-          <MaterialIcons
-            name={icon}
-            size={20}
-            color={currentTheme.colors.primary}
-          />
+        <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+          <MaterialIcons name={icon} size={20} color={currentTheme.colors.primary} />
         </View>
         <View style={styles.settingText}>
-          <Text
-            style={[
-              styles.settingTitle,
-              { color: currentTheme.colors.text },
-            ]}
-          >
-            {title}
-          </Text>
+          <Text style={[styles.settingTitle, { color: currentTheme.colors.text }]}>{title}</Text>
           {description && (
-            <Text
-              style={[
-                styles.settingDescription,
-                { color: currentTheme.colors.textMuted },
-              ]}
-            >
+            <Text style={[styles.settingDescription, { color: currentTheme.colors.textMuted }]}>
               {description}
             </Text>
           )}
@@ -212,7 +175,7 @@ const ToggleSettingItem: React.FC<ToggleSettingItemProps> = ({
           value={value}
           onValueChange={onValueChange}
           thumbColor={value ? currentTheme.colors.primary : undefined}
-          trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary + '80' }}
+          trackColor={{ false: 'rgba(255,255,255,0.2)', true: `${currentTheme.colors.primary}80` }}
         />
       </View>
     </Focusable>
@@ -233,59 +196,64 @@ const PlayerSettingsScreen: React.FC = () => {
   const tvNavigation = useTVNavigationOptional();
 
   // Track focus for each setting item
-  const handleSettingFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNavigation) {
-      tvNavigation.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNavigation]);
+  const handleSettingFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNavigation) {
+        tvNavigation.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNavigation]
+  );
 
   const playerOptions = [
     {
       id: 'internal',
       title: 'Built-in Player',
-      description: 'Use the app\'s default video player',
+      description: "Use the app's default video player",
       icon: 'play-circle-outline',
     },
-    ...(Platform.OS === 'ios' ? [
-      {
-        id: 'vlc',
-        title: 'VLC',
-        description: 'Open streams in VLC media player',
-        icon: 'video-library',
-      },
-      {
-        id: 'infuse',
-        title: 'Infuse',
-        description: 'Open streams in Infuse player',
-        icon: 'smart-display',
-      },
-      {
-        id: 'outplayer',
-        title: 'OutPlayer',
-        description: 'Open streams in OutPlayer',
-        icon: 'slideshow',
-      },
-      {
-        id: 'vidhub',
-        title: 'VidHub',
-        description: 'Open streams in VidHub player',
-        icon: 'ondemand-video',
-      },
-      {
-        id: 'infuse_livecontainer',
-        title: 'Infuse Livecontainer',
-        description: 'Open streams in Infuse player LiveContainer',
-        icon: 'smart-display',
-      },
-    ] : [
-      {
-        id: 'external',
-        title: 'External Player',
-        description: 'Open streams in your preferred video player',
-        icon: 'open-in-new',
-      },
-    ]),
+    ...(Platform.OS === 'ios'
+      ? [
+          {
+            id: 'vlc',
+            title: 'VLC',
+            description: 'Open streams in VLC media player',
+            icon: 'video-library',
+          },
+          {
+            id: 'infuse',
+            title: 'Infuse',
+            description: 'Open streams in Infuse player',
+            icon: 'smart-display',
+          },
+          {
+            id: 'outplayer',
+            title: 'OutPlayer',
+            description: 'Open streams in OutPlayer',
+            icon: 'slideshow',
+          },
+          {
+            id: 'vidhub',
+            title: 'VidHub',
+            description: 'Open streams in VidHub player',
+            icon: 'ondemand-video',
+          },
+          {
+            id: 'infuse_livecontainer',
+            title: 'Infuse Livecontainer',
+            description: 'Open streams in Infuse player LiveContainer',
+            icon: 'smart-display',
+          },
+        ]
+      : [
+          {
+            id: 'external',
+            title: 'External Player',
+            description: 'Open streams in your preferred video player',
+            icon: 'open-in-new',
+          },
+        ]),
   ];
 
   const handleBack = () => {
@@ -294,16 +262,9 @@ const PlayerSettingsScreen: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground },
-      ]}
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
     >
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       <View style={styles.header}>
         <Focusable
@@ -319,14 +280,8 @@ const PlayerSettingsScreen: React.FC = () => {
           focusId="player-back"
           onFocus={() => handleSettingFocus('player-back')}
         >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={currentTheme.colors.text}
-          />
-          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
-            Settings
-          </Text>
+          <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
+          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>Settings</Text>
         </Focusable>
 
         <View style={styles.headerActions}>
@@ -334,21 +289,11 @@ const PlayerSettingsScreen: React.FC = () => {
         </View>
       </View>
 
-      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-        Video Player
-      </Text>
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Video Player</Text>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: currentTheme.colors.textMuted },
-            ]}
-          >
+          <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
             PLAYER SELECTION
           </Text>
           <View
@@ -386,12 +331,7 @@ const PlayerSettingsScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: currentTheme.colors.textMuted },
-            ]}
-          >
+          <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted }]}>
             PLAYBACK OPTIONS
           </Text>
           <View
@@ -407,7 +347,7 @@ const PlayerSettingsScreen: React.FC = () => {
               description="Automatically start the highest quality stream available."
               icon="play-arrow"
               value={settings.autoplayBestStream}
-              onValueChange={(value) => updateSetting('autoplayBestStream', value)}
+              onValueChange={value => updateSetting('autoplayBestStream', value)}
               focusId="player-autoplay"
               onFocus={() => handleSettingFocus('player-autoplay')}
             />
@@ -417,7 +357,7 @@ const PlayerSettingsScreen: React.FC = () => {
               description="Skip the resume prompt and automatically continue where you left off (if less than 85% watched)."
               icon="restore"
               value={settings.alwaysResume}
-              onValueChange={(value) => updateSetting('alwaysResume', value)}
+              onValueChange={value => updateSetting('alwaysResume', value)}
               focusId="player-resume"
               onFocus={() => handleSettingFocus('player-resume')}
             />
@@ -425,17 +365,17 @@ const PlayerSettingsScreen: React.FC = () => {
             {/* External Player for Downloads */}
             {((Platform.OS === 'android' && settings.useExternalPlayer) ||
               (Platform.OS === 'ios' && settings.preferredPlayer !== 'internal')) && (
-                <ToggleSettingItem
-                  title="External Player for Downloads"
-                  description="Play downloaded content in your preferred external player."
-                  icon="open-in-new"
-                  value={settings.useExternalPlayerForDownloads}
-                  onValueChange={(value) => updateSetting('useExternalPlayerForDownloads', value)}
-                  focusId="player-external-downloads"
-                  onFocus={() => handleSettingFocus('player-external-downloads')}
-                  isLast={true}
-                />
-              )}
+              <ToggleSettingItem
+                title="External Player for Downloads"
+                description="Play downloaded content in your preferred external player."
+                icon="open-in-new"
+                value={settings.useExternalPlayerForDownloads}
+                onValueChange={value => updateSetting('useExternalPlayerForDownloads', value)}
+                focusId="player-external-downloads"
+                onFocus={() => handleSettingFocus('player-external-downloads')}
+                isLast={true}
+              />
+            )}
           </View>
         </View>
       </ScrollView>

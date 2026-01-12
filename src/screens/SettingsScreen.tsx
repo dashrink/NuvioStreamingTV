@@ -1,3 +1,15 @@
+import FastImage from '@d11/react-native-fast-image';
+import { Feather } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+
+import { useTheme } from '../contexts/ThemeContext';
+import { catalogService } from '../services/catalogService';
+import { fetchTotalDownloads } from '../services/githubReleaseService';
+import * as WebBrowser from 'expo-web-browser';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Sentry from '@sentry/react-native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
@@ -14,34 +26,23 @@ import {
   Linking,
   Clipboard,
 } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { triggerLight, triggerMedium } from '../hooks/useHaptics';
-import FastImage from '@d11/react-native-fast-image';
-import LottieView from 'lottie-react-native';
-import { Feather } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
-import { useSettings, DEFAULT_SETTINGS } from '../hooks/useSettings';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { stremioService } from '../services/stremioService';
-import { useCatalogContext } from '../contexts/CatalogContext';
-import { useTraktContext } from '../contexts/TraktContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { catalogService } from '../services/catalogService';
-import { fetchTotalDownloads } from '../services/githubReleaseService';
-import * as WebBrowser from 'expo-web-browser';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Sentry from '@sentry/react-native';
-import { getDisplayedAppVersion } from '../utils/version';
-import CustomAlert from '../components/CustomAlert';
+
 import ScreenHeader from '../components/common/ScreenHeader';
-import PluginIcon from '../components/icons/PluginIcon';
-import TraktIcon from '../components/icons/TraktIcon';
+import CustomAlert from '../components/CustomAlert';
 import TMDBIcon from '../components/icons/TMDBIcon';
 import MDBListIcon from '../components/icons/MDBListIcon';
+import PluginIcon from '../components/icons/PluginIcon';
+import TraktIcon from '../components/icons/TraktIcon';
 import { ProfileSwitcherBottomSheet } from '../components/profile/ProfileSwitcherBottomSheet';
+import { useCatalogContext } from '../contexts/CatalogContext';
 import { useProfileContext } from '../contexts/ProfileContext';
+import { useTraktContext } from '../contexts/TraktContext';
+import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { useSettings, DEFAULT_SETTINGS } from '../hooks/useSettings';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { mmkvStorage } from '../services/mmkvStorage';
+import { stremioService } from '../services/stremioService';
+import { getDisplayedAppVersion } from '../utils/version';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -150,7 +151,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
         style={[
           styles.settingIconContainer,
           {
-            backgroundColor: currentTheme.colors.primary + '12',
+            backgroundColor: `${currentTheme.colors.primary}12`,
           },
           isTablet && styles.tabletSettingIconContainer,
         ]}
@@ -257,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               styles.sidebarItem,
               selectedCategory === category.id && [
                 styles.sidebarItemActive,
-                { backgroundColor: currentTheme.colors.primary + '10' },
+                { backgroundColor: `${currentTheme.colors.primary}10` },
               ],
             ]}
             onPress={() => handleCategorySelect(category.id)}
@@ -269,7 +270,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {
                   backgroundColor:
                     selectedCategory === category.id
-                      ? currentTheme.colors.primary + '15'
+                      ? `${currentTheme.colors.primary}15`
                       : 'transparent',
                 },
               ]}
@@ -582,11 +583,7 @@ const SettingsScreen: React.FC = () => {
           <SettingsCard title="Catalogs" isTablet={isTablet}>
             <SettingItem
               title="Browse & Manage"
-              description={
-                initialLoadComplete
-                  ? `${catalogCount} enabled`
-                  : 'Loading...'
-              }
+              description={initialLoadComplete ? `${catalogCount} enabled` : 'Loading...'}
               icon="grid"
               onPress={() => {
                 navigation.navigate('CatalogScreen');
@@ -852,11 +849,9 @@ const SettingsScreen: React.FC = () => {
               description={getDisplayedAppVersion()}
               icon="info"
               onPress={() => {
-                openAlert(
-                  'Check for Updates',
-                  'You are using the latest version of the app.',
-                  [{ label: 'OK', onPress: () => {} }]
-                );
+                openAlert('Check for Updates', 'You are using the latest version of the app.', [
+                  { label: 'OK', onPress: () => {} },
+                ]);
               }}
               badge={hasUpdateBadge ? 'New' : undefined}
               isLast={true}
@@ -875,9 +870,7 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               title="Downloads"
               description={
-                displayDownloads !== null
-                  ? displayDownloads.toLocaleString('en-US')
-                  : 'Loading...'
+                displayDownloads !== null ? displayDownloads.toLocaleString('en-US') : 'Loading...'
               }
               icon="download"
               isLast={false}
@@ -954,24 +947,20 @@ const SettingsScreen: React.FC = () => {
               description="Free up storage"
               icon="trash-2"
               onPress={() => {
-                openAlert(
-                  'Clear Cache?',
-                  'This will delete cached data but keep your settings.',
-                  [
-                    {
-                      label: 'Cancel',
-                      onPress: () => {},
-                      style: { color: currentTheme.colors.primary },
+                openAlert('Clear Cache?', 'This will delete cached data but keep your settings.', [
+                  {
+                    label: 'Cancel',
+                    onPress: () => {},
+                    style: { color: currentTheme.colors.primary },
+                  },
+                  {
+                    label: 'Clear',
+                    onPress: () => {
+                      catalogService.clearCache();
                     },
-                    {
-                      label: 'Clear',
-                      onPress: () => {
-                        catalogService.clearCache();
-                      },
-                      style: { color: currentTheme.colors.notification },
-                    },
-                  ]
-                );
+                    style: { color: currentTheme.colors.notification },
+                  },
+                ]);
               }}
               isLast={true}
               isTablet={isTablet}

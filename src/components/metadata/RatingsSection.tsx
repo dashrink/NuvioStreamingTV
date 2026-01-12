@@ -1,24 +1,33 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, Animated, Dimensions } from 'react-native';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useMDBListRatings } from '../../hooks/useMDBListRatings';
-import { mmkvStorage } from '../../services/mmkvStorage';
 import {
-  isMDBListEnabled,
-  RATING_PROVIDERS_STORAGE_KEY,
-  RATING_PROVIDERS
-} from '../../constants/mdblistConstants';
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  Animated,
+  Dimensions,
+} from 'react-native';
 
-// Re-export for backward compatibility
-export { RATING_PROVIDERS };
-
-// Import SVG icons
+import AudienceScoreIcon from '../../../assets/rating-icons/audienscore.png';
 import LetterboxdIcon from '../../../assets/rating-icons/letterboxd.svg';
 import MetacriticIcon from '../../../assets/rating-icons/Metacritic.png';
 import RottenTomatoesIcon from '../../../assets/rating-icons/RottenTomatoes.svg';
 import TMDBIcon from '../../../assets/rating-icons/tmdb.svg';
 import TraktIcon from '../../../assets/rating-icons/trakt.svg';
-import AudienceScoreIcon from '../../../assets/rating-icons/audienscore.png';
+import {
+  isMDBListEnabled,
+  RATING_PROVIDERS_STORAGE_KEY,
+  RATING_PROVIDERS,
+} from '../../constants/mdblistConstants';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useMDBListRatings } from '../../hooks/useMDBListRatings';
+import { mmkvStorage } from '../../services/mmkvStorage';
+
+// Re-export for backward compatibility
+export { RATING_PROVIDERS };
+
+// Import SVG icons
 
 // Enhanced responsive breakpoints for Ratings Section
 const BREAKPOINTS = {
@@ -80,9 +89,18 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
     }
   }, [deviceType]);
 
-  const textSize = useMemo(() => (isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14), [isTV, isLargeTablet, isTablet]);
-  const itemSpacing = useMemo(() => (isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12), [isTV, isLargeTablet, isTablet]);
-  const iconTextGap = useMemo(() => (isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4), [isTV, isLargeTablet, isTablet]);
+  const textSize = useMemo(
+    () => (isTV ? 16 : isLargeTablet ? 15 : isTablet ? 14 : 14),
+    [isTV, isLargeTablet, isTablet]
+  );
+  const itemSpacing = useMemo(
+    () => (isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 12),
+    [isTV, isLargeTablet, isTablet]
+  );
+  const iconTextGap = useMemo(
+    () => (isTV ? 6 : isLargeTablet ? 5 : isTablet ? 4 : 4),
+    [isTV, isLargeTablet, isTablet]
+  );
 
   useEffect(() => {
     loadProviderSettings();
@@ -105,14 +123,16 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
         setEnabledProviders(JSON.parse(savedSettings));
       } else {
         // Default all providers to enabled
-        const defaultSettings = Object.keys(RATING_PROVIDERS).reduce((acc, key) => {
-          acc[key] = true;
-          return acc;
-        }, {} as Record<string, boolean>);
+        const defaultSettings = Object.keys(RATING_PROVIDERS).reduce(
+          (acc, key) => {
+            acc[key] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        );
         setEnabledProviders(defaultSettings);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -128,7 +148,12 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
 
   // If MDBList is disabled, don't show anything
   if (!isMDBEnabled) return null;
-  if (loading) return <View style={styles.loadingContainer}><ActivityIndicator size="small" color={currentTheme.colors.primary} /></View>;
+  if (loading)
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color={currentTheme.colors.primary} />
+      </View>
+    );
   if (error || !ratings || Object.keys(ratings).length === 0) return null;
 
   // Define the order and icons/colors for the ratings
@@ -137,53 +162,62 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
       icon: require('../../../assets/rating-icons/imdb.png'),
       isImage: true,
       color: '#F5C518',
-      transform: (value: number) => value.toFixed(1)
+      transform: (value: number) => value.toFixed(1),
     },
     tmdb: {
       icon: TMDBIcon,
       isImage: false,
       color: '#01B4E4',
-      transform: (value: number) => value.toFixed(0)
+      transform: (value: number) => value.toFixed(0),
     },
     trakt: {
       icon: TraktIcon,
       isImage: false,
       color: '#ED1C24',
-      transform: (value: number) => value.toFixed(0)
+      transform: (value: number) => value.toFixed(0),
     },
     letterboxd: {
       icon: LetterboxdIcon,
       isImage: false,
       color: '#00E054',
-      transform: (value: number) => value.toFixed(1)
+      transform: (value: number) => value.toFixed(1),
     },
     tomatoes: {
       icon: RottenTomatoesIcon,
       isImage: false,
       color: '#FA320A',
-      transform: (value: number) => Math.round(value).toString() + '%'
+      transform: (value: number) => `${Math.round(value).toString()}%`,
     },
     audience: {
       icon: AudienceScoreIcon,
       isImage: true,
       color: '#FA320A',
-      transform: (value: number) => Math.round(value).toString() + '%'
+      transform: (value: number) => `${Math.round(value).toString()}%`,
     },
     metacritic: {
       icon: MetacriticIcon,
       isImage: true,
       color: '#FFCC33',
-      transform: (value: number) => Math.round(value).toString()
-    }
+      transform: (value: number) => Math.round(value).toString(),
+    },
   };
 
-  // Priority: IMDB, TMDB, Tomatoes, Metacritic 
-  const priorityOrder = ['imdb', 'tmdb', 'tomatoes', 'metacritic', 'trakt', 'letterboxd', 'audience'];
+  // Priority: IMDB, TMDB, Tomatoes, Metacritic
+  const priorityOrder = [
+    'imdb',
+    'tmdb',
+    'tomatoes',
+    'metacritic',
+    'trakt',
+    'letterboxd',
+    'audience',
+  ];
   const displayRatings = priorityOrder
-    .filter(source =>
-      source in ratings &&
-      ratings[source as keyof typeof ratings] !== undefined &&
-      (enabledProviders[source] ?? true) // Show by default if setting not found
+    .filter(
+      source =>
+        source in ratings &&
+        ratings[source as keyof typeof ratings] !== undefined &&
+        (enabledProviders[source] ?? true) // Show by default if setting not found
     )
     .map(source => [source, ratings[source as keyof typeof ratings]!]);
 
@@ -194,12 +228,14 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
         {
           paddingHorizontal: horizontalPadding,
           opacity: fadeAnim,
-          transform: [{
-            translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [10, 0],
-            }),
-          }],
+          transform: [
+            {
+              translateY: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [10, 0],
+              }),
+            },
+          ],
         },
       ]}
     >
@@ -213,7 +249,10 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
               {config.isImage ? (
                 <Image
                   source={config.icon as any}
-                  style={[styles.compactRatingIcon, { width: iconSize, height: iconSize, marginRight: iconTextGap }]}
+                  style={[
+                    styles.compactRatingIcon,
+                    { width: iconSize, height: iconSize, marginRight: iconTextGap },
+                  ]}
                   resizeMode="contain"
                 />
               ) : (
@@ -224,7 +263,9 @@ export const RatingsSection: React.FC<RatingsSectionProps> = ({ imdbId, type }) 
                   })}
                 </View>
               )}
-              <Text style={[styles.compactRatingValue, { color: config.color, fontSize: textSize }]}>
+              <Text
+                style={[styles.compactRatingValue, { color: config.color, fontSize: textSize }]}
+              >
                 {displayValue}
               </Text>
             </View>
@@ -267,4 +308,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-}); 
+});

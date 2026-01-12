@@ -14,6 +14,7 @@
  * This file is automatically loaded when APP_VARIANT=tv (Metro file resolution).
  */
 
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View,
@@ -29,19 +30,18 @@ import {
   SafeAreaView,
   BackHandler,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ColorPicker from 'react-native-wheel-color-picker';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../styles/colors';
-import { useTheme, Theme, DEFAULT_THEMES } from '../contexts/ThemeContext';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useSettings } from '../hooks/useSettings';
-import CustomAlert from '../components/CustomAlert';
+
 import Focusable from '../components/common/Focusable';
-import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
+import CustomAlert from '../components/CustomAlert';
+import { useTheme, Theme, DEFAULT_THEMES } from '../contexts/ThemeContext';
 import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+import { useSettings } from '../hooks/useSettings';
+import { useSpatialNavigation } from '../hooks/useSpatialNavigation';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { colors } from '../styles/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -87,10 +87,11 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
         isSelected && styles.selectedThemeCard,
         {
           borderColor: isSelected ? theme.colors.primary : 'transparent',
-          backgroundColor: Platform.OS === 'ios'
-            ? `${theme.colors.darkBackground}60`
-            : 'rgba(255, 255, 255, 0.07)'
-        }
+          backgroundColor:
+            Platform.OS === 'ios'
+              ? `${theme.colors.darkBackground}60`
+              : 'rgba(255, 255, 255, 0.07)',
+        },
       ]}
       animationConfig={{
         focusScale: 1.05,
@@ -103,18 +104,32 @@ const ThemeCard: React.FC<ThemeCardProps> = ({
       accessibilityHint={isSelected ? 'Currently selected' : 'Press to select this theme'}
     >
       <View style={styles.themeCardHeader}>
-        <Text style={[styles.themeCardTitle, { color: theme.colors.text }]}>
-          {theme.name}
-        </Text>
-        {isSelected && (
-          <MaterialIcons name="check-circle" size={18} color={theme.colors.primary} />
-        )}
+        <Text style={[styles.themeCardTitle, { color: theme.colors.text }]}>{theme.name}</Text>
+        {isSelected && <MaterialIcons name="check-circle" size={18} color={theme.colors.primary} />}
       </View>
 
       <View style={styles.colorPreviewContainer}>
-        <View style={[styles.colorPreview, { backgroundColor: theme.colors.primary }, styles.colorPreviewShadow]} />
-        <View style={[styles.colorPreview, { backgroundColor: theme.colors.secondary }, styles.colorPreviewShadow]} />
-        <View style={[styles.colorPreview, { backgroundColor: theme.colors.darkBackground }, styles.colorPreviewShadow]} />
+        <View
+          style={[
+            styles.colorPreview,
+            { backgroundColor: theme.colors.primary },
+            styles.colorPreviewShadow,
+          ]}
+        />
+        <View
+          style={[
+            styles.colorPreview,
+            { backgroundColor: theme.colors.secondary },
+            styles.colorPreviewShadow,
+          ]}
+        />
+        <View
+          style={[
+            styles.colorPreview,
+            { backgroundColor: theme.colors.darkBackground },
+            styles.colorPreviewShadow,
+          ]}
+        />
       </View>
 
       {theme.isEditable && (
@@ -179,11 +194,7 @@ const FilterTab: React.FC<FilterTabProps> = ({
     onPress={onPress}
     onFocus={onFocus}
     hasTVPreferredFocus={hasTVPreferredFocus}
-    style={[
-      styles.filterTab,
-      isActive && { backgroundColor: primaryColor },
-      styles.buttonShadow
-    ]}
+    style={[styles.filterTab, isActive && { backgroundColor: primaryColor }, styles.buttonShadow]}
     animationConfig={{
       focusScale: 1.05,
       unfocusedOpacity: 0.85,
@@ -194,14 +205,7 @@ const FilterTab: React.FC<FilterTabProps> = ({
     accessibilityLabel={category.name}
     accessibilityHint={isActive ? 'Currently selected filter' : 'Press to filter by this category'}
   >
-    <Text
-      style={[
-        styles.filterTabText,
-        isActive && { color: '#FFFFFF' }
-      ]}
-    >
-      {category.name}
-    </Text>
+    <Text style={[styles.filterTabText, isActive && { color: '#FFFFFF' }]}>{category.name}</Text>
   </Focusable>
 );
 
@@ -234,7 +238,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps> = ({
   setAlertTitle,
   setAlertMessage,
   setAlertActions,
-  setAlertVisible
+  setAlertVisible,
 }) => {
   const [themeName, setThemeName] = useState('Custom Theme');
   const [selectedColorKey, setSelectedColorKey] = useState<ColorKey>('primary');
@@ -254,31 +258,37 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps> = ({
 
   const tvNavigation = useTVNavigationOptional();
 
-  const handleSettingFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNavigation) {
-      tvNavigation.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNavigation]);
+  const handleSettingFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNavigation) {
+        tvNavigation.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNavigation]
+  );
 
-  const handleColorChange = useCallback((color: string) => {
-    setThemeColors(prev => ({
-      ...prev,
-      [selectedColorKey]: color,
-    }));
-  }, [selectedColorKey]);
+  const handleColorChange = useCallback(
+    (color: string) => {
+      setThemeColors(prev => ({
+        ...prev,
+        [selectedColorKey]: color,
+      }));
+    },
+    [selectedColorKey]
+  );
 
   const handleSave = () => {
     if (!themeName.trim()) {
       setAlertTitle('Invalid Name');
       setAlertMessage('Please enter a valid theme name');
-      setAlertActions([{ label: 'OK', onPress: () => { } }]);
+      setAlertActions([{ label: 'OK', onPress: () => {} }]);
       setAlertVisible(true);
       return;
     }
     onSave({
       ...themeColors,
-      name: themeName
+      name: themeName,
     });
   };
 
@@ -384,7 +394,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps> = ({
               style={[
                 styles.colorSelectorButton,
                 selectedColorKey === 'primary' && styles.selectedColorButton,
-                { backgroundColor: themeColors.primary }
+                { backgroundColor: themeColors.primary },
               ]}
               animationConfig={{
                 focusScale: 1.1,
@@ -403,7 +413,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps> = ({
               style={[
                 styles.colorSelectorButton,
                 selectedColorKey === 'secondary' && styles.selectedColorButton,
-                { backgroundColor: themeColors.secondary }
+                { backgroundColor: themeColors.secondary },
               ]}
               animationConfig={{
                 focusScale: 1.1,
@@ -422,7 +432,7 @@ const ThemeColorEditor: React.FC<ThemeColorEditorProps> = ({
               style={[
                 styles.colorSelectorButton,
                 selectedColorKey === 'darkBackground' && styles.selectedColorButton,
-                { backgroundColor: themeColors.darkBackground }
+                { backgroundColor: themeColors.darkBackground },
               ]}
               animationConfig={{
                 focusScale: 1.1,
@@ -460,7 +470,7 @@ const ThemeScreen: React.FC = () => {
     setCurrentTheme,
     addCustomTheme,
     updateCustomTheme,
-    deleteCustomTheme
+    deleteCustomTheme,
   } = useTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
@@ -475,17 +485,18 @@ const ThemeScreen: React.FC = () => {
   const tvNavigation = useTVNavigationOptional();
 
   // Track focus for each setting item
-  const handleSettingFocus = useCallback((focusId: string) => {
-    spatialNav.saveFocus(focusId);
-    if (tvNavigation) {
-      tvNavigation.setCurrentFocusId(focusId);
-    }
-  }, [spatialNav, tvNavigation]);
+  const handleSettingFocus = useCallback(
+    (focusId: string) => {
+      spatialNav.saveFocus(focusId);
+      if (tvNavigation) {
+        tvNavigation.setCurrentFocusId(focusId);
+      }
+    },
+    [spatialNav, tvNavigation]
+  );
 
   // Calculate proper header top padding (only needed on Android since iOS uses SafeAreaView)
-  const headerTopPadding = Platform.OS === 'android'
-    ? ANDROID_STATUSBAR_HEIGHT + 8
-    : 8;
+  const headerTopPadding = Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8;
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
@@ -516,19 +527,18 @@ const ThemeScreen: React.FC = () => {
     switch (activeFilter) {
       case 'dark':
         // Themes with darker colors
-        return availableThemes.filter(theme =>
-          !theme.isEditable &&
-          theme.id !== 'neon' &&
-          theme.id !== 'retro'
+        return availableThemes.filter(
+          theme => !theme.isEditable && theme.id !== 'neon' && theme.id !== 'retro'
         );
       case 'colorful':
         // Themes with vibrant colors
-        return availableThemes.filter(theme =>
-          !theme.isEditable &&
-          (theme.id === 'neon' ||
-            theme.id === 'retro' ||
-            theme.id === 'sunset' ||
-            theme.id === 'amber')
+        return availableThemes.filter(
+          theme =>
+            !theme.isEditable &&
+            (theme.id === 'neon' ||
+              theme.id === 'retro' ||
+              theme.id === 'sunset' ||
+              theme.id === 'amber')
         );
       case 'custom':
         // User's custom themes
@@ -539,63 +549,72 @@ const ThemeScreen: React.FC = () => {
     }
   }, [availableThemes, activeFilter]);
 
-  const handleThemeSelect = useCallback((themeId: string) => {
-    setCurrentTheme(themeId);
-  }, [setCurrentTheme]);
+  const handleThemeSelect = useCallback(
+    (themeId: string) => {
+      setCurrentTheme(themeId);
+    },
+    [setCurrentTheme]
+  );
 
   const handleEditTheme = useCallback((theme: Theme) => {
     setEditingTheme(theme);
     setIsEditMode(true);
   }, []);
 
-  const handleDeleteTheme = useCallback((theme: Theme) => {
-    setAlertTitle('Delete Theme');
-    setAlertMessage(`Are you sure you want to delete "${theme.name}"?`);
-    setAlertActions([
-      { label: 'Cancel', style: { color: '#888' }, onPress: () => { } },
-      {
-        label: 'Delete',
-        style: { color: currentTheme.colors.error },
-        onPress: () => deleteCustomTheme(theme.id),
-      },
-    ]);
-    setAlertVisible(true);
-  }, [deleteCustomTheme, currentTheme.colors.error]);
+  const handleDeleteTheme = useCallback(
+    (theme: Theme) => {
+      setAlertTitle('Delete Theme');
+      setAlertMessage(`Are you sure you want to delete "${theme.name}"?`);
+      setAlertActions([
+        { label: 'Cancel', style: { color: '#888' }, onPress: () => {} },
+        {
+          label: 'Delete',
+          style: { color: currentTheme.colors.error },
+          onPress: () => deleteCustomTheme(theme.id),
+        },
+      ]);
+      setAlertVisible(true);
+    },
+    [deleteCustomTheme, currentTheme.colors.error]
+  );
 
   const handleCreateTheme = useCallback(() => {
     setEditingTheme(null);
     setIsEditMode(true);
   }, []);
 
-  const handleSaveTheme = useCallback((themeData: any) => {
-    if (editingTheme) {
-      // Update existing theme
-      updateCustomTheme({
-        ...editingTheme,
-        name: themeData.name || editingTheme.name,
-        colors: {
-          ...editingTheme.colors,
-          primary: themeData.primary,
-          secondary: themeData.secondary,
-          darkBackground: themeData.darkBackground,
-        }
-      });
-    } else {
-      // Create new theme
-      addCustomTheme({
-        name: themeData.name || 'Custom Theme',
-        colors: {
-          ...currentTheme.colors,
-          primary: themeData.primary,
-          secondary: themeData.secondary,
-          darkBackground: themeData.darkBackground,
-        }
-      });
-    }
+  const handleSaveTheme = useCallback(
+    (themeData: any) => {
+      if (editingTheme) {
+        // Update existing theme
+        updateCustomTheme({
+          ...editingTheme,
+          name: themeData.name || editingTheme.name,
+          colors: {
+            ...editingTheme.colors,
+            primary: themeData.primary,
+            secondary: themeData.secondary,
+            darkBackground: themeData.darkBackground,
+          },
+        });
+      } else {
+        // Create new theme
+        addCustomTheme({
+          name: themeData.name || 'Custom Theme',
+          colors: {
+            ...currentTheme.colors,
+            primary: themeData.primary,
+            secondary: themeData.secondary,
+            darkBackground: themeData.darkBackground,
+          },
+        });
+      }
 
-    setIsEditMode(false);
-    setEditingTheme(null);
-  }, [editingTheme, updateCustomTheme, addCustomTheme, currentTheme]);
+      setIsEditMode(false);
+      setEditingTheme(null);
+    },
+    [editingTheme, updateCustomTheme, addCustomTheme, currentTheme]
+  );
 
   const handleCancelEdit = useCallback(() => {
     setIsEditMode(false);
@@ -615,21 +634,22 @@ const ThemeScreen: React.FC = () => {
   }, [isEditMode, handleCancelEdit]);
 
   if (isEditMode) {
-    const initialColors = editingTheme ? {
-      primary: editingTheme.colors.primary,
-      secondary: editingTheme.colors.secondary,
-      darkBackground: editingTheme.colors.darkBackground,
-    } : {
-      primary: currentTheme.colors.primary,
-      secondary: currentTheme.colors.secondary,
-      darkBackground: currentTheme.colors.darkBackground,
-    };
+    const initialColors = editingTheme
+      ? {
+          primary: editingTheme.colors.primary,
+          secondary: editingTheme.colors.secondary,
+          darkBackground: editingTheme.colors.darkBackground,
+        }
+      : {
+          primary: currentTheme.colors.primary,
+          secondary: currentTheme.colors.secondary,
+          darkBackground: currentTheme.colors.darkBackground,
+        };
 
     return (
-      <SafeAreaView style={[
-        styles.container,
-        { backgroundColor: currentTheme.colors.darkBackground }
-      ]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+      >
         <StatusBar barStyle="light-content" />
         <ThemeColorEditor
           initialColors={initialColors}
@@ -652,10 +672,9 @@ const ThemeScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={[
-      styles.container,
-      { backgroundColor: currentTheme.colors.darkBackground }
-    ]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}
+    >
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.header, { paddingTop: headerTopPadding }]}>
@@ -673,9 +692,7 @@ const ThemeScreen: React.FC = () => {
           onFocus={() => handleSettingFocus('theme-back')}
         >
           <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.text} />
-          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>
-            Settings
-          </Text>
+          <Text style={[styles.backText, { color: currentTheme.colors.text }]}>Settings</Text>
         </Focusable>
 
         <View style={styles.headerActions}>
@@ -683,9 +700,7 @@ const ThemeScreen: React.FC = () => {
         </View>
       </View>
 
-      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>
-        App Themes
-      </Text>
+      <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>App Themes</Text>
 
       {/* Category filter */}
       <View style={styles.filterContainer}>
@@ -693,7 +708,7 @@ const ThemeScreen: React.FC = () => {
           data={THEME_CATEGORIES}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={({ item, index }) => (
             <FilterTab
               category={item}
@@ -737,7 +752,7 @@ const ThemeScreen: React.FC = () => {
           style={[
             styles.createButton,
             { backgroundColor: currentTheme.colors.primary },
-            styles.buttonShadow
+            styles.buttonShadow,
           ]}
           animationConfig={{
             focusScale: 1.05,
@@ -752,12 +767,16 @@ const ThemeScreen: React.FC = () => {
           <Text style={styles.createButtonText}>Create Custom Theme</Text>
         </Focusable>
 
-        <Text style={[styles.sectionTitle, { color: currentTheme.colors.textMuted, marginTop: 24 }]}>
+        <Text
+          style={[styles.sectionTitle, { color: currentTheme.colors.textMuted, marginTop: 24 }]}
+        >
           OPTIONS
         </Text>
 
         <Focusable
-          onPress={() => updateSetting('useDominantBackgroundColor', !settings.useDominantBackgroundColor)}
+          onPress={() =>
+            updateSetting('useDominantBackgroundColor', !settings.useDominantBackgroundColor)
+          }
           style={styles.optionRow}
           animationConfig={{
             focusScale: 1.02,
@@ -775,7 +794,7 @@ const ThemeScreen: React.FC = () => {
           </Text>
           <Switch
             value={settings.useDominantBackgroundColor}
-            onValueChange={(value) => updateSetting('useDominantBackgroundColor', value)}
+            onValueChange={value => updateSetting('useDominantBackgroundColor', value)}
             trackColor={{ false: '#767577', true: currentTheme.colors.primary }}
             thumbColor={Platform.OS === 'android' ? currentTheme.colors.primary : '#f4f3f4'}
           />
@@ -871,7 +890,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 2,
     borderColor: 'transparent',
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -904,7 +923,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   colorPreviewShadow: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
@@ -924,7 +943,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   buttonShadow: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,

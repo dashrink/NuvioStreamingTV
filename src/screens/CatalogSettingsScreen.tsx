@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -14,18 +16,17 @@ import {
   Pressable,
   Button,
 } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+import CustomAlert from '../components/CustomAlert';
 import { UnifiedSpinner } from '../components/loading';
-import { mmkvStorage } from '../services/mmkvStorage';
-import { useNavigation } from '@react-navigation/native';
+import { useCatalogContext } from '../contexts/CatalogContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight, triggerMedium } from '../hooks/useHaptics';
+import { mmkvStorage } from '../services/mmkvStorage';
 import { stremioService } from '../services/stremioService';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useCatalogContext } from '../contexts/CatalogContext';
-import { logger } from '../utils/logger';
 import { clearCustomNameCache } from '../utils/catalogNameUtils';
-import { BlurView } from 'expo-blur';
-import CustomAlert from '../components/CustomAlert';
+import { logger } from '../utils/logger';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for CatalogSettingsScreen
 let GlassViewComp: any = null;
@@ -35,7 +36,8 @@ if (Platform.OS === 'ios') {
     // Dynamically require so app still runs if the package isn't installed yet
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     GlassViewComp = null;
     liquidGlassAvailable = false;
@@ -71,198 +73,199 @@ const CATALOG_MOBILE_COLUMNS_KEY = 'catalog_mobile_columns';
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
 // Create a styles creator function that accepts the theme colors
-const createStyles = (colors: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.darkBackground,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  backText: {
-    fontSize: 17,
-    fontWeight: '400',
-    color: colors.primary,
-  },
-  headerTitle: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: colors.white,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 8,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  addonSection: {
-    marginBottom: 24,
-  },
-  addonTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.mediumGray,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    letterSpacing: 0.8,
-  },
-  card: {
-    marginHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: colors.elevation2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  groupTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  groupHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  optionChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    backgroundColor: 'transparent',
-  },
-  optionChipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  optionChipText: {
-    color: colors.mediumGray,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  optionChipTextSelected: {
-    color: colors.white,
-  },
-  hintRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  hintText: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  enabledCount: {
-    fontSize: 15,
-    color: colors.mediumGray,
-    marginRight: 8,
-  },
-  catalogItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    // Ensure last item doesn't have border if needed (check logic)
-  },
-  catalogItemPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle feedback for press
-  },
-  catalogInfo: {
-    flex: 1,
-    marginRight: 8, // Add space before switch
-  },
-  catalogName: {
-    fontSize: 15,
-    color: colors.white,
-    marginBottom: 2,
-  },
-  catalogType: {
-    fontSize: 13,
-    color: colors.mediumGray,
-  },
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.darkBackground,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 8,
+    },
+    backText: {
+      fontSize: 17,
+      fontWeight: '400',
+      color: colors.primary,
+    },
+    headerTitle: {
+      fontSize: 34,
+      fontWeight: '700',
+      color: colors.white,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+      paddingTop: 8,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingBottom: 32,
+    },
+    addonSection: {
+      marginBottom: 24,
+    },
+    addonTitle: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.mediumGray,
+      marginHorizontal: 16,
+      marginBottom: 8,
+      letterSpacing: 0.8,
+    },
+    card: {
+      marginHorizontal: 16,
+      borderRadius: 12,
+      overflow: 'hidden',
+      backgroundColor: colors.elevation2,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    groupHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderBottomWidth: 0.5,
+      borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    groupTitle: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: colors.white,
+    },
+    groupHeaderRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    optionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      gap: 8,
+    },
+    optionChip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.15)',
+      backgroundColor: 'transparent',
+    },
+    optionChipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    optionChipText: {
+      color: colors.mediumGray,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    optionChipTextSelected: {
+      color: colors.white,
+    },
+    hintRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+    },
+    hintText: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    enabledCount: {
+      fontSize: 15,
+      color: colors.mediumGray,
+      marginRight: 8,
+    },
+    catalogItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderBottomWidth: 0.5,
+      borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+      // Ensure last item doesn't have border if needed (check logic)
+    },
+    catalogItemPressed: {
+      backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle feedback for press
+    },
+    catalogInfo: {
+      flex: 1,
+      marginRight: 8, // Add space before switch
+    },
+    catalogName: {
+      fontSize: 15,
+      color: colors.white,
+      marginBottom: 2,
+    },
+    catalogType: {
+      fontSize: 13,
+      color: colors.mediumGray,
+    },
 
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  modalContent: {
-    backgroundColor: Platform.OS === 'ios' ? undefined : colors.elevation3,
-    borderRadius: 14,
-    padding: 20,
-    width: '85%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-    overflow: 'hidden',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  modalInput: {
-    backgroundColor: colors.elevation1, // Darker input background
-    color: colors.white,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around', // Adjust as needed (e.g., 'flex-end')
-  },
-});
+    // Modal Styles
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    },
+    modalContent: {
+      backgroundColor: Platform.OS === 'ios' ? undefined : colors.elevation3,
+      borderRadius: 14,
+      padding: 20,
+      width: '85%',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      elevation: 10,
+      overflow: 'hidden',
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    modalInput: {
+      backgroundColor: colors.elevation1, // Darker input background
+      color: colors.white,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 16,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-around', // Adjust as needed (e.g., 'flex-end')
+    },
+  });
 
 const CatalogSettingsScreen = () => {
   const [loading, setLoading] = useState(true);
@@ -297,11 +300,15 @@ const CatalogSettingsScreen = () => {
 
       // Get saved enable/disable settings
       const savedSettingsJson = await mmkvStorage.getItem(CATALOG_SETTINGS_KEY);
-      const savedEnabledSettings: { [key: string]: boolean } = savedSettingsJson ? JSON.parse(savedSettingsJson) : {};
+      const savedEnabledSettings: { [key: string]: boolean } = savedSettingsJson
+        ? JSON.parse(savedSettingsJson)
+        : {};
 
       // Get saved custom names
       const savedCustomNamesJson = await mmkvStorage.getItem(CATALOG_CUSTOM_NAMES_KEY);
-      const savedCustomNames: { [key: string]: string } = savedCustomNamesJson ? JSON.parse(savedCustomNamesJson) : {};
+      const savedCustomNames: { [key: string]: string } = savedCustomNamesJson
+        ? JSON.parse(savedCustomNamesJson)
+        : {};
 
       // Process each addon's catalogs
       addons.forEach(addon => {
@@ -311,7 +318,12 @@ const CatalogSettingsScreen = () => {
           addon.catalogs.forEach(catalog => {
             const settingKey = `${addon.id}:${catalog.type}:${catalog.id}`;
             let displayName = catalog.name || catalog.id;
-            const catalogType = catalog.type === 'movie' ? 'Movies' : catalog.type === 'series' ? 'TV Shows' : catalog.type.charAt(0).toUpperCase() + catalog.type.slice(1);
+            const catalogType =
+              catalog.type === 'movie'
+                ? 'Movies'
+                : catalog.type === 'series'
+                  ? 'TV Shows'
+                  : catalog.type.charAt(0).toUpperCase() + catalog.type.slice(1);
 
             // Clean duplicate words within the catalog name (e.g., "Popular Popular")
             if (displayName) {
@@ -338,8 +350,11 @@ const CatalogSettingsScreen = () => {
               catalogId: catalog.id,
               type: catalog.type,
               name: displayName,
-              enabled: savedEnabledSettings[settingKey] !== undefined ? savedEnabledSettings[settingKey] : true,
-              customName: savedCustomNames[settingKey]
+              enabled:
+                savedEnabledSettings[settingKey] !== undefined
+                  ? savedEnabledSettings[settingKey]
+                  : true,
+              customName: savedCustomNames[settingKey],
             });
           });
 
@@ -358,7 +373,7 @@ const CatalogSettingsScreen = () => {
             name: addon.name,
             catalogs: [],
             expanded: true,
-            enabledCount: 0
+            enabledCount: 0,
           };
         }
 
@@ -395,7 +410,7 @@ const CatalogSettingsScreen = () => {
   const saveEnabledSettings = async (newSettings: CatalogSetting[]) => {
     try {
       const settingsObj: CatalogSettingsStorage = {
-        _lastUpdate: Date.now()
+        _lastUpdate: Date.now(),
       };
       newSettings.forEach(setting => {
         const key = `${setting.addonId}:${setting.type}:${setting.catalogId}`;
@@ -421,13 +436,14 @@ const CatalogSettingsScreen = () => {
 
     const updatedSetting = {
       ...setting,
-      enabled: !setting.enabled
+      enabled: !setting.enabled,
     };
 
-    const flatIndex = newSettings.findIndex(s =>
-      s.addonId === setting.addonId &&
-      s.type === setting.type &&
-      s.catalogId === setting.catalogId
+    const flatIndex = newSettings.findIndex(
+      s =>
+        s.addonId === setting.addonId &&
+        s.type === setting.type &&
+        s.catalogId === setting.catalogId
     );
 
     if (flatIndex !== -1) {
@@ -450,8 +466,8 @@ const CatalogSettingsScreen = () => {
       ...prev,
       [addonId]: {
         ...prev[addonId],
-        expanded: !prev[addonId].expanded
-      }
+        expanded: !prev[addonId].expanded,
+      },
     }));
   };
 
@@ -471,7 +487,9 @@ const CatalogSettingsScreen = () => {
 
     try {
       const savedCustomNamesJson = await mmkvStorage.getItem(CATALOG_CUSTOM_NAMES_KEY);
-      const customNames: { [key: string]: string } = savedCustomNamesJson ? JSON.parse(savedCustomNamesJson) : {};
+      const customNames: { [key: string]: string } = savedCustomNamesJson
+        ? JSON.parse(savedCustomNamesJson)
+        : {};
 
       const trimmedNewName = currentRenameValue.trim();
 
@@ -483,19 +501,22 @@ const CatalogSettingsScreen = () => {
 
       await mmkvStorage.setItem(CATALOG_CUSTOM_NAMES_KEY, JSON.stringify(customNames));
       // Clear in-memory cache so new name is used immediately
-      try { clearCustomNameCache(); } catch { }
+      try {
+        clearCustomNameCache();
+      } catch {}
 
-      // --- Reload settings to reflect the change --- 
+      // --- Reload settings to reflect the change ---
       await loadSettings();
       // Also trigger home/catalog consumers to refresh
-      try { refreshCatalogs(); } catch { }
-      // --- No need to manually update local state anymore --- 
-
+      try {
+        refreshCatalogs();
+      } catch {}
+      // --- No need to manually update local state anymore ---
     } catch (error) {
       logger.error('Failed to save custom catalog name:', error);
       setAlertTitle('Error');
       setAlertMessage('Could not save the custom name.');
-      setAlertActions([{ label: 'OK', onPress: () => { } }]);
+      setAlertActions([{ label: 'OK', onPress: () => {} }]);
       setAlertVisible(true);
     } finally {
       setIsRenameModalVisible(false);
@@ -568,11 +589,18 @@ const CatalogSettingsScreen = () => {
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, 'auto');
                       setMobileColumns('auto');
-                    } catch { }
+                    } catch {}
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.optionChipText, mobileColumns === 'auto' && styles.optionChipTextSelected]}>Auto</Text>
+                  <Text
+                    style={[
+                      styles.optionChipText,
+                      mobileColumns === 'auto' && styles.optionChipTextSelected,
+                    ]}
+                  >
+                    Auto
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.optionChip, mobileColumns === 2 && styles.optionChipSelected]}
@@ -581,11 +609,18 @@ const CatalogSettingsScreen = () => {
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, '2');
                       setMobileColumns(2);
-                    } catch { }
+                    } catch {}
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.optionChipText, mobileColumns === 2 && styles.optionChipTextSelected]}>2</Text>
+                  <Text
+                    style={[
+                      styles.optionChipText,
+                      mobileColumns === 2 && styles.optionChipTextSelected,
+                    ]}
+                  >
+                    2
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.optionChip, mobileColumns === 3 && styles.optionChipSelected]}
@@ -594,16 +629,25 @@ const CatalogSettingsScreen = () => {
                     try {
                       await mmkvStorage.setItem(CATALOG_MOBILE_COLUMNS_KEY, '3');
                       setMobileColumns(3);
-                    } catch { }
+                    } catch {}
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.optionChipText, mobileColumns === 3 && styles.optionChipTextSelected]}>3</Text>
+                  <Text
+                    style={[
+                      styles.optionChipText,
+                      mobileColumns === 3 && styles.optionChipTextSelected,
+                    ]}
+                  >
+                    3
+                  </Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.hintRow}>
                 <MaterialIcons name="info-outline" size={14} color={colors.mediumGray} />
-                <Text style={styles.hintText}>Applies to phones only. Tablets keep adaptive layout.</Text>
+                <Text style={styles.hintText}>
+                  Applies to phones only. Tablets keep adaptive layout.
+                </Text>
               </View>
 
               {/* Show Titles Toggle */}
@@ -614,12 +658,12 @@ const CatalogSettingsScreen = () => {
                 </View>
                 <Switch
                   value={showTitles}
-                  onValueChange={async (value) => {
+                  onValueChange={async value => {
                     triggerMedium();
                     try {
                       await mmkvStorage.setItem('catalog_show_titles', value ? 'true' : 'false');
                       setShowTitles(value);
-                    } catch { }
+                    } catch {}
                   }}
                   trackColor={{ false: '#505050', true: colors.primary }}
                   thumbColor={Platform.OS === 'android' ? colors.white : undefined}
@@ -632,9 +676,7 @@ const CatalogSettingsScreen = () => {
 
         {Object.entries(groupedSettings).map(([addonId, group]) => (
           <View key={addonId} style={styles.addonSection}>
-            <Text style={styles.addonTitle}>
-              {group.name.toUpperCase()}
-            </Text>
+            <Text style={styles.addonTitle}>{group.name.toUpperCase()}</Text>
 
             <View style={styles.card}>
               <TouchableOpacity
@@ -648,7 +690,7 @@ const CatalogSettingsScreen = () => {
                     {group.enabledCount} of {group.catalogs.length} enabled
                   </Text>
                   <MaterialIcons
-                    name={group.expanded ? "keyboard-arrow-down" : "keyboard-arrow-right"}
+                    name={group.expanded ? 'keyboard-arrow-down' : 'keyboard-arrow-right'}
                     size={24}
                     color={colors.mediumGray}
                   />
@@ -672,7 +714,8 @@ const CatalogSettingsScreen = () => {
                     >
                       <View style={styles.catalogInfo}>
                         <Text style={styles.catalogName}>
-                          {setting.customName || setting.name} {/* Display custom or default name */}
+                          {setting.customName || setting.name}{' '}
+                          {/* Display custom or default name */}
                         </Text>
                         <Text style={styles.catalogType}>
                           {setting.type.charAt(0).toUpperCase() + setting.type.slice(1)}
@@ -709,7 +752,7 @@ const CatalogSettingsScreen = () => {
           <Pressable style={styles.modalOverlay} onPress={() => setIsRenameModalVisible(false)}>
             {GlassViewComp && liquidGlassAvailable ? (
               <GlassViewComp style={styles.modalContent} glassEffectStyle="regular">
-                <Pressable onPress={(e) => e.stopPropagation()}>
+                <Pressable onPress={e => e.stopPropagation()}>
                   <Text style={styles.modalTitle}>Rename Catalog</Text>
                   <TextInput
                     style={styles.modalInput}
@@ -720,14 +763,18 @@ const CatalogSettingsScreen = () => {
                     autoFocus={true}
                   />
                   <View style={styles.modalButtons}>
-                    <Button title="Cancel" onPress={() => setIsRenameModalVisible(false)} color={colors.mediumGray} />
+                    <Button
+                      title="Cancel"
+                      onPress={() => setIsRenameModalVisible(false)}
+                      color={colors.mediumGray}
+                    />
                     <Button title="Save" onPress={handleSaveRename} color={colors.primary} />
                   </View>
                 </Pressable>
               </GlassViewComp>
             ) : (
               <BlurView style={styles.modalContent} intensity={90} tint="default">
-                <Pressable onPress={(e) => e.stopPropagation()}>
+                <Pressable onPress={e => e.stopPropagation()}>
                   <Text style={styles.modalTitle}>Rename Catalog</Text>
                   <TextInput
                     style={styles.modalInput}
@@ -738,7 +785,11 @@ const CatalogSettingsScreen = () => {
                     autoFocus={true}
                   />
                   <View style={styles.modalButtons}>
-                    <Button title="Cancel" onPress={() => setIsRenameModalVisible(false)} color={colors.mediumGray} />
+                    <Button
+                      title="Cancel"
+                      onPress={() => setIsRenameModalVisible(false)}
+                      color={colors.mediumGray}
+                    />
                     <Button title="Save" onPress={handleSaveRename} color={colors.primary} />
                   </View>
                 </Pressable>
@@ -747,7 +798,7 @@ const CatalogSettingsScreen = () => {
           </Pressable>
         ) : (
           <Pressable style={styles.modalOverlay} onPress={() => setIsRenameModalVisible(false)}>
-            <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
               <Text style={styles.modalTitle}>Rename Catalog</Text>
               <TextInput
                 style={styles.modalInput}
@@ -758,7 +809,11 @@ const CatalogSettingsScreen = () => {
                 autoFocus={true}
               />
               <View style={styles.modalButtons}>
-                <Button title="Cancel" onPress={() => setIsRenameModalVisible(false)} color={colors.mediumGray} />
+                <Button
+                  title="Cancel"
+                  onPress={() => setIsRenameModalVisible(false)}
+                  color={colors.mediumGray}
+                />
                 <Button title="Save" onPress={handleSaveRename} color={colors.primary} />
               </View>
             </Pressable>
@@ -777,4 +832,4 @@ const CatalogSettingsScreen = () => {
   );
 };
 
-export default CatalogSettingsScreen; 
+export default CatalogSettingsScreen;

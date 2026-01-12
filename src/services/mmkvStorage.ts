@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+
 import { logger } from '../utils/logger';
 
 class MMKVStorage {
@@ -57,16 +58,16 @@ class MMKVStorage {
       if (cached !== null) {
         return cached;
       }
-      
+
       // Read from storage
       const value = this.storage.getString(key);
       const result = value ?? null;
-      
+
       // Cache the result
       if (result !== null) {
         this.setCached(key, result);
       }
-      
+
       return result;
     } catch (error) {
       logger.error(`[MMKVStorage] Error getting item ${key}:`, error);

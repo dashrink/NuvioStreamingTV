@@ -8,8 +8,9 @@
  */
 
 import { Dimensions, Platform } from 'react-native';
-import { mmkvStorage } from '../services/mmkvStorage';
+
 import { logger } from './logger';
+import { mmkvStorage } from '../services/mmkvStorage';
 
 // Constants
 const TV_BREAKPOINT = 1440;
@@ -47,9 +48,8 @@ export interface TVFocusState {
  */
 export function detectTVPlatform(): TVPlatformInfo {
   const { width, height } = Dimensions.get('window');
-  const aspectRatio = width > height
-    ? `${(width / height).toFixed(2)}:1`
-    : `1:${(height / width).toFixed(2)}`;
+  const aspectRatio =
+    width > height ? `${(width / height).toFixed(2)}:1` : `1:${(height / width).toFixed(2)}`;
 
   return {
     isTV: width >= TV_BREAKPOINT || Platform.isTV,
@@ -64,9 +64,7 @@ export function detectTVPlatform(): TVPlatformInfo {
 /**
  * Verify TV focus management is properly configured
  */
-export async function verifyTVFocusManagement(
-  profileIds: string[]
-): Promise<TVVerificationResult> {
+export async function verifyTVFocusManagement(profileIds: string[]): Promise<TVVerificationResult> {
   const platformInfo = detectTVPlatform();
 
   if (!platformInfo.isTV) {
@@ -190,9 +188,7 @@ export async function verifyTVPINEntry(
 
   return {
     passed: pinCorrect,
-    summary: pinCorrect
-      ? 'PIN verified successfully'
-      : 'PIN verification failed',
+    summary: pinCorrect ? 'PIN verified successfully' : 'PIN verification failed',
     details: {
       profileId,
       hasPIN: true,
@@ -228,9 +224,10 @@ export function verifyTVAccessibility(
 
   return {
     passed: missingProps.length === 0,
-    summary: missingProps.length === 0
-      ? `All accessibility props present for ${elementType}`
-      : `Missing accessibility props: ${missingProps.join(', ')}`,
+    summary:
+      missingProps.length === 0
+        ? `All accessibility props present for ${elementType}`
+        : `Missing accessibility props: ${missingProps.join(', ')}`,
     details: {
       elementType,
       requiredProps: required,

@@ -1,5 +1,6 @@
-import { Platform } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
+import { Platform } from 'react-native';
+
 import { logger } from '../utils/logger';
 
 interface VideoPlayerOptions {
@@ -26,8 +27,10 @@ export const VideoPlayerService = {
         options.title,
         options.episodeNumber,
         options.episodeTitle,
-        options.releaseDate
-      ].filter(Boolean).join(' - ');
+        options.releaseDate,
+      ]
+        .filter(Boolean)
+        .join(' - ');
 
       // Launch the intent to play the video
       await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
@@ -36,7 +39,7 @@ export const VideoPlayerService = {
         type: 'video/*',
         extra: {
           'android.intent.extra.TITLE': fullTitle,
-          'position': 0, // Start from beginning
+          position: 0, // Start from beginning
         },
       });
 
@@ -45,5 +48,5 @@ export const VideoPlayerService = {
       logger.error('Failed to launch external player:', error);
       return false;
     }
-  }
+  },
 };

@@ -1,13 +1,6 @@
-import React, { useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
+import { View, StyleSheet, Dimensions, StatusBar, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,6 +14,8 @@ import Animated, {
   runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useTheme } from '../../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
@@ -65,41 +60,29 @@ const ShimmerSkeleton = ({
   highlightColor: string;
 }) => {
   const animatedStyle = useAnimatedStyle(() => {
-    const translateX = interpolate(
-      shimmerProgress.value,
-      [0, 1],
-      [-width, width]
-    );
+    const translateX = interpolate(shimmerProgress.value, [0, 1], [-width, width]);
     return {
       transform: [{ translateX }],
     };
   });
 
   return (
-    <View style={[
-      {
-        width: elementWidth,
-        height: elementHeight,
-        borderRadius,
-        marginBottom,
-        backgroundColor: baseColor,
-        overflow: 'hidden',
-      },
-      style
-    ]}>
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          animatedStyle,
-        ]}
-      >
+    <View
+      style={[
+        {
+          width: elementWidth,
+          height: elementHeight,
+          borderRadius,
+          marginBottom,
+          backgroundColor: baseColor,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
+    >
+      <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
         <LinearGradient
-          colors={[
-            'transparent',
-            highlightColor,
-            highlightColor,
-            'transparent',
-          ]}
+          colors={['transparent', highlightColor, highlightColor, 'transparent']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[StyleSheet.absoluteFill, { width: width * 2 }]}
@@ -109,10 +92,10 @@ const ShimmerSkeleton = ({
   );
 };
 
-export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, MetadataLoadingScreenProps>(({
-  type = 'movie',
-  onExitComplete
-}, ref) => {
+export const MetadataLoadingScreen = forwardRef<
+  MetadataLoadingScreenRef,
+  MetadataLoadingScreenProps
+>(({ type = 'movie', onExitComplete }, ref) => {
   const { currentTheme } = useTheme();
 
   // Responsive sizing
@@ -129,7 +112,6 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
   const isTablet = deviceType === 'tablet';
 
   const horizontalPadding = isTV ? 48 : isLargeTablet ? 32 : isTablet ? 24 : 16;
-
 
   // Shimmer animation
   const shimmerProgress = useSharedValue(0);
@@ -148,15 +130,19 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
 
   // Exit animation function
   const exit = () => {
-    exitProgress.value = withTiming(1, {
-      duration: 200,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
-    }, (finished) => {
-      'worklet';
-      if (finished && onExitComplete) {
-        runOnJS(onExitComplete)();
+    exitProgress.value = withTiming(
+      1,
+      {
+        duration: 200,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
+      },
+      finished => {
+        'worklet';
+        if (finished && onExitComplete) {
+          runOnJS(onExitComplete)();
+        }
       }
-    });
+    );
   };
 
   // Expose exit method through ref
@@ -169,7 +155,7 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
     shimmerProgress.value = withRepeat(
       withTiming(1, {
         duration: 1500,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0)
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
       }),
       -1, // infinite
       false
@@ -191,9 +177,7 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
   // Animated styles
   const containerStyle = useAnimatedStyle(() => ({
     opacity: interpolate(exitProgress.value, [0, 1], [1, 0]),
-    transform: [
-      { scale: interpolate(exitProgress.value, [0, 1], [1, 0.98]) },
-    ],
+    transform: [{ scale: interpolate(exitProgress.value, [0, 1], [1, 0.98]) }],
   }));
 
   const heroStyle = useAnimatedStyle(() => ({
@@ -202,30 +186,25 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
 
   const contentStyle = useAnimatedStyle(() => ({
     opacity: contentOpacity.value,
-    transform: [
-      { translateY: interpolate(contentOpacity.value, [0, 1], [10, 0]) },
-    ],
+    transform: [{ translateY: interpolate(contentOpacity.value, [0, 1], [10, 0]) }],
   }));
 
   const castStyle = useAnimatedStyle(() => ({
     opacity: castOpacity.value,
-    transform: [
-      { translateY: interpolate(castOpacity.value, [0, 1], [10, 0]) },
-    ],
+    transform: [{ translateY: interpolate(castOpacity.value, [0, 1], [10, 0]) }],
   }));
 
   return (
     <SafeAreaView
-      style={[styles.container, {
-        backgroundColor: currentTheme.colors.darkBackground,
-      }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: currentTheme.colors.darkBackground,
+        },
+      ]}
       edges={['bottom']}
     >
-      <StatusBar
-        translucent={true}
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+      <StatusBar translucent={true} backgroundColor="transparent" barStyle="light-content" />
 
       <Animated.View style={[styles.content, containerStyle]}>
         {/* Hero Section Skeleton */}
@@ -241,12 +220,14 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
           />
 
           {/* Back Button Skeleton */}
-          <View style={{
-            position: 'absolute',
-            top: Platform.OS === 'android' ? 40 : 50,
-            left: isTablet ? 32 : 16,
-            zIndex: 10
-          }}>
+          <View
+            style={{
+              position: 'absolute',
+              top: Platform.OS === 'android' ? 40 : 50,
+              left: isTablet ? 32 : 16,
+              zIndex: 10,
+            }}
+          >
             <ShimmerSkeleton
               width={40}
               height={40}
@@ -314,7 +295,15 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
                   baseColor={baseColor}
                   highlightColor={highlightColor}
                 />
-                <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', marginRight: 8 }} />
+                <View
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    marginRight: 8,
+                  }}
+                />
                 <ShimmerSkeleton
                   width={isTV ? 80 : 70}
                   height={12}
@@ -325,7 +314,15 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
                   baseColor={baseColor}
                   highlightColor={highlightColor}
                 />
-                <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', marginRight: 8 }} />
+                <View
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    marginRight: 8,
+                  }}
+                />
                 <ShimmerSkeleton
                   width={isTV ? 50 : 40}
                   height={12}
@@ -341,7 +338,9 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
               <View style={[styles.buttonsRow, { justifyContent: 'center', gap: 6 }]}>
                 {/* Play Button */}
                 <ShimmerSkeleton
-                  width={isTV ? 180 : isLargeTablet ? 160 : isTablet ? 150 : (width - 32 - 100 - 24) / 2} // Calc based on screen width
+                  width={
+                    isTV ? 180 : isLargeTablet ? 160 : isTablet ? 150 : (width - 32 - 100 - 24) / 2
+                  } // Calc based on screen width
                   height={isTV ? 52 : isLargeTablet ? 48 : 46}
                   borderRadius={isTV ? 26 : 23}
                   marginBottom={0}
@@ -352,7 +351,9 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
 
                 {/* Save Button */}
                 <ShimmerSkeleton
-                  width={isTV ? 180 : isLargeTablet ? 160 : isTablet ? 150 : (width - 32 - 100 - 24) / 2}
+                  width={
+                    isTV ? 180 : isLargeTablet ? 160 : isTablet ? 150 : (width - 32 - 100 - 24) / 2
+                  }
                   height={isTV ? 52 : isLargeTablet ? 48 : 46}
                   borderRadius={isTV ? 26 : 23}
                   marginBottom={0}
@@ -388,7 +389,9 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
         </Animated.View>
 
         {/* Content Section */}
-        <Animated.View style={[styles.contentSection, { paddingHorizontal: horizontalPadding }, contentStyle]}>
+        <Animated.View
+          style={[styles.contentSection, { paddingHorizontal: horizontalPadding }, contentStyle]}
+        >
           {/* Description skeleton */}
           <View style={styles.descriptionSection}>
             <ShimmerSkeleton
@@ -422,7 +425,9 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
         </Animated.View>
 
         {/* Cast Section */}
-        <Animated.View style={[styles.castSection, { paddingHorizontal: horizontalPadding }, castStyle]}>
+        <Animated.View
+          style={[styles.castSection, { paddingHorizontal: horizontalPadding }, castStyle]}
+        >
           <ShimmerSkeleton
             width={isTV ? 80 : 60}
             height={isTV ? 24 : 20}
@@ -433,7 +438,7 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
             highlightColor={highlightColor}
           />
           <View style={styles.castRow}>
-            {[1, 2, 3, 4, 5].map((item) => (
+            {[1, 2, 3, 4, 5].map(item => (
               <View key={item} style={styles.castItem}>
                 <ShimmerSkeleton
                   width={isTV ? 100 : isLargeTablet ? 90 : isTablet ? 85 : 80}
@@ -460,7 +465,9 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
 
         {/* Episodes/Recommendations Section */}
         {type === 'series' ? (
-          <Animated.View style={[styles.episodesSection, { paddingHorizontal: horizontalPadding }, castStyle]}>
+          <Animated.View
+            style={[styles.episodesSection, { paddingHorizontal: horizontalPadding }, castStyle]}
+          >
             <ShimmerSkeleton
               width={isTV ? 120 : 100}
               height={isTV ? 24 : 20}
@@ -482,7 +489,7 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
             />
             {/* Episode cards */}
             <View style={styles.episodeList}>
-              {[1, 2, 3].map((item) => (
+              {[1, 2, 3].map(item => (
                 <View key={item} style={styles.episodeCard}>
                   <ShimmerSkeleton
                     width={isTV ? 200 : isLargeTablet ? 180 : isTablet ? 160 : 140}
@@ -518,7 +525,13 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
             </View>
           </Animated.View>
         ) : (
-          <Animated.View style={[styles.recommendationsSection, { paddingHorizontal: horizontalPadding }, castStyle]}>
+          <Animated.View
+            style={[
+              styles.recommendationsSection,
+              { paddingHorizontal: horizontalPadding },
+              castStyle,
+            ]}
+          >
             <ShimmerSkeleton
               width={isTV ? 140 : 110}
               height={isTV ? 24 : 20}
@@ -529,7 +542,7 @@ export const MetadataLoadingScreen = forwardRef<MetadataLoadingScreenRef, Metada
               highlightColor={highlightColor}
             />
             <View style={styles.posterRow}>
-              {[1, 2, 3, 4].map((item) => (
+              {[1, 2, 3, 4].map(item => (
                 <ShimmerSkeleton
                   key={item}
                   width={isTV ? 140 : isLargeTablet ? 120 : isTablet ? 110 : 100}
@@ -614,4 +627,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MetadataLoadingScreen; 
+export default MetadataLoadingScreen;

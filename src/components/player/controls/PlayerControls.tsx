@@ -1,13 +1,22 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Animated, StyleSheet, Platform, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Feather from 'react-native-vector-icons/Feather';
-import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
-import { styles } from '../utils/playerStyles'; // Updated styles
-import { getTrackDisplayName } from '../utils/playerUtils';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  StyleSheet,
+  Platform,
+  Dimensions,
+} from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+
 import { useTheme } from '../../../contexts/ThemeContext';
 import { triggerLight, triggerMedium } from '../../../hooks/useHaptics';
+import { styles } from '../utils/playerStyles'; // Updated styles
+import { getTrackDisplayName } from '../utils/playerUtils';
 
 interface PlayerControlsProps {
   showControls: boolean;
@@ -25,7 +34,7 @@ interface PlayerControlsProps {
   duration: number;
   zoomScale: number;
   currentResizeMode?: string;
-  ksAudioTracks: Array<{id: number, name: string, language?: string}>;
+  ksAudioTracks: Array<{ id: number; name: string; language?: string }>;
   selectedAudioTrack: number | null;
   availableStreams?: { [providerId: string]: { streams: any[]; addonName: string } };
   togglePlayback: () => void;
@@ -96,10 +105,9 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
-
   /* Responsive Spacing */
   const screenWidth = Dimensions.get('window').width;
-  const buttonSpacing = screenWidth * 0.10; // Reduced from 15% to 10%
+  const buttonSpacing = screenWidth * 0.1; // Reduced from 15% to 10%
 
   const playButtonSize = screenWidth * 0.08; // 8% of screen width (reduced from 12%)
   const playIconSizeCalculated = playButtonSize * 0.6; // 60% of button size
@@ -163,7 +171,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       // Number slide out
       Animated.sequence([
         Animated.timing(slideAnim, {
-          toValue: isForward ? (seekButtonSize * 0.75) : -(seekButtonSize * 0.75),
+          toValue: isForward ? seekButtonSize * 0.75 : -(seekButtonSize * 0.75),
           duration: 250,
           useNativeDriver: true,
         }),
@@ -244,9 +252,6 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
     togglePlayback();
   };
 
-
-
-
   const deviceWidth = Dimensions.get('window').width;
   const BREAKPOINTS = { phone: 0, tablet: 768, largeTablet: 1024, tv: 1440 } as const;
   const getDeviceType = (w: number) => {
@@ -300,10 +305,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       {/* Controls Overlay */}
       <View style={styles.controlsContainer}>
         {/* Top Gradient & Header */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0.7)', 'transparent']}
-          style={styles.topGradient}
-        >
+        <LinearGradient colors={['rgba(0,0,0,0.7)', 'transparent']} style={styles.topGradient}>
           <View style={styles.header}>
             {/* Title Section - Enhanced with metadata */}
             <View style={styles.titleSection}>
@@ -321,7 +323,9 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               </View>
               {playerBackend && (
                 <View style={styles.metadataRow}>
-                  <Text style={[styles.providerText, { fontSize: 11, opacity: 0.9 }]}>{playerBackend}</Text>
+                  <Text style={[styles.providerText, { fontSize: 11, opacity: 0.9 }]}>
+                    {playerBackend}
+                  </Text>
                 </View>
               )}
             </View>
@@ -338,119 +342,145 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
                   <Feather
                     name="airplay"
                     size={closeIconSize}
-                    color={isAirPlayActive ? currentTheme.colors.primary : "white"}
+                    color={isAirPlayActive ? currentTheme.colors.primary : 'white'}
                   />
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={styles.closeButton} onPress={() => {
-                triggerLight();
-                handleClose();
-              }}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  triggerLight();
+                  handleClose();
+                }}
+              >
                 <Ionicons name="close" size={closeIconSize} color="white" />
               </TouchableOpacity>
             </View>
           </View>
         </LinearGradient>
 
-        
         {/* Center Controls - CloudStream Style */}
-        <View style={[styles.controls, { 
-          transform: [{ translateY: -(playButtonSize / 2) }] 
-        }]}>
-          
+        <View
+          style={[
+            styles.controls,
+            {
+              transform: [{ translateY: -(playButtonSize / 2) }],
+            },
+          ]}
+        >
           {/* Backward Seek Button (-10s) */}
-          <TouchableOpacity 
-            onPress={() => handleSeekWithAnimation(-10)} 
-            activeOpacity={0.7}
-          >
-            <Animated.View style={[
-              styles.seekButtonContainer,
-              { 
-                width: seekButtonSize,
-                height: seekButtonSize,
-                transform: [{ scale: backwardScaleAnim }] 
-              }
-            ]}>
-              <Ionicons 
-                name="reload-outline" 
-                size={seekIconSize} 
-                color="white" 
-                style={{ transform: [{ scaleX: -1 }] }} 
+          <TouchableOpacity onPress={() => handleSeekWithAnimation(-10)} activeOpacity={0.7}>
+            <Animated.View
+              style={[
+                styles.seekButtonContainer,
+                {
+                  width: seekButtonSize,
+                  height: seekButtonSize,
+                  transform: [{ scale: backwardScaleAnim }],
+                },
+              ]}
+            >
+              <Ionicons
+                name="reload-outline"
+                size={seekIconSize}
+                color="white"
+                style={{ transform: [{ scaleX: -1 }] }}
               />
-              <Animated.View style={[
-                styles.buttonCircle,
-                { 
-                  opacity: backwardPressAnim,
-                  width: seekButtonSize * 0.6,
-                  height: seekButtonSize * 0.6,
-                  borderRadius: (seekButtonSize * 0.6) / 2,
-                }
-              ]} />
-              <View style={[styles.seekNumberContainer, {
-                width: seekButtonSize,
-                height: seekButtonSize,
-              }]}>
-                <Animated.Text style={[
-                  styles.seekNumber,
-                  { 
-                    fontSize: seekNumberSize,
-                    marginLeft: 7,
-                    transform: [{ translateX: backwardSlideAnim }] 
-                  }
-                ]}>
+              <Animated.View
+                style={[
+                  styles.buttonCircle,
+                  {
+                    opacity: backwardPressAnim,
+                    width: seekButtonSize * 0.6,
+                    height: seekButtonSize * 0.6,
+                    borderRadius: (seekButtonSize * 0.6) / 2,
+                  },
+                ]}
+              />
+              <View
+                style={[
+                  styles.seekNumberContainer,
+                  {
+                    width: seekButtonSize,
+                    height: seekButtonSize,
+                  },
+                ]}
+              >
+                <Animated.Text
+                  style={[
+                    styles.seekNumber,
+                    {
+                      fontSize: seekNumberSize,
+                      marginLeft: 7,
+                      transform: [{ translateX: backwardSlideAnim }],
+                    },
+                  ]}
+                >
                   {showBackwardSign ? '-10' : '10'}
                 </Animated.Text>
               </View>
-              </Animated.View>
-              <Animated.View style={[
+            </Animated.View>
+            <Animated.View
+              style={[
                 styles.arcContainer,
                 {
                   width: seekButtonSize,
                   height: seekButtonSize,
                   opacity: backwardArcOpacity,
-                  transform: [{
-                    rotate: backwardArcRotation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['90deg', '-90deg']
-                    })
-                  }]
-                }
-              ]}>
-                <View style={[
+                  transform: [
+                    {
+                      rotate: backwardArcRotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['90deg', '-90deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <View
+                style={[
                   styles.arcLeft,
                   {
                     width: seekButtonSize,
                     height: seekButtonSize,
                     borderRadius: seekButtonSize / 2,
                     borderWidth: arcBorderWidth,
-                  }
-                ]} />
-              </Animated.View>
+                  },
+                ]}
+              />
+            </Animated.View>
           </TouchableOpacity>
 
           {/* Play/Pause Button */}
-          <TouchableOpacity 
-            onPress={handlePlayPauseWithAnimation} 
+          <TouchableOpacity
+            onPress={handlePlayPauseWithAnimation}
             activeOpacity={0.7}
             style={{ marginHorizontal: buttonSpacing }}
           >
-            <View style={[styles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}>
-              <Animated.View style={[
-                styles.playPressCircle,
-                { 
-                  opacity: playPressAnim,
-                  width: playButtonSize * 0.85,
-                  height: playButtonSize * 0.85,
-                  borderRadius: (playButtonSize * 0.85) / 2,
-                }
-              ]} />
-              <Animated.View style={{ 
-                transform: [{ scale: playIconScale }],
-                opacity: playIconOpacity 
-              }}>
-                <Ionicons 
-                  name={paused ? "play" : "pause"} 
-                  size={playIconSizeCalculated} 
+            <View
+              style={[styles.playButtonCircle, { width: playButtonSize, height: playButtonSize }]}
+            >
+              <Animated.View
+                style={[
+                  styles.playPressCircle,
+                  {
+                    opacity: playPressAnim,
+                    width: playButtonSize * 0.85,
+                    height: playButtonSize * 0.85,
+                    borderRadius: (playButtonSize * 0.85) / 2,
+                  },
+                ]}
+              />
+              <Animated.View
+                style={{
+                  transform: [{ scale: playIconScale }],
+                  opacity: playIconOpacity,
+                }}
+              >
+                <Ionicons
+                  name={paused ? 'play' : 'pause'}
+                  size={playIconSizeCalculated}
                   color="#FFFFFF"
                 />
               </Animated.View>
@@ -458,79 +488,85 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
           </TouchableOpacity>
 
           {/* Forward Seek Button (+10s) */}
-            <TouchableOpacity 
-              onPress={() => handleSeekWithAnimation(10)} 
-              activeOpacity={0.7}
-            >
-              <Animated.View style={[
+          <TouchableOpacity onPress={() => handleSeekWithAnimation(10)} activeOpacity={0.7}>
+            <Animated.View
+              style={[
                 styles.seekButtonContainer,
-                { 
-                  width: seekButtonSize,
-                  height: seekButtonSize,
-                  transform: [{ scale: forwardScaleAnim }] 
-                }
-              ]}>
-                <Ionicons 
-                  name="reload-outline" 
-                  size={seekIconSize} 
-                  color="white" 
-                />
-              <Animated.View style={[
-                styles.buttonCircle,
-                { 
-                  opacity: forwardPressAnim,
-                  width: seekButtonSize * 0.6,
-                  height: seekButtonSize * 0.6,
-                  borderRadius: (seekButtonSize * 0.6) / 2,
-                }
-              ]} />
-              <View style={[styles.seekNumberContainer, {
-                width: seekButtonSize,
-                height: seekButtonSize,
-              }]}>
-                <Animated.Text style={[
-                  styles.seekNumber,
-                  { 
-                    fontSize: seekNumberSize,
-                    transform: [{ translateX: forwardSlideAnim }] 
-                  }
-                ]}>
-                  {showForwardSign ? '+10' : '10'}
-                </Animated.Text>
-              </View>
-              <Animated.View style={[
-                styles.arcContainer,
                 {
                   width: seekButtonSize,
                   height: seekButtonSize,
+                  transform: [{ scale: forwardScaleAnim }],
                 },
-                {
-                  opacity: forwardArcOpacity,
-                  transform: [{
-                    rotate: forwardArcRotation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['-90deg', '90deg']
-                    })
-                  }]
-                }
-              ]}>
-                <View style={[
-                  styles.arcRight,
+              ]}
+            >
+              <Ionicons name="reload-outline" size={seekIconSize} color="white" />
+              <Animated.View
+                style={[
+                  styles.buttonCircle,
+                  {
+                    opacity: forwardPressAnim,
+                    width: seekButtonSize * 0.6,
+                    height: seekButtonSize * 0.6,
+                    borderRadius: (seekButtonSize * 0.6) / 2,
+                  },
+                ]}
+              />
+              <View
+                style={[
+                  styles.seekNumberContainer,
                   {
                     width: seekButtonSize,
                     height: seekButtonSize,
-                    borderRadius: seekButtonSize / 2,
-                    borderWidth: arcBorderWidth,
-                  }
-                ]} />
+                  },
+                ]}
+              >
+                <Animated.Text
+                  style={[
+                    styles.seekNumber,
+                    {
+                      fontSize: seekNumberSize,
+                      transform: [{ translateX: forwardSlideAnim }],
+                    },
+                  ]}
+                >
+                  {showForwardSign ? '+10' : '10'}
+                </Animated.Text>
+              </View>
+              <Animated.View
+                style={[
+                  styles.arcContainer,
+                  {
+                    width: seekButtonSize,
+                    height: seekButtonSize,
+                  },
+                  {
+                    opacity: forwardArcOpacity,
+                    transform: [
+                      {
+                        rotate: forwardArcRotation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['-90deg', '90deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.arcRight,
+                    {
+                      width: seekButtonSize,
+                      height: seekButtonSize,
+                      borderRadius: seekButtonSize / 2,
+                      borderWidth: arcBorderWidth,
+                    },
+                  ]}
+                />
               </Animated.View>
             </Animated.View>
           </TouchableOpacity>
         </View>
-
-
-
-
 
         {/* Bottom Gradient */}
         <LinearGradient
@@ -542,10 +578,13 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
             {/* Center Buttons Container with rounded background - wraps all buttons */}
             <View style={styles.centerControlsContainer} pointerEvents="box-none">
               {/* Left Side: Aspect Ratio Button */}
-              <TouchableOpacity style={styles.iconButton} onPress={() => {
-                triggerLight();
-                cycleAspectRatio();
-              }}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  triggerLight();
+                  cycleAspectRatio();
+                }}
+              >
                 <Ionicons name="expand-outline" size={24} color="white" />
               </TouchableOpacity>
 
@@ -574,10 +613,13 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
               )}
 
               {/* Playback Speed Button */}
-              <TouchableOpacity style={styles.iconButton} onPress={() => {
-                triggerLight();
-                setShowSpeedModal(true);
-              }}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  triggerLight();
+                  setShowSpeedModal(true);
+                }}
+              >
                 <Ionicons name="speedometer-outline" size={24} color="white" />
               </TouchableOpacity>
 

@@ -6,6 +6,7 @@
  */
 
 import { Dimensions } from 'react-native';
+
 import { getDeviceType, type DeviceType } from './deviceDetection';
 import { TV_SPACING } from './spacing';
 
@@ -83,7 +84,7 @@ export const calculatePosterWidth = (
 ): number => {
   const posterCount = getOptimalPosterCount(screenWidth);
   const partialWidth = showPartialNext ? 0.25 : 0;
-  const availableWidth = screenWidth - (padding * 2);
+  const availableWidth = screenWidth - padding * 2;
   const totalSpacing = spacing * (posterCount - 1 + (showPartialNext ? 1 : 0));
 
   return Math.floor((availableWidth - totalSpacing) / (posterCount + partialWidth));
@@ -103,7 +104,7 @@ export const calculateGridColumns = (
   padding: number = TV_SPACING.screenPadding,
   gap: number = TV_SPACING.cardGap
 ): number => {
-  const availableWidth = screenWidth - (padding * 2);
+  const availableWidth = screenWidth - padding * 2;
   const columns = Math.floor((availableWidth + gap) / (itemWidth + gap));
   return Math.max(1, columns);
 };
@@ -162,9 +163,7 @@ export const getResponsiveFontSize = (size: 'small' | 'medium' | 'large' | 'xlar
  *   return 16;
  * });
  */
-export const mapDeviceType = <T>(
-  mapper: (device: DeviceType) => T
-): T => {
+export const mapDeviceType = <T>(mapper: (device: DeviceType) => T): T => {
   const deviceType = getDeviceType();
   return mapper(deviceType);
 };

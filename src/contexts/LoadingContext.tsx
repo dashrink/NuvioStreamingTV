@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+
 import LoadingOverlayScreen from '../components/loading/LoadingOverlayScreen';
 import { LoadingSize } from '../components/loading/types';
 
@@ -178,7 +179,7 @@ export const LoadingProvider: React.FC<{ children: ReactNode }> = ({ children })
    * Update the loading text while overlay is visible
    */
   const updateLoadingText = useCallback((text: string) => {
-    setGlobalLoadingState((prev) => ({
+    setGlobalLoadingState(prev => ({
       ...prev,
       text,
     }));
@@ -289,12 +290,7 @@ export const useLoading = (): LoadingContextValue => {
  * };
  */
 export const useGlobalLoading = () => {
-  const {
-    isGlobalLoading,
-    showGlobalLoading,
-    hideGlobalLoading,
-    updateLoadingText
-  } = useLoading();
+  const { isGlobalLoading, showGlobalLoading, hideGlobalLoading, updateLoadingText } = useLoading();
 
   return {
     isLoading: isGlobalLoading,

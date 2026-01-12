@@ -1,14 +1,23 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList, ActivityIndicator } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
+
 import ContentItem from './ContentItem';
 import { Top10Badge, BadgeStyle } from './Top10Badge';
-import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useTheme } from '../../contexts/ThemeContext';
 import { triggerLight } from '../../hooks/useHaptics';
-import { TMDBService, TMDBTrendingResult } from '../../services/tmdbService';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import { StreamingContent } from '../../services/catalogService';
+import { TMDBService, TMDBTrendingResult } from '../../services/tmdbService';
 
 interface Top10SectionProps {
   type: 'movie' | 'tv';
@@ -63,7 +72,7 @@ const calculatePosterLayout = (screenWidth: number) => {
     numFullPosters: bestLayout.numFullPosters,
     posterWidth: bestLayout.posterWidth,
     spacing: SPACING,
-    partialPosterWidth: bestLayout.posterWidth * 0.25
+    partialPosterWidth: bestLayout.posterWidth * 0.25,
   };
 };
 
@@ -73,7 +82,7 @@ const Top10Section = ({
   type,
   timeWindow = 'week',
   displayStyle = 'disney',
-  enabled = true
+  enabled = true,
 }: Top10SectionProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { currentTheme } = useTheme();
@@ -100,9 +109,7 @@ const Top10Section = ({
           id: item.external_ids?.imdb_id || item.id.toString(),
           type: type === 'movie' ? 'movie' : 'series',
           name: item.title || item.name || 'Unknown',
-          poster: item.poster_path
-            ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-            : null,
+          poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
           posterShape: 'poster',
           description: item.overview || '',
         }));
@@ -119,29 +126,36 @@ const Top10Section = ({
     fetchTrending();
   }, [type, timeWindow, enabled]);
 
-  const handleContentPress = useCallback((id: string, contentType: string) => {
-    navigation.navigate('Metadata', { id, type: contentType });
-  }, [navigation]);
+  const handleContentPress = useCallback(
+    (id: string, contentType: string) => {
+      navigation.navigate('Metadata', { id, type: contentType });
+    },
+    [navigation]
+  );
 
-  const renderContentItem = useCallback(({ item, index }: { item: StreamingContent; index: number }) => {
-    return (
-      <View style={styles.itemWrapper}>
-        <ContentItem
-          item={item}
-          onPress={handleContentPress}
-        />
-        <Top10Badge rank={index + 1} style={displayStyle} />
-      </View>
-    );
-  }, [handleContentPress, displayStyle]);
+  const renderContentItem = useCallback(
+    ({ item, index }: { item: StreamingContent; index: number }) => {
+      return (
+        <View style={styles.itemWrapper}>
+          <ContentItem item={item} onPress={handleContentPress} />
+          <Top10Badge rank={index + 1} style={displayStyle} />
+        </View>
+      );
+    },
+    [handleContentPress, displayStyle]
+  );
 
   // Memoize the ItemSeparatorComponent to prevent re-creation (responsive spacing)
   const separatorWidth = isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8;
-  const ItemSeparator = useCallback(() => <View style={{ width: separatorWidth }} />, [separatorWidth]);
+  const ItemSeparator = useCallback(
+    () => <View style={{ width: separatorWidth }} />,
+    [separatorWidth]
+  );
 
   // Memoize the keyExtractor to prevent re-creation
-  const keyExtractor = useCallback((item: StreamingContent, index: number) =>
-    `top10-${item.id}-${index}`, []
+  const keyExtractor = useCallback(
+    (item: StreamingContent, index: number) => `top10-${item.id}-${index}`,
+    []
   );
 
   if (!enabled) {
@@ -162,10 +176,12 @@ const Top10Section = ({
 
   return (
     <View style={styles.catalogContainer}>
-      <View style={[
-        styles.catalogHeader,
-        { paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16 }
-      ]}>
+      <View
+        style={[
+          styles.catalogHeader,
+          { paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16 },
+        ]}
+      >
         <View style={styles.titleContainer}>
           <Text
             style={[
@@ -173,7 +189,7 @@ const Top10Section = ({
               {
                 color: currentTheme.colors.text,
                 fontSize: isTV ? 28 : isLargeTablet ? 26 : isTablet ? 24 : 22,
-              }
+              },
             ]}
             numberOfLines={1}
           >
@@ -186,7 +202,7 @@ const Top10Section = ({
                 backgroundColor: currentTheme.colors.primary,
                 width: isTV ? 64 : isLargeTablet ? 56 : isTablet ? 48 : 40,
                 height: isTV ? 4 : isLargeTablet ? 3 : 3,
-              }
+              },
             ]}
           />
         </View>
@@ -200,7 +216,7 @@ const Top10Section = ({
               paddingVertical: isTV ? 10 : isLargeTablet ? 9 : isTablet ? 8 : 8,
               paddingHorizontal: isTV ? 12 : isLargeTablet ? 11 : isTablet ? 10 : 10,
               borderRadius: isTV ? 22 : isLargeTablet ? 20 : isTablet ? 20 : 20,
-            }
+            },
           ]}
         >
           <MaterialIcons
@@ -225,8 +241,10 @@ const Top10Section = ({
           styles.catalogList,
           {
             paddingHorizontal: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16,
-            paddingRight: (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) - posterLayout.partialPosterWidth,
-          }
+            paddingRight:
+              (isTV ? 32 : isLargeTablet ? 28 : isTablet ? 24 : 16) -
+              posterLayout.partialPosterWidth,
+          },
         ])}
         ItemSeparatorComponent={ItemSeparator}
         removeClippedSubviews={true}

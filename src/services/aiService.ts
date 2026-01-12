@@ -69,14 +69,17 @@ export interface SeriesContext {
     name: string;
     job: string;
   }>;
-  episodesBySeason: Record<number, Array<{
-    seasonNumber: number;
-    episodeNumber: number;
-    title: string;
-    airDate: string;
-    released: boolean;
-    overview?: string;
-  }>>;
+  episodesBySeason: Record<
+    number,
+    Array<{
+      seasonNumber: number;
+      episodeNumber: number;
+      title: string;
+      airDate: string;
+      released: boolean;
+      overview?: string;
+    }>
+  >;
 }
 
 export type ContentContext = MovieContext | EpisodeContext | SeriesContext;
@@ -130,7 +133,7 @@ class AIService {
   private createSystemPrompt(context: ContentContext): string {
     const isSeries = 'episodesBySeason' in (context as any);
     const isEpisode = !isSeries && 'showTitle' in (context as any);
-    
+
     if (isSeries) {
       const series = context as SeriesContext;
       const currentDate = new Date().toISOString().split('T')[0];
@@ -261,17 +264,17 @@ Answer questions about this movie using only the verified database information a
   }
 
   async sendMessage(
-    message: string, 
-    context: ContentContext, 
+    message: string,
+    context: ContentContext,
     conversationHistory: ChatMessage[] = []
   ): Promise<string> {
-    if (!await this.isConfigured()) {
+    if (!(await this.isConfigured())) {
       throw new Error('AI service not configured. Please add your OpenRouter API key in settings.');
     }
 
     try {
       const systemPrompt = this.createSystemPrompt(context);
-      
+
       // Prepare messages for API
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -280,25 +283,26 @@ Answer questions about this movie using only the verified database information a
           .slice(-10) // Keep last 10 messages for context
           .map(msg => ({
             role: msg.role,
-            content: msg.content
+            content: msg.content,
           })),
-        { role: 'user', content: message }
+        { role: 'user', content: message },
       ];
 
       if (__DEV__) {
         console.log('[AIService] Sending request to OpenRouter with context:', {
           contentType: 'showTitle' in context ? 'episode' : 'movie',
-          title: 'showTitle' in context ? 
-            `${(context as EpisodeContext).showTitle} S${(context as EpisodeContext).seasonNumber}E${(context as EpisodeContext).episodeNumber}` :
-            (context as MovieContext).title,
-          messageCount: messages.length
+          title:
+            'showTitle' in context
+              ? `${(context as EpisodeContext).showTitle} S${(context as EpisodeContext).seasonNumber}E${(context as EpisodeContext).episodeNumber}`
+              : (context as MovieContext).title,
+          messageCount: messages.length,
         });
       }
 
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://nuvio.app',
           'X-Title': 'Nuvio - AI Chat',
@@ -321,13 +325,13 @@ Answer questions about this movie using only the verified database information a
       }
 
       const data: OpenRouterResponse = await response.json();
-      
+
       if (!data.choices || data.choices.length === 0) {
         throw new Error('No response received from AI service');
       }
 
       const responseContent = data.choices[0].message.content;
-      
+
       if (__DEV__ && data.usage) {
         console.log('[AIService] Token usage:', data.usage);
       }
@@ -353,7 +357,7 @@ Answer questions about this movie using only the verified database information a
         genreCount: movieData.genres?.length || 0,
         tmdbStatus: movieData.status,
         tmdbReleaseDate: movieData.release_date,
-        tmdbReleaseDatesBlock: !!movieData.release_dates
+        tmdbReleaseDatesBlock: !!movieData.release_dates,
       });
     }
 
@@ -362,7 +366,9 @@ Answer questions about this movie using only the verified database information a
     try {
       const groups = movieData.release_dates?.results as any[] | undefined;
       const us = groups?.find(g => g.iso_3166_1 === 'US');
-      const theatric = us?.release_dates?.find((r: any) => r.type === 3 || r.type === 2 || r.type === 4);
+      const theatric = us?.release_dates?.find(
+        (r: any) => r.type === 3 || r.type === 2 || r.type === 4
+      );
       const anyDate = us?.release_dates?.[0]?.release_date || theatric?.release_date;
       if (anyDate) {
         // TMDB returns full ISO timestamps; keep only date part
@@ -376,7 +382,8 @@ Answer questions about this movie using only the verified database information a
       if (!isNaN(d.getTime())) released = d.getTime() <= Date.now();
     }
     if (!released) {
-      const hasOverview = typeof movieData.overview === 'string' && movieData.overview.trim().length > 40;
+      const hasOverview =
+        typeof movieData.overview === 'string' && movieData.overview.trim().length > 40;
       const hasRuntime = typeof movieData.runtime === 'number' && movieData.runtime > 0;
       const hasVotes = typeof movieData.vote_average === 'number' && movieData.vote_average > 0;
       if (hasOverview || hasRuntime || hasVotes) released = true;
@@ -387,7 +394,7 @@ Answer questions about this movie using only the verified database information a
         resolvedReleaseDate: releaseDate,
         statusText: (movieData.status || '').toString(),
         computedReleased: released,
-        today: new Date().toISOString().split('T')[0]
+        today: new Date().toISOString().split('T')[0],
       });
     }
 
@@ -398,26 +405,30 @@ Answer questions about this movie using only the verified database information a
       releaseDate,
       released,
       genres: movieData.genres?.map((g: any) => g.name) || [],
-      cast: movieData.credits?.cast?.slice(0, 10).map((c: any) => ({
-        name: c.name,
-        character: c.character
-      })) || [],
-      crew: movieData.credits?.crew?.slice(0, 5).map((c: any) => ({
-        name: c.name,
-        job: c.job
-      })) || [],
+      cast:
+        movieData.credits?.cast?.slice(0, 10).map((c: any) => ({
+          name: c.name,
+          character: c.character,
+        })) || [],
+      crew:
+        movieData.credits?.crew?.slice(0, 5).map((c: any) => ({
+          name: c.name,
+          job: c.job,
+        })) || [],
       runtime: movieData.runtime,
       tagline: movieData.tagline,
-      keywords: movieData.keywords?.keywords?.map((k: any) => k.name) || 
-               movieData.keywords?.results?.map((k: any) => k.name) || []
+      keywords:
+        movieData.keywords?.keywords?.map((k: any) => k.name) ||
+        movieData.keywords?.results?.map((k: any) => k.name) ||
+        [],
     };
   }
 
   // Helper method to create context from TMDB episode data
   static createEpisodeContext(
-    episodeData: any, 
-    showData: any, 
-    seasonNumber: number, 
+    episodeData: any,
+    showData: any,
+    seasonNumber: number,
     episodeNumber: number
   ): EpisodeContext {
     // Compute release status from TMDB air date
@@ -431,7 +442,8 @@ Answer questions about this movie using only the verified database information a
     } catch {}
     // Heuristics: if TMDB provides meaningful content, treat as released
     if (!released) {
-      const hasOverview = typeof episodeData.overview === 'string' && episodeData.overview.trim().length > 40;
+      const hasOverview =
+        typeof episodeData.overview === 'string' && episodeData.overview.trim().length > 40;
       const hasRuntime = typeof episodeData.runtime === 'number' && episodeData.runtime > 0;
       const hasVotes = typeof episodeData.vote_average === 'number' && episodeData.vote_average > 0;
       if (hasOverview || hasRuntime || hasVotes) {
@@ -450,7 +462,7 @@ Answer questions about this movie using only the verified database information a
         showCastCount: showData.credits?.cast?.length || 0,
         hasEpisodeCredits: !!episodeData.credits,
         episodeGuestStarsCount: episodeData.credits?.guest_stars?.length || 0,
-        episodeCrewCount: episodeData.credits?.crew?.length || 0
+        episodeCrewCount: episodeData.credits?.crew?.length || 0,
       });
     }
 
@@ -465,35 +477,45 @@ Answer questions about this movie using only the verified database information a
       airDate,
       released,
       runtime: episodeData.runtime,
-      cast: showData.credits?.cast?.slice(0, 8).map((c: any) => ({
-        name: c.name,
-        character: c.character
-      })) || [],
-      crew: episodeData.credits?.crew?.slice(0, 5).map((c: any) => ({
-        name: c.name,
-        job: c.job
-      })) || showData.credits?.crew?.slice(0, 5).map((c: any) => ({
-        name: c.name,
-        job: c.job
-      })) || [],
-      guestStars: episodeData.credits?.guest_stars?.map((g: any) => ({
-        name: g.name,
-        character: g.character
-      })) || []
+      cast:
+        showData.credits?.cast?.slice(0, 8).map((c: any) => ({
+          name: c.name,
+          character: c.character,
+        })) || [],
+      crew:
+        episodeData.credits?.crew?.slice(0, 5).map((c: any) => ({
+          name: c.name,
+          job: c.job,
+        })) ||
+        showData.credits?.crew?.slice(0, 5).map((c: any) => ({
+          name: c.name,
+          job: c.job,
+        })) ||
+        [],
+      guestStars:
+        episodeData.credits?.guest_stars?.map((g: any) => ({
+          name: g.name,
+          character: g.character,
+        })) || [],
     };
   }
 
   // Helper to create a series-wide context including all episodes
-  static createSeriesContext(showData: any, episodesBySeason: Record<number, any[]>): SeriesContext {
+  static createSeriesContext(
+    showData: any,
+    episodesBySeason: Record<number, any[]>
+  ): SeriesContext {
     // Build flattened cast/crew from show credits
-    const cast = showData.credits?.cast?.slice(0, 12).map((c: any) => ({
-      name: c.name,
-      character: c.character
-    })) || [];
-    const crew = showData.credits?.crew?.slice(0, 8).map((c: any) => ({
-      name: c.name,
-      job: c.job
-    })) || [];
+    const cast =
+      showData.credits?.cast?.slice(0, 12).map((c: any) => ({
+        name: c.name,
+        character: c.character,
+      })) || [];
+    const crew =
+      showData.credits?.crew?.slice(0, 8).map((c: any) => ({
+        name: c.name,
+        job: c.job,
+      })) || [];
 
     // Normalize episodes map
     const normalized: SeriesContext['episodesBySeason'] = {};
@@ -520,7 +542,7 @@ Answer questions about this movie using only the verified database information a
           title: ep.name || `Episode ${ep.episode_number}`,
           airDate,
           released,
-          overview: ep.overview || ''
+          overview: ep.overview || '',
         };
       });
     });
@@ -528,7 +550,10 @@ Answer questions about this movie using only the verified database information a
     const totalSeasons = Array.isArray(showData.seasons)
       ? showData.seasons.filter((s: any) => s.season_number > 0).length
       : Object.keys(normalized).length;
-    const totalEpisodes = Object.values(normalized).reduce((sum, eps) => sum + (eps?.length || 0), 0);
+    const totalEpisodes = Object.values(normalized).reduce(
+      (sum, eps) => sum + (eps?.length || 0),
+      0
+    );
 
     return {
       id: showData.id?.toString() || '',
@@ -557,7 +582,7 @@ Answer questions about this movie using only the verified database information a
         `Summarize key arcs across all seasons`,
         `Which episodes are the highest rated and why?`,
         `List pivotal episodes for character development`,
-        `How did themes evolve from Season 1 onward?`
+        `How did themes evolve from Season 1 onward?`,
       ];
     } else if (isEpisode) {
       const ep = context as EpisodeContext;
@@ -566,7 +591,7 @@ Answer questions about this movie using only the verified database information a
         `Explain the main plot points of "${ep.episodeTitle}"`,
         `What character development occurred in this episode?`,
         `Are there any hidden details or easter eggs I might have missed?`,
-        `How does this episode connect to the overall story arc?`
+        `How does this episode connect to the overall story arc?`,
       ];
     } else {
       const movie = context as MovieContext;
@@ -575,7 +600,7 @@ Answer questions about this movie using only the verified database information a
         `Explain the themes in this movie`,
         `What's the significance of the ending?`,
         `Tell me about the main characters and their development`,
-        `Are there any interesting production facts about this film?`
+        `Are there any interesting production facts about this film?`,
       ];
     }
   }

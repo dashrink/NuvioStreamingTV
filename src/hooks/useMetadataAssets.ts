@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { logger } from '../utils/logger';
-import { TMDBService } from '../services/tmdbService';
-import { isTmdbUrl } from '../utils/logoUtils';
 import FastImage from '@d11/react-native-fast-image';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 import { mmkvStorage } from '../services/mmkvStorage';
+import { TMDBService } from '../services/tmdbService';
+import { logger } from '../utils/logger';
+import { isTmdbUrl } from '../utils/logoUtils';
 
 // Cache for image availability checks
 const imageAvailabilityCache: Record<string, boolean> = {};
@@ -65,7 +66,6 @@ export const useMetadataAssets = (
   // For TMDB ID tracking
   const [foundTmdbId, setFoundTmdbId] = useState<string | null>(null);
 
-
   const isMountedRef = useRef(true);
 
   // CRITICAL: AbortController to cancel in-flight requests when component unmounts
@@ -82,7 +82,6 @@ export const useMetadataAssets = (
       abortControllerRef.current.abort();
     };
   }, []);
-
 
   useEffect(() => {
     abortControllerRef.current = new AbortController();
@@ -139,7 +138,8 @@ export const useMetadataAssets = (
 
           // Collect final state before updating to prevent intermediate null states
           let finalBanner: string | null = bannerImage; // Start with current to prevent flicker
-          let bannerSourceType: 'tmdb' | 'default' = (bannerSource === 'tmdb' || bannerSource === 'default') ? bannerSource : 'default';
+          let bannerSourceType: 'tmdb' | 'default' =
+            bannerSource === 'tmdb' || bannerSource === 'default' ? bannerSource : 'default';
 
           // TMDB path only
           if (currentPreference === 'tmdb') {
@@ -169,9 +169,10 @@ export const useMetadataAssets = (
                 const endpoint = contentType === 'tv' ? 'tv' : 'movie';
 
                 // Fetch details (AbortSignal will be used for future implementations)
-                const details = endpoint === 'movie'
-                  ? await tmdbService.getMovieDetails(imdbId)
-                  : await tmdbService.getTVShowDetails(Number(imdbId));
+                const details =
+                  endpoint === 'movie'
+                    ? await tmdbService.getMovieDetails(imdbId)
+                    : await tmdbService.getTVShowDetails(Number(imdbId));
 
                 // Only update if request wasn't aborted and component is still mounted
                 if (!isMountedRef.current) return;
@@ -216,11 +217,16 @@ export const useMetadataAssets = (
           // Enhanced: Attempt to upgrade quality if it's a known TMDB URL format (even if from addon)
           if (finalBanner && typeof finalBanner === 'string') {
             // Check if it's a TMDB URL with restricted width
-            if (finalBanner.includes('image.tmdb.org/t/p/') && !finalBanner.includes('/original/')) {
+            if (
+              finalBanner.includes('image.tmdb.org/t/p/') &&
+              !finalBanner.includes('/original/')
+            ) {
               // Replace w<number> with original
               const upgradedBanner = finalBanner.replace(/\/w\d+\//, '/original/');
               if (upgradedBanner !== finalBanner) {
-                console.log(`[useMetadataAssets] Upgrading banner quality: ${finalBanner} -> ${upgradedBanner}`);
+                console.log(
+                  `[useMetadataAssets] Upgrading banner quality: ${finalBanner} -> ${upgradedBanner}`
+                );
                 finalBanner = upgradedBanner;
               }
             }
@@ -228,13 +234,16 @@ export const useMetadataAssets = (
 
           // CRITICAL: Batch all state updates into a single call to prevent race conditions
           // This ensures the native view hierarchy doesn't receive conflicting unmount/remount signals
-          if (isMountedRef.current && (finalBanner !== bannerImage || bannerSourceType !== bannerSource)) {
+          if (
+            isMountedRef.current &&
+            (finalBanner !== bannerImage || bannerSourceType !== bannerSource)
+          ) {
             setBannerSource(bannerSourceType);
             console.log(`[useMetadataAssets] Banner resolved for ${id}:`, {
               source: bannerSourceType,
               url: finalBanner,
-              imdbId: imdbId,
-              originalMetadataBanner: metadata?.banner
+              imdbId,
+              originalMetadataBanner: metadata?.banner,
             });
           }
 
@@ -264,7 +273,19 @@ export const useMetadataAssets = (
 
     pendingFetchRef.current = fetchPromise;
     return fetchPromise;
-  }, [metadata, id, type, imdbId, settings.logoSourcePreference, settings.tmdbLanguagePreference, settings.enrichMetadataWithTMDB, settings.tmdbEnrichBanners, foundTmdbId, bannerImage, bannerSource]);
+  }, [
+    metadata,
+    id,
+    type,
+    imdbId,
+    settings.logoSourcePreference,
+    settings.tmdbLanguagePreference,
+    settings.enrichMetadataWithTMDB,
+    settings.tmdbEnrichBanners,
+    foundTmdbId,
+    bannerImage,
+    bannerSource,
+  ]);
 
   // Fetch banner when needed
   useEffect(() => {
@@ -284,6 +305,6 @@ export const useMetadataAssets = (
     setBannerImage,
     bannerSource,
     logoLoadError: false,
-    setLogoLoadError: () => { },
+    setLogoLoadError: () => {},
   };
-}; 
+};

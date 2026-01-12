@@ -41,6 +41,7 @@
 
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Dimensions, ViewStyle } from 'react-native';
+
 import ShimmerSkeleton, { useShimmerProgress } from './ShimmerSkeleton';
 import { getDeviceType, DeviceType } from './types';
 
@@ -634,7 +635,7 @@ export const CatalogRowSkeleton: React.FC<CatalogRowSkeletonProps> = ({
 
       {/* Horizontal poster row */}
       <View style={[styles.posterRow, { paddingHorizontal: padding }]}>
-        {posters.map((index) => (
+        {posters.map(index => (
           <ShimmerSkeleton
             key={`poster-${index}`}
             width={dimensions.posterWidth}
@@ -711,7 +712,7 @@ export const EpisodeListSkeleton: React.FC<EpisodeListSkeletonProps> = ({
 
   return (
     <View style={[styles.episodeList, style]} testID={testID}>
-      {episodes.map((index) => (
+      {episodes.map(index => (
         <EpisodeSkeleton key={`episode-${index}`} />
       ))}
     </View>
@@ -835,11 +836,8 @@ export const CastRowSkeleton: React.FC<CastRowSkeletonProps> = ({
 
       {/* Horizontal cast row */}
       <View style={[styles.castRow, { paddingHorizontal: padding }]}>
-        {castMembers.map((index) => (
-          <CastSkeleton
-            key={`cast-${index}`}
-            style={{ marginRight: dimensions.castSpacing }}
-          />
+        {castMembers.map(index => (
+          <CastSkeleton key={`cast-${index}`} style={{ marginRight: dimensions.castSpacing }} />
         ))}
       </View>
     </View>
@@ -969,7 +967,7 @@ export const PosterGridSkeleton: React.FC<PosterGridSkeletonProps> = ({
 
   // Calculate item width based on available space
   const itemWidth = useMemo(() => {
-    const availableWidth = screenWidth - (dimensions.horizontalPadding * 2) - (itemGap * (columns - 1));
+    const availableWidth = screenWidth - dimensions.horizontalPadding * 2 - itemGap * (columns - 1);
     return availableWidth / columns;
   }, [columns, itemGap, dimensions.horizontalPadding]);
 
@@ -987,7 +985,7 @@ export const PosterGridSkeleton: React.FC<PosterGridSkeletonProps> = ({
       ]}
       testID={testID}
     >
-      {items.map((index) => (
+      {items.map(index => (
         <ShimmerSkeleton
           key={`grid-poster-${index}`}
           width={itemWidth}

@@ -1,11 +1,7 @@
+import FastImage from '@d11/react-native-fast-image';
 import React, { memo, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming 
-} from 'react-native-reanimated';
-import FastImage from '@d11/react-native-fast-image';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface AnimatedImageProps {
   source: { uri: string } | undefined;
@@ -14,12 +10,7 @@ interface AnimatedImageProps {
   onLoad?: () => void;
 }
 
-const AnimatedImage = memo(({
-  source,
-  style,
-  contentFit,
-  onLoad
-}: AnimatedImageProps) => {
+const AnimatedImage = memo(({ source, style, contentFit, onLoad }: AnimatedImageProps) => {
   const opacity = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({

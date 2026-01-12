@@ -1,3 +1,6 @@
+import FastImage from '@d11/react-native-fast-image';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -16,753 +19,757 @@ import {
   Animated,
   Image,
 } from 'react-native';
-import CustomAlert from '../components/CustomAlert';
-import FastImage from '@d11/react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { useSettings } from '../hooks/useSettings';
-import { localScraperService, pluginService, ScraperInfo, RepositoryInfo } from '../services/pluginService';
-import { logger } from '../utils/logger';
+
+import CustomAlert from '../components/CustomAlert';
 import { useTheme } from '../contexts/ThemeContext';
 import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import {
+  localScraperService,
+  pluginService,
+  ScraperInfo,
+  RepositoryInfo,
+} from '../services/pluginService';
+import { logger } from '../utils/logger';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
 // Create a styles creator function that accepts the theme colors
-const createStyles = (colors: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.darkBackground,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
-  backText: {
-    fontSize: 17,
-    color: colors.primary,
-    marginLeft: 8,
-  },
-  headerTitle: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    color: colors.text,
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  section: {
-    backgroundColor: colors.elevation1,
-    marginBottom: 16,
-    borderRadius: 12,
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 8,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionDescription: {
-    fontSize: 14,
-    color: colors.mediumGray,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  emptyContainer: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 12,
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  emptyText: {
-    marginTop: 8,
-    color: colors.mediumGray,
-    fontSize: 15,
-  },
-  scraperItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.elevation2,
-    padding: 12,
-    marginBottom: 8,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  scraperLogo: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
-    borderRadius: 6,
-    backgroundColor: colors.elevation3,
-  },
-  scraperInfo: {
-    flex: 1,
-  },
-  scraperName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 2,
-  },
-  scraperDescription: {
-    fontSize: 13,
-    color: colors.mediumGray,
-    marginBottom: 4,
-    lineHeight: 18,
-  },
-  scraperMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  scraperVersion: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  scraperDot: {
-    fontSize: 12,
-    color: colors.mediumGray,
-    marginHorizontal: 8,
-  },
-  scraperTypes: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  scraperLanguage: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  settingInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  settingTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 2,
-  },
-  settingDescription: {
-    fontSize: 14,
-    color: colors.mediumEmphasis,
-    lineHeight: 20,
-  },
-  textInput: {
-    backgroundColor: colors.darkBackground,
-    borderRadius: 8,
-    padding: 12,
-    color: colors.white,
-    marginBottom: 16,
-    fontSize: 15,
-  },
-  button: {
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderColor: colors.elevation3,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.white,
-    textAlign: 'center',
-  },
-  secondaryButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.white,
-    textAlign: 'center',
-  },
-  clearButton: {
-    backgroundColor: '#ff3b30',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  clearButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  currentRepoContainer: {
-    backgroundColor: colors.elevation1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  currentRepoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  currentRepoUrl: {
-    fontSize: 14,
-    color: colors.white,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    lineHeight: 18,
-  },
-  urlHint: {
-    fontSize: 12,
-    color: colors.mediumGray,
-    marginBottom: 8,
-    lineHeight: 16,
-  },
-  defaultRepoButton: {
-    backgroundColor: colors.elevation3,
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  defaultRepoButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    color: colors.mediumEmphasis,
-    lineHeight: 20,
-  },
-  content: {
-    flex: 1,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 32,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateDescription: {
-    fontSize: 14,
-    color: colors.mediumGray,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  scrapersList: {
-    gap: 12,
-  },
-  scrapersContainer: {
-    marginBottom: 24,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  lastSection: {
-    borderBottomWidth: 0,
-  },
-  disabledSection: {
-    opacity: 0.5,
-  },
-  disabledText: {
-    color: colors.elevation3,
-  },
-  disabledContainer: {
-    opacity: 0.5,
-  },
-  disabledInput: {
-    backgroundColor: colors.elevation1,
-    opacity: 0.5,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  disabledImage: {
-    opacity: 0.3,
-  },
-  availableIndicator: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  availableIndicatorText: {
-    color: colors.white,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  qualityChipsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  qualityChip: {
-    backgroundColor: colors.elevation2,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-  },
-  qualityChipSelected: {
-    backgroundColor: '#ff3b30',
-    borderColor: '#ff3b30',
-  },
-  qualityChipText: {
-    color: colors.white,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  qualityChipTextSelected: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  // New styles for improved UX
-  collapsibleSection: {
-    backgroundColor: colors.darkBackground,
-    marginBottom: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  collapsibleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: colors.elevation2,
-  },
-  collapsibleTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  collapsibleContent: {
-    padding: 16,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.darkBackground,
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    color: colors.white,
-    fontSize: 16,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.elevation2,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-  },
-  filterChipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  filterChipText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  filterChipTextSelected: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  statusBadgeText: {
-    color: 'white',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  bulkActionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    gap: 12,
-  },
-  bulkActionButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-    borderWidth: 1,
-  },
-  bulkActionButtonEnabled: {
-    backgroundColor: 'transparent',
-    borderColor: '#34C759',
-  },
-  bulkActionButtonDisabled: {
-    backgroundColor: 'transparent',
-    borderColor: colors.elevation3,
-  },
-  bulkActionButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#1E1E1E', // Match CustomAlert
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    alignSelf: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.51,
-        shadowRadius: 13.16,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  modalText: {
-    fontSize: 15,
-    color: '#AAAAAA',
-    lineHeight: 22,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  modalButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-    minHeight: 48,
-  },
-  modalButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  // Compact modal styles
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    gap: 6,
-  },
-  compactTextInput: {
-    backgroundColor: colors.darkBackground,
-    borderRadius: 8,
-    padding: 12,
-    color: colors.white,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-    marginBottom: 12,
-  },
-  compactExamples: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  quickButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.elevation2,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-  },
-  quickButtonText: {
-    fontSize: 12,
-    color: colors.white,
-    fontWeight: '500',
-  },
-  formatHint: {
-    fontSize: 12,
-    color: colors.mediumGray,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    marginBottom: 16,
-    lineHeight: 16,
-  },
-  compactActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  compactButton: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 40,
-  },
-  cancelButton: {
-    backgroundColor: colors.elevation2,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-  },
-  cancelButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  addButton: {
-    backgroundColor: colors.primary,
-  },
-  addButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  quickSetupContainer: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  quickSetupTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 8,
-  },
-  quickSetupText: {
-    fontSize: 14,
-    color: colors.mediumGray,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  quickSetupButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  quickSetupButtonText: {
-    color: colors.white,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  scraperCard: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-    minHeight: 120,
-  },
-  scraperCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  scraperCardInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  scraperCardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  scraperCardMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginBottom: 4,
-  },
-  scraperCardMetaText: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  emptyStateContainer: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  emptyStateIcon: {
-    marginBottom: 16,
-  },
-  // Repository management styles
-  repositoriesList: {
-    marginBottom: 16,
-  },
-  repositoryItem: {
-    backgroundColor: colors.elevation2,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.elevation3,
-  },
-  repositoryInfo: {
-    flex: 1,
-    marginBottom: 12,
-  },
-  repositoryName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginRight: 8,
-  },
-  repositoryDescription: {
-    fontSize: 14,
-    color: colors.mediumGray,
-    marginBottom: 4,
-    lineHeight: 18,
-  },
-  repositoryUrl: {
-    fontSize: 12,
-    color: colors.mediumGray,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    marginBottom: 4,
-  },
-  repositoryMeta: {
-    fontSize: 12,
-    color: colors.mediumGray,
-  },
-  repositoryActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  repositoryActionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 36,
-  },
-  repositoryActionButtonPrimary: {
-    backgroundColor: 'transparent',
-    borderColor: colors.primary,
-  },
-  repositoryActionButtonSecondary: {
-    backgroundColor: 'transparent',
-    borderColor: colors.elevation3,
-  },
-  repositoryActionButtonDanger: {
-    backgroundColor: 'transparent',
-    borderColor: '#ff3b30',
-  },
-  repositoryActionButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.white,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.darkBackground,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT + 8 : 8,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 8,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerButton: {
+      padding: 8,
+      marginLeft: 8,
+    },
+    backText: {
+      fontSize: 17,
+      color: colors.primary,
+      marginLeft: 8,
+    },
+    headerTitle: {
+      fontSize: 34,
+      fontWeight: 'bold',
+      color: colors.text,
+      paddingHorizontal: 16,
+      marginBottom: 24,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    section: {
+      backgroundColor: colors.elevation1,
+      marginBottom: 16,
+      borderRadius: 12,
+      padding: 16,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 8,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    sectionDescription: {
+      fontSize: 14,
+      color: colors.mediumGray,
+      marginBottom: 16,
+      lineHeight: 20,
+    },
+    emptyContainer: {
+      backgroundColor: colors.elevation2,
+      borderRadius: 12,
+      padding: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 24,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    emptyText: {
+      marginTop: 8,
+      color: colors.mediumGray,
+      fontSize: 15,
+    },
+    scraperItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.elevation2,
+      padding: 12,
+      marginBottom: 8,
+      borderRadius: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    scraperLogo: {
+      width: 40,
+      height: 40,
+      marginRight: 12,
+      borderRadius: 6,
+      backgroundColor: colors.elevation3,
+    },
+    scraperInfo: {
+      flex: 1,
+    },
+    scraperName: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 2,
+    },
+    scraperDescription: {
+      fontSize: 13,
+      color: colors.mediumGray,
+      marginBottom: 4,
+      lineHeight: 18,
+    },
+    scraperMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    scraperVersion: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    scraperDot: {
+      fontSize: 12,
+      color: colors.mediumGray,
+      marginHorizontal: 8,
+    },
+    scraperTypes: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    scraperLanguage: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    settingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    settingInfo: {
+      flex: 1,
+      marginRight: 16,
+    },
+    settingTitle: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 2,
+    },
+    settingDescription: {
+      fontSize: 14,
+      color: colors.mediumEmphasis,
+      lineHeight: 20,
+    },
+    textInput: {
+      backgroundColor: colors.darkBackground,
+      borderRadius: 8,
+      padding: 12,
+      color: colors.white,
+      marginBottom: 16,
+      fontSize: 15,
+    },
+    button: {
+      backgroundColor: 'transparent',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+    },
+    primaryButton: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    secondaryButton: {
+      backgroundColor: 'transparent',
+      borderColor: colors.elevation3,
+    },
+    buttonText: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: colors.white,
+      textAlign: 'center',
+    },
+    secondaryButtonText: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: colors.white,
+      textAlign: 'center',
+    },
+    clearButton: {
+      backgroundColor: '#ff3b30',
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+    },
+    clearButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.white,
+    },
+    currentRepoContainer: {
+      backgroundColor: colors.elevation1,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+    },
+    currentRepoLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+      marginBottom: 4,
+    },
+    currentRepoUrl: {
+      fontSize: 14,
+      color: colors.white,
+      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+      lineHeight: 18,
+    },
+    urlHint: {
+      fontSize: 12,
+      color: colors.mediumGray,
+      marginBottom: 8,
+      lineHeight: 16,
+    },
+    defaultRepoButton: {
+      backgroundColor: colors.elevation3,
+      borderRadius: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      marginBottom: 16,
+      alignItems: 'center',
+    },
+    defaultRepoButtonText: {
+      color: colors.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 8,
+    },
+    infoText: {
+      fontSize: 14,
+      color: colors.mediumEmphasis,
+      lineHeight: 20,
+    },
+    content: {
+      flex: 1,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: 32,
+    },
+    emptyStateTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.white,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyStateDescription: {
+      fontSize: 14,
+      color: colors.mediumGray,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    scrapersList: {
+      gap: 12,
+    },
+    scrapersContainer: {
+      marginBottom: 24,
+    },
+    inputContainer: {
+      marginBottom: 16,
+    },
+    lastSection: {
+      borderBottomWidth: 0,
+    },
+    disabledSection: {
+      opacity: 0.5,
+    },
+    disabledText: {
+      color: colors.elevation3,
+    },
+    disabledContainer: {
+      opacity: 0.5,
+    },
+    disabledInput: {
+      backgroundColor: colors.elevation1,
+      opacity: 0.5,
+    },
+    disabledButton: {
+      opacity: 0.5,
+    },
+    disabledImage: {
+      opacity: 0.3,
+    },
+    availableIndicator: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      marginLeft: 8,
+    },
+    availableIndicatorText: {
+      color: colors.white,
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    qualityChipsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 8,
+    },
+    qualityChip: {
+      backgroundColor: colors.elevation2,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+    },
+    qualityChipSelected: {
+      backgroundColor: '#ff3b30',
+      borderColor: '#ff3b30',
+    },
+    qualityChipText: {
+      color: colors.white,
+      fontSize: 13,
+      fontWeight: '500',
+    },
+    qualityChipTextSelected: {
+      color: colors.white,
+      fontWeight: '600',
+    },
+    // New styles for improved UX
+    collapsibleSection: {
+      backgroundColor: colors.darkBackground,
+      marginBottom: 16,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    collapsibleHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: colors.elevation2,
+    },
+    collapsibleTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.white,
+    },
+    collapsibleContent: {
+      padding: 16,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.darkBackground,
+      borderRadius: 12,
+      marginBottom: 16,
+      paddingHorizontal: 12,
+    },
+    searchInput: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 8,
+      color: colors.white,
+      fontSize: 16,
+    },
+    filterContainer: {
+      flexDirection: 'row',
+      marginBottom: 16,
+      gap: 8,
+    },
+    filterChip: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.elevation2,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+    },
+    filterChipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    filterChipText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    filterChipTextSelected: {
+      color: colors.white,
+      fontWeight: '600',
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      gap: 4,
+    },
+    statusBadgeText: {
+      color: 'white',
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    bulkActionsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+      gap: 12,
+    },
+    bulkActionButton: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+      borderWidth: 1,
+    },
+    bulkActionButtonEnabled: {
+      backgroundColor: 'transparent',
+      borderColor: '#34C759',
+    },
+    bulkActionButtonDisabled: {
+      backgroundColor: 'transparent',
+      borderColor: colors.elevation3,
+    },
+    bulkActionButtonText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalContent: {
+      backgroundColor: '#1E1E1E', // Match CustomAlert
+      borderRadius: 16,
+      padding: 24,
+      width: '100%',
+      maxWidth: 400,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      alignSelf: 'center',
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.51,
+          shadowRadius: 13.16,
+        },
+        android: {
+          elevation: 20,
+        },
+      }),
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: '#FFFFFF',
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    modalText: {
+      fontSize: 15,
+      color: '#AAAAAA',
+      lineHeight: 22,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    modalButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 16,
+      minHeight: 48,
+    },
+    modalButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    // Compact modal styles
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+      gap: 6,
+    },
+    compactTextInput: {
+      backgroundColor: colors.darkBackground,
+      borderRadius: 8,
+      padding: 12,
+      color: colors.white,
+      fontSize: 15,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+      marginBottom: 12,
+    },
+    compactExamples: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 12,
+    },
+    quickButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.elevation2,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 6,
+      gap: 6,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+    },
+    quickButtonText: {
+      fontSize: 12,
+      color: colors.white,
+      fontWeight: '500',
+    },
+    formatHint: {
+      fontSize: 12,
+      color: colors.mediumGray,
+      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+      marginBottom: 16,
+      lineHeight: 16,
+    },
+    compactActions: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    compactButton: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 6,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 40,
+    },
+    cancelButton: {
+      backgroundColor: colors.elevation2,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+    },
+    cancelButtonText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    addButton: {
+      backgroundColor: colors.primary,
+    },
+    addButtonText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    quickSetupContainer: {
+      backgroundColor: colors.elevation2,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
+    quickSetupTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 8,
+    },
+    quickSetupText: {
+      fontSize: 14,
+      color: colors.mediumGray,
+      lineHeight: 20,
+      marginBottom: 12,
+    },
+    quickSetupButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+    },
+    quickSetupButtonText: {
+      color: colors.white,
+      fontSize: 15,
+      fontWeight: '500',
+    },
+    scraperCard: {
+      backgroundColor: colors.elevation2,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+      minHeight: 120,
+    },
+    scraperCardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    scraperCardInfo: {
+      flex: 1,
+      marginRight: 12,
+    },
+    scraperCardMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 8,
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    scraperCardMetaItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+      marginBottom: 4,
+    },
+    scraperCardMetaText: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    emptyStateContainer: {
+      alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: 20,
+    },
+    emptyStateIcon: {
+      marginBottom: 16,
+    },
+    // Repository management styles
+    repositoriesList: {
+      marginBottom: 16,
+    },
+    repositoryItem: {
+      backgroundColor: colors.elevation2,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: colors.elevation3,
+    },
+    repositoryInfo: {
+      flex: 1,
+      marginBottom: 12,
+    },
+    repositoryName: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.white,
+      marginRight: 8,
+    },
+    repositoryDescription: {
+      fontSize: 14,
+      color: colors.mediumGray,
+      marginBottom: 4,
+      lineHeight: 18,
+    },
+    repositoryUrl: {
+      fontSize: 12,
+      color: colors.mediumGray,
+      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+      marginBottom: 4,
+    },
+    repositoryMeta: {
+      fontSize: 12,
+      color: colors.mediumGray,
+    },
+    repositoryActions: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 8,
+    },
+    repositoryActionButton: {
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 6,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 36,
+    },
+    repositoryActionButtonPrimary: {
+      backgroundColor: 'transparent',
+      borderColor: colors.primary,
+    },
+    repositoryActionButtonSecondary: {
+      backgroundColor: 'transparent',
+      borderColor: colors.elevation3,
+    },
+    repositoryActionButtonDanger: {
+      backgroundColor: 'transparent',
+      borderColor: '#ff3b30',
+    },
+    repositoryActionButtonText: {
+      fontSize: 13,
+      fontWeight: '500',
+      color: colors.white,
+    },
+  });
 
 // Helper component for collapsible sections
 const CollapsibleSection: React.FC<{
@@ -774,13 +781,16 @@ const CollapsibleSection: React.FC<{
   styles: any;
 }> = ({ title, children, isExpanded, onToggle, colors, styles }) => (
   <View style={styles.collapsibleSection}>
-    <TouchableOpacity style={styles.collapsibleHeader} onPress={() => {
-      triggerLight();
-      onToggle();
-    }}>
+    <TouchableOpacity
+      style={styles.collapsibleHeader}
+      onPress={() => {
+        triggerLight();
+        onToggle();
+      }}
+    >
       <Text style={styles.collapsibleTitle}>{title}</Text>
       <Ionicons
-        name={isExpanded ? "chevron-up" : "chevron-down"}
+        name={isExpanded ? 'chevron-up' : 'chevron-down'}
         size={20}
         color={colors.mediumGray}
       />
@@ -823,17 +833,19 @@ const StatusBadge: React.FC<{
   const config = getStatusConfig();
 
   return (
-    <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 3,
-      borderRadius: 9999,
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: config.color,
-      gap: 6,
-    }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 9999,
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: config.color,
+        gap: 6,
+      }}
+    >
       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: config.color }} />
       <Text style={{ color: config.color, fontSize: 11, fontWeight: '600' }}>{config.text}</Text>
     </View>
@@ -851,7 +863,9 @@ const PluginsScreen: React.FC = () => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([]);
 
   const openAlert = (
     title: string,
@@ -860,7 +874,7 @@ const PluginsScreen: React.FC = () => {
   ) => {
     setAlertTitle(title);
     setAlertMessage(message);
-    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => { } }]);
+    setAlertActions(actions && actions.length > 0 ? actions : [{ label: 'OK', onPress: () => {} }]);
     setAlertVisible(true);
   };
 
@@ -915,10 +929,11 @@ const PluginsScreen: React.FC = () => {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(scraper =>
-        scraper.name.toLowerCase().includes(query) ||
-        scraper.description.toLowerCase().includes(query) ||
-        scraper.id.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        scraper =>
+          scraper.name.toLowerCase().includes(query) ||
+          scraper.description.toLowerCase().includes(query) ||
+          scraper.id.toLowerCase().includes(query)
       );
     }
 
@@ -936,13 +951,16 @@ const PluginsScreen: React.FC = () => {
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
-  const getScraperStatus = (scraper: ScraperInfo): 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited' => {
+  const getScraperStatus = (
+    scraper: ScraperInfo
+  ): 'enabled' | 'disabled' | 'available' | 'platform-disabled' | 'error' | 'limited' => {
     if (scraper.manifestEnabled === false) return 'disabled';
-    if (scraper.disabledPlatforms?.includes(Platform.OS as 'ios' | 'android')) return 'platform-disabled';
+    if (scraper.disabledPlatforms?.includes(Platform.OS as 'ios' | 'android'))
+      return 'platform-disabled';
     if (scraper.limited) return 'limited';
     if (scraper.enabled) return 'enabled';
     return 'available';
@@ -956,7 +974,10 @@ const PluginsScreen: React.FC = () => {
       );
       await Promise.all(promises);
       await loadScrapers();
-      openAlert('Success', `${enabled ? 'Enabled' : 'Disabled'} ${filteredScrapers.length} scrapers`);
+      openAlert(
+        'Success',
+        `${enabled ? 'Enabled' : 'Disabled'} ${filteredScrapers.length} scrapers`
+      );
     } catch (error) {
       logger.error('[ScraperSettings] Failed to bulk toggle:', error);
       openAlert('Error', 'Failed to update scrapers');
@@ -992,7 +1013,10 @@ const PluginsScreen: React.FC = () => {
     let normalizedUrl = url;
     if (isManifestUrl) {
       normalizedUrl = url.replace('/manifest.json', '');
-      logger.log('[PluginsScreen] Detected manifest URL, extracting base repository URL:', normalizedUrl);
+      logger.log(
+        '[PluginsScreen] Detected manifest URL, extracting base repository URL:',
+        normalizedUrl
+      );
     }
 
     // Additional validation for normalized URL
@@ -1010,7 +1034,7 @@ const PluginsScreen: React.FC = () => {
         name: '', // Let the service fetch from manifest
         url: normalizedUrl, // Use normalized URL (without manifest.json)
         description: '',
-        enabled: true
+        enabled: true,
       });
 
       await loadRepositories();
@@ -1058,30 +1082,29 @@ const PluginsScreen: React.FC = () => {
       ? `Are you sure you want to remove "${repo.name}"? This is your only repository, so you'll have no scrapers available until you add a new repository.`
       : `Are you sure you want to remove "${repo.name}"? This will also remove all scrapers from this repository.`;
 
-    openAlert(
-      alertTitle,
-      alertMessage,
-      [
-        { label: 'Cancel', onPress: () => { } },
-        {
-          label: 'Remove',
-          onPress: async () => {
-            try {
-              await pluginService.removeRepository(repoId);
-              await loadRepositories();
-              await loadScrapers();
-              const successMessage = isLastRepository
-                ? 'Repository removed successfully. You can add a new repository using the "Add Repository" button.'
-                : 'Repository removed successfully';
-              openAlert('Success', successMessage);
-            } catch (error) {
-              logger.error('[ScraperSettings] Failed to remove repository:', error);
-              openAlert('Error', error instanceof Error ? error.message : 'Failed to remove repository');
-            }
-          },
+    openAlert(alertTitle, alertMessage, [
+      { label: 'Cancel', onPress: () => {} },
+      {
+        label: 'Remove',
+        onPress: async () => {
+          try {
+            await pluginService.removeRepository(repoId);
+            await loadRepositories();
+            await loadScrapers();
+            const successMessage = isLastRepository
+              ? 'Repository removed successfully. You can add a new repository using the "Add Repository" button.'
+              : 'Repository removed successfully';
+            openAlert('Success', successMessage);
+          } catch (error) {
+            logger.error('[ScraperSettings] Failed to remove repository:', error);
+            openAlert(
+              'Error',
+              error instanceof Error ? error.message : 'Failed to remove repository'
+            );
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   useEffect(() => {
@@ -1092,7 +1115,6 @@ const PluginsScreen: React.FC = () => {
   const loadScrapers = async () => {
     try {
       const scrapers = await pluginService.getAvailableScrapers();
-
 
       setInstalledScrapers(scrapers);
       // Detect ShowBox scraper dynamically and preload settings
@@ -1240,7 +1262,7 @@ const PluginsScreen: React.FC = () => {
       'Clear All Scrapers',
       'Are you sure you want to remove all installed scrapers? This action cannot be undone.',
       [
-        { label: 'Cancel', onPress: () => { } },
+        { label: 'Cancel', onPress: () => {} },
         {
           label: 'Clear',
           onPress: async () => {
@@ -1263,7 +1285,7 @@ const PluginsScreen: React.FC = () => {
       'Clear Repository Cache',
       'This will remove the saved repository URL and clear all cached scraper data. You will need to re-enter your repository URL.',
       [
-        { label: 'Cancel', onPress: () => { } },
+        { label: 'Cancel', onPress: () => {} },
         {
           label: 'Clear Cache',
           onPress: async () => {
@@ -1352,12 +1374,42 @@ const PluginsScreen: React.FC = () => {
   };
 
   // Define available quality options
-  const qualityOptions = ['Auto', 'Adaptive', '2160p', '4K', '1080p', '720p', '360p', 'DV', 'HDR', 'REMUX', '480p', 'CAM', 'TS'];
+  const qualityOptions = [
+    'Auto',
+    'Adaptive',
+    '2160p',
+    '4K',
+    '1080p',
+    '720p',
+    '360p',
+    'DV',
+    'HDR',
+    'REMUX',
+    '480p',
+    'CAM',
+    'TS',
+  ];
 
   // Define available language options
-  const languageOptions = ['Original', 'English', 'Spanish', 'Latin', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Japanese', 'Korean', 'Chinese', 'Arabic', 'Hindi', 'Turkish', 'Dutch', 'Polish'];
-
-
+  const languageOptions = [
+    'Original',
+    'English',
+    'Spanish',
+    'Latin',
+    'French',
+    'German',
+    'Italian',
+    'Portuguese',
+    'Russian',
+    'Japanese',
+    'Korean',
+    'Chinese',
+    'Arabic',
+    'Hindi',
+    'Turkish',
+    'Dutch',
+    'Polish',
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1435,7 +1487,7 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.enableLocalScrapers}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 triggerMedium();
                 handleToggleLocalScrapers(value);
               }}
@@ -1454,7 +1506,8 @@ const PluginsScreen: React.FC = () => {
           styles={styles}
         >
           <Text style={styles.sectionDescription}>
-            Manage multiple scraper repositories. Switch between repositories to access different sets of scrapers.
+            Manage multiple scraper repositories. Switch between repositories to access different
+            sets of scrapers.
           </Text>
 
           {/* Current Repository */}
@@ -1462,15 +1515,19 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.currentRepoContainer}>
               <Text style={styles.currentRepoLabel}>Current Repository:</Text>
               <Text style={styles.currentRepoUrl}>{pluginService.getRepositoryName()}</Text>
-              <Text style={[styles.currentRepoUrl, { fontSize: 12, opacity: 0.7, marginTop: 4 }]}>{repositoryUrl}</Text>
+              <Text style={[styles.currentRepoUrl, { fontSize: 12, opacity: 0.7, marginTop: 4 }]}>
+                {repositoryUrl}
+              </Text>
             </View>
           )}
 
           {/* Repository List */}
           {repositories.length > 0 && (
             <View style={styles.repositoriesList}>
-              <Text style={[styles.settingTitle, { marginBottom: 12 }]}>Available Repositories</Text>
-              {repositories.map((repo) => (
+              <Text style={[styles.settingTitle, { marginBottom: 12 }]}>
+                Available Repositories
+              </Text>
+              {repositories.map(repo => (
                 <View key={repo.id} style={styles.repositoryItem}>
                   <View style={styles.repositoryInfo}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
@@ -1493,13 +1550,17 @@ const PluginsScreen: React.FC = () => {
                     )}
                     <Text style={styles.repositoryUrl}>{repo.url}</Text>
                     <Text style={styles.repositoryMeta}>
-                      {repo.scraperCount || 0} scrapers • Last updated: {repo.lastUpdated ? new Date(repo.lastUpdated).toLocaleDateString() : 'Never'}
+                      {repo.scraperCount || 0} scrapers • Last updated:{' '}
+                      {repo.lastUpdated ? new Date(repo.lastUpdated).toLocaleDateString() : 'Never'}
                     </Text>
                   </View>
                   <View style={styles.repositoryActions}>
                     {repo.id !== currentRepositoryId && (
                       <TouchableOpacity
-                        style={[styles.repositoryActionButton, styles.repositoryActionButtonPrimary]}
+                        style={[
+                          styles.repositoryActionButton,
+                          styles.repositoryActionButtonPrimary,
+                        ]}
                         onPress={() => {
                           triggerMedium();
                           handleSwitchRepository(repo.id);
@@ -1514,7 +1575,10 @@ const PluginsScreen: React.FC = () => {
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity
-                      style={[styles.repositoryActionButton, styles.repositoryActionButtonSecondary]}
+                      style={[
+                        styles.repositoryActionButton,
+                        styles.repositoryActionButtonSecondary,
+                      ]}
                       onPress={() => {
                         triggerMedium();
                         handleRefreshRepository();
@@ -1542,7 +1606,6 @@ const PluginsScreen: React.FC = () => {
               ))}
             </View>
           )}
-
 
           {/* Add Repository Button */}
           <TouchableOpacity
@@ -1578,10 +1641,12 @@ const PluginsScreen: React.FC = () => {
                   placeholderTextColor={colors.mediumGray}
                 />
                 {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => {
-                    triggerLight();
-                    setSearchQuery('');
-                  }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      triggerLight();
+                      setSearchQuery('');
+                    }}
+                  >
                     <Ionicons name="close-circle" size={20} color={colors.mediumGray} />
                   </TouchableOpacity>
                 )}
@@ -1589,22 +1654,24 @@ const PluginsScreen: React.FC = () => {
 
               {/* Filter Chips */}
               <View style={styles.filterContainer}>
-                {['all', 'movie', 'tv'].map((filter) => (
+                {['all', 'movie', 'tv'].map(filter => (
                   <TouchableOpacity
                     key={filter}
                     style={[
                       styles.filterChip,
-                      selectedFilter === filter && styles.filterChipSelected
+                      selectedFilter === filter && styles.filterChipSelected,
                     ]}
                     onPress={() => {
                       triggerLight();
                       setSelectedFilter(filter as any);
                     }}
                   >
-                    <Text style={[
-                      styles.filterChipText,
-                      selectedFilter === filter && styles.filterChipTextSelected
-                    ]}>
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        selectedFilter === filter && styles.filterChipTextSelected,
+                      ]}
+                    >
                       {filter === 'all' ? 'All' : filter === 'movie' ? 'Movies' : 'TV Shows'}
                     </Text>
                   </TouchableOpacity>
@@ -1622,7 +1689,9 @@ const PluginsScreen: React.FC = () => {
                     }}
                     disabled={isRefreshing}
                   >
-                    <Text style={[styles.bulkActionButtonText, { color: '#34C759' }]}>Enable All</Text>
+                    <Text style={[styles.bulkActionButtonText, { color: '#34C759' }]}>
+                      Enable All
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.bulkActionButton, styles.bulkActionButtonDisabled]}
@@ -1632,7 +1701,9 @@ const PluginsScreen: React.FC = () => {
                     }}
                     disabled={isRefreshing}
                   >
-                    <Text style={[styles.bulkActionButtonText, { color: colors.mediumGray }]}>Disable All</Text>
+                    <Text style={[styles.bulkActionButtonText, { color: colors.mediumGray }]}>
+                      Disable All
+                    </Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -1642,7 +1713,7 @@ const PluginsScreen: React.FC = () => {
           {filteredScrapers.length === 0 ? (
             <View style={styles.emptyStateContainer}>
               <Ionicons
-                name={searchQuery ? "search" : "download-outline"}
+                name={searchQuery ? 'search' : 'download-outline'}
                 size={48}
                 color={colors.mediumGray}
                 style={styles.emptyStateIcon}
@@ -1653,8 +1724,7 @@ const PluginsScreen: React.FC = () => {
               <Text style={styles.emptyStateDescription}>
                 {searchQuery
                   ? `No scrapers match "${searchQuery}". Try a different search term.`
-                  : 'Configure a repository above to view available scrapers.'
-                }
+                  : 'Configure a repository above to view available scrapers.'}
               </Text>
               {searchQuery && (
                 <TouchableOpacity
@@ -1670,11 +1740,12 @@ const PluginsScreen: React.FC = () => {
             </View>
           ) : (
             <View style={styles.scrapersContainer}>
-              {filteredScrapers.map((scraper) => (
+              {filteredScrapers.map(scraper => (
                 <View key={scraper.id} style={styles.scraperCard}>
                   <View style={styles.scraperCardHeader}>
                     {scraper.logo ? (
-                      (scraper.logo.toLowerCase().endsWith('.svg') || scraper.logo.toLowerCase().includes('.svg?')) ? (
+                      scraper.logo.toLowerCase().endsWith('.svg') ||
+                      scraper.logo.toLowerCase().includes('.svg?') ? (
                         <Image
                           source={{ uri: scraper.logo }}
                           style={styles.scraperLogo}
@@ -1691,7 +1762,14 @@ const PluginsScreen: React.FC = () => {
                       <View style={styles.scraperLogo} />
                     )}
                     <View style={styles.scraperCardInfo}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          marginBottom: 4,
+                          gap: 8,
+                        }}
+                      >
                         <Text style={styles.scraperName}>{scraper.name}</Text>
                         <StatusBadge status={getScraperStatus(scraper)} colors={colors} />
                       </View>
@@ -1699,13 +1777,20 @@ const PluginsScreen: React.FC = () => {
                     </View>
                     <Switch
                       value={scraper.enabled && settings.enableLocalScrapers}
-                      onValueChange={(enabled) => {
+                      onValueChange={enabled => {
                         triggerMedium();
                         handleToggleScraper(scraper.id, enabled);
                       }}
                       trackColor={{ false: colors.elevation3, true: colors.primary }}
-                      thumbColor={scraper.enabled && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
-                      disabled={!settings.enableLocalScrapers || scraper.manifestEnabled === false || (scraper.disabledPlatforms && scraper.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))}
+                      thumbColor={
+                        scraper.enabled && settings.enableLocalScrapers ? colors.white : '#f4f3f4'
+                      }
+                      disabled={
+                        !settings.enableLocalScrapers ||
+                        scraper.manifestEnabled === false ||
+                        (scraper.disabledPlatforms &&
+                          scraper.disabledPlatforms.includes(Platform.OS as 'ios' | 'android'))
+                      }
                     />
                   </View>
 
@@ -1731,71 +1816,93 @@ const PluginsScreen: React.FC = () => {
                     {scraper.supportsExternalPlayer === false && (
                       <View style={styles.scraperCardMetaItem}>
                         <Ionicons name="play-circle" size={12} color={colors.mediumGray} />
-                        <Text style={styles.scraperCardMetaText}>
-                          No external player
-                        </Text>
+                        <Text style={styles.scraperCardMetaText}>No external player</Text>
                       </View>
                     )}
                   </View>
 
                   {/* ShowBox Settings - only visible when ShowBox scraper is available */}
-                  {showboxScraperId && scraper.id === showboxScraperId && settings.enableLocalScrapers && (
-                    <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.elevation3 }}>
-                      <Text style={[styles.settingTitle, { marginBottom: 8 }]}>ShowBox UI Token</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                        <TextInput
-                          style={[styles.textInput, { flex: 1, marginBottom: 0 }]}
-                          value={showboxUiToken}
-                          onChangeText={setShowboxUiToken}
-                          placeholder="Paste your ShowBox UI token"
-                          placeholderTextColor={colors.mediumGray}
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                          secureTextEntry={showboxSavedToken.length > 0 && !showboxTokenVisible}
-                          multiline={false}
-                          numberOfLines={1}
-                        />
-                        {showboxSavedToken.length > 0 && (
-                          <TouchableOpacity onPress={() => {
-                            triggerLight();
-                            setShowboxTokenVisible(v => !v);
-                          }} accessibilityRole="button" accessibilityLabel={showboxTokenVisible ? 'Hide token' : 'Show token'} style={{ marginLeft: 10 }}>
-                            <Ionicons name={showboxTokenVisible ? 'eye-off' : 'eye'} size={18} color={colors.primary} />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                      <View style={styles.buttonRow}>
-                        {showboxUiToken !== showboxSavedToken && (
+                  {showboxScraperId &&
+                    scraper.id === showboxScraperId &&
+                    settings.enableLocalScrapers && (
+                      <View
+                        style={{
+                          marginTop: 16,
+                          paddingTop: 16,
+                          borderTopWidth: 1,
+                          borderTopColor: colors.elevation3,
+                        }}
+                      >
+                        <Text style={[styles.settingTitle, { marginBottom: 8 }]}>
+                          ShowBox UI Token
+                        </Text>
+                        <View
+                          style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}
+                        >
+                          <TextInput
+                            style={[styles.textInput, { flex: 1, marginBottom: 0 }]}
+                            value={showboxUiToken}
+                            onChangeText={setShowboxUiToken}
+                            placeholder="Paste your ShowBox UI token"
+                            placeholderTextColor={colors.mediumGray}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            secureTextEntry={showboxSavedToken.length > 0 && !showboxTokenVisible}
+                            multiline={false}
+                            numberOfLines={1}
+                          />
+                          {showboxSavedToken.length > 0 && (
+                            <TouchableOpacity
+                              onPress={() => {
+                                triggerLight();
+                                setShowboxTokenVisible(v => !v);
+                              }}
+                              accessibilityRole="button"
+                              accessibilityLabel={showboxTokenVisible ? 'Hide token' : 'Show token'}
+                              style={{ marginLeft: 10 }}
+                            >
+                              <Ionicons
+                                name={showboxTokenVisible ? 'eye-off' : 'eye'}
+                                size={18}
+                                color={colors.primary}
+                              />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <View style={styles.buttonRow}>
+                          {showboxUiToken !== showboxSavedToken && (
+                            <TouchableOpacity
+                              style={[styles.button, styles.primaryButton]}
+                              onPress={async () => {
+                                triggerMedium();
+                                if (showboxScraperId) {
+                                  await pluginService.setScraperSettings(showboxScraperId, {
+                                    uiToken: showboxUiToken,
+                                  });
+                                }
+                                setShowboxSavedToken(showboxUiToken);
+                                openAlert('Saved', 'ShowBox settings updated');
+                              }}
+                            >
+                              <Text style={styles.buttonText}>Save</Text>
+                            </TouchableOpacity>
+                          )}
                           <TouchableOpacity
-                            style={[styles.button, styles.primaryButton]}
+                            style={[styles.button, styles.secondaryButton]}
                             onPress={async () => {
-                              triggerMedium();
+                              triggerLight();
+                              setShowboxUiToken('');
+                              setShowboxSavedToken('');
                               if (showboxScraperId) {
-                                await pluginService.setScraperSettings(showboxScraperId, { uiToken: showboxUiToken });
+                                await pluginService.setScraperSettings(showboxScraperId, {});
                               }
-                              setShowboxSavedToken(showboxUiToken);
-                              openAlert('Saved', 'ShowBox settings updated');
                             }}
                           >
-                            <Text style={styles.buttonText}>Save</Text>
+                            <Text style={styles.secondaryButtonText}>Clear</Text>
                           </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                          style={[styles.button, styles.secondaryButton]}
-                          onPress={async () => {
-                            triggerLight();
-                            setShowboxUiToken('');
-                            setShowboxSavedToken('');
-                            if (showboxScraperId) {
-                              await pluginService.setScraperSettings(showboxScraperId, {});
-                            }
-                          }}
-                        >
-                          <Text style={styles.secondaryButtonText}>Clear</Text>
-                        </TouchableOpacity>
+                        </View>
                       </View>
-                    </View>
-                  )}
+                    )}
                 </View>
               ))}
             </View>
@@ -1814,17 +1921,22 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Enable URL Validation</Text>
               <Text style={styles.settingDescription}>
-                Validate streaming URLs before returning them (may slow down results but improves reliability)
+                Validate streaming URLs before returning them (may slow down results but improves
+                reliability)
               </Text>
             </View>
             <Switch
               value={settings.enableScraperUrlValidation && settings.enableLocalScrapers}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 triggerMedium();
                 handleToggleUrlValidation(value);
               }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.enableScraperUrlValidation && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
+              thumbColor={
+                settings.enableScraperUrlValidation && settings.enableLocalScrapers
+                  ? colors.white
+                  : '#f4f3f4'
+              }
               disabled={!settings.enableLocalScrapers}
             />
           </View>
@@ -1833,12 +1945,14 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Group Plugin Streams</Text>
               <Text style={styles.settingDescription}>
-                When enabled, all plugin streams are grouped under "{pluginService.getRepositoryName()}". When disabled, each plugin shows as a separate provider.
+                When enabled, all plugin streams are grouped under "
+                {pluginService.getRepositoryName()}". When disabled, each plugin shows as a separate
+                provider.
               </Text>
             </View>
             <Switch
               value={settings.streamDisplayMode === 'grouped'}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 triggerMedium();
                 updateSetting('streamDisplayMode', value ? 'grouped' : 'separate');
                 // Auto-disable quality sorting when grouping is disabled
@@ -1856,17 +1970,24 @@ const PluginsScreen: React.FC = () => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>Sort by Quality First</Text>
               <Text style={styles.settingDescription}>
-                When enabled, streams are sorted by quality first, then by scraper. When disabled, streams are sorted by scraper first, then by quality. Only available when grouping is enabled.
+                When enabled, streams are sorted by quality first, then by scraper. When disabled,
+                streams are sorted by scraper first, then by quality. Only available when grouping
+                is enabled.
               </Text>
             </View>
             <Switch
               value={settings.streamSortMode === 'quality-then-scraper'}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 triggerMedium();
-                updateSetting('streamSortMode', value ? 'quality-then-scraper' : 'scraper-then-quality');
+                updateSetting(
+                  'streamSortMode',
+                  value ? 'quality-then-scraper' : 'scraper-then-quality'
+                );
               }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.streamSortMode === 'quality-then-scraper' ? colors.white : '#f4f3f4'}
+              thumbColor={
+                settings.streamSortMode === 'quality-then-scraper' ? colors.white : '#f4f3f4'
+              }
               disabled={!settings.enableLocalScrapers || settings.streamDisplayMode !== 'grouped'}
             />
           </View>
@@ -1880,12 +2001,14 @@ const PluginsScreen: React.FC = () => {
             </View>
             <Switch
               value={settings.showScraperLogos && settings.enableLocalScrapers}
-              onValueChange={(value) => {
+              onValueChange={value => {
                 triggerMedium();
                 updateSetting('showScraperLogos', value);
               }}
               trackColor={{ false: colors.elevation3, true: colors.primary }}
-              thumbColor={settings.showScraperLogos && settings.enableLocalScrapers ? colors.white : '#f4f3f4'}
+              thumbColor={
+                settings.showScraperLogos && settings.enableLocalScrapers ? colors.white : '#f4f3f4'
+              }
               disabled={!settings.enableLocalScrapers}
             />
           </View>
@@ -1900,11 +2023,12 @@ const PluginsScreen: React.FC = () => {
           styles={styles}
         >
           <Text style={styles.sectionDescription}>
-            Exclude specific video qualities from search results. Tap on a quality to exclude it from plugin results.
+            Exclude specific video qualities from search results. Tap on a quality to exclude it
+            from plugin results.
           </Text>
 
           <View style={styles.qualityChipsContainer}>
-            {qualityOptions.map((quality) => {
+            {qualityOptions.map(quality => {
               const isExcluded = (settings.excludedQualities || []).includes(quality);
               return (
                 <TouchableOpacity
@@ -1912,7 +2036,7 @@ const PluginsScreen: React.FC = () => {
                   style={[
                     styles.qualityChip,
                     isExcluded && styles.qualityChipSelected,
-                    !settings.enableLocalScrapers && styles.disabledButton
+                    !settings.enableLocalScrapers && styles.disabledButton,
                   ]}
                   onPress={() => {
                     triggerLight();
@@ -1920,12 +2044,15 @@ const PluginsScreen: React.FC = () => {
                   }}
                   disabled={!settings.enableLocalScrapers}
                 >
-                  <Text style={[
-                    styles.qualityChipText,
-                    isExcluded && styles.qualityChipTextSelected,
-                    !settings.enableLocalScrapers && styles.disabledText
-                  ]}>
-                    {isExcluded ? '✕ ' : ''}{quality}
+                  <Text
+                    style={[
+                      styles.qualityChipText,
+                      isExcluded && styles.qualityChipTextSelected,
+                      !settings.enableLocalScrapers && styles.disabledText,
+                    ]}
+                  >
+                    {isExcluded ? '✕ ' : ''}
+                    {quality}
                   </Text>
                 </TouchableOpacity>
               );
@@ -1933,7 +2060,13 @@ const PluginsScreen: React.FC = () => {
           </View>
 
           {(settings.excludedQualities || []).length > 0 && (
-            <Text style={[styles.infoText, { marginTop: 12 }, !settings.enableLocalScrapers && styles.disabledText]}>
+            <Text
+              style={[
+                styles.infoText,
+                { marginTop: 12 },
+                !settings.enableLocalScrapers && styles.disabledText,
+              ]}
+            >
               Excluded qualities: {(settings.excludedQualities || []).join(', ')}
             </Text>
           )}
@@ -1948,15 +2081,20 @@ const PluginsScreen: React.FC = () => {
           styles={styles}
         >
           <Text style={styles.sectionDescription}>
-            Exclude specific languages from search results. Tap on a language to exclude it from plugin results.
+            Exclude specific languages from search results. Tap on a language to exclude it from
+            plugin results.
           </Text>
 
-          <Text style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}>
-            <Text style={{ fontWeight: '600' }}>Note:</Text> This filter only applies to providers that include language information in their stream names. It does not affect other providers.
+          <Text
+            style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}
+          >
+            <Text style={{ fontWeight: '600' }}>Note:</Text> This filter only applies to providers
+            that include language information in their stream names. It does not affect other
+            providers.
           </Text>
 
           <View style={styles.qualityChipsContainer}>
-            {languageOptions.map((language) => {
+            {languageOptions.map(language => {
               const isExcluded = (settings.excludedLanguages || []).includes(language);
               return (
                 <TouchableOpacity
@@ -1964,7 +2102,7 @@ const PluginsScreen: React.FC = () => {
                   style={[
                     styles.qualityChip,
                     isExcluded && styles.qualityChipSelected,
-                    !settings.enableLocalScrapers && styles.disabledButton
+                    !settings.enableLocalScrapers && styles.disabledButton,
                   ]}
                   onPress={() => {
                     triggerLight();
@@ -1972,12 +2110,15 @@ const PluginsScreen: React.FC = () => {
                   }}
                   disabled={!settings.enableLocalScrapers}
                 >
-                  <Text style={[
-                    styles.qualityChipText,
-                    isExcluded && styles.qualityChipTextSelected,
-                    !settings.enableLocalScrapers && styles.disabledText
-                  ]}>
-                    {isExcluded ? '✕ ' : ''}{language}
+                  <Text
+                    style={[
+                      styles.qualityChipText,
+                      isExcluded && styles.qualityChipTextSelected,
+                      !settings.enableLocalScrapers && styles.disabledText,
+                    ]}
+                  >
+                    {isExcluded ? '✕ ' : ''}
+                    {language}
                   </Text>
                 </TouchableOpacity>
               );
@@ -1985,7 +2126,13 @@ const PluginsScreen: React.FC = () => {
           </View>
 
           {(settings.excludedLanguages || []).length > 0 && (
-            <Text style={[styles.infoText, { marginTop: 12 }, !settings.enableLocalScrapers && styles.disabledText]}>
+            <Text
+              style={[
+                styles.infoText,
+                { marginTop: 12 },
+                !settings.enableLocalScrapers && styles.disabledText,
+              ]}
+            >
               Excluded languages: {(settings.excludedLanguages || []).join(', ')}
             </Text>
           )}
@@ -1999,8 +2146,11 @@ const PluginsScreen: React.FC = () => {
             They run locally on your device and can be installed from trusted repositories.
           </Text>
 
-          <Text style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}>
-            <Text style={{ fontWeight: '600' }}>Note:</Text> Providers marked as "Limited" depend on external APIs that may stop working without notice.
+          <Text
+            style={[styles.infoText, { marginTop: 8, fontSize: 13, color: colors.mediumEmphasis }]}
+          >
+            <Text style={{ fontWeight: '600' }}>Note:</Text> Providers marked as "Limited" depend on
+            external APIs that may stop working without notice.
           </Text>
         </View>
       </ScrollView>
@@ -2017,16 +2167,20 @@ const PluginsScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Getting Started with Plugins</Text>
             <Text style={styles.modalText}>
-              1. <Text style={{ fontWeight: '600' }}>Enable Plugins</Text> - Turn on the main switch to allow plugins
+              1. <Text style={{ fontWeight: '600' }}>Enable Plugins</Text> - Turn on the main switch
+              to allow plugins
             </Text>
             <Text style={styles.modalText}>
-              2. <Text style={{ fontWeight: '600' }}>Add Repository</Text> - Add a GitHub raw URL or use the default repository
+              2. <Text style={{ fontWeight: '600' }}>Add Repository</Text> - Add a GitHub raw URL or
+              use the default repository
             </Text>
             <Text style={styles.modalText}>
-              3. <Text style={{ fontWeight: '600' }}>Refresh Repository</Text> - Download available scrapers from the repository
+              3. <Text style={{ fontWeight: '600' }}>Refresh Repository</Text> - Download available
+              scrapers from the repository
             </Text>
             <Text style={styles.modalText}>
-              4. <Text style={{ fontWeight: '600' }}>Enable Scrapers</Text> - Turn on the scrapers you want to use for streaming
+              4. <Text style={{ fontWeight: '600' }}>Enable Scrapers</Text> - Turn on the scrapers
+              you want to use for streaming
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
@@ -2070,7 +2224,6 @@ const PluginsScreen: React.FC = () => {
                 numberOfLines={1}
               />
 
-
               {/* Format Hint */}
               <Text style={styles.formatHint}>
                 Format: https://raw.githubusercontent.com/username/repo/refs/heads/branch
@@ -2090,7 +2243,11 @@ const PluginsScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.compactButton, styles.addButton, (!newRepositoryUrl.trim() || isLoading) && styles.disabledButton]}
+                  style={[
+                    styles.compactButton,
+                    styles.addButton,
+                    (!newRepositoryUrl.trim() || isLoading) && styles.disabledButton,
+                  ]}
                   onPress={() => {
                     triggerMedium();
                     handleAddRepository();

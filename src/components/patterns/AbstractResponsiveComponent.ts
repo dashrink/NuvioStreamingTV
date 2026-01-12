@@ -240,9 +240,7 @@ export interface ResponsiveState {
 /**
  * Type guard for checking if component has responsive props
  */
-export const isResponsiveComponentProps = (
-  props: any
-): props is ResponsiveComponentProps => {
+export const isResponsiveComponentProps = (props: any): props is ResponsiveComponentProps => {
   return typeof props === 'object' && props !== null;
 };
 
@@ -279,7 +277,7 @@ export const createResponsiveWrapper = <P extends ResponsiveComponentProps>(
 ): React.FC<P> => {
   const isMobile = true; // This will be replaced by actual platform check at runtime
 
-  const Component: React.FC<P> = (props) => {
+  const Component: React.FC<P> = props => {
     const ComponentToRender = isMobile ? StandardComponent : TVComponent;
     return React.createElement(ComponentToRender, props);
   };
@@ -294,7 +292,7 @@ export const createResponsiveWrapper = <P extends ResponsiveComponentProps>(
 export const withResponsiveProps = <P extends ResponsiveComponentProps>(
   Component: React.ComponentType<P>
 ) => {
-  const WrappedComponent: React.FC<P> = (props) => {
+  const WrappedComponent: React.FC<P> = props => {
     const responsiveProps = {
       ...props,
       testID: props.testID || 'responsive-component',

@@ -1,5 +1,6 @@
 import { Platform, ViewStyle } from 'react-native';
 import { Easing } from 'react-native-reanimated';
+
 import { colors } from './colors';
 
 /**

@@ -3,6 +3,8 @@
  * Displays at app launch or when switching profiles
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -15,19 +17,18 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
-import { useProfile } from '../contexts/ProfileContext';
+
+import CustomAlert from '../components/CustomAlert';
 import {
   ProfileCard,
   PinEntryModal,
   ProfileEditModal,
   ForgotPinModal,
 } from '../components/profile';
-import { Profile, CreateProfileInput, UpdateProfileInput, MAX_PROFILES } from '../types/profile';
-import CustomAlert from '../components/CustomAlert';
+import { useProfile } from '../contexts/ProfileContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { Profile, CreateProfileInput, UpdateProfileInput, MAX_PROFILES } from '../types/profile';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

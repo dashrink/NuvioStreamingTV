@@ -1,3 +1,5 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
   View,
@@ -8,11 +10,10 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
+
 import AndroidUpdatePopup from './AndroidUpdatePopup';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -90,37 +91,31 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
       supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
     >
       <View style={styles.overlay}>
-        <View style={[
-          styles.popup,
-          {
-            backgroundColor: currentTheme.colors.darkBackground || '#1a1a1a',
-            borderColor: currentTheme.colors.elevation2 || '#333333',
-            marginTop: insets.top + 20,
-            marginBottom: insets.bottom + 20,
-          }
-        ]}>
+        <View
+          style={[
+            styles.popup,
+            {
+              backgroundColor: currentTheme.colors.darkBackground || '#1a1a1a',
+              borderColor: currentTheme.colors.elevation2 || '#333333',
+              marginTop: insets.top + 20,
+              marginBottom: insets.bottom + 20,
+            },
+          ]}
+        >
           {/* Header */}
           <View style={styles.header}>
-            <View style={[
-              styles.iconContainer,
-              { backgroundColor: `${currentTheme.colors.primary}20` }
-            ]}>
-              <MaterialIcons
-                name="system-update"
-                size={32}
-                color={currentTheme.colors.primary}
-              />
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: `${currentTheme.colors.primary}20` },
+              ]}
+            >
+              <MaterialIcons name="system-update" size={32} color={currentTheme.colors.primary} />
             </View>
-            <Text style={[
-              styles.title,
-              { color: currentTheme.colors.highEmphasis }
-            ]}>
+            <Text style={[styles.title, { color: currentTheme.colors.highEmphasis }]}>
               Update Available
             </Text>
-            <Text style={[
-              styles.subtitle,
-              { color: currentTheme.colors.mediumEmphasis }
-            ]}>
+            <Text style={[styles.subtitle, { color: currentTheme.colors.mediumEmphasis }]}>
               A new version of Nuvio is ready to install
             </Text>
           </View>
@@ -128,22 +123,12 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
           {/* Update Info */}
           <View style={styles.updateInfo}>
             <View style={styles.infoRow}>
-              <MaterialIcons
-                name="info-outline"
-                size={16}
-                color={currentTheme.colors.primary}
-              />
-              <Text style={[
-                styles.infoLabel,
-                { color: currentTheme.colors.mediumEmphasis }
-              ]}>
+              <MaterialIcons name="info-outline" size={16} color={currentTheme.colors.primary} />
+              <Text style={[styles.infoLabel, { color: currentTheme.colors.mediumEmphasis }]}>
                 Version:
               </Text>
               <Text
-                style={[
-                  styles.infoValue,
-                  { color: currentTheme.colors.highEmphasis }
-                ]}
+                style={[styles.infoValue, { color: currentTheme.colors.highEmphasis }]}
                 numberOfLines={3}
                 ellipsizeMode="tail"
                 selectable
@@ -154,10 +139,7 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
 
             {!!getReleaseNotes() && (
               <View style={styles.descriptionContainer}>
-                <Text style={[
-                  styles.description,
-                  { color: currentTheme.colors.mediumEmphasis }
-                ]}>
+                <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis }]}>
                   {getReleaseNotes()}
                 </Text>
               </View>
@@ -171,7 +153,7 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
                 styles.button,
                 styles.primaryButton,
                 { backgroundColor: currentTheme.colors.primary },
-                isInstalling && styles.disabledButton
+                isInstalling && styles.disabledButton,
               ]}
               onPress={handleUpdateNow}
               disabled={isInstalling}
@@ -198,16 +180,18 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
                   {
                     backgroundColor: currentTheme.colors.darkBackground || '#2a2a2a',
                     borderColor: currentTheme.colors.elevation3 || '#444444',
-                  }
+                  },
                 ]}
                 onPress={handleUpdateLater}
                 disabled={isInstalling}
                 activeOpacity={0.7}
               >
-                <Text style={[
-                  styles.secondaryButtonText,
-                  { color: currentTheme.colors.mediumEmphasis }
-                ]}>
+                <Text
+                  style={[
+                    styles.secondaryButtonText,
+                    { color: currentTheme.colors.mediumEmphasis },
+                  ]}
+                >
                   Later
                 </Text>
               </TouchableOpacity>
@@ -219,16 +203,18 @@ const UpdatePopup: React.FC<UpdatePopupProps> = ({
                   {
                     backgroundColor: currentTheme.colors.darkBackground || '#2a2a2a',
                     borderColor: currentTheme.colors.elevation3 || '#444444',
-                  }
+                  },
                 ]}
                 onPress={handleDismiss}
                 disabled={isInstalling}
                 activeOpacity={0.7}
               >
-                <Text style={[
-                  styles.secondaryButtonText,
-                  { color: currentTheme.colors.mediumEmphasis }
-                ]}>
+                <Text
+                  style={[
+                    styles.secondaryButtonText,
+                    { color: currentTheme.colors.mediumEmphasis },
+                  ]}
+                >
                   Dismiss
                 </Text>
               </TouchableOpacity>
@@ -253,14 +239,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     backgroundColor: '#1a1a1a', // Solid background - not transparent
-    ...(Platform.OS === 'ios' ? {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.5,
-      shadowRadius: 20,
-    } : {
-      elevation: 15,
-    }),
+    ...(Platform.OS === 'ios'
+      ? {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.5,
+          shadowRadius: 20,
+        }
+      : {
+          elevation: 15,
+        }),
     overflow: 'hidden',
   },
   header: {
@@ -337,14 +325,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButton: {
-    ...(Platform.OS === 'ios' ? {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-    } : {
-      elevation: 4,
-    }),
+    ...(Platform.OS === 'ios'
+      ? {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+        }
+      : {
+          elevation: 4,
+        }),
   },
   secondaryButton: {
     borderWidth: 1,

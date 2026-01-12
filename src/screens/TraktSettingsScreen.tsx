@@ -1,3 +1,12 @@
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation } from '@react-navigation/native';
+import {
+  makeRedirectUri,
+  useAuthRequest,
+  ResponseType,
+  Prompt,
+  CodeChallengeMethod,
+} from 'expo-auth-session';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -11,21 +20,19 @@ import {
   Linking,
   Switch,
 } from 'react-native';
-import { UnifiedSpinner } from '../components/loading';
-import { useNavigation } from '@react-navigation/native';
-import { makeRedirectUri, useAuthRequest, ResponseType, Prompt, CodeChallengeMethod } from 'expo-auth-session';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FastImage from '@d11/react-native-fast-image';
-import { traktService, TraktUser } from '../services/traktService';
-import { useSettings } from '../hooks/useSettings';
-import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
-import { logger } from '../utils/logger';
+
 import TraktIcon from '../../assets/rating-icons/trakt.svg';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTraktIntegration } from '../hooks/useTraktIntegration';
-import { useTraktAutosyncSettings } from '../hooks/useTraktAutosyncSettings';
-import { colors } from '../styles';
 import CustomAlert from '../components/CustomAlert';
+import { UnifiedSpinner } from '../components/loading';
+import { useTheme } from '../contexts/ThemeContext';
+import { triggerLight, triggerMedium, triggerHeavy } from '../hooks/useHaptics';
+import { useSettings } from '../hooks/useSettings';
+import { useTraktAutosyncSettings } from '../hooks/useTraktAutosyncSettings';
+import { useTraktIntegration } from '../hooks/useTraktIntegration';
+import { traktService, TraktUser } from '../services/traktService';
+import { colors } from '../styles';
+import { logger } from '../utils/logger';
 
 const ANDROID_STATUSBAR_HEIGHT = StatusBar.currentHeight || 0;
 
@@ -54,27 +61,24 @@ const TraktSettingsScreen: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState<TraktUser | null>(null);
   const { currentTheme } = useTheme();
-  
+
   const {
     settings: autosyncSettings,
     isSyncing,
     setAutosyncEnabled,
-    performManualSync
+    performManualSync,
   } = useTraktAutosyncSettings();
 
-  const {
-    isLoading: traktLoading,
-    refreshAuthStatus
-  } = useTraktIntegration();
+  const { isLoading: traktLoading, refreshAuthStatus } = useTraktIntegration();
 
   const [showSyncFrequencyModal, setShowSyncFrequencyModal] = useState(false);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const [alertActions, setAlertActions] = useState<Array<{ label: string; onPress: () => void; style?: object }>>([
-    { label: 'OK', onPress: () => setAlertVisible(false) },
-  ]);
+  const [alertActions, setAlertActions] = useState<
+    Array<{ label: string; onPress: () => void; style?: object }>
+  >([{ label: 'OK', onPress: () => setAlertVisible(false) }]);
 
   const openAlert = (
     title: string,
@@ -88,7 +92,9 @@ const TraktSettingsScreen: React.FC = () => {
         actions.map(a => ({
           label: a.label,
           style: a.style,
-          onPress: () => { a.onPress?.(); },
+          onPress: () => {
+            a.onPress?.();
+          },
         }))
       );
     } else {
@@ -102,7 +108,7 @@ const TraktSettingsScreen: React.FC = () => {
     try {
       const authenticated = await traktService.isAuthenticated();
       setIsAuthenticated(authenticated);
-      
+
       if (authenticated) {
         const profile = await traktService.getUserProfile();
         setUserProfile(profile);
@@ -125,7 +131,7 @@ const TraktSettingsScreen: React.FC = () => {
     {
       clientId: TRAKT_CLIENT_ID,
       scopes: [],
-      redirectUri: redirectUri,
+      redirectUri,
       responseType: ResponseType.Code,
       usePKCE: true,
       codeChallengeMethod: CodeChallengeMethod.S256,
@@ -142,7 +148,8 @@ const TraktSettingsScreen: React.FC = () => {
       if (response.type === 'success' && request?.codeVerifier) {
         const { code } = response.params;
         logger.log('[TraktSettingsScreen] Auth code received:', code);
-        traktService.exchangeCodeForToken(code, request.codeVerifier)
+        traktService
+          .exchangeCodeForToken(code, request.codeVerifier)
           .then(success => {
             if (success) {
               logger.log('[TraktSettingsScreen] Token exchange successful');
@@ -152,10 +159,10 @@ const TraktSettingsScreen: React.FC = () => {
                   'Successfully Connected',
                   'Your Trakt account has been connected successfully.',
                   [
-                    { 
-                      label: 'OK', 
+                    {
+                      label: 'OK',
                       onPress: () => navigation.goBack(),
-                    }
+                    },
                   ]
                 );
               });
@@ -173,7 +180,10 @@ const TraktSettingsScreen: React.FC = () => {
           });
       } else if (response.type === 'error') {
         logger.error('[TraktSettingsScreen] Authentication error:', response.error);
-        openAlert('Authentication Error', response.error?.message || 'An error occurred during authentication.');
+        openAlert(
+          'Authentication Error',
+          response.error?.message || 'An error occurred during authentication.'
+        );
         setIsExchangingCode(false);
       } else {
         logger.log('[TraktSettingsScreen] Auth response type:', response.type);
@@ -187,38 +197,36 @@ const TraktSettingsScreen: React.FC = () => {
   };
 
   const handleSignOut = async () => {
-    openAlert(
-      'Sign Out',
-      'Are you sure you want to sign out of your Trakt account?',
-      [
-        { label: 'Cancel', onPress: () => {} },
-        { 
-          label: 'Sign Out', 
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              await traktService.logout();
-              setIsAuthenticated(false);
-              setUserProfile(null);
-              // Refresh auth status in the integration hook to ensure UI consistency
-              await refreshAuthStatus();
-            } catch (error) {
-              logger.error('[TraktSettingsScreen] Error signing out:', error);
-              openAlert('Error', 'Failed to sign out of Trakt.');
-            } finally {
-              setIsLoading(false);
-            }
+    openAlert('Sign Out', 'Are you sure you want to sign out of your Trakt account?', [
+      { label: 'Cancel', onPress: () => {} },
+      {
+        label: 'Sign Out',
+        onPress: async () => {
+          setIsLoading(true);
+          try {
+            await traktService.logout();
+            setIsAuthenticated(false);
+            setUserProfile(null);
+            // Refresh auth status in the integration hook to ensure UI consistency
+            await refreshAuthStatus();
+          } catch (error) {
+            logger.error('[TraktSettingsScreen] Error signing out:', error);
+            openAlert('Error', 'Failed to sign out of Trakt.');
+          } finally {
+            setIsLoading(false);
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   return (
-    <SafeAreaView style={[
-      styles.container,
-      { backgroundColor: isDarkMode ? currentTheme.colors.darkBackground : '#F2F2F7' }
-    ]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? currentTheme.colors.darkBackground : '#F2F2F7' },
+      ]}
+    >
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={styles.header}>
         <TouchableOpacity
@@ -233,28 +241,34 @@ const TraktSettingsScreen: React.FC = () => {
             size={24}
             color={isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark}
           />
-          <Text style={[styles.backText, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
+          <Text
+            style={[
+              styles.backText,
+              {
+                color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark,
+              },
+            ]}
+          >
             Settings
           </Text>
         </TouchableOpacity>
-        
+
         <View style={styles.headerActions}>
           {/* Empty for now, but ready for future actions */}
         </View>
       </View>
-      
-      <Text style={[styles.headerTitle, { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }]}>
+
+      <Text
+        style={[
+          styles.headerTitle,
+          { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark },
+        ]}
+      >
         Trakt Settings
       </Text>
 
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={[
-          styles.card,
-          { backgroundColor: currentTheme.colors.elevation2 }
-        ]}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <View style={[styles.card, { backgroundColor: currentTheme.colors.elevation2 }]}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <UnifiedSpinner size="large" />
@@ -263,29 +277,46 @@ const TraktSettingsScreen: React.FC = () => {
             <View style={styles.profileContainer}>
               <View style={styles.profileHeader}>
                 {userProfile.avatar ? (
-                  <FastImage 
-                    source={{ uri: userProfile.avatar }} 
+                  <FastImage
+                    source={{ uri: userProfile.avatar }}
                     style={styles.avatar}
                     resizeMode={FastImage.resizeMode.cover}
                   />
                 ) : (
-                  <View style={[styles.avatarPlaceholder, { backgroundColor: currentTheme.colors.primary }]}>
+                  <View
+                    style={[
+                      styles.avatarPlaceholder,
+                      { backgroundColor: currentTheme.colors.primary },
+                    ]}
+                  >
                     <Text style={styles.avatarText}>
                       {userProfile.name?.charAt(0) || userProfile.username.charAt(0)}
                     </Text>
                   </View>
                 )}
                 <View style={styles.profileInfo}>
-                  <Text style={[
-                    styles.profileName,
-                    { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.profileName,
+                      {
+                        color: isDarkMode
+                          ? currentTheme.colors.highEmphasis
+                          : currentTheme.colors.textDark,
+                      },
+                    ]}
+                  >
                     {userProfile.name || userProfile.username}
                   </Text>
-                  <Text style={[
-                    styles.profileUsername,
-                    { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.profileUsername,
+                      {
+                        color: isDarkMode
+                          ? currentTheme.colors.mediumEmphasis
+                          : currentTheme.colors.textMutedDark,
+                      },
+                    ]}
+                  >
                     @{userProfile.username}
                   </Text>
                   {userProfile.vip && (
@@ -298,10 +329,16 @@ const TraktSettingsScreen: React.FC = () => {
               </View>
 
               <View style={styles.statsContainer}>
-                <Text style={[
-                  styles.joinedDate,
-                  { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
-                ]}>
+                <Text
+                  style={[
+                    styles.joinedDate,
+                    {
+                      color: isDarkMode
+                        ? currentTheme.colors.mediumEmphasis
+                        : currentTheme.colors.textMutedDark,
+                    },
+                  ]}
+                >
                   Joined {new Date(userProfile.joined_at).toLocaleDateString()}
                 </Text>
               </View>
@@ -310,7 +347,7 @@ const TraktSettingsScreen: React.FC = () => {
                 style={[
                   styles.button,
                   styles.signOutButton,
-                  { backgroundColor: currentTheme.colors.error }
+                  { backgroundColor: currentTheme.colors.error },
                 ]}
                 onPress={() => {
                   triggerHeavy();
@@ -322,27 +359,39 @@ const TraktSettingsScreen: React.FC = () => {
             </View>
           ) : (
             <View style={styles.signInContainer}>
-              <TraktIcon 
-                width={120}
-                height={120}
-                style={styles.traktLogo}
-              />
-              <Text style={[
-                styles.signInTitle,
-                { color: isDarkMode ? currentTheme.colors.highEmphasis : currentTheme.colors.textDark }
-              ]}>
+              <TraktIcon width={120} height={120} style={styles.traktLogo} />
+              <Text
+                style={[
+                  styles.signInTitle,
+                  {
+                    color: isDarkMode
+                      ? currentTheme.colors.highEmphasis
+                      : currentTheme.colors.textDark,
+                  },
+                ]}
+              >
                 Connect with Trakt
               </Text>
-              <Text style={[
-                styles.signInDescription,
-                { color: isDarkMode ? currentTheme.colors.mediumEmphasis : currentTheme.colors.textMutedDark }
-              ]}>
+              <Text
+                style={[
+                  styles.signInDescription,
+                  {
+                    color: isDarkMode
+                      ? currentTheme.colors.mediumEmphasis
+                      : currentTheme.colors.textMutedDark,
+                  },
+                ]}
+              >
                 Sync your watch history, watchlist, and collection with Trakt.tv
               </Text>
               <TouchableOpacity
                 style={[
                   styles.button,
-                  { backgroundColor: isDarkMode ? currentTheme.colors.primary : currentTheme.colors.primary }
+                  {
+                    backgroundColor: isDarkMode
+                      ? currentTheme.colors.primary
+                      : currentTheme.colors.primary,
+                  },
                 ]}
                 onPress={() => {
                   triggerMedium();
@@ -353,9 +402,7 @@ const TraktSettingsScreen: React.FC = () => {
                 {isExchangingCode ? (
                   <UnifiedSpinner size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.buttonText}>
-                    Sign In with Trakt
-                  </Text>
+                  <Text style={styles.buttonText}>Sign In with Trakt</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -363,56 +410,67 @@ const TraktSettingsScreen: React.FC = () => {
         </View>
 
         {isAuthenticated && (
-          <View style={[
-            styles.card,
-            { backgroundColor: isDarkMode ? currentTheme.colors.elevation2 : currentTheme.colors.white }
-          ]}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: isDarkMode
+                  ? currentTheme.colors.elevation2
+                  : currentTheme.colors.white,
+              },
+            ]}
+          >
             <View style={styles.settingsSection}>
-              <Text style={[
-                styles.sectionTitle,
-                { color: currentTheme.colors.highEmphasis }
-              ]}>
+              <Text style={[styles.sectionTitle, { color: currentTheme.colors.highEmphasis }]}>
                 Sync Settings
               </Text>
-              <View style={[
-                styles.infoBox,
-                { backgroundColor: currentTheme.colors.elevation1, borderColor: currentTheme.colors.border }
-              ]}>
-                <Text style={[
-                  styles.infoText,
-                  { color: currentTheme.colors.mediumEmphasis }
-                ]}>
-                  When connected to Trakt, Continue Watching is sourced from Trakt. Account sync for watch progress is disabled to avoid conflicts.
+              <View
+                style={[
+                  styles.infoBox,
+                  {
+                    backgroundColor: currentTheme.colors.elevation1,
+                    borderColor: currentTheme.colors.border,
+                  },
+                ]}
+              >
+                <Text style={[styles.infoText, { color: currentTheme.colors.mediumEmphasis }]}>
+                  When connected to Trakt, Continue Watching is sourced from Trakt. Account sync for
+                  watch progress is disabled to avoid conflicts.
                 </Text>
               </View>
               <View style={styles.settingItem}>
                 <View style={styles.settingContent}>
                   <View style={styles.settingTextContainer}>
-                    <Text style={[
-                      styles.settingLabel,
-                      { color: currentTheme.colors.highEmphasis }
-                    ]}>
+                    <Text
+                      style={[styles.settingLabel, { color: currentTheme.colors.highEmphasis }]}
+                    >
                       Auto-sync playback progress
                     </Text>
-                    <Text style={[
-                      styles.settingDescription,
-                      { color: currentTheme.colors.mediumEmphasis }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.settingDescription,
+                        { color: currentTheme.colors.mediumEmphasis },
+                      ]}
+                    >
                       Automatically sync watch progress to Trakt
                     </Text>
                   </View>
                   <View style={styles.settingToggleContainer}>
                     <Switch
                       value={autosyncSettings.enabled}
-                      onValueChange={(value) => {
+                      onValueChange={value => {
                         triggerMedium();
                         setAutosyncEnabled(value);
                       }}
                       trackColor={{
                         false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary + '80'
+                        true: `${currentTheme.colors.primary}80`,
                       }}
-                      thumbColor={autosyncSettings.enabled ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+                      thumbColor={
+                        autosyncSettings.enabled
+                          ? currentTheme.colors.white
+                          : currentTheme.colors.mediumEmphasis
+                      }
                     />
                   </View>
                 </View>
@@ -420,16 +478,17 @@ const TraktSettingsScreen: React.FC = () => {
               <View style={styles.settingItem}>
                 <View style={styles.settingContent}>
                   <View style={styles.settingTextContainer}>
-                    <Text style={[
-                      styles.settingLabel,
-                      { color: currentTheme.colors.highEmphasis }
-                    ]}>
+                    <Text
+                      style={[styles.settingLabel, { color: currentTheme.colors.highEmphasis }]}
+                    >
                       Import watched history
                     </Text>
-                    <Text style={[
-                      styles.settingDescription,
-                      { color: currentTheme.colors.mediumEmphasis }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.settingDescription,
+                        { color: currentTheme.colors.mediumEmphasis },
+                      ]}
+                    >
                       Use "Sync Now" to import your watch history and progress from Trakt
                     </Text>
                   </View>
@@ -440,8 +499,8 @@ const TraktSettingsScreen: React.FC = () => {
                   styles.button,
                   {
                     backgroundColor: currentTheme.colors.card,
-                    opacity: isSyncing ? 0.6 : 1
-                  }
+                    opacity: isSyncing ? 0.6 : 1,
+                  },
                 ]}
                 disabled={isSyncing}
                 onPress={async () => {
@@ -449,69 +508,73 @@ const TraktSettingsScreen: React.FC = () => {
                   const success = await performManualSync();
                   openAlert(
                     'Sync Complete',
-                    success ? 'Successfully synced your watch progress with Trakt.' : 'Sync failed. Please try again.'
+                    success
+                      ? 'Successfully synced your watch progress with Trakt.'
+                      : 'Sync failed. Please try again.'
                   );
                 }}
               >
                 {isSyncing ? (
                   <UnifiedSpinner size="small" />
                 ) : (
-                  <Text style={[
-                    styles.buttonText,
-                    { color: currentTheme.colors.primary }
-                  ]}>
+                  <Text style={[styles.buttonText, { color: currentTheme.colors.primary }]}>
                     Sync Now
                   </Text>
                 )}
               </TouchableOpacity>
 
               {/* Display Settings Section */}
-              <Text style={[
-                styles.sectionTitle,
-                { color: currentTheme.colors.highEmphasis, marginTop: 24 }
-              ]}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: currentTheme.colors.highEmphasis, marginTop: 24 },
+                ]}
+              >
                 Display Settings
               </Text>
 
               <View style={styles.settingItem}>
                 <View style={styles.settingContent}>
                   <View style={styles.settingTextContainer}>
-                    <Text style={[
-                      styles.settingLabel,
-                      { color: currentTheme.colors.highEmphasis }
-                    ]}>
+                    <Text
+                      style={[styles.settingLabel, { color: currentTheme.colors.highEmphasis }]}
+                    >
                       Show Trakt Comments
                     </Text>
-                    <Text style={[
-                      styles.settingDescription,
-                      { color: currentTheme.colors.mediumEmphasis }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.settingDescription,
+                        { color: currentTheme.colors.mediumEmphasis },
+                      ]}
+                    >
                       Display Trakt comments in metadata screens when available
                     </Text>
                   </View>
                   <View style={styles.settingToggleContainer}>
                     <Switch
                       value={settings.showTraktComments}
-                      onValueChange={(value) => {
+                      onValueChange={value => {
                         triggerMedium();
                         updateSetting('showTraktComments', value);
                       }}
                       trackColor={{
                         false: currentTheme.colors.border,
-                        true: currentTheme.colors.primary + '80'
+                        true: `${currentTheme.colors.primary}80`,
                       }}
-                      thumbColor={settings.showTraktComments ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
+                      thumbColor={
+                        settings.showTraktComments
+                          ? currentTheme.colors.white
+                          : currentTheme.colors.mediumEmphasis
+                      }
                     />
                   </View>
                 </View>
               </View>
-
-
             </View>
           </View>
         )}
       </ScrollView>
-      
+
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -720,4 +783,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TraktSettingsScreen; 
+export default TraktSettingsScreen;

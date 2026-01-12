@@ -1,19 +1,23 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideOutRight,
-} from 'react-native-reanimated';
-import { getTrackDisplayName } from '../utils/playerUtils';
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutRight } from 'react-native-reanimated';
+
 import { triggerLight } from '../../../hooks/useHaptics';
+import { getTrackDisplayName } from '../utils/playerUtils';
 
 interface AudioTrackModalProps {
   showAudioModal: boolean;
   setShowAudioModal: (show: boolean) => void;
-  ksAudioTracks: Array<{ id: number, name: string, language?: string }>;
+  ksAudioTracks: Array<{ id: number; name: string; language?: string }>;
   selectedAudioTrack: number | null;
   selectAudioTrack: (trackId: number) => void;
 }
@@ -38,7 +42,11 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
       <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={handleClose}>
-        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(150)}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        />
       </TouchableOpacity>
 
       <Animated.View
@@ -56,7 +64,14 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
         }}
       >
         <View style={{ paddingTop: Platform.OS === 'ios' ? 60 : 15, paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '700' }}>Audio Tracks</Text>
           </View>
         </View>
@@ -66,7 +81,7 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
           contentContainerStyle={{ padding: 15, paddingBottom: 40 }}
         >
           <View style={{ gap: 8 }}>
-            {ksAudioTracks.map((track) => {
+            {ksAudioTracks.map(track => {
               const isSelected = selectedAudioTrack === track.id;
 
               return (
@@ -86,15 +101,17 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                     borderColor: isSelected ? 'white' : 'rgba(255,255,255,0.1)',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
                   }}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={{
-                      color: isSelected ? 'black' : 'white',
-                      fontWeight: isSelected ? '700' : '500',
-                      fontSize: 15
-                    }}>
+                    <Text
+                      style={{
+                        color: isSelected ? 'black' : 'white',
+                        fontWeight: isSelected ? '700' : '500',
+                        fontSize: 15,
+                      }}
+                    >
                       {getTrackDisplayName(track)}
                     </Text>
                   </View>

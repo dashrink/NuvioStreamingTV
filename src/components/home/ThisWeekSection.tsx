@@ -1,3 +1,8 @@
+import FastImage from '@d11/react-native-fast-image';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { parseISO, isThisWeek, format, isAfter, isBefore } from 'date-fns';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -6,23 +11,18 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import FastImage from '@d11/react-native-fast-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons } from '@expo/vector-icons';
+import Animated, { FadeIn, Layout } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTraktContext } from '../../contexts/TraktContext';
+import { useCalendarData } from '../../hooks/useCalendarData';
+import { triggerLight } from '../../hooks/useHaptics';
 import { useLibrary } from '../../hooks/useLibrary';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { parseISO, isThisWeek, format, isAfter, isBefore } from 'date-fns';
-import Animated, { FadeIn, Layout } from 'react-native-reanimated';
-import { useCalendarData } from '../../hooks/useCalendarData';
-import { memoryManager } from '../../utils/memoryManager';
 import { tmdbService } from '../../services/tmdbService';
-import { triggerLight } from '../../hooks/useHaptics';
+import { memoryManager } from '../../utils/memoryManager';
 
 // Compute base sizes; actual tablet sizes will be adjusted inside component for responsiveness
 const { width } = Dimensions.get('window');
@@ -163,12 +163,14 @@ export const ThisWeekSection = React.memo(() => {
       group.sort((a, b) => a.episode - b.episode);
 
       const firstEp = group[0];
-      const isReleased = firstEp.releaseDate ? isBefore(parseISO(firstEp.releaseDate), new Date()) : false;
+      const isReleased = firstEp.releaseDate
+        ? isBefore(parseISO(firstEp.releaseDate), new Date())
+        : false;
 
       if (group.length === 1) {
         processedItems.push({
           ...firstEp,
-          isReleased
+          isReleased,
         });
       } else {
         // Create group item
@@ -180,7 +182,7 @@ export const ThisWeekSection = React.memo(() => {
           isReleased,
           isGroup: true,
           episodeCount: group.length,
-          episodeRange: `E${firstEp.episode}-${lastEp.episode}`
+          episodeRange: `E${firstEp.episode}-${lastEp.episode}`,
         });
       }
     });
@@ -201,7 +203,7 @@ export const ThisWeekSection = React.memo(() => {
     if (episode.isGroup) {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
-        type: 'series'
+        type: 'series',
       });
       return;
     }
@@ -212,7 +214,7 @@ export const ThisWeekSection = React.memo(() => {
       navigation.navigate('Metadata', {
         id: episode.seriesId,
         type: 'series',
-        episodeId
+        episodeId,
       });
       return;
     }
@@ -222,7 +224,7 @@ export const ThisWeekSection = React.memo(() => {
     navigation.navigate('Streams', {
       id: episode.seriesId,
       type: 'series',
-      episodeId
+      episodeId,
     });
   };
 
@@ -235,29 +237,36 @@ export const ThisWeekSection = React.memo(() => {
     return null;
   }
 
-  const renderEpisodeItem = ({ item, index }: { item: ThisWeekEpisode, index: number }) => {
+  const renderEpisodeItem = ({ item, index }: { item: ThisWeekEpisode; index: number }) => {
     // Handle episodes without release dates gracefully
     const releaseDate = item.releaseDate ? parseISO(item.releaseDate) : null;
     const formattedDate = releaseDate ? format(releaseDate, 'MMM d') : 'TBA';
     const isReleased = item.isReleased;
 
     // Use episode still image if available, fallback to series poster
-    const imageUrl = item.still_path ?
-      tmdbService.getImageUrl(item.still_path) :
-      (item.season_poster_path ?
-        tmdbService.getImageUrl(item.season_poster_path) :
-        item.poster);
+    const imageUrl = item.still_path
+      ? tmdbService.getImageUrl(item.still_path)
+      : item.season_poster_path
+        ? tmdbService.getImageUrl(item.season_poster_path)
+        : item.poster;
 
     return (
-      <View style={[styles.episodeItemContainer, { width: computedItemWidth, height: computedItemHeight }]}>
+      <View
+        style={[
+          styles.episodeItemContainer,
+          { width: computedItemWidth, height: computedItemHeight },
+        ]}
+      >
         {item.isGroup && (
-          <View style={[
-            styles.cardStackEffect,
-            {
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              borderColor: 'rgba(255,255,255,0.05)',
-            }
-          ]} />
+          <View
+            style={[
+              styles.cardStackEffect,
+              {
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                borderColor: 'rgba(255,255,255,0.05)',
+              },
+            ]}
+          />
         )}
         <TouchableOpacity
           style={[
@@ -266,7 +275,7 @@ export const ThisWeekSection = React.memo(() => {
               backgroundColor: currentTheme.colors.background,
               borderColor: 'rgba(255,255,255,0.08)',
               borderWidth: 1,
-            }
+            },
           ]}
           onPress={() => handleEpisodePress(item)}
           activeOpacity={0.7}
@@ -276,27 +285,26 @@ export const ThisWeekSection = React.memo(() => {
               source={{
                 uri: imageUrl || undefined,
                 priority: FastImage.priority.normal,
-                cache: FastImage.cacheControl.immutable
+                cache: FastImage.cacheControl.immutable,
               }}
               style={styles.poster}
               resizeMode={FastImage.resizeMode.cover}
             />
 
             <LinearGradient
-              colors={[
-                'transparent',
-                'rgba(0,0,0,0.0)',
-                'rgba(0,0,0,0.5)',
-                'rgba(0,0,0,0.9)'
-              ]}
+              colors={['transparent', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.9)']}
               style={styles.gradient}
               locations={[0, 0.4, 0.7, 1]}
             >
               <View style={styles.cardHeader}>
-                <View style={[
-                  styles.statusBadge,
-                  { backgroundColor: isReleased ? currentTheme.colors.primary : 'rgba(0,0,0,0.6)' }
-                ]}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor: isReleased ? currentTheme.colors.primary : 'rgba(0,0,0,0.6)',
+                    },
+                  ]}
+                >
                   <Text style={styles.statusText}>
                     {isReleased ? (item.isGroup ? 'Released' : 'New') : formattedDate}
                   </Text>
@@ -304,34 +312,42 @@ export const ThisWeekSection = React.memo(() => {
               </View>
 
               <View style={styles.contentArea}>
-                <Text style={[
-                  styles.seriesName,
-                  {
-                    color: currentTheme.colors.white,
-                    fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16
-                  }
-                ]} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.seriesName,
+                    {
+                      color: currentTheme.colors.white,
+                      fontSize: isTV ? 20 : isLargeTablet ? 18 : isTablet ? 17 : 16,
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
                   {item.seriesName}
                 </Text>
 
                 <View style={styles.metaContainer}>
-                  <Text style={[
-                    styles.seasonBadge,
-                    {
-                      color: currentTheme.colors.primary,
-                      fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 12
-                    }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.seasonBadge,
+                      {
+                        color: currentTheme.colors.primary,
+                        fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 12,
+                      },
+                    ]}
+                  >
                     S{item.season} {item.isGroup ? item.episodeRange : `E${item.episode}`}
                   </Text>
                   <Text style={styles.dotSeparator}>•</Text>
-                  <Text style={[
-                    styles.episodeTitle,
-                    {
-                      color: 'rgba(255,255,255,0.7)',
-                      fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 12
-                    }
-                  ]} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.episodeTitle,
+                      {
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: isTV ? 14 : isLargeTablet ? 13 : isTablet ? 13 : 12,
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {item.title}
                   </Text>
                 </View>
@@ -344,42 +360,52 @@ export const ThisWeekSection = React.memo(() => {
   };
 
   return (
-    <Animated.View
-      style={styles.container}
-      entering={FadeIn.duration(350)}
-    >
+    <Animated.View style={styles.container} entering={FadeIn.duration(350)}>
       <View style={[styles.header, { paddingHorizontal: horizontalPadding }]}>
         <View style={styles.titleContainer}>
-          <Text style={[
-            styles.title,
-            {
-              color: currentTheme.colors.text,
-              fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24
-            }
-          ]}>This Week</Text>
-          <View style={[
-            styles.titleUnderline,
-            {
-              backgroundColor: currentTheme.colors.primary,
-              width: isTV ? 50 : isLargeTablet ? 45 : isTablet ? 40 : 40,
-              height: isTV ? 4 : isLargeTablet ? 3.5 : isTablet ? 3 : 3
-            }
-          ]} />
+          <Text
+            style={[
+              styles.title,
+              {
+                color: currentTheme.colors.text,
+                fontSize: isTV ? 32 : isLargeTablet ? 28 : isTablet ? 26 : 24,
+              },
+            ]}
+          >
+            This Week
+          </Text>
+          <View
+            style={[
+              styles.titleUnderline,
+              {
+                backgroundColor: currentTheme.colors.primary,
+                width: isTV ? 50 : isLargeTablet ? 45 : isTablet ? 40 : 40,
+                height: isTV ? 4 : isLargeTablet ? 3.5 : isTablet ? 3 : 3,
+              },
+            ]}
+          />
         </View>
-        <TouchableOpacity onPress={handleViewAll} style={[
-          styles.viewAllButton,
-          {
-            paddingVertical: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
-            paddingHorizontal: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 10
-          }
-        ]}>
-          <Text style={[
-            styles.viewAllText,
+        <TouchableOpacity
+          onPress={handleViewAll}
+          style={[
+            styles.viewAllButton,
             {
-              color: currentTheme.colors.textMuted,
-              fontSize: isTV ? 18 : isLargeTablet ? 16 : isTablet ? 15 : 14
-            }
-          ]}>View All</Text>
+              paddingVertical: isTV ? 12 : isLargeTablet ? 10 : isTablet ? 8 : 8,
+              paddingHorizontal: isTV ? 16 : isLargeTablet ? 14 : isTablet ? 12 : 10,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.viewAllText,
+              {
+                color: currentTheme.colors.textMuted,
+                fontSize: isTV ? 18 : isLargeTablet ? 16 : isTablet ? 15 : 14,
+              },
+            ]}
+          >
+            View All
+          </Text>
           <MaterialIcons
             name="chevron-right"
             size={isTV ? 24 : isLargeTablet ? 22 : isTablet ? 20 : 20}
@@ -390,7 +416,7 @@ export const ThisWeekSection = React.memo(() => {
 
       <FlatList
         data={thisWeekEpisodes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderEpisodeItem}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -398,8 +424,8 @@ export const ThisWeekSection = React.memo(() => {
           styles.listContent,
           {
             paddingLeft: horizontalPadding,
-            paddingRight: horizontalPadding
-          }
+            paddingRight: horizontalPadding,
+          },
         ]}
         snapToInterval={computedItemWidth + itemSpacing}
         decelerationRate="fast"
@@ -483,7 +509,7 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -565,4 +591,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     zIndex: -1,
   },
-}); 
+});

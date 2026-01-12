@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+
 import { useFocusOptional } from '../../contexts/FocusContext';
 import { isAndroidTV, isTVOS, isTV } from '../../hooks/useTVFocus';
 
@@ -45,7 +40,7 @@ const FocusDebugOverlay: React.FC<FocusDebugOverlayProps> = ({
   // Track focus history
   useEffect(() => {
     if (focusContext?.currentFocusId) {
-      setFocusHistory((prev) => {
+      setFocusHistory(prev => {
         const newHistory = [focusContext.currentFocusId!, ...prev.slice(0, 4)];
         return newHistory;
       });
@@ -84,10 +79,7 @@ const FocusDebugOverlay: React.FC<FocusDebugOverlayProps> = ({
     <View style={[styles.container, positionStyle]} pointerEvents="box-none">
       <TouchableOpacity
         onPress={() => setIsExpanded(!isExpanded)}
-        style={[
-          styles.badge,
-          platformInfo.isTV ? styles.badgeTV : styles.badgeMobile,
-        ]}
+        style={[styles.badge, platformInfo.isTV ? styles.badgeTV : styles.badgeMobile]}
         activeOpacity={0.8}
       >
         <Text style={styles.badgeText}>
@@ -124,9 +116,7 @@ const FocusDebugOverlay: React.FC<FocusDebugOverlayProps> = ({
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Group:</Text>
-                <Text style={styles.value}>
-                  {focusContext.currentGroupId || 'none'}
-                </Text>
+                <Text style={styles.value}>{focusContext.currentGroupId || 'none'}</Text>
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Groups Count:</Text>
@@ -153,8 +143,8 @@ const FocusDebugOverlay: React.FC<FocusDebugOverlayProps> = ({
             {platformInfo.isTVOS
               ? '• Swipe on Siri Remote to navigate\n• Click/Press to select\n• Menu button = go back\n• Play/Pause for media'
               : platformInfo.isAndroidTV
-              ? '• Use D-pad to navigate\n• Select/Enter = press\n• Back button = go back'
-              : '• Long-press to simulate focus\n• Tap to interact'}
+                ? '• Use D-pad to navigate\n• Select/Enter = press\n• Back button = go back'
+                : '• Long-press to simulate focus\n• Tap to interact'}
           </Text>
         </View>
       )}

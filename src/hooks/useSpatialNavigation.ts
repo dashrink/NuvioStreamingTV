@@ -42,16 +42,17 @@
  * ```
  */
 
+import { useFocusEffect } from '@react-navigation/native';
 import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { findNodeHandle, Platform } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
+
 import {
   useDevicePerformance,
   PerformanceTier,
   PerformanceAnimationConfig,
   getPerformanceTier,
 } from './useDevicePerformance';
+import { useTVNavigationOptional } from '../contexts/TVNavigationContext';
 
 // =============================================================================
 // Types & Interfaces
@@ -223,12 +224,8 @@ export function useSpatialNavigation(
   const tvNavigation = useTVNavigationOptional();
 
   // Get device performance for animation optimization
-  const {
-    performanceTier,
-    animationConfig,
-    shouldReduceAnimations,
-    isLowEndDevice,
-  } = useDevicePerformance();
+  const { performanceTier, animationConfig, shouldReduceAnimations, isLowEndDevice } =
+    useDevicePerformance();
 
   // Refs storage - maps focus IDs to React refs
   const refsRef = useRef<RefMap>({});
@@ -759,7 +756,13 @@ export function useGridNavigation(
   spatialNav: UseSpatialNavigationReturn,
   config: GridNavigationConfig
 ): void {
-  const { columns, itemCount, focusIdPrefix, wrapHorizontal = false, wrapVertical = false } = config;
+  const {
+    columns,
+    itemCount,
+    focusIdPrefix,
+    wrapHorizontal = false,
+    wrapVertical = false,
+  } = config;
 
   useEffect(() => {
     const rows = Math.ceil(itemCount / columns);
@@ -946,14 +949,7 @@ export function useEmptyListFocusFallback(
     }, fallbackDelay);
 
     return () => clearTimeout(timeoutId);
-  }, [
-    isEmpty,
-    isLoading,
-    fallbackFocusIds,
-    fallbackDelay,
-    onNoFallbackAvailable,
-    spatialNav,
-  ]);
+  }, [isEmpty, isLoading, fallbackFocusIds, fallbackDelay, onNoFallbackAvailable, spatialNav]);
 }
 
 // =============================================================================

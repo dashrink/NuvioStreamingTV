@@ -1,16 +1,11 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useTheme } from '../contexts/ThemeContext';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+
+import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 const { width } = Dimensions.get('window');
@@ -20,7 +15,7 @@ const FirstTimeWelcome = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
-    <Animated.View 
+    <Animated.View
       entering={FadeInDown.delay(200).duration(600)}
       style={[styles.container, { backgroundColor: currentTheme.colors.elevation1 }]}
     >
@@ -36,7 +31,7 @@ const FirstTimeWelcome = () => {
       <Text style={[styles.title, { color: currentTheme.colors.highEmphasis }]}>
         Welcome to Nuvio!
       </Text>
-      
+
       <Text style={[styles.description, { color: currentTheme.colors.mediumEmphasis }]}>
         To get started, install some addons to access content from various sources.
       </Text>
@@ -103,4 +98,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FirstTimeWelcome; 
+export default FirstTimeWelcome;

@@ -1,20 +1,15 @@
-import React, { useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  useWindowDimensions,
-  Platform,
-} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Focusable from '../common/Focusable';
-import { useFocusGroup } from '../../hooks/useFocusGroup';
+import React, { useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, useWindowDimensions, Platform } from 'react-native';
+
 import { useTheme } from '../../contexts/ThemeContext';
+import { useFocusGroup } from '../../hooks/useFocusGroup';
+import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
+import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
+import { scaleForTV } from '../../utils/tvStyles/helpers';
 import { TV_SPACING } from '../../utils/tvStyles/spacing';
 import { TV_TYPOGRAPHY } from '../../utils/tvStyles/typography';
-import { TV_FOCUS_CONFIG } from '../../utils/tvStyles/focus';
-import { isTV, getDeviceType } from '../../utils/tvStyles/deviceDetection';
-import { scaleForTV } from '../../utils/tvStyles/helpers';
+import Focusable from '../common/Focusable';
 
 /**
  * Folder definition for library collections
@@ -49,7 +44,10 @@ export interface TVLibraryFoldersProps {
 /**
  * Calculate folder grid layout for TV
  */
-const getFolderGridLayout = (screenWidth: number, folderCount: number): {
+const getFolderGridLayout = (
+  screenWidth: number,
+  folderCount: number
+): {
   numColumns: number;
   itemWidth: number;
   horizontalPadding: number;
@@ -64,7 +62,7 @@ const getFolderGridLayout = (screenWidth: number, folderCount: number): {
     numColumns = Math.min(folderCount, 3);
   }
 
-  const availableWidth = screenWidth - (horizontalPadding * 2) - ((numColumns - 1) * gutter);
+  const availableWidth = screenWidth - horizontalPadding * 2 - (numColumns - 1) * gutter;
   const itemWidth = Math.floor(availableWidth / numColumns);
 
   return { numColumns, itemWidth, horizontalPadding };
@@ -83,109 +81,81 @@ const FolderCard = React.memo<{
   onFocus: () => void;
   currentTheme: any;
   getItemRef: (index: number) => (ref: any) => void;
-}>(({
-  folder,
-  width,
-  index,
-  isSelected,
-  isFocused,
-  onPress,
-  onFocus,
-  currentTheme,
-  getItemRef,
-}) => {
-  const folderColor = folder.color || currentTheme.colors.primary;
+}>(
+  ({ folder, width, index, isSelected, isFocused, onPress, onFocus, currentTheme, getItemRef }) => {
+    const folderColor = folder.color || currentTheme.colors.primary;
 
-  return (
-    <Focusable
-      ref={getItemRef(index)}
-      style={[
-        styles.folderCard,
-        {
-          width,
-          backgroundColor: isSelected
-            ? currentTheme.colors.elevation2
-            : currentTheme.colors.elevation1,
-        },
-      ]}
-      onPress={onPress}
-      onFocus={onFocus}
-      hasTVPreferredFocus={isFocused && index === 0}
-      scaleOnFocus={TV_FOCUS_CONFIG.focusScale}
-    >
-      <View style={styles.folderContent}>
-        {/* Icon container with colored background */}
-        <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: `${folderColor}20` },
-          ]}
-        >
-          <MaterialIcons
-            name={folder.icon}
-            size={scaleForTV(32)}
-            color={folderColor}
-          />
-        </View>
+    return (
+      <Focusable
+        ref={getItemRef(index)}
+        style={[
+          styles.folderCard,
+          {
+            width,
+            backgroundColor: isSelected
+              ? currentTheme.colors.elevation2
+              : currentTheme.colors.elevation1,
+          },
+        ]}
+        onPress={onPress}
+        onFocus={onFocus}
+        hasTVPreferredFocus={isFocused && index === 0}
+        scaleOnFocus={TV_FOCUS_CONFIG.focusScale}
+      >
+        <View style={styles.folderContent}>
+          {/* Icon container with colored background */}
+          <View style={[styles.iconContainer, { backgroundColor: `${folderColor}20` }]}>
+            <MaterialIcons name={folder.icon} size={scaleForTV(32)} color={folderColor} />
+          </View>
 
-        {/* Folder info */}
-        <View style={styles.folderInfo}>
-          <Text
-            style={[
-              styles.folderName,
-              { color: currentTheme.colors.white },
-            ]}
-            numberOfLines={1}
-          >
-            {folder.name}
-          </Text>
-
-          <Text
-            style={[
-              styles.folderCount,
-              { color: currentTheme.colors.mediumGray },
-            ]}
-          >
-            {folder.itemCount} {folder.itemCount === 1 ? 'item' : 'items'}
-          </Text>
-
-          {folder.description && (
+          {/* Folder info */}
+          <View style={styles.folderInfo}>
             <Text
-              style={[
-                styles.folderDescription,
-                { color: currentTheme.colors.mediumGray },
-              ]}
+              style={[styles.folderName, { color: currentTheme.colors.white }]}
               numberOfLines={1}
             >
-              {folder.description}
+              {folder.name}
             </Text>
+
+            <Text style={[styles.folderCount, { color: currentTheme.colors.mediumGray }]}>
+              {folder.itemCount} {folder.itemCount === 1 ? 'item' : 'items'}
+            </Text>
+
+            {folder.description && (
+              <Text
+                style={[styles.folderDescription, { color: currentTheme.colors.mediumGray }]}
+                numberOfLines={1}
+              >
+                {folder.description}
+              </Text>
+            )}
+          </View>
+
+          {/* Selected indicator */}
+          {isSelected && (
+            <View style={styles.selectedIndicator}>
+              <MaterialIcons
+                name="check-circle"
+                size={scaleForTV(20)}
+                color={currentTheme.colors.primary}
+              />
+            </View>
+          )}
+
+          {/* Navigation arrow for TV */}
+          {isTV && (
+            <MaterialIcons
+              name="chevron-right"
+              size={scaleForTV(24)}
+              color={currentTheme.colors.mediumGray}
+              style={styles.chevron}
+            />
           )}
         </View>
-
-        {/* Selected indicator */}
-        {isSelected && (
-          <View style={styles.selectedIndicator}>
-            <MaterialIcons
-              name="check-circle"
-              size={scaleForTV(20)}
-              color={currentTheme.colors.primary}
-            />
-          </View>
-        )}
-
-        {/* Navigation arrow for TV */}
-        {isTV && (
-          <MaterialIcons
-            name="chevron-right"
-            size={scaleForTV(24)}
-            color={currentTheme.colors.mediumGray}
-            style={styles.chevron}
-          />
-        )}
-      </View>
-    </Focusable>
-  );
-});
+      </Focusable>
+    );
+  }
+);
 
 FolderCard.displayName = 'FolderCard';
 
@@ -216,11 +186,7 @@ export const TVLibraryFolders: React.FC<TVLibraryFoldersProps> = ({
   );
 
   // Use focus group for folder navigation
-  const {
-    focusedIndex,
-    focusItem,
-    getItemRef,
-  } = useFocusGroup({
+  const { focusedIndex, focusItem, getItemRef } = useFocusGroup({
     id: focusGroupId,
     autoFocus: autoFocus && isTV,
     trapFocus: false,
@@ -252,14 +218,7 @@ export const TVLibraryFolders: React.FC<TVLibraryFoldersProps> = ({
     <View style={[styles.container, { paddingHorizontal: horizontalPadding }]}>
       {/* Section title */}
       {title && (
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: currentTheme.colors.white },
-          ]}
-        >
-          {title}
-        </Text>
+        <Text style={[styles.sectionTitle, { color: currentTheme.colors.white }]}>{title}</Text>
       )}
 
       {/* Folder grid */}

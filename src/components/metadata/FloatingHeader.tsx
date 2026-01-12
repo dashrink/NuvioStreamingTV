@@ -1,3 +1,5 @@
+import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { BlurView as ExpoBlurView } from 'expo-blur';
 import React from 'react';
 import {
   View,
@@ -8,8 +10,6 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { BlurView as ExpoBlurView } from 'expo-blur';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
 
 // Optional iOS Glass effect (expo-glass-effect) with safe fallback for FloatingHeader
 let GlassViewComp: any = null;
@@ -19,7 +19,8 @@ if (Platform.OS === 'ios') {
     // Dynamically require so app still runs if the package isn't installed yet
     const glass = require('expo-glass-effect');
     GlassViewComp = glass.GlassView;
-    liquidGlassAvailable = typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
+    liquidGlassAvailable =
+      typeof glass.isLiquidGlassAvailable === 'function' ? glass.isLiquidGlassAvailable() : false;
   } catch {
     GlassViewComp = null;
     liquidGlassAvailable = false;
@@ -33,9 +34,10 @@ import Animated, {
   runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
+
 import { useTheme } from '../../contexts/ThemeContext';
-import { logger } from '../../utils/logger';
 import { triggerLight, triggerMedium } from '../../hooks/useHaptics';
+import { logger } from '../../utils/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -68,19 +70,19 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const [isHeaderInteractive, setIsHeaderInteractive] = React.useState(false);
-  
+
   // Animated styles for the header
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
     transform: [
-      { translateY: interpolate(headerOpacity.value, [0, 1], [-20, 0], Extrapolate.CLAMP) }
-    ]
+      { translateY: interpolate(headerOpacity.value, [0, 1], [-20, 0], Extrapolate.CLAMP) },
+    ],
   }));
-  
+
   // Disable touches when header is transparent (Android can still register touches at opacity 0)
   useAnimatedReaction(
     () => headerOpacity.value,
-    (opacity) => {
+    opacity => {
       const interactive = opacity > 0.05;
       runOnJS(setIsHeaderInteractive)(interactive);
     }
@@ -89,66 +91,21 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
   // Animated style for header elements
   const headerElementsStyle = useAnimatedStyle(() => ({
     opacity: headerElementsOpacity.value,
-    transform: [{ translateY: headerElementsY.value }]
+    transform: [{ translateY: headerElementsY.value }],
   }));
-  
+
   return (
-    <Animated.View style={[styles.floatingHeader, headerAnimatedStyle]} pointerEvents={isHeaderInteractive ? 'auto' : 'none'}>
+    <Animated.View
+      style={[styles.floatingHeader, headerAnimatedStyle]}
+      pointerEvents={isHeaderInteractive ? 'auto' : 'none'}
+    >
       {Platform.OS === 'ios' ? (
         <ExpoBlurView
           intensity={50}
           tint="dark"
-          style={[styles.blurContainer, { paddingTop: Math.max(safeAreaTop * 0.8, safeAreaTop - 6) }]}
-        >
-          <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => {
-                triggerLight();
-                handleBack();
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <MaterialIcons
-                name="arrow-back"
-                size={24}
-                color={currentTheme.colors.highEmphasis}
-              />
-            </TouchableOpacity>
-
-            <View style={styles.headerTitleContainer}>
-              {(stableLogoUri || metadata.logo) && !logoLoadError ? (
-                <Image
-                  source={{ uri: stableLogoUri || metadata.logo }}
-                  style={styles.floatingHeaderLogo}
-                  resizeMode="contain"
-                  onError={() => {
-                    logger.warn(`[FloatingHeader] Logo failed to load: ${stableLogoUri || metadata.logo}`);
-                    setLogoLoadError(true);
-                  }}
-                />
-              ) : (
-                <Text style={[styles.floatingHeaderTitle, { color: currentTheme.colors.highEmphasis }]} numberOfLines={1}>{metadata.name}</Text>
-              )}
-            </View>
-
-            <TouchableOpacity
-              style={styles.headerActionButton}
-              onPress={() => {
-                triggerMedium();
-                handleToggleLibrary();
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
-            </TouchableOpacity>
-          </Animated.View>
-        </ExpoBlurView>
-      ) : (
-        <View
           style={[
             styles.blurContainer,
-            { paddingTop: Math.max(safeAreaTop * 0.8, safeAreaTop - 6), backgroundColor: currentTheme.colors.darkBackground }
+            { paddingTop: Math.max(safeAreaTop * 0.8, safeAreaTop - 6) },
           ]}
         >
           <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
@@ -160,11 +117,68 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
+              <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.highEmphasis} />
+            </TouchableOpacity>
+
+            <View style={styles.headerTitleContainer}>
+              {(stableLogoUri || metadata.logo) && !logoLoadError ? (
+                <Image
+                  source={{ uri: stableLogoUri || metadata.logo }}
+                  style={styles.floatingHeaderLogo}
+                  resizeMode="contain"
+                  onError={() => {
+                    logger.warn(
+                      `[FloatingHeader] Logo failed to load: ${stableLogoUri || metadata.logo}`
+                    );
+                    setLogoLoadError(true);
+                  }}
+                />
+              ) : (
+                <Text
+                  style={[styles.floatingHeaderTitle, { color: currentTheme.colors.highEmphasis }]}
+                  numberOfLines={1}
+                >
+                  {metadata.name}
+                </Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.headerActionButton}
+              onPress={() => {
+                triggerMedium();
+                handleToggleLibrary();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <MaterialIcons
-                name="arrow-back"
-                size={24}
+                name={inLibrary ? 'bookmark' : 'bookmark-outline'}
+                size={22}
                 color={currentTheme.colors.highEmphasis}
               />
+            </TouchableOpacity>
+          </Animated.View>
+        </ExpoBlurView>
+      ) : (
+        <View
+          style={[
+            styles.blurContainer,
+            {
+              paddingTop: Math.max(safeAreaTop * 0.8, safeAreaTop - 6),
+              backgroundColor: currentTheme.colors.darkBackground,
+            },
+          ]}
+        >
+          <Animated.View style={[styles.floatingHeaderContent, headerElementsStyle]}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                triggerLight();
+                handleBack();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MaterialIcons name="arrow-back" size={24} color={currentTheme.colors.highEmphasis} />
             </TouchableOpacity>
 
             <View style={styles.headerTitleContainer}>
@@ -179,7 +193,12 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
                   }}
                 />
               ) : (
-                <Text style={[styles.floatingHeaderTitle, { color: currentTheme.colors.highEmphasis }]} numberOfLines={1}>{metadata.name}</Text>
+                <Text
+                  style={[styles.floatingHeaderTitle, { color: currentTheme.colors.highEmphasis }]}
+                  numberOfLines={1}
+                >
+                  {metadata.name}
+                </Text>
               )}
             </View>
 
@@ -191,12 +210,18 @@ const FloatingHeader: React.FC<FloatingHeaderProps> = ({
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <MaterialIcons name={inLibrary ? "bookmark" : "bookmark-outline"} size={22} color={currentTheme.colors.highEmphasis} />
+              <MaterialIcons
+                name={inLibrary ? 'bookmark' : 'bookmark-outline'}
+                size={22}
+                color={currentTheme.colors.highEmphasis}
+              />
             </TouchableOpacity>
           </Animated.View>
         </View>
       )}
-      {Platform.OS === 'ios' && <View style={[styles.headerBottomBorder, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />}
+      {Platform.OS === 'ios' && (
+        <View style={[styles.headerBottomBorder, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
+      )}
     </Animated.View>
   );
 };
@@ -271,4 +296,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default React.memo(FloatingHeader); 
+export default React.memo(FloatingHeader);

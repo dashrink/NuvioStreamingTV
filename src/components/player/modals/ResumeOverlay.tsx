@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+
+import { triggerMedium } from '../../../hooks/useHaptics';
+import { logger } from '../../../utils/logger';
 import { styles } from '../utils/playerStyles';
 import { formatTime } from '../utils/playerUtils';
-import { logger } from '../../../utils/logger';
-import { triggerMedium } from '../../../hooks/useHaptics';
 
 interface ResumeOverlayProps {
   showResumeOverlay: boolean;
@@ -36,9 +37,9 @@ export const ResumeOverlay: React.FC<ResumeOverlayProps> = ({
     // Removed excessive logging for overlay visibility
     return null;
   }
-  
+
   // Removed excessive logging for overlay rendering
-  
+
   return (
     <View style={styles.resumeOverlay}>
       <LinearGradient
@@ -57,11 +58,11 @@ export const ResumeOverlay: React.FC<ResumeOverlayProps> = ({
             </Text>
             <View style={styles.resumeProgressContainer}>
               <View style={styles.resumeProgressBar}>
-                <View 
+                <View
                   style={[
-                    styles.resumeProgressFill, 
-                    { width: `${duration > 0 ? (resumePosition / duration) * 100 : 0}%` }
-                  ]} 
+                    styles.resumeProgressFill,
+                    { width: `${duration > 0 ? (resumePosition / duration) * 100 : 0}%` },
+                  ]}
                 />
               </View>
               <Text style={styles.resumeTimeText}>

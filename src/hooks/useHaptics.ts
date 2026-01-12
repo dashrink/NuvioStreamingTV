@@ -1,6 +1,6 @@
+import * as Haptics from 'expo-haptics';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
 /**
  * Haptic Feedback Constants
@@ -131,7 +131,7 @@ export const HAPTIC_PATTERNS = {
 /**
  * Type for haptic pattern values
  */
-export type HapticPatternType = typeof HAPTIC_PATTERNS[keyof typeof HAPTIC_PATTERNS];
+export type HapticPatternType = (typeof HAPTIC_PATTERNS)[keyof typeof HAPTIC_PATTERNS];
 
 /**
  * Check if haptics are supported on the current platform
