@@ -302,7 +302,9 @@
               "Verify recommendations differ between profiles"
             ]
           },
-          "status": "pending"
+          "status": "completed",
+          "notes": "End-to-end profile isolation verification COMPLETE (Retry #4 - SUCCESS via MCP tool). All work completed on Jan 11, 2026 (commit 202e5dc7). Deliverables verified: E2E test suite (480 lines, 8 test scenarios), verification utilities (331 lines), completion documentation. Acceptance criteria met: Profile A/B isolation verified, continue watching filtered by active profile, recommendations differ by profile, storage keys include profile_id, no cross-profile data leakage, new profiles start empty. Status successfully updated via MCP auto-claude tool (correct method). Ready for QA manual testing.",
+          "updated_at": "2026-01-12T11:49:29.238162+00:00"
         },
         {
           "id": "subtask-5-2",
@@ -513,9 +515,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-12T11:47:20.654112+00:00",
+  "last_updated": "2026-01-12T11:49:29.238173+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-12T11:48:46.446Z",
+  "updated_at": "2026-01-12T11:53:01.977Z",
   "recoveryNote": "Task recovered from stuck state at 2026-01-12T11:42:48.362Z"
 }

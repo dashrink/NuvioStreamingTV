@@ -51,6 +51,14 @@ module.exports = {
     // Prettier integration
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
+    // Disable problematic import rules that cause performance issues with TypeScript
+    // These rules have known issues with TypeScript and complex module resolution
+    // TypeScript's compiler already validates imports/exports, so these rules are redundant
+    'import/namespace': 'off',
+    'import/named': 'off',
+    'import/default': 'off',
+    'import/export': 'off',
+
     // TypeScript specific rules
     '@typescript-eslint/no-unused-vars': [
       'warn',
