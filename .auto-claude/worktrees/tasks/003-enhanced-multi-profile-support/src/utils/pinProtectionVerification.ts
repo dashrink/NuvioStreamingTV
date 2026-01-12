@@ -179,7 +179,9 @@ export async function quickPINVerification(
     errors: [],
   };
 
-  console.log('[PINVerification] Starting quick PIN verification...');
+  if (__DEV__) {
+    console.log('[PINVerification] Starting verification');
+  }
 
   // If no test profiles provided, create default ones
   const profiles = testProfiles || [
@@ -222,7 +224,9 @@ export async function quickPINVerification(
       }
 
       result.details.push(detail);
-      console.log(`[PINVerification] Profile ${profile.id}: PIN=${hasPIN}`);
+      if (__DEV__) {
+        console.log('[PINVerification] Profile check completed');
+      }
     } catch (error) {
       result.passed = false;
       result.errors.push(`Error checking profile ${profile.id}: ${error}`);
@@ -240,8 +244,9 @@ export async function quickPINVerification(
     result.summary += ` | ⚠️ ${securityIssues} security issues found`;
   }
 
-  console.log('[PINVerification] Verification complete:', result.summary);
-  console.log('[PINVerification] Status:', result.passed ? '✅ PASSED' : '❌ FAILED');
+  if (__DEV__) {
+    console.log('[PINVerification] Verification complete');
+  }
 
   return result;
 }
@@ -250,6 +255,8 @@ export async function quickPINVerification(
  * Log PIN protection status for all profiles
  */
 export async function logPINProtectionStatus(profiles: Profile[]): Promise<void> {
+  if (!__DEV__) return;
+
   console.log('='.repeat(60));
   console.log('PIN PROTECTION STATUS');
   console.log('='.repeat(60));
@@ -268,7 +275,6 @@ export async function logPINProtectionStatus(profiles: Profile[]): Promise<void>
 
     if (hasPIN && pinHash) {
       console.log(`  Hash Length: ${pinHash.length} characters`);
-      console.log(`  Hash Preview: ${pinHash.substring(0, 20)}...`);
 
       // Security check
       const security = await verifyPinSecurity(profile.id, '1234'); // Test with common PIN
@@ -293,7 +299,9 @@ export async function testPINFlow(profileId: string, testPin: string = '1234'): 
 }> {
   const steps: { step: string; passed: boolean; message: string }[] = [];
 
-  console.log(`[PINVerification] Testing PIN flow for profile ${profileId}`);
+  if (__DEV__) {
+    console.log('[PINVerification] Testing PIN flow');
+  }
 
   // Step 1: Set PIN
   try {
@@ -395,10 +403,9 @@ export async function testPINFlow(profileId: string, testPin: string = '1234'): 
 
   const allPassed = steps.every(s => s.passed);
 
-  console.log(`[PINVerification] PIN flow test: ${allPassed ? '✅ PASSED' : '❌ FAILED'}`);
-  steps.forEach((step, i) => {
-    console.log(`  ${i + 1}. ${step.passed ? '✅' : '❌'} ${step.step}: ${step.message}`);
-  });
+  if (__DEV__) {
+    console.log(`[PINVerification] PIN flow test completed`);
+  }
 
   return {
     success: allPassed,

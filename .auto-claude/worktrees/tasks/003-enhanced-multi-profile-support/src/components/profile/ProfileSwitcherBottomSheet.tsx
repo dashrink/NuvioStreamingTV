@@ -12,10 +12,12 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useProfileContext, Profile } from '../../contexts/ProfileContext';
 import { mmkvStorage } from '../../services/mmkvStorage';
 import { colors } from '../../styles/colors';
+import { PROFILE_STRINGS } from '../../constants/profileStrings';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -49,12 +51,14 @@ interface ProfileSwitcherBottomSheetProps {
 
 const PIN_STORAGE_PREFIX = 'profile_pin_hash_';
 
-// Simple hash function for PIN validation (for local storage only)
-const hashPin = (pin: string): string => {
-  // Simple hash using base64 encoding of a salted PIN
-  // In production, use a proper crypto library
+// Cryptographic hash function for PIN validation using SHA256
+const hashPin = async (pin: string): Promise<string> => {
   const salted = `nuvio_pin_salt_${pin}_end`;
-  return btoa(salted);
+  const hash = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    salted
+  );
+  return hash; // Returns 64-char hexadecimal string (irreversible)
 };
 
 export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProps> = ({
@@ -225,10 +229,11 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     return !!profilePins[profileId];
   }, [profilePins]);
 
-  const verifyPin = useCallback((profileId: string, pin: string): boolean => {
+  const verifyPin = useCallback(async (profileId: string, pin: string): Promise<boolean> => {
     const storedHash = profilePins[profileId];
     if (!storedHash) return true; // No PIN set
-    return hashPin(pin) === storedHash;
+    const inputHash = await hashPin(pin);
+    return inputHash === storedHash;
   }, [profilePins]);
 
   const handleProfileSelect = useCallback(async (profile: Profile) => {
@@ -256,11 +261,12 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     if (!selectedProfile) return;
 
     if (pinInput.length !== 4) {
-      setPinError('PIN must be 4 digits');
+      setPinError(PROFILE_STRINGS.pinMustBeFourDigits);
       return;
     }
 
-    if (verifyPin(selectedProfile.id, pinInput)) {
+    const isPinValid = await verifyPin(selectedProfile.id, pinInput);
+    if (isPinValid) {
       // PIN correct, switch profile
       await setActiveProfile(selectedProfile.id);
       onProfileSwitch?.(selectedProfile);
@@ -270,7 +276,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
       setSelectedProfile(null);
       onClose();
     } else {
-      setPinError('Incorrect PIN. Please try again.');
+      setPinError(PROFILE_STRINGS.incorrectPin);
       setPinInput('');
     }
   }, [selectedProfile, pinInput, verifyPin, setActiveProfile, onProfileSwitch, onClose]);
@@ -314,8 +320,8 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
         onFocus={profileFocusGroup.handleItemFocus(index)}
         onBlur={profileFocusGroup.handleItemBlur}
         hasTVPreferredFocus={isTV && index === profileFocusGroup.focusedIndex}
-        accessibilityLabel={`${profile.name} profile${isActive ? ', currently active' : ''}${hasPinProtection ? ', PIN protected' : ''}`}
-        accessibilityHint={isActive ? 'Currently active profile' : 'Double-tap to switch to this profile'}
+        accessibilityLabel={`${profile.name} profile${isActive ? `, ${PROFILE_STRINGS.currentlyActive}` : ''}${hasPinProtection ? `, ${PROFILE_STRINGS.pinProtected}` : ''}`}
+        accessibilityHint={isActive ? PROFILE_STRINGS.currentlyActiveProfile : PROFILE_STRINGS.doubleTapToSwitch}
         enableScale={isTV}
         enableGlow={isTV}
         enableBorder={isTV}
@@ -394,14 +400,14 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                   isTV && styles.headerTitleTV,
                   { color: currentTheme.colors.text }
                 ]}>
-                  Switch Profile
+                  {PROFILE_STRINGS.switchProfile}
                 </Text>
                 <Focusable
                   variant="button"
                   style={[styles.closeButton, isTV && styles.closeButtonTV]}
                   onPress={onClose}
-                  accessibilityLabel="Close profile switcher"
-                  accessibilityHint="Double-tap to close"
+                  accessibilityLabel={PROFILE_STRINGS.closeProfileSwitcher}
+                  accessibilityHint={PROFILE_STRINGS.doubleTapToClose}
                   enableScale={isTV}
                   enableGlow={false}
                   enableBorder={isTV}
@@ -431,7 +437,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               {activeProfile && (
                 <View style={styles.activeProfileInfo}>
                   <Text style={[styles.activeProfileLabel, { color: currentTheme.colors.textMuted }]}>
-                    Current Profile:
+                    {PROFILE_STRINGS.currentProfile}
                   </Text>
                   <Text style={[styles.activeProfileName, { color: currentTheme.colors.text }]}>
                     {activeProfile.name}
@@ -458,14 +464,14 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
               isTV && styles.pinModalTitleTV,
               { color: currentTheme.colors.text }
             ]}>
-              Enter PIN
+              {PROFILE_STRINGS.enterPin}
             </Text>
             <Text style={[
               styles.pinModalSubtitle,
               isTV && styles.pinModalSubtitleTV,
               { color: currentTheme.colors.textMuted }
             ]}>
-              {selectedProfile?.name} is protected by a PIN
+              {PROFILE_STRINGS.profileProtected(selectedProfile?.name || '')}
             </Text>
 
             <TextInput
@@ -485,14 +491,14 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 setPinInput(digits);
                 setPinError('');
               }}
-              placeholder="****"
+              placeholder={PROFILE_STRINGS.pinPlaceholder}
               placeholderTextColor={currentTheme.colors.textMuted}
               keyboardType="number-pad"
               secureTextEntry
               maxLength={4}
               autoFocus={!isTV}
               accessible={true}
-              accessibilityLabel="Enter 4 digit PIN"
+              accessibilityLabel={PROFILE_STRINGS.enterFourDigitPin}
               {...(isTV && {
                 hasTVPreferredFocus: showPinModal,
                 isTVSelectable: true,
@@ -517,8 +523,8 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 onPress={handlePinCancel}
                 onFocus={pinButtonFocusGroup.handleItemFocus(0)}
                 onBlur={pinButtonFocusGroup.handleItemBlur}
-                accessibilityLabel="Cancel PIN entry"
-                accessibilityHint="Double-tap to cancel"
+                accessibilityLabel={PROFILE_STRINGS.cancelPinEntry}
+                accessibilityHint={PROFILE_STRINGS.doubleTapToCancel}
                 hasTVPreferredFocus={isTV && showPinModal && pinButtonFocusGroup.focusedIndex === 0}
                 enableScale={isTV}
                 enableGlow={isTV}
@@ -531,7 +537,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                     isTV && styles.pinButtonTextTV,
                   ]}
                 >
-                  Cancel
+                  {PROFILE_STRINGS.cancel}
                 </Text>
               </Focusable>
               <Focusable
@@ -546,8 +552,8 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                 onPress={handlePinSubmit}
                 onFocus={pinButtonFocusGroup.handleItemFocus(1)}
                 onBlur={pinButtonFocusGroup.handleItemBlur}
-                accessibilityLabel="Unlock profile"
-                accessibilityHint="Double-tap to unlock with entered PIN"
+                accessibilityLabel={PROFILE_STRINGS.unlockProfile}
+                accessibilityHint={PROFILE_STRINGS.doubleTapToUnlock}
                 hasTVPreferredFocus={isTV && showPinModal && pinButtonFocusGroup.focusedIndex === 1}
                 enableScale={isTV}
                 enableGlow={isTV}
@@ -560,7 +566,7 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
                     isTV && styles.pinButtonTextTV,
                   ]}
                 >
-                  Unlock
+                  {PROFILE_STRINGS.unlock}
                 </Text>
               </Focusable>
             </View>

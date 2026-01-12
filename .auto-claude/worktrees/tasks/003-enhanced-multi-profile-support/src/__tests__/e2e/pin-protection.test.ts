@@ -9,16 +9,21 @@
  * - Profile switching with PIN protection
  */
 
+import * as Crypto from 'expo-crypto';
 import { mmkvStorage } from '../../services/mmkvStorage';
 import { Profile } from '../../contexts/ProfileContext';
 
 // PIN storage prefix (must match ProfileSwitcherBottomSheet)
 const PIN_STORAGE_PREFIX = 'profile_pin_hash_';
 
-// Simple hash function (must match ProfileSwitcherBottomSheet)
-const hashPin = (pin: string): string => {
+// Cryptographic hash function (must match ProfileSwitcherBottomSheet)
+const hashPin = async (pin: string): Promise<string> => {
   const salted = `nuvio_pin_salt_${pin}_end`;
-  return btoa(salted);
+  const hash = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    salted
+  );
+  return hash; // Returns 64-char hexadecimal string (irreversible)
 };
 
 // Test result interface
@@ -86,7 +91,7 @@ class PINProtectionTester {
     try {
       const profileA = this.testProfiles[0];
       const testPin = '1234';
-      const pinHash = hashPin(testPin);
+      const pinHash = await hashPin(testPin);
 
       // Store PIN hash
       await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileA.id}`, pinHash);
@@ -188,7 +193,7 @@ class PINProtectionTester {
       const profileA = this.testProfiles[0];
       const storedHash = await mmkvStorage.getItem(`${PIN_STORAGE_PREFIX}${profileA.id}`);
       const incorrectPin = '9999';
-      const incorrectHash = hashPin(incorrectPin);
+      const incorrectHash = await hashPin(incorrectPin);
 
       if (!storedHash) {
         console.log(`[PINProtectionTest] ❌ ${testName} - No PIN hash found`);
@@ -238,7 +243,7 @@ class PINProtectionTester {
       const profileA = this.testProfiles[0];
       const storedHash = await mmkvStorage.getItem(`${PIN_STORAGE_PREFIX}${profileA.id}`);
       const correctPin = '1234';
-      const correctHash = hashPin(correctPin);
+      const correctHash = await hashPin(correctPin);
 
       if (!storedHash) {
         console.log(`[PINProtectionTest] ❌ ${testName} - No PIN hash found`);
@@ -438,8 +443,8 @@ class PINProtectionTester {
       const pinA = '1234';
       const pinB = '5678';
 
-      await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileA.id}`, hashPin(pinA));
-      await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileB.id}`, hashPin(pinB));
+      await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileA.id}`, await hashPin(pinA));
+      await mmkvStorage.setItem(`${PIN_STORAGE_PREFIX}${profileB.id}`, await hashPin(pinB));
 
       // Verify each profile has its own PIN
       const hashA = await mmkvStorage.getItem(`${PIN_STORAGE_PREFIX}${profileA.id}`);
@@ -465,8 +470,8 @@ class PINProtectionTester {
       }
 
       // Verify cross-validation fails
-      const pinAWorksForB = hashPin(pinA) === hashB;
-      const pinBWorksForA = hashPin(pinB) === hashA;
+      const pinAWorksForB = (await hashPin(pinA)) === hashB;
+      const pinBWorksForA = (await hashPin(pinB)) === hashA;
 
       if (pinAWorksForB || pinBWorksForA) {
         console.log(`[PINProtectionTest] ❌ ${testName} - Cross-validation succeeded`);
