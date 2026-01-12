@@ -3,9 +3,9 @@
   "spec_id": "002-enhanced-tv-navigation-system",
   "description": "Production-grade, remote-first navigation system for Apple TV and Android TV platforms with D-pad support, focus management, long-press interactions, and spatial navigation with memory.",
   "created_at": "2026-01-09T21:14:50.914Z",
-  "updated_at": "2026-01-12T11:42:56.764Z",
-  "status": "in_progress",
-  "planStatus": "in_progress",
+  "updated_at": "2026-01-12T11:46:33.445Z",
+  "status": "ai_review",
+  "planStatus": "review",
   "total_subtasks": 35,
   "estimated_effort": "3-4 weeks",
   "phases": [
@@ -651,7 +651,7 @@
           "id": "7.6",
           "title": "Create navigation integration tests",
           "description": "Integration tests for focus restoration across screens",
-          "status": "pending",
+          "status": "completed",
           "files": [
             "__tests__/navigation/AppNavigator.test.tsx"
           ],
@@ -659,7 +659,9 @@
             "Focus state stored in route params",
             "Focus restored on navigation return",
             "requestAnimationFrame timing correct"
-          ]
+          ],
+          "notes": "Integration tests for focus restoration across screens - COMPLETE\n\nCreated comprehensive integration test suite with 45 passing tests in __tests__/navigation/AppNavigator.test.tsx covering:\n\n**All Acceptance Criteria Met:**\n✅ Focus state stored in route params - Verified navigation.setParams() is called correctly\n✅ Focus restored on navigation return - Verified setNativeProps({ hasTVPreferredFocus: true }) works\n✅ requestAnimationFrame timing correct - Verified timing with setTimeout + requestAnimationFrame\n\n**Test Coverage:**\n1. useTVFocusRestoration hook (20 tests):\n   - Focus state storage in route params (5 tests)\n   - Focus restoration on navigation return (7 tests)\n   - requestAnimationFrame timing (2 tests)\n   - Disabled state (2 tests)\n   - Ref management (3 tests)\n   - Platform detection (1 test)\n\n2. useTVFocusRestorationSimple hook (3 tests):\n   - Save/retrieve focus from TVNavigationContext\n   - Handle missing saved focus\n\n3. TVScreenWrapper component (6 tests):\n   - Automatic focus restoration on screen mount\n   - Focus saving behavior\n   - Context hooks (useTVScreenFocus, useTVScreenFocusOptional)\n\n4. Cross-screen focus memory (4 tests):\n   - Separate focus memory per screen\n   - Focus updates during navigation\n   - Focus clearing (single screen and all)\n\n5. Navigation flow simulation (2 tests):\n   - Home → Details → Back flow with focus restoration\n   - Deep navigation with focus memory stack\n\n6. Focus history (2 tests):\n   - Track focus history across screens\n   - Pop focus history on back navigation\n\n7. Error handling (3 tests):\n   - navigation.setParams() errors handled gracefully\n   - ref.setNativeProps() errors handled gracefully\n   - Null ref.current handled gracefully\n\n8. Edge cases (5 tests):\n   - Very long focus IDs\n   - Special characters in focus IDs\n   - Unicode characters in focus IDs\n   - Rapid focus changes (100 rapid saves)\n   - Concurrent hooks on same screen\n\nAll 45 tests pass successfully. Committed as 9bdbc6c2.",
+          "updated_at": "2026-01-12T11:46:15.083538+00:00"
         }
       ]
     }
@@ -720,6 +722,6 @@
       "Physical device testing (if available)"
     ]
   },
-  "last_updated": "2026-01-11T15:15:04.361047+00:00",
+  "last_updated": "2026-01-12T11:46:15.083554+00:00",
   "recoveryNote": "Task recovered from stuck state at 2026-01-12T11:42:51.274Z"
 }

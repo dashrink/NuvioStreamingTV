@@ -1,7 +1,7 @@
 {
   "spec_id": "002-enhanced-tv-navigation-system",
   "created_at": "2026-01-09T21:17:21.385033+00:00",
-  "updated_at": "2026-01-12T01:45:56.174221+00:00",
+  "updated_at": "2026-01-12T11:46:26.641236+00:00",
   "phases": {
     "planning": {
       "phase": "planning",
@@ -908,8 +908,8 @@
     },
     "coding": {
       "phase": "coding",
-      "status": "completed",
-      "started_at": "2026-01-12T01:37:12.529321+00:00",
+      "status": "active",
+      "started_at": "2026-01-12T11:42:56.663431+00:00",
       "completed_at": "2026-01-12T01:39:24.026493+00:00",
       "entries": [
         {
@@ -23760,6 +23760,286 @@
           "type": "phase_end",
           "content": "All subtasks completed successfully",
           "phase": "coding",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:42:56.663538+00:00",
+          "type": "phase_start",
+          "content": "Continuing implementation...",
+          "phase": "coding"
+        },
+        {
+          "timestamp": "2026-01-12T11:44:49.566227+00:00",
+          "type": "text",
+          "content": "I'll start by checking the current directory and understanding what needs to be done for this integration test subtask.",
+          "phase": "coding",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:44:49.613490+00:00",
+          "type": "tool_start",
+          "content": "[Bash] pwd",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "pwd",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:44:49.659757+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...specs/002-enhanced-tv-navigation-system/spec.md",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "...specs/002-enhanced-tv-navigation-system/spec.md",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:44:49.717640+00:00",
+          "type": "tool_start",
+          "content": "[Read] ...d-tv-navigation-system/implementation_plan.json",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "...d-tv-navigation-system/implementation_plan.json",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:03.173969+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "     1→# Specification: Enhanced TV Navigation System\n     2→\n     3→## Overview\n     4→\n     5→This specification details the implementation of a production-grade, remote-first navigation system for Apple TV and Android TV platforms. The system addresses Stremio's #1 user complaint (poor TV navigation) and exploits a major market gap where competitors like Kodi struggle with TV/mobile UX. The implementation will deliver a native-feeling experience matching Apple TV+ quality standards, with complete D-pad coverage, intelligent focus management, long-press interactions, and spatial navigation with memory.\n     6→\n     7→## Workflow Type\n     8→\n     9→**Type**: Feature\n    10→\n    11→**Rationale**: This is a new capability addition to the existing React Native codebase. While some TV navigation infrastructure already exists (useTVEventHandler, Focusable.tv.tsx, useSpatialNavigation), this task requires building a comprehensive, production-ready system that transforms the entire app's navigation paradigm. This is not a refactor of existing functionality but rather the implementation of new features (long-press menus, focus memory, voice search integration) alongside enhancement of existing TV support to meet Apple TV+ quality benchmarks.\n    12→\n    13→## Task Scope\n    14→\n    15→### Services Involved\n    16→- **main** (primary) - React Native TypeScript frontend containing all UI components, navigation logic, and TV-specific interaction layers\n    17→\n    18→### This Task Will:\n    19→- [ ] Implement universal D-pad focusability across all UI components\n    20→- [ ] Create consistent, visible focus states with smooth animations\n    21→- [ ] Build long-press detection system for context menus and quick actions\n    22→- [ ] Develop spatial navigation with focus memory that persists across screen transitions\n    23→- [ ] Ensure predictable back button behavior throughout the app\n    24→- [ ] Integrate TV remote voice search capabilities\n    25→- [ ] Eliminate all focus traps and unreachable UI elements\n    26→- [ ] Establish reusable TV navigation primitives for future development\n    27→\n    28→### Out of Scope:\n    29→- Web browser TV navigation (focus is Apple TV and Android TV native apps only)\n    30→- Mobile phone/tablet touch-optimized navigation improvements\n    31→- Smart TV browser apps (Samsung Tizen, LG webOS)\n    32→- Game controller support beyond standard TV remotes\n    33→- Accessibility features beyond focus management (screen readers, high contrast modes)\n    34→\n    35→## Service Context\n    36→\n    37→### main\n    38→\n    39→**Tech Stack:**\n    40→- Language: TypeScript\n    41→- Framework: React Native with react-native-tvos\n    42→- Navigation: @react-navigation/native v7.1.6\n    43→- Animation: react-native-reanimated v4.2.0\n    44→- Gesture handling: react-native-gesture-handler v2.29.1\n    45→- Key directories: src/, app/, components/\n    46→\n    47→**Entry Point:** `index.ts`\n    48→\n    49→**How to Run:**\n    50→```bash\n    51→# Standard development mode\n    52→npm run start\n    53→\n    54→# TV-specific development mode (APP_VARIANT=tv)\n    55→npm run start:tv\n    56→\n    57→# Prebuild TV native projects\n    58→npm run prebuild:tv\n    59→```\n    60→\n    61→**Port:** 3000\n    62→\n    63→**Platform Detection:**\n    64→- Use `Platform.isTV` to detect Apple TV or Android TV\n    65→- Metro automatically loads `.tv.tsx` file variants when `APP_VARIANT=tv` is set\n    66→- Configuration in `app.json`: `ios.supportsTV: true`\n    67→\n    68→## Files to Modify\n    69→\n    70→| File | Service | What to Change |\n    71→|------|---------|---------------|\n    72→| `/src/hooks/useTVEventHandler.ts` | main | Enhance TV remote event handling to support long-press detection with timing thresholds (Android native, Apple TV custom implementation) |\n    73→| `/src/components/common/Focusable.tv.tsx` | main | Add focus state animations using react-native-reanimated, implement `tvParallaxProperties` for Apple TV, ensure proper `isTVSelectable` and focus prop handling |\n    74→| `/src/hooks/useSpatialNavigation.ts` | main | Implement focus memory storage/retrieval system, add `nextFocus[Up/Down/Left/Right]` logic with node handle management |\n    75→| `/src/contexts/TVNavigationContext.tsx` | main | Add global state for focus history, last focused items per screen, voice search state, and context menu visibility |\n    76→| `/src/navigation/AppNavigator.tsx` | main | Integrate `useFocusEffect` with focus restoration logic using `requestAnimationFrame`, store focus state in `navigation.setParams()` |\n    77→| **New:** `/src/components/tv/TVContextMenu.tv.tsx` | main | Create context menu component for long-press actions (Add to List, Mark as Watched, etc.) |\n    78→| **New:** `/src/components/tv/TVFocusGuard.tv.tsx` | main | Create boundary component to prevent focus escaping containers, handle circular navigation |\n    79→| **New:** `/src/hooks/useLongPress.ts` | main | Create platform-aware long-press detection hook (300ms threshold for Apple TV, native event for Android TV) |\n    80→| **New:** `/src/components/tv/TVVoiceSearch.tv.tsx` | main | Create voice search modal/overlay triggered by TV remote voice button |\n    81→\n    82→## Files to Reference\n    83→\n    84→These files show patterns to follow:\n    85→\n    86→| File | Pattern to Copy |\n    87→|------|----------------|\n    88→| `/src/hooks/useTVEventHandler.ts` | TVEventHandler lifecycle management: `TVEventHandler.enable(component, callback)` on mount, `.disable()` on unmount; existence check before instantiation |\n    89→| `/src/components/common/Focusable.tv.tsx` | TV-specific file variant pattern (`.tv.tsx` extension), TV prop handling (`hasTVPreferredFocus`, `isTVSelectable`, `onFocus/onBlur`) |\n    90→| `/src/hooks/useSpatialNavigation.ts` | Focus state management patterns, using refs and `findNodeHandle()` for native node access |\n    91→| `/src/contexts/TVNavigationContext.tsx` | Global TV state management structure using React Context API |\n    92→| `babel.config.js` | Reanimated plugin configuration (must be last plugin in array) |\n    93→\n    94→## Patterns to Follow\n    95→\n    96→### Pattern 1: TV-Specific File Variants\n    97→\n    98→From Metro bundler configuration:\n    99→\n   100→```typescript\n   101→// File structure pattern\n   102→src/components/common/Button.tsx        // Default (mobile/web)\n   103→src/components/common/Button.tv.tsx     // TV variant (auto-loaded when APP_VARIANT=tv)\n   104→\n   105→// Platform detection\n   106→import { Platform } from 'react-native';\n   107→\n   108→if (Platform.isTV) {\n   109→  // TV-specific logic\n   110→}\n   111→```\n   112→\n   113→**Key Points:**\n   114→- Metro automatically resolves `.tv.tsx` when `APP_VARIANT=tv` environment variable is set\n   115→- Always provide fallback `.tsx` for non-TV platforms\n   116→- Use `Platform.isTV` for runtime conditional logic within shared files\n   117→\n   118→### Pattern 2: Reanimated Focus Animations\n   119→\n   120→From react-native-reanimated best practices:\n   121→\n   122→```typescript\n   123→import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';\n   124→\n   125→const scale = useSharedValue(1);\n   126→const opacity = useSharedValue(1);\n   127→\n   128→const animatedStyle = useAnimatedStyle(() => ({\n   129→  transform: [{ scale: scale.value }],\n   130→  opacity: opacity.value\n   131→}));\n   132→\n   133→const handleFocus = () => {\n   134→  scale.value = withSpring(1.1, { damping: 15, stiffness: 150 });\n   135→  opacity.value = withSpring(1.0);\n   136→};\n   137→\n   138→const handleBlur = () => {\n   139→  scale.value = withSpring(1.0, { damping: 15, stiffness: 150 });\n   140→  opacity.value = withSpring(0.7);\n   141→};\n   142→```\n   143→\n   144→**Key Points:**\n   145→- Keep TV animations subtle (scale 1.0-1.1 range)\n   146→- Use spring animations with damping: 15, stiffness: 150 for native feel\n   147→- Avoid complex animations on Android TV (limited GPU on many devices)\n   148→\n   149→### Pattern 3: Focus Memory with React Navigation\n   150→\n   151→From @react-navigation/native integration patterns:\n   152→\n   153→```typescript\n   154→import { useFocusEffect } from '@react-navigation/native';\n   155→import { useCallback, useRef } from 'react';\n   156→\n   157→const lastFocusedId = useRef<string | null>(null);\n   158→\n   159→useFocusEffect(\n   160→  useCallback(() => {\n   161→    // Restore focus after screen layout completes\n   162→    requestAnimationFrame(() => {\n   163→      const savedFocusId = navigation.getState().routes[navigation.getState().index].params?.lastFocusId;\n   164→\n   165→      if (savedFocusId && focusableRefs[savedFocusId]) {\n   166→        focusableRefs[savedFocusId].setNativeProps({ hasTVPreferredFocus: true });\n   167→      }\n   168→    });\n   169→\n   170→    // Save focus on screen blur\n   171→    return () => {\n   172→      if (lastFocusedId.current) {\n   173→        navigation.setParams({ lastFocusId: lastFocusedId.current });\n   174→      }\n   175→    };\n   176→  }, [navigation])\n   177→);\n   178→```\n   179→\n   180→**Key Points:**\n   181→- Store focus ID in route params via `navigation.setParams()`\n   182→- Use `requestAnimationFrame` because screen focus fires before layout completion\n   183→- Wrap in `useCallback` to prevent infinite loop in `useFocusEffect`\n   184→- Use `setNativeProps({ hasTVPreferredFocus: true })` for runtime focus (not props, which only work on mount)\n   185→\n   186→### Pattern 4: TVEventHandler Lifecycle\n   187→\n   188→From existing `/src/hooks/useTVEventHandler.ts` pattern:\n   189→\n   190→```typescript\n   191→import { TVEventHandler } from 'react-native';\n   192→import { useEffect, useRef } from 'react';\n   193→\n   194→export const useTVEventHandler = (callback: (evt: any) => void) => {\n   195→  const tvEventHandler = useRef<any>(null);\n   196→\n   197→  useEffect(() => {\n   198→    // Critical: Check existence before instantiation (may not exist in all Expo builds)\n   199→    if (TVEventHandler) {\n   200→      tvEventHandler.current = new TVEventHandler();\n   201→      tvEventHandler.current.enable(null, callback);\n   202→    }\n   203→\n   204→    return () => {\n   205→      if (tvEventHandler.current) {\n   206→     \n\n... [truncated - full output was 23900 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:45:09.810352+00:00",
+          "type": "text",
+          "content": "Let me check what integration tests currently exist and understand the testing patterns:",
+          "phase": "coding",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:10.788184+00:00",
+          "type": "tool_start",
+          "content": "[Bash] find . -name \"*.test.ts*\" -o -name \"*.test.tsx\"...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "find . -name \"*.test.ts*\" -o -name \"*.test.tsx\"...",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:11.163296+00:00",
+          "type": "tool_start",
+          "content": "[Glob] pattern: **/__tests__/navigation/*.test.tsx",
+          "phase": "coding",
+          "tool_name": "Glob",
+          "tool_input": "pattern: **/__tests__/navigation/*.test.tsx",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:11.637502+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./__tests__/setup.ts",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./__tests__/setup.ts",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:11.741924+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "     1→/**\n     2→ * Jest Test Setup for TV Navigation Testing\n     3→ *\n     4→ * This file configures the test environment with all necessary mocks\n     5→ * for testing React Native TV navigation components and hooks.\n     6→ */\n     7→\n     8→import { jest } from '@jest/globals';\n     9→\n    10→// ============================================================================\n    11→// React Native Core Mocks\n    12→// ============================================================================\n    13→\n    14→// Mock Platform to simulate TV environment\n    15→jest.mock('react-native/Libraries/Utilities/Platform', () => ({\n    16→  OS: 'ios',\n    17→  isTV: true,\n    18→  isTesting: true,\n    19→  select: jest.fn((obj) => obj.ios || obj.default),\n    20→  constants: {\n    21→    reactNativeVersion: { major: 0, minor: 81, patch: 4 },\n    22→  },\n    23→}));\n    24→\n    25→// Mock TVEventHandler for TV remote event handling\n    26→const mockTVEventHandler = {\n    27→  enable: jest.fn(),\n    28→  disable: jest.fn(),\n    29→};\n    30→\n    31→// Create a comprehensive React Native mock\n    32→jest.mock('react-native', () => {\n    33→  // Create mock components\n    34→  const mockComponent = (name: string) => {\n    35→    const Component = (props: any) => props.children;\n    36→    Component.displayName = name;\n    37→    return Component;\n    38→  };\n    39→\n    40→  return {\n    41→    // Platform\n    42→    Platform: {\n    43→      OS: 'ios',\n    44→      isTV: true,\n    45→      isTesting: true,\n    46→      select: jest.fn((obj: Record<string, unknown>) => obj.ios || obj.default),\n    47→      constants: {\n    48→        reactNativeVersion: { major: 0, minor: 81, patch: 4 },\n    49→      },\n    50→    },\n    51→\n    52→    // TV Event Handler\n    53→    TVEventHandler: jest.fn().mockImplementation(() => mockTVEventHandler),\n    54→\n    55→    // Back Handler\n    56→    BackHandler: {\n    57→      addEventListener: jest.fn(() => ({ remove: jest.fn() })),\n    58→      removeEventListener: jest.fn(),\n    59→      exitApp: jest.fn(),\n    60→    },\n    61→\n    62→    // Dimensions\n    63→    Dimensions: {\n    64→      get: jest.fn().mockReturnValue({\n    65→        width: 1920,\n    66→        height: 1080,\n    67→        scale: 1,\n    68→        fontScale: 1,\n    69→      }),\n    70→      addEventListener: jest.fn(() => ({ remove: jest.fn() })),\n    71→      removeEventListener: jest.fn(),\n    72→    },\n    73→\n    74→    // StyleSheet\n    75→    StyleSheet: {\n    76→      create: (styles: any) => styles,\n    77→      flatten: (style: any) => style,\n    78→      compose: (style1: any, style2: any) => [style1, style2],\n    79→      hairlineWidth: 1,\n    80→      absoluteFill: 0,\n    81→      absoluteFillObject: {\n    82→        position: 'absolute',\n    83→        left: 0,\n    84→        right: 0,\n    85→        top: 0,\n    86→        bottom: 0,\n    87→      },\n    88→    },\n    89→\n    90→    // Animated\n    91→    Animated: {\n    92→      View: mockComponent('Animated.View'),\n    93→      Text: mockComponent('Animated.Text'),\n    94→      ScrollView: mockComponent('Animated.ScrollView'),\n    95→      Image: mockComponent('Animated.Image'),\n    96→      Value: jest.fn(() => ({\n    97→        setValue: jest.fn(),\n    98→        interpolate: jest.fn(() => ({ setValue: jest.fn() })),\n    99→      })),\n   100→      timing: jest.fn(() => ({ start: jest.fn() })),\n   101→      spring: jest.fn(() => ({ start: jest.fn() })),\n   102→      sequence: jest.fn(() => ({ start: jest.fn() })),\n   103→      parallel: jest.fn(() => ({ start: jest.fn() })),\n   104→      loop: jest.fn(() => ({ start: jest.fn() })),\n   105→      event: jest.fn(),\n   106→      createAnimatedComponent: (component: any) => component,\n   107→    },\n   108→\n   109→    // Components\n   110→    View: mockComponent('View'),\n   111→    Text: mockComponent('Text'),\n   112→    TextInput: mockComponent('TextInput'),\n   113→    ScrollView: mockComponent('ScrollView'),\n   114→    TouchableOpacity: mockComponent('TouchableOpacity'),\n   115→    TouchableHighlight: mockComponent('TouchableHighlight'),\n   116→    TouchableWithoutFeedback: mockComponent('TouchableWithoutFeedback'),\n   117→    Pressable: mockComponent('Pressable'),\n   118→    FlatList: mockComponent('FlatList'),\n   119→    SectionList: mockComponent('SectionList'),\n   120→    Image: mockComponent('Image'),\n   121→    Modal: mockComponent('Modal'),\n   122→    ActivityIndicator: mockComponent('ActivityIndicator'),\n   123→    SafeAreaView: mockComponent('SafeAreaView'),\n   124→    KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),\n   125→\n   126→    // Native Modules\n   127→    NativeModules: {\n   128→      DeviceInfo: {\n   129→        getConstants: () => ({\n   130→          Dimensions: {\n   131→            window: { width: 1920, height: 1080, scale: 1, fontScale: 1 },\n   132→            screen: { width: 1920, height: 1080, scale: 1, fontScale: 1 },\n   133→          },\n   134→        }),\n   135→      },\n   136→      StatusBarManager: {\n   137→        getHeight: jest.fn(),\n   138→      },\n   139→    },\n   140→\n   141→    // Utilities\n   142→    findNodeHandle: jest.fn(() => 1),\n   143→    AccessibilityInfo: {\n   144→      addEventListener: jest.fn(() => ({ remove: jest.fn() })),\n   145→      announceForAccessibility: jest.fn(),\n   146→      isBoldTextEnabled: jest.fn(() => Promise.resolve(false)),\n   147→      isGrayscaleEnabled: jest.fn(() => Promise.resolve(false)),\n   148→      isInvertColorsEnabled: jest.fn(() => Promise.resolve(false)),\n   149→      isReduceMotionEnabled: jest.fn(() => Promise.resolve(false)),\n   150→      isReduceTransparencyEnabled: jest.fn(() => Promise.resolve(false)),\n   151→      isScreenReaderEnabled: jest.fn(() => Promise.resolve(false)),\n   152→      removeEventListener: jest.fn(),\n   153→      setAccessibilityFocus: jest.fn(),\n   154→    },\n   155→    Alert: {\n   156→      alert: jest.fn(),\n   157→    },\n   158→    Keyboard: {\n   159→      addListener: jest.fn(() => ({ remove: jest.fn() })),\n   160→      removeListener: jest.fn(),\n   161→      dismiss: jest.fn(),\n   162→    },\n   163→    PixelRatio: {\n   164→      get: jest.fn(() => 2),\n   165→      getFontScale: jest.fn(() => 1),\n   166→      getPixelSizeForLayoutSize: jest.fn((size: number) => size * 2),\n   167→      roundToNearestPixel: jest.fn((size: number) => Math.round(size)),\n   168→    },\n   169→    Linking: {\n   170→      addEventListener: jest.fn(() => ({ remove: jest.fn() })),\n   171→      canOpenURL: jest.fn(() => Promise.resolve(true)),\n   172→      getInitialURL: jest.fn(() => Promise.resolve(null)),\n   173→      openURL: jest.fn(() => Promise.resolve()),\n   174→      removeEventListener: jest.fn(),\n   175→    },\n   176→  };\n   177→});\n   178→\n   179→// ============================================================================\n   180→// React Native Reanimated Mock\n   181→// ============================================================================\n   182→\n   183→jest.mock('react-native-reanimated', () => {\n   184→  const Reanimated = jest.requireActual(\n   185→    'react-native-reanimated/mock'\n   186→  );\n   187→\n   188→  // Override specific functions that need custom behavior\n   189→  Reanimated.useSharedValue = jest.fn((initial) => ({\n   190→    value: initial,\n   191→  }));\n   192→\n   193→  Reanimated.useAnimatedStyle = jest.fn((styleFactory) => {\n   194→    // Return static style for tests\n   195→    return {};\n   196→  });\n   197→\n   198→  Reanimated.withSpring = jest.fn((value, _config, callback) => {\n   199→    if (callback) {\n   200→      callback(true);\n   201→    }\n   202→    return value;\n   203→  });\n   204→\n   205→  Reanimated.withTiming = jest.fn((value, _config, callback) => {\n   206→    if (callback) {\n   207→      callback(true);\n   208→    }\n   209→    return value;\n   210→  });\n   211→\n   212→  Reanimated.withSequence = jest.fn((...animations) => animations[animations.length - 1]);\n   213→  Reanimated.withDelay = jest.fn((_, animation) => animation);\n   214→  Reanimated.withRepeat = jest.fn((animation) => animation);\n   215→\n   216→  Reanimated.runOnJS = jest.fn((fn) => fn);\n   217→  Reanimated.runOnUI = jest.fn((fn) => fn);\n   218→\n   219→  Reanimated.cancelAnimation = jest.fn();\n   220→\n   221→  Reanimated.interpolate = jest.fn((value) => value);\n   222→  Reanimated.Extrapolate = { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' };\n   223→\n   224→  return Reanimated;\n   225→});\n   226→\n   227→// ============================================================================\n   228→// React Navigation Mock\n   229→// ============================================================================\n   230→\n   231→const mockNavigation = {\n   232→  navigate: jest.fn(),\n   233→  goBack: jest.fn(),\n   234→  setParams: jest.fn(),\n   235→  getState: jest.fn(() => ({\n   236→    routes: [{ name: 'TestScreen', params: {} }],\n   237→    index: 0,\n   238→  })),\n   239→  addListener: jest.fn(() => jest.fn()),\n   240→  removeListener: jest.fn(),\n   241→  isFocused: jest.fn(() => true),\n   242→  canGoBack: jest.fn(() => true),\n   243→  dispatch: jest.fn(),\n   244→  reset: jest.fn(),\n   245→  setOptions: jest.fn(),\n   246→};\n   247→\n   248→const mockRoute = {\n   249→  key: 'test-key',\n   250→  name: 'TestScreen',\n   251→  params: {},\n   252→};\n   253→\n   254→jest.mock('@react-navigation/native', () => {\n   255→  const actual = jest.requireActual('@react-navigation/native');\n   256→  return {\n   257→    ...actual,\n   258→    useNavigation: jest.fn(() => mockNavigation),\n   259→    useRoute: jest.fn(() => mockRoute),\n   260→    useFocusEffect: jest.fn((callback) => {\n   261→      // Execute the callback immediately in tests\n   262→      if (typeof callback === 'function') {\n   263→        const cleanup = callback();\n   264→        // Don't call cleanup automatically - let tests control this\n   265→      }\n   266→    }),\n   267→    useIsFocused: jest.fn(() => true),\n   268→    NavigationContainer: ({ children }: { children: React.ReactNode }) => children,\n   269→  };\n   270→});\n   271→\n   272→// ============================================================================\n   273→// Expo Modules Mocks\n   274→// ========================\n\n... [truncated - full output was 19928 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:45:16.729683+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./__tests__/navigation/AppNavigator.test.tsx",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./__tests__/navigation/AppNavigator.test.tsx",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:17.278619+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/hooks/useTVFocusRestoration.ts",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./src/hooks/useTVFocusRestoration.ts",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:17.878509+00:00",
+          "type": "tool_start",
+          "content": "[Read] ./src/components/tv/TVScreenWrapper.tv.tsx",
+          "phase": "coding",
+          "tool_name": "Read",
+          "tool_input": "./src/components/tv/TVScreenWrapper.tv.tsx",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:17.933769+00:00",
+          "type": "tool_end",
+          "content": "[Read] Done",
+          "phase": "coding",
+          "tool_name": "Read",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "     1→/**\n     2→ * useTVFocusRestoration Hook\n     3→ *\n     4→ * Integrates useFocusEffect with focus restoration logic for TV navigation.\n     5→ * Stores focus state in navigation.setParams() and restores focus using\n     6→ * requestAnimationFrame for proper timing.\n     7→ *\n     8→ * This follows Pattern 3 from the spec: Focus Memory with React Navigation\n     9→ *\n    10→ * @example\n    11→ * ```tsx\n    12→ * import { useTVFocusRestoration } from '@/hooks/useTVFocusRestoration';\n    13→ *\n    14→ * function MyScreen({ navigation, route }) {\n    15→ *   const { saveFocus, restoreFocus, lastFocusedId } = useTVFocusRestoration(\n    16→ *     navigation,\n    17→ *     route,\n    18→ *     'MyScreen'\n    19→ *   );\n    20→ *\n    21→ *   // Use saveFocus when an element receives focus\n    22→ *   const handleFocus = (focusId: string) => saveFocus(focusId);\n    23→ *\n    24→ *   return (\n    25→ *     <Focusable\n    26→ *       onFocus={() => handleFocus('button-1')}\n    27→ *     >\n    28→ *       <Text>Press me</Text>\n    29→ *     </Focusable>\n    30→ *   );\n    31→ * }\n    32→ * ```\n    33→ */\n    34→\n    35→import { useCallback, useRef, useMemo } from 'react';\n    36→import { Platform } from 'react-native';\n    37→import { useFocusEffect, NavigationProp, RouteProp } from '@react-navigation/native';\n    38→import { useTVNavigationOptional } from '../contexts/TVNavigationContext';\n    39→\n    40→// =============================================================================\n    41→// Types & Interfaces\n    42→// =============================================================================\n    43→\n    44→/**\n    45→ * A ref that can be focused\n    46→ */\n    47→export type FocusableRef = React.RefObject<any>;\n    48→\n    49→/**\n    50→ * Map of focus IDs to their refs\n    51→ */\n    52→export type FocusableRefMap = Record<string, FocusableRef>;\n    53→\n    54→/**\n    55→ * Extended route params to include focus state\n    56→ */\n    57→export interface TVFocusRouteParams {\n    58→  /** Last focused element ID */\n    59→  lastFocusId?: string;\n    60→  /** Additional route params */\n    61→  [key: string]: any;\n    62→}\n    63→\n    64→/**\n    65→ * Options for useTVFocusRestoration hook\n    66→ */\n    67→export interface UseTVFocusRestorationOptions {\n    68→  /** Whether focus restoration is enabled (default: true on TV) */\n    69→  enabled?: boolean;\n    70→  /** Default focus ID to use when no saved focus exists */\n    71→  defaultFocusId?: string;\n    72→  /** Delay in ms before attempting focus restoration (default: 50) */\n    73→  restoreDelay?: number;\n    74→  /** Callback when focus is restored */\n    75→  onFocusRestored?: (focusId: string) => void;\n    76→  /** Callback when focus is saved */\n    77→  onFocusSaved?: (focusId: string) => void;\n    78→}\n    79→\n    80→/**\n    81→ * Return value from useTVFocusRestoration hook\n    82→ */\n    83→export interface UseTVFocusRestorationReturn {\n    84→  /** Save focus to both navigation params and context */\n    85→  saveFocus: (focusId: string, ref?: FocusableRef) => void;\n    86→  /** Manually trigger focus restoration */\n    87→  restoreFocus: () => boolean;\n    88→  /** Register a focusable ref */\n    89→  registerRef: (focusId: string, ref: FocusableRef) => void;\n    90→  /** Unregister a focusable ref */\n    91→  unregisterRef: (focusId: string) => void;\n    92→  /** Get the last focused ID */\n    93→  lastFocusedId: string | null;\n    94→  /** Get the saved focus ID from route params */\n    95→  getSavedFocusId: () => string | null;\n    96→  /** Whether we're on a TV platform */\n    97→  isTV: boolean;\n    98→  /** Map of registered refs */\n    99→  refs: FocusableRefMap;\n   100→}\n   101→\n   102→// =============================================================================\n   103→// Constants\n   104→// =============================================================================\n   105→\n   106→/** Default delay before focus restoration to allow layout to complete */\n   107→const DEFAULT_RESTORE_DELAY_MS = 50;\n   108→\n   109→// =============================================================================\n   110→// Hook Implementation\n   111→// =============================================================================\n   112→\n   113→/**\n   114→ * Hook for TV focus restoration with React Navigation integration.\n   115→ *\n   116→ * Uses useFocusEffect to automatically restore focus when a screen comes into view\n   117→ * and saves the last focused element when the screen loses focus.\n   118→ *\n   119→ * Focus state is stored in:\n   120→ * 1. navigation.setParams() for persistence across navigation\n   121→ * 2. TVNavigationContext for global access and cross-component coordination\n   122→ *\n   123→ * @param navigation - React Navigation navigation prop\n   124→ * @param route - React Navigation route prop\n   125→ * @param screenName - Unique identifier for this screen\n   126→ * @param options - Configuration options\n   127→ * @returns Object with focus management functions\n   128→ */\n   129→export function useTVFocusRestoration<\n   130→  ParamList extends Record<string, TVFocusRouteParams>,\n   131→  RouteName extends keyof ParamList\n   132→>(\n   133→  navigation: NavigationProp<ParamList>,\n   134→  route: RouteProp<ParamList, RouteName>,\n   135→  screenName: string,\n   136→  options: UseTVFocusRestorationOptions = {}\n   137→): UseTVFocusRestorationReturn {\n   138→  const {\n   139→    enabled = Platform.isTV,\n   140→    defaultFocusId,\n   141→    restoreDelay = DEFAULT_RESTORE_DELAY_MS,\n   142→    onFocusRestored,\n   143→    onFocusSaved,\n   144→  } = options;\n   145→\n   146→  // Get TV navigation context (optional - will work without it)\n   147→  const tvNavigation = useTVNavigationOptional();\n   148→\n   149→  // Track the last focused element ID\n   150→  const lastFocusedIdRef = useRef<string | null>(null);\n   151→\n   152→  // Store refs for focusable elements\n   153→  const focusableRefsRef = useRef<FocusableRefMap>({});\n   154→\n   155→  // =============================================================================\n   156→  // Ref Management\n   157→  // =============================================================================\n   158→\n   159→  /**\n   160→   * Register a focusable ref\n   161→   */\n   162→  const registerRef = useCallback((focusId: string, ref: FocusableRef) => {\n   163→    if (focusId && ref) {\n   164→      focusableRefsRef.current[focusId] = ref;\n   165→    }\n   166→  }, []);\n   167→\n   168→  /**\n   169→   * Unregister a focusable ref\n   170→   */\n   171→  const unregisterRef = useCallback((focusId: string) => {\n   172→    delete focusableRefsRef.current[focusId];\n   173→  }, []);\n   174→\n   175→  // =============================================================================\n   176→  // Focus State Management\n   177→  // =============================================================================\n   178→\n   179→  /**\n   180→   * Get the saved focus ID from route params\n   181→   */\n   182→  const getSavedFocusId = useCallback((): string | null => {\n   183→    // First try route params\n   184→    const routeParams = route.params as TVFocusRouteParams | undefined;\n   185→    const routeFocusId = routeParams?.lastFocusId;\n   186→    if (routeFocusId) {\n   187→      return routeFocusId;\n   188→    }\n   189→\n   190→    // Then try TV navigation context\n   191→    if (tvNavigation) {\n   192→      return tvNavigation.getScreenFocus(screenName);\n   193→    }\n   194→\n   195→    return null;\n   196→  }, [route.params, screenName, tvNavigation]);\n   197→\n   198→  /**\n   199→   * Save the current focus ID to both navigation params and context\n   200→   */\n   201→  const saveFocus = useCallback(\n   202→    (focusId: string, ref?: FocusableRef) => {\n   203→      if (!focusId || !enabled) return;\n   204→\n   205→      // Update local tracking\n   206→      lastFocusedIdRef.current = focusId;\n   207→\n   208→      // Register the ref if provided\n   209→      if (ref) {\n   210→        registerRef(focusId, ref);\n   211→      }\n   212→\n   213→      // Save to navigation params for persistence across navigation\n   214→      try {\n   215→        navigation.setParams({\n   216→          lastFocusId: focusId,\n   217→        } as any);\n   218→      } catch {\n   219→        // Navigation might not be ready yet, that's okay\n   220→      }\n   221→\n   222→      // Save to context for global access\n   223→      if (tvNavigation) {\n   224→        tvNavigation.setScreenFocus(screenName, focusId);\n   225→        tvNavigation.setCurrentFocusId(focusId);\n   226→      }\n   227→\n   228→      // Notify callback\n   229→      onFocusSaved?.(focusId);\n   230→    },\n   231→    [enabled, navigation, screenName, tvNavigation, registerRef, onFocusSaved]\n   232→  );\n   233→\n   234→  /**\n   235→   * Restore focus to the saved element (or default)\n   236→   * Uses setNativeProps({ hasTVPreferredFocus: true }) for runtime focus\n   237→   */\n   238→  const restoreFocus = useCallback((): boolean => {\n   239→    if (!enabled) return false;\n   240→\n   241→    // Get the saved focus ID (or use default)\n   242→    const savedFocusId = getSavedFocusId() || defaultFocusId;\n   243→    if (!savedFocusId) return false;\n   244→\n   245→    // Get the ref for this focus ID\n   246→    const ref = focusableRefsRef.current[savedFocusId];\n   247→    if (!ref || !ref.current) return false;\n   248→\n   249→    // Try to focus the element using setNativeProps (preferred for TV)\n   250→    try {\n   251→      if (typeof ref.current.setNativeProps === 'function') {\n   252→        ref.current.setNativeProps({ hasTVPreferredFocus: true });\n   253→        lastFocusedIdRef.current = savedFocusId;\n   254→        onFocusRestored?.(savedFocusId);\n   255→        return true;\n   256→      }\n   257→\n   258→      // Alternative: try to focus directly if it's a function\n   259→      if (typeof ref.current.focus === 'function') {\n   260→        ref.current.focus();\n   261→        lastFocusedIdRef.current = savedFocusId;\n   262→        onFocusRestored?.(savedFocusId);\n   263→        return true;\n   264→      }\n   265→    } catch {\n   266→      // Focus restoration failed silently\n   267→    }\n   268→\n   269→    return false;\n   270→  }, [enable\n\n... [truncated - full output was 15087 chars]",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:45:31.748538+00:00",
+          "type": "text",
+          "content": "Now I can see the issue! The integration tests file already exists and is comprehensive (1329 lines covering all requirements). The previous 3 attempts all successfully implemented the tests. Let me verify the tests actually run and pass:",
+          "phase": "coding",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:32.717173+00:00",
+          "type": "tool_start",
+          "content": "[Bash] npm test -- __tests__/navigation/AppNavigator.t...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "npm test -- __tests__/navigation/AppNavigator.t...",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:40.261258+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "> nuvio@0.6.0-beta.6 test\n> jest __tests__/navigation/AppNavigator.test.tsx --testTimeout=10000\n(node:3330870) [JEST-01] DeprecationWarning: 'now' property was accessed on [Function] after it was soft deleted\n  Jest deletes objects that were set on the global scope between test files to reduce memory leaks.\n  Currently it only \"soft\" deletes them and emits this warning if those objects were accessed after their deletion.\n  In future versions of Jest, this behavior will change to \"on\", which will likely fail tests.\n  You can change the behavior in your test configuration now to reduce memory usage.\n(Use `node --trace-deprecation ...` to show where the warning was created)\nPASS __tests__/navigation/AppNavigator.test.tsx (5.132 s)\n  useTVFocusRestoration\n    focus state storage in route params\n      ✓ should store focus ID in route params via navigation.setParams (32 ms)\n      ✓ should retrieve focus ID from route params (4 ms)\n      ✓ should update focus ID when focus changes (8 ms)\n      ✓ should store focus in TVNavigationContext in addition to route params (6 ms)\n      ✓ should not store empty focus ID (4 ms)\n    focus restoration on navigation return\n      ✓ should restore focus to saved element using setNativeProps (6 ms)\n      ✓ should use focus() method as fallback if setNativeProps not available (5 ms)\n      ✓ should use default focus ID when no saved focus exists (6 ms)\n      ✓ should return false when no saved focus and no default (3 ms)\n      ✓ should return false when ref is not registered (4 ms)\n      ✓ should call onFocusRestored callback when focus is restored (2 ms)\n      ✓ should call onFocusSaved callback when focus is saved (4 ms)\n    requestAnimationFrame timing\n      ✓ should delay focus restoration using setTimeout and requestAnimationFrame (7 ms)\n      ✓ should use custom restore delay (3 ms)\n    disabled state\n      ✓ should not save focus when disabled (3 ms)\n      ✓ should not restore focus when disabled (3 ms)\n    ref management\n      ✓ should register and retrieve refs correctly (2 ms)\n      ✓ should unregister refs correctly (5 ms)\n      ✓ should register ref when saving focus with ref parameter (2 ms)\n    isTV property\n      ✓ should return true on TV platform (mocked) (2 ms)\n  useTVFocusRestorationSimple\n    ✓ should save focus to TVNavigationContext (2 ms)\n    ✓ should retrieve saved focus from TVNavigationContext (55 ms)\n    ✓ should return null when no saved focus exists (2 ms)\n  TVScreenWrapper\n    focus restoration\n      ✓ should restore focus automatically when screen mounts (7 ms)\n      ✓ should restore focus from route params when available (5 ms)\n    focus saving\n      ✓ should save focus when saveFocus is called (4 ms)\n    useTVScreenFocus hook\n      ✓ should return no-op implementation when used outside wrapper (3 ms)\n      ✓ should return context value when used within wrapper (3 ms)\n    useTVScreenFocusOptional hook\n      ✓ should return null when used outside wrapper (2 ms)\n  Cross-screen focus memory\n    ✓ should maintain separate focus memory per screen (4 ms)\n    ✓ should update focus memory when navigating between screens (2 ms)\n    ✓ should clear focus memory when clearScreenFocus is called (3 ms)\n    ✓ should clear all focus memory when clearAllFocusMemory is called (3 ms)\n  Navigation flow simulation\n    ✓ should simulate Home -> Details -> Back flow with focus restoration (5 ms)\n    ✓ should handle deep navigation with focus memory stack (2 ms)\n  Focus history\n    ✓ should track focus history across screens (2 ms)\n    ✓ should pop focus history when navigating back (2 ms)\n  Error handling\n    ✓ should handle navigation.setParams throwing an error gracefully (2 ms)\n    ✓ should handle ref.setNativeProps throwing an error gracefully (2 ms)\n    ✓ should handle null ref.current gracefully (2 ms)\n  Edge cases\n    ✓ should handle very long focus IDs (4 ms)\n    ✓ should handle special characters in focus IDs (2 ms)\n    ✓ should handle unicode characters in focus IDs (2 ms)\n    ✓ should handle rapid focus changes (2 ms)\n    ✓ should handle concurrent hooks on same screen (3 ms)\n\nTest Suites: 1 passed, 1 total\nTests:       45 passed, 45 total\nSnapshots:   0 total\nTime:        5.292 s\nRan all test suites matching __tests__/navigation/AppNavigator.test.tsx.",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:45:51.452362+00:00",
+          "type": "text",
+          "content": "Excellent! All 45 integration tests pass successfully! The tests are comprehensive and cover all acceptance criteria:\n\n✅ **Focus state stored in route params** - 5 tests verify navigation.setParams behavior\n✅ **Focus restored on navigation return** - 7 tests verify restoration logic with setNativeProps\n✅ **requestAnimationFrame timing correct** - 2 tests verify timing with fake timers\n\nLet me check the current git status and commit if needed:",
+          "phase": "coding",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:52.006656+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git status --short",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git status --short",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:52.094659+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": " M .auto-claude-security.json\n M .auto-claude-status\n M .auto-claude/specs/001-complete-trakt-integration/implementation_plan.json\n M .auto-claude/specs/002-enhanced-tv-navigation-system/implementation_plan.json\n M .auto-claude/specs/002-enhanced-tv-navigation-system/memory/attempt_history.json\n M .auto-claude/specs/002-enhanced-tv-navigation-system/memory/build_commits.json\n M .auto-claude/specs/002-enhanced-tv-navigation-system/memory/session_insights/session_007.json\n M .auto-claude/specs/002-enhanced-tv-navigation-system/task_logs.json\n M .auto-claude/specs/003-enhanced-multi-profile-support/task_metadata.json\n M .auto-claude/specs/007-extract-herosection-tsx-into-smaller-focused-compo/implementation_plan.json\n M .auto-claude/specs/014-create-unified-loading-state-components/implementation_plan.json\n M .claude_settings.json",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:45:56.782156+00:00",
+          "type": "tool_start",
+          "content": "[Bash] git log --oneline -1 -- __tests__/navigation/Ap...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "git log --oneline -1 -- __tests__/navigation/Ap...",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:45:56.889921+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "9bdbc6c2 auto-claude: 7.6 - Integration tests for focus restoration across scr",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:46:01.242607+00:00",
+          "type": "text",
+          "content": "Perfect! The integration tests were already committed in commit `9bdbc6c2`. The tests are comprehensive (45 passing tests) and meet all acceptance criteria. Now I'll update the subtask status to completed:",
+          "phase": "coding",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:46:02.960992+00:00",
+          "type": "tool_start",
+          "content": "[Bash] cd .auto-claude/specs/002-enhanced-tv-navigatio...",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "tool_input": "cd .auto-claude/specs/002-enhanced-tv-navigatio...",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:46:03.079215+00:00",
+          "type": "tool_end",
+          "content": "[Bash] Done",
+          "phase": "coding",
+          "tool_name": "Bash",
+          "subtask_id": "7.6",
+          "session": 1,
+          "detail": "{\n  \"id\": \"7.6\",\n  \"status\": \"pending\",\n  \"notes\": null\n}",
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:46:15.038433+00:00",
+          "type": "tool_start",
+          "content": "[mcp__auto-claude__update_subtask_status]",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "7.6",
+          "session": 1
+        },
+        {
+          "timestamp": "2026-01-12T11:46:15.093438+00:00",
+          "type": "tool_end",
+          "content": "[mcp__auto-claude__update_subtask_status] Done",
+          "phase": "coding",
+          "tool_name": "mcp__auto-claude__update_subtask_status",
+          "subtask_id": "7.6",
+          "session": 1,
+          "collapsed": true
+        },
+        {
+          "timestamp": "2026-01-12T11:46:26.641184+00:00",
+          "type": "text",
+          "content": "Perfect! I've successfully verified and completed subtask 7.6. Here's the summary:\n\n## ✅ Subtask 7.6 Complete: Integration Tests for Focus Restoration Across Screens\n\nThe integration tests were **already implemented and passing** from a previous attempt. I verified all tests pass and updated the implementation plan status.\n\n### Test Coverage Summary\n\n**45 passing tests** in `__tests__/navigation/AppNavigator.test.tsx` covering:\n\n#### ✅ All Acceptance Criteria Met:\n1. **Focus state stored in route params** - Verified `navigation.setParams()` works correctly\n2. **Focus restored on navigation return** - Verified `setNativeProps({ hasTVPreferredFocus: true })`\n3. **requestAnimationFrame timing correct** - Verified `setTimeout + requestAnimationFrame` timing\n\n#### Comprehensive Test Coverage:\n\n1. **useTVFocusRestoration hook** (20 tests)\n   - Focus storage in route params\n   - Focus restoration with setNativeProps and focus() fallback\n   - requestAnimationFrame timing with custom delays\n   - Disabled state behavior\n   - Ref registration/unregistration\n\n2. **useTVFocusRestorationSimple hook** (3 tests)\n   - TVNavigationContext integration\n   - Saved focus retrieval\n\n3. **TVScreenWrapper component** (6 tests)\n   - Automatic focus restoration on mount\n   - Context hooks functionality\n\n4. **Cross-screen focus memory** (4 tests)\n   - Per-screen focus isolation\n   - Navigation flow memory\n\n5. **Navigation flow simulation** (2 tests)\n   - Complete Home → Details → Back flow\n   - Deep navigation stacks\n\n6. **Focus history** (2 tests)\n7. **Error handling** (3 tests)\n8. **Edge cases** (5 tests)\n\n### Test Run Result:\n```\nTest Suites: 1 passed, 1 total\nTests:       45 passed, 45 total\nTime:        5.292 s\n```\n\n**Committed:** `9bdbc6c2` - auto-claude: 7.6 - Integration tests for focus restoration across scr\n\nThe subtask is now marked as **completed** in the implementation plan. All integration tests validate the TV navigation focus restoration system works correctly across screen transitions! 🎉",
+          "phase": "coding",
+          "subtask_id": "7.6",
           "session": 1
         }
       ]

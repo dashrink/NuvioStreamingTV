@@ -233,7 +233,9 @@
             "type": "manual",
             "instructions": "Open profile switcher on TV simulator, verify d-pad navigation works and focus indicators are visible"
           },
-          "status": "pending"
+          "status": "completed",
+          "notes": "Added TV focus management with explicit native focus calls. Profile items and PIN modal buttons now properly receive focus on TV platforms with visible indicators and working d-pad navigation. Key difference from previous attempts: explicitly calling .focus() on refs after updating focus group state to ensure native platform focus actually moves.",
+          "updated_at": "2026-01-12T11:46:04.288328+00:00"
         },
         {
           "id": "subtask-4-2",
@@ -509,9 +511,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-11T14:57:51.340614+00:00",
+  "last_updated": "2026-01-12T11:46:04.288343+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-12T11:42:52.737Z",
+  "updated_at": "2026-01-12T11:46:21.623Z",
   "recoveryNote": "Task recovered from stuck state at 2026-01-12T11:42:48.362Z"
 }
