@@ -233,9 +233,7 @@
             "type": "manual",
             "instructions": "Open profile switcher on TV simulator, verify d-pad navigation works and focus indicators are visible"
           },
-          "status": "completed",
-          "notes": "TV focus management fully implemented with useTVBackHandler (line 91), useFocusGroup for profile list (line 110) and PIN modal (line 122), Focusable components wrapping all interactive elements (lines 299, 405, 519, 543), hasTVPreferredFocus set correctly (lines 322, 503, 528, 557), auto-focus on open (lines 163-171, 184-189), and complete TV-specific styling. Status synchronized from pending to completed - code was already production-ready.",
-          "updated_at": "2026-01-12T04:48:04.587361+00:00"
+          "status": "pending"
         },
         {
           "id": "subtask-4-2",
@@ -511,9 +509,9 @@
     }
   },
   "qa_signoff": null,
-  "last_updated": "2026-01-12T04:48:04.587394+00:00",
+  "last_updated": "2026-01-11T14:57:51.340614+00:00",
   "status": "in_progress",
   "planStatus": "in_progress",
-  "updated_at": "2026-01-12T04:48:21.984Z",
-  "recoveryNote": "Task recovered from stuck state at 2026-01-12T04:45:32.089Z"
+  "updated_at": "2026-01-12T11:42:52.737Z",
+  "recoveryNote": "Task recovered from stuck state at 2026-01-12T11:42:48.362Z"
 }

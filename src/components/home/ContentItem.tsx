@@ -14,12 +14,15 @@ import { TraktService } from '../../services/traktService';
 import { useTraktContext } from '../../contexts/TraktContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { triggerLight } from '../../hooks/useHaptics';
+import { Top10Badge, BadgeStyle } from './Top10Badge';
 
 interface ContentItemProps {
   item: StreamingContent;
   onPress: (id: string, type: string) => void;
   shouldLoadImage?: boolean;
   deferMs?: number;
+  rank?: number;
+  badgeStyle?: BadgeStyle;
 }
 
 const { width } = Dimensions.get('window');
@@ -82,7 +85,7 @@ const calculatePosterLayout = (screenWidth: number) => {
 const posterLayout = calculatePosterLayout(width);
 const POSTER_WIDTH = posterLayout.posterWidth;
 
-const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, deferMs = 0 }: ContentItemProps) => {
+const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, deferMs = 0, rank, badgeStyle = 'disney' }: ContentItemProps) => {
   // Track inLibrary status locally to force re-render
   const [inLibrary, setInLibrary] = useState(!!item.inLibrary);
 
@@ -364,6 +367,9 @@ const ContentItem = ({ item, onPress, shouldLoadImage: shouldLoadImageProp, defe
                 <MaterialIcons name="video-library" size={16} color="#3498DB" />
               </View>
             )}
+            {rank && rank >= 1 && rank <= 10 && (
+              <Top10Badge rank={rank} style={badgeStyle} />
+            )}
           </View>
         </TouchableOpacity>
         {settings.showPosterTitles && (
@@ -471,8 +477,10 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(ContentItem, (prev, next) => {
-  // Re-render when identity or poster changes. Caching is handled by FastImage.
+  // Re-render when identity, poster, or rank changes. Caching is handled by FastImage.
   if (prev.item.id !== next.item.id) return false;
   if (prev.item.poster !== next.item.poster) return false;
+  if (prev.rank !== next.rank) return false;
+  if (prev.badgeStyle !== next.badgeStyle) return false;
   return true;
 });

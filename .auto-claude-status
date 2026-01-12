@@ -1,17 +1,17 @@
 {
   "active": true,
-  "spec": "002-enhanced-tv-navigation-system",
+  "spec": "027-implement-top-10-movies-series-ui-with-disney-appl",
   "state": "building",
   "subtasks": {
-    "completed": 34,
-    "total": 35,
+    "completed": 6,
+    "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Testing",
+    "current": "End-to-End Verification",
     "id": null,
-    "total": 6
+    "total": 2
   },
   "workers": {
     "active": 0,
@@ -19,7 +19,7 @@
   },
   "session": {
     "number": 7,
-    "started_at": "2026-01-11T18:35:59.020609"
+    "started_at": "2026-01-12T05:53:58.967169"
   },
-  "last_update": "2026-01-11T19:15:33.577093"
+  "last_update": "2026-01-12T06:11:11.039751"
 }

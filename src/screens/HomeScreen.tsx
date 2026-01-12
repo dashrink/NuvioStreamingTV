@@ -37,6 +37,7 @@ import {
 import { useCatalogContext } from '../contexts/CatalogContext';
 import { ThisWeekSection } from '../components/home/ThisWeekSection';
 import ContinueWatchingSection from '../components/home/ContinueWatchingSection';
+import Top10Section from '../components/home/Top10Section';
 import * as Haptics from 'expo-haptics';
 import { tmdbService } from '../services/tmdbService';
 import { logger } from '../utils/logger';
@@ -87,6 +88,8 @@ type HomeScreenListItem =
   | { type: 'featured'; key: string }
   | { type: 'thisWeek'; key: string }
   | { type: 'continueWatching'; key: string }
+  | { type: 'top10Movies'; key: string }
+  | { type: 'top10Series'; key: string }
   | { type: 'catalog'; catalog: CatalogContent; key: string }
   | { type: 'placeholder'; key: string }
   | { type: 'welcome'; key: string }
@@ -666,6 +669,12 @@ const HomeScreen = () => {
     // Normal flow when addons are present (featured moved to ListHeaderComponent)
     data.push({ type: 'thisWeek', key: 'thisWeek' });
 
+    // Add Top 10 sections if enabled
+    if (settings.top10Settings.enabled) {
+      data.push({ type: 'top10Movies', key: 'top10Movies' });
+      data.push({ type: 'top10Series', key: 'top10Series' });
+    }
+
     // Only show a limited number of catalogs initially for performance
     const catalogsToShow = catalogs.slice(0, visibleCatalogCount);
 
@@ -684,7 +693,7 @@ const HomeScreen = () => {
     }
 
     return data;
-  }, [hasAddons, catalogs, visibleCatalogCount]);
+  }, [hasAddons, catalogs, visibleCatalogCount, settings.top10Settings.enabled]);
 
   const handleLoadMoreCatalogs = useCallback(() => {
     setVisibleCatalogCount(prev => Math.min(prev + 3, catalogs.length));
@@ -748,6 +757,22 @@ const HomeScreen = () => {
 
   const memoizedThisWeekSection = useMemo(() => <ThisWeekSection />, []);
   const memoizedContinueWatchingSection = useMemo(() => <ContinueWatchingSection ref={continueWatchingRef} />, []);
+  const memoizedTop10MoviesSection = useMemo(() => (
+    <Top10Section
+      type="movie"
+      timeWindow={settings.top10Settings.timeWindow}
+      displayStyle={settings.top10Settings.displayStyle}
+      enabled={settings.top10Settings.enabled}
+    />
+  ), [settings.top10Settings.timeWindow, settings.top10Settings.displayStyle, settings.top10Settings.enabled]);
+  const memoizedTop10SeriesSection = useMemo(() => (
+    <Top10Section
+      type="tv"
+      timeWindow={settings.top10Settings.timeWindow}
+      displayStyle={settings.top10Settings.displayStyle}
+      enabled={settings.top10Settings.enabled}
+    />
+  ), [settings.top10Settings.timeWindow, settings.top10Settings.displayStyle, settings.top10Settings.enabled]);
   const memoizedHeader = useMemo(() => (
     <>
       {showHeroSection ? memoizedFeaturedContent : null}
@@ -774,6 +799,10 @@ const HomeScreen = () => {
         return memoizedThisWeekSection;
       case 'continueWatching':
         return null; // Moved to ListHeaderComponent to avoid remounts on scroll
+      case 'top10Movies':
+        return memoizedTop10MoviesSection;
+      case 'top10Series':
+        return memoizedTop10SeriesSection;
       case 'catalog':
         return <CatalogSection catalog={item.catalog} />;
       case 'placeholder':
@@ -805,7 +834,7 @@ const HomeScreen = () => {
       default:
         return null;
     }
-  }, [memoizedThisWeekSection, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
+  }, [memoizedThisWeekSection, memoizedTop10MoviesSection, memoizedTop10SeriesSection, currentTheme.colors.primary, currentTheme.colors.white, handleLoadMoreCatalogs]);
 
   // FlashList: using minimal props per installed version
 

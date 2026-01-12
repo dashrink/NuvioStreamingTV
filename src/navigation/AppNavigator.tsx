@@ -99,6 +99,7 @@ import BackupScreen from '../screens/BackupScreen';
 import ContinueWatchingSettingsScreen from '../screens/ContinueWatchingSettingsScreen';
 import ContributorsScreen from '../screens/ContributorsScreen';
 import DebridIntegrationScreen from '../screens/DebridIntegrationScreen';
+import Top10SettingsScreen from '../screens/Top10SettingsScreen';
 import { ProfileProvider, useActiveProfile } from '../contexts/ProfileContext';
 import ProfileSwitcherBottomSheet from '../components/profile/ProfileSwitcherBottomSheet';
 import ProfileIcon from '../components/icons/ProfileIcon';
@@ -233,6 +234,7 @@ export type RootStackParamList = {
   ContinueWatchingSettings: undefined;
   Contributors: undefined;
   DebridIntegration: undefined;
+  Top10Settings: undefined;
 };
 
 export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -537,14 +539,7 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
       {/* Reserve consistent space for the header area on all screens */}
       <View
         style={{
-          height: isTablet ? insets.top + 64 : Platform.OS === 'android' ? 80 : 60,
-          width: '100%',
-          backgroundColor: colors.darkBackground,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: -1,
+          height: isTablet ? 0 : 0,
         }}
       />
       {children}
@@ -552,1273 +547,661 @@ const TabScreenWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
   );
 };
 
-// Add this component to wrap each screen in the tab navigator
-const WrappedScreen: React.FC<{ Screen: React.ComponentType<any> }> = ({ Screen }) => {
+type CustomTabBarProps = BottomTabBarProps & {
+  tabBarHeight: number;
+  safeAreaInsets: ReturnType<typeof useSafeAreaInsets>;
+  isTablet: boolean;
+};
+
+const CustomTabBar = React.memo(
+  ({
+    state,
+    descriptors,
+    navigation,
+    tabBarHeight,
+    safeAreaInsets,
+    isTablet,
+  }: CustomTabBarProps) => {
+    const scrollViewRef = useRef<any>(null);
+    const currentScreenName = state.routes[state.index]?.name;
+
+    useEffect(() => {
+      // Auto-scroll to the focused tab
+      const routeLength = state.routes.length;
+      const currentIndex = Math.max(
+        0,
+        state.routes.findIndex(r => r.key === state.routes[state.index]?.key)
+      );
+
+      if (scrollViewRef.current) {
+        const scrollToIndex = Math.max(0, currentIndex - 1);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToIndex({
+            index: scrollToIndex,
+            animated: true,
+            viewPosition: 0.5,
+          });
+        }, 0);
+      }
+    }, [state.index, state.routes]);
+
+    const insets = useSafeAreaInsets();
+
+    return (
+      <View
+        style={{
+          paddingBottom: 0,
+          backgroundColor: colors.darkBackground,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            height: tabBarHeight,
+            paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
+            paddingHorizontal: 0,
+          }}
+        >
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label =
+              options.tabBarLabel !== undefined
+                ? options.tabBarLabel
+                : options.title !== undefined
+                  ? options.title
+                  : route.name;
+
+            const isFocused = state.index === index;
+
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                preventDefault: false,
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+              }
+            };
+
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
+
+            const icon = options.tabBarIcon;
+
+            return (
+              <Focusable key={route.key} onSelect={onPress}>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isFocused }}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  testID={options.tabBarTestID}
+                  onPress={onPress}
+                  onLongPress={onLongPress}
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {icon &&
+                    icon({
+                      focused: isFocused,
+                      color: isFocused ? colors.primary : colors.textMuted,
+                      size: 24,
+                    })}
+                  {typeof label === 'string' && (
+                    <Text
+                      style={{
+                        color: isFocused ? colors.primary : colors.textMuted,
+                        fontSize: 10,
+                        marginTop: 4,
+                        fontFamily: 'sans-serif-medium',
+                      }}
+                    >
+                      {label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </Focusable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+);
+
+// Create the main navigation structure
+const RootNavigator = () => {
+  const colorScheme = useColorScheme();
+  const theme = useTheme();
+  const { isAuthenticated, isOnboarded } = useAccount();
+  const { activeProfile } = useActiveProfile();
+
+  const navigationTheme =
+    colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme;
+
+  const screenOptions: NativeStackNavigationOptions = {
+    animationEnabled: true,
+    headerShown: true,
+    headerStyle: {
+      backgroundColor:
+        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+    },
+    headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
+    headerTitleStyle: {
+      fontFamily: 'sans-serif-medium',
+      fontWeight: '600',
+      fontSize: 18,
+    },
+    headerShadowVisible: false,
+  };
+
+  if (!isOnboarded) {
+    return (
+      <Stack.Navigator
+        screenOptions={{ headerShown: false, animationEnabled: false }}
+      >
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
+  if (!activeProfile) {
+    return (
+      <Stack.Navigator
+        screenOptions={{ headerShown: false, animationEnabled: false }}
+      >
+        <Stack.Screen
+          name="ProfileSelector"
+          component={ProfileSelectorScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
   return (
-    <TabScreenWrapper>
-      <Screen />
-    </TabScreenWrapper>
+    <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Screen
+        name="MainTabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Backup"
+        component={BackupScreen}
+        options={{
+          title: 'Backup',
+        }}
+      />
+      <Stack.Screen
+        name="Metadata"
+        component={MetadataScreen}
+        options={{
+          title: 'Details',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="Streams"
+        component={StreamsScreen}
+        options={{
+          title: 'Streams',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="PlayerIOS"
+        component={KSPlayerCore}
+        options={{
+          headerShown: false,
+          animationEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="PlayerAndroid"
+        component={AndroidVideoPlayer}
+        options={{
+          headerShown: false,
+          animationEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          title: 'Search',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="Calendar"
+        component={CalendarScreen}
+        options={{
+          title: 'Calendar',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="Catalog"
+        component={CatalogScreen}
+        options={{
+          title: 'Catalog',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="Credits"
+        component={CastMoviesScreen}
+        options={{
+          title: 'Credits',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="ShowRatings"
+        component={ShowRatingsScreen}
+        options={{
+          title: 'Ratings',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="CastMovies"
+        component={CastMoviesScreen}
+        options={{
+          title: 'Movies',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="Update"
+        component={UpdateScreen}
+        options={{
+          title: 'Update',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="AIChat"
+        component={AIChatScreen}
+        options={{
+          title: 'AI Chat',
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="BackdropGallery"
+        component={BackdropGalleryScreen}
+        options={{
+          title: 'Backdrop Gallery',
+          animationEnabled: true,
+        }}
+      />
+    </Stack.Navigator>
   );
 };
 
-// Tab Navigator
-const MainTabs = () => {
-  const { currentTheme } = useTheme();
-  const { settings } = require('../hooks/useSettings');
-  const { useSettings: useSettingsHook } = require('../hooks/useSettings');
-  const { settings: appSettings } = useSettingsHook();
-  const [hasUpdateBadge, setHasUpdateBadge] = React.useState(false);
-  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
-  const [showProfileSwitcher, setShowProfileSwitcher] = React.useState(false);
-  const { activeProfile } = useActiveProfile();
-
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
-
-    return () => subscription?.remove();
-  }, []);
-  React.useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    let mounted = true;
-    const load = async () => {
-      try {
-        const flag = await mmkvStorage.getItem('@update_badge_pending');
-        if (mounted) setHasUpdateBadge(flag === 'true');
-      } catch {}
-    };
-    load();
-    // Fast poll initially for quick badge appearance, then slow down
-    const fast = setInterval(load, 800);
-    const slowTimer = setTimeout(() => {
-      clearInterval(fast);
-      const slow = setInterval(load, 10000);
-      // store slow interval id on closure for cleanup
-      (load as any)._slow = slow;
-    }, 6000);
-    const onAppStateChange = (state: string) => {
-      if (state === 'active') load();
-    };
-    const sub = AppState.addEventListener('change', onAppStateChange);
-    return () => {
-      mounted = false;
-      clearInterval(fast);
-      // @ts-ignore
-      if ((load as any)._slow) clearInterval((load as any)._slow);
-      clearTimeout(slowTimer);
-      sub.remove();
-    };
-  }, []);
-  const { isHomeLoading } = useLoading();
+const TabNavigator = () => {
+  const dimensions = Dimensions.get('window');
   const isTablet = useMemo(() => {
     const { width, height } = dimensions;
     const smallestDimension = Math.min(width, height);
     return Platform.OS === 'ios' ? (Platform as any).isPad === true : smallestDimension >= 768;
   }, [dimensions]);
+
   const insets = useSafeAreaInsets();
-  const isIosTablet = Platform.OS === 'ios' && isTablet;
-  const [hidden, setHidden] = React.useState(HeaderVisibility.isHidden());
-  React.useEffect(() => HeaderVisibility.subscribe(setHidden), []);
-  // Smooth animate header hide/show
-  const headerAnim = React.useRef(new Animated.Value(0)).current; // 0: shown, 1: hidden
-  React.useEffect(() => {
-    Animated.timing(headerAnim, {
-      toValue: hidden ? 1 : 0,
-      duration: 220,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [hidden, headerAnim]);
-  const translateY = headerAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -70] });
-  const fade = headerAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
+  const colorScheme = useColorScheme();
+  const tabBarHeight = 70;
 
-  const renderTabBar = (props: BottomTabBarProps) => {
-    // Hide tab bar when home is loading
-    if (isHomeLoading) {
-      return null;
-    }
-
-    // Get current route name to determine if we should keep navigation fixed
-    const currentRoute = props.state.routes[props.state.index]?.name;
-    const shouldKeepFixed = currentRoute === 'Search' || currentRoute === 'Library';
-
-    if (isTablet) {
-      // Top floating, text-only pill nav for tablets
-      return (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: insets.top + 12,
-              left: 0,
-              right: 0,
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-              zIndex: 100,
-            },
-            shouldKeepFixed
-              ? {}
-              : {
-                  transform: [{ translateY }],
-                  opacity: fade,
-                },
-          ]}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderRadius: 28,
-              overflow: 'hidden',
-              padding: 4,
-              position: 'relative',
-              backgroundColor: isIosTablet ? 'transparent' : 'rgba(0,0,0,0.7)',
-            }}
-          >
-            {isIosTablet &&
-              (GlassViewComp && liquidGlassAvailable ? (
-                <GlassViewComp
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    borderRadius: 28,
-                  }}
-                  glassEffectStyle="clear"
-                />
-              ) : (
-                <BlurView
-                  tint="dark"
-                  intensity={75}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    borderRadius: 28,
-                  }}
-                />
-              ))}
-            {props.state.routes.map((route, index) => {
-              const { options } = props.descriptors[route.key];
-              const label =
-                options.tabBarLabel !== undefined
-                  ? options.tabBarLabel
-                  : options.title !== undefined
-                    ? options.title
-                    : route.name;
-
-              const isFocused = props.state.index === index;
-
-              const onPress = () => {
-                const event = props.navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!isFocused && !event.defaultPrevented) {
-                  props.navigation.navigate(route.name);
-                }
-              };
-
-              return (
-                <Focusable
-                  key={route.key}
-                  variant="nav"
-                  borderRadius={24}
-                  enableScale={false}
-                  enableGlow={false}
-                  onPress={onPress}
-                  hasTVPreferredFocus={index === 0}
-                  accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
-                  accessibilityHint={
-                    isFocused
-                      ? 'Currently selected'
-                      : `Navigate to ${typeof label === 'string' ? label : route.name}`
-                  }
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    marginHorizontal: 2,
-                    backgroundColor: isFocused ? 'rgba(255,255,255,0.12)' : 'transparent',
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={{
-                      color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                      fontWeight: '700',
-                      fontSize: 14,
-                      letterSpacing: 0.2,
-                    }}
-                  >
-                    {typeof label === 'string' ? label : ''}
-                  </Text>
-                </Focusable>
-              );
-            })}
-            {/* Profile Switcher Button for Tablets */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setShowProfileSwitcher(true)}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                marginLeft: 8,
-                borderRadius: 24,
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <ProfileIcon size={20} color={currentTheme.colors.white} />
-              {activeProfile && (
-                <Text
-                  style={{
-                    color: currentTheme.colors.white,
-                    fontWeight: '600',
-                    fontSize: 13,
-                  }}
-                >
-                  {activeProfile.name}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      );
-    }
-
-    // Default bottom tab for phones
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: Platform.OS === 'android' ? 70 + insets.bottom : 85 + insets.bottom,
-          backgroundColor: 'transparent',
-          overflow: 'hidden',
-        }}
-      >
-        {Platform.OS === 'ios' ? (
-          GlassViewComp && liquidGlassAvailable ? (
-            <GlassViewComp
-              style={{
-                position: 'absolute',
-                height: '100%',
-                width: '100%',
-              }}
-              glassEffectStyle="clear"
-            />
-          ) : (
-            <BlurView
-              tint="dark"
-              intensity={75}
-              style={{
-                position: 'absolute',
-                height: '100%',
-                width: '100%',
-                borderTopColor: currentTheme.colors.border,
-                borderTopWidth: 0.5,
-                shadowColor: currentTheme.colors.black,
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-              }}
-            />
-          )
-        ) : (
-          <LinearGradient
-            colors={[
-              'rgba(0, 0, 0, 0)',
-              'rgba(0, 0, 0, 0.65)',
-              'rgba(0, 0, 0, 0.85)',
-              'rgba(0, 0, 0, 0.98)',
-            ]}
-            locations={[0, 0.2, 0.4, 0.8]}
-            style={{
-              position: 'absolute',
-              height: '100%',
-              width: '100%',
-            }}
-          />
-        )}
-        <View
-          style={{
-            height: '100%',
-            paddingBottom: Platform.OS === 'android' ? 15 + insets.bottom : 20 + insets.bottom,
-            paddingTop: Platform.OS === 'android' ? 8 : 12,
-            backgroundColor: 'transparent',
-          }}
-        >
-          <View style={{ flexDirection: 'row', paddingTop: 4 }}>
-            {props.state.routes.map((route, index) => {
-              const { options } = props.descriptors[route.key];
-              const label =
-                options.tabBarLabel !== undefined
-                  ? options.tabBarLabel
-                  : options.title !== undefined
-                    ? options.title
-                    : route.name;
-
-              const isFocused = props.state.index === index;
-
-              const onPress = () => {
-                const event = props.navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-
-                if (!isFocused && !event.defaultPrevented) {
-                  props.navigation.navigate(route.name);
-                }
-              };
-
-              let iconName: IconNameType = 'home';
-              let iconLibrary: 'material' | 'feather' | 'ionicons' = 'material';
-              switch (route.name) {
-                case 'Home':
-                  iconName = 'home';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Library':
-                  iconName = 'library';
-                  iconLibrary = 'ionicons';
-                  break;
-                case 'Search':
-                  iconName = 'search';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Downloads':
-                  iconName = 'download';
-                  iconLibrary = 'feather';
-                  break;
-                case 'Settings':
-                  iconName = 'settings';
-                  iconLibrary = 'feather';
-                  break;
-              }
-
-              return (
-                <Focusable
-                  key={route.key}
-                  variant="nav"
-                  borderRadius={12}
-                  enableScale={false}
-                  enableGlow={false}
-                  onPress={onPress}
-                  hasTVPreferredFocus={index === 0}
-                  accessibilityLabel={`${typeof label === 'string' ? label : route.name} tab`}
-                  accessibilityHint={
-                    isFocused
-                      ? 'Currently selected'
-                      : `Navigate to ${typeof label === 'string' ? label : route.name}`
-                  }
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: 'transparent',
-                    paddingVertical: 8,
-                    marginHorizontal: 4,
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <TabIcon
-                    focused={isFocused}
-                    color={isFocused ? currentTheme.colors.primary : currentTheme.colors.white}
-                    iconName={iconName}
-                    iconLibrary={iconLibrary}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      marginTop: 4,
-                      color: isFocused ? currentTheme.colors.primary : currentTheme.colors.white,
-                      opacity: isFocused ? 1 : 0.7,
-                    }}
-                  >
-                    {typeof label === 'string' ? label : ''}
-                  </Text>
-                </Focusable>
-              );
-            })}
-          </View>
-        </View>
-      </View>
-    );
+  const screenOptions: NativeStackNavigationOptions = {
+    animationEnabled: true,
+    headerShown: true,
+    headerStyle: {
+      backgroundColor:
+        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+    },
+    headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
+    headerTitleStyle: {
+      fontFamily: 'sans-serif-medium',
+      fontWeight: '600',
+      fontSize: 18,
+    },
+    headerShadowVisible: false,
   };
 
-  // iOS: Use native bottom tabs (@bottom-tabs/react-navigation)
-  if (Platform.OS === 'ios') {
-    // Dynamically require to avoid impacting Android bundle
-    const { createNativeBottomTabNavigator } = require('@bottom-tabs/react-navigation');
-    const IOSTab = createNativeBottomTabNavigator();
-    const downloadsEnabled = appSettings?.enableDownloads !== false;
-
-    return (
-      <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
-        <StatusBar translucent barStyle="light-content" backgroundColor="transparent" />
-        <IOSTab.Navigator
-          key={`ios-tabs-${downloadsEnabled ? 'with-dl' : 'no-dl'}`}
-          initialRouteName="Home"
-          // Native tab bar handles its own visuals; keep options minimal
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: currentTheme.colors.primary,
-            tabBarInactiveTintColor: currentTheme.colors.white,
-            translucent: true,
-            // Prefer native lazy/freeze when available; still pass for parity
-            lazy: true,
-            freezeOnBlur: true,
-          }}
-        >
-          <IOSTab.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{
-              title: 'Home',
-              tabBarIcon: () => ({ sfSymbol: 'house' }),
-              freezeOnBlur: true,
-            }}
-          />
-          <IOSTab.Screen
-            name="Library"
-            component={LibraryScreen}
-            options={{
-              title: 'Library',
-              tabBarIcon: () => ({ sfSymbol: 'heart' }),
-            }}
-          />
-          <IOSTab.Screen
-            name="Search"
-            component={SearchScreen}
-            options={{
-              title: 'Search',
-              tabBarIcon: () => ({ sfSymbol: 'magnifyingglass' }),
-            }}
-          />
-          {downloadsEnabled && (
-            <IOSTab.Screen
-              name="Downloads"
-              component={DownloadsScreen}
-              options={{
-                title: 'Downloads',
-                tabBarIcon: () => ({ sfSymbol: 'arrow.down.circle' }),
-              }}
-            />
-          )}
-          <IOSTab.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{
-              title: 'Settings',
-              tabBarIcon: () => ({ sfSymbol: 'gear' }),
-            }}
-          />
-        </IOSTab.Navigator>
-
-        {/* Profile Switcher Button for iOS */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setShowProfileSwitcher(true)}
-          style={{
-            position: 'absolute',
-            top: insets.top + 12,
-            right: 16,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 20,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            zIndex: 100,
-          }}
-        >
-          <ProfileIcon size={18} color={currentTheme.colors.white} />
-          {activeProfile && !isTablet && (
-            <Text
-              style={{
-                color: currentTheme.colors.white,
-                fontWeight: '600',
-                fontSize: 12,
-              }}
-            >
-              {activeProfile.name.length > 8
-                ? activeProfile.name.slice(0, 8) + '...'
-                : activeProfile.name}
-            </Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Profile Switcher Bottom Sheet */}
-        <ProfileSwitcherBottomSheet
-          visible={showProfileSwitcher}
-          onClose={() => setShowProfileSwitcher(false)}
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarHideOnKeyboard: true,
+        ...screenOptions,
+      }}
+      tabBar={(props: BottomTabBarProps) => (
+        <CustomTabBar
+          {...(props as CustomTabBarProps)}
+          tabBarHeight={tabBarHeight}
+          safeAreaInsets={insets}
+          isTablet={isTablet}
         />
-      </View>
-    );
+      )}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: 'Home',
+          tabBarLabel: 'Home',
+          tabBarAccessibilityLabel: 'Home',
+          tabBarIcon: ({ color }) => (
+            <TabIcon
+              focused={true}
+              color={color}
+              iconName="home"
+              iconLibrary="material"
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Library"
+        component={LibraryScreen}
+        options={{
+          title: 'Library',
+          tabBarLabel: 'Library',
+          tabBarAccessibilityLabel: 'Library',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              focused={focused}
+              color={color}
+              iconName="bookmark"
+              iconLibrary="material"
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          title: 'Search',
+          tabBarLabel: 'Search',
+          tabBarAccessibilityLabel: 'Search',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              focused={focused}
+              color={color}
+              iconName="magnify"
+              iconLibrary="material"
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Downloads"
+        component={DownloadsScreen}
+        options={{
+          title: 'Downloads',
+          tabBarLabel: 'Downloads',
+          tabBarAccessibilityLabel: 'Downloads',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              focused={focused}
+              color={color}
+              iconName="download"
+              iconLibrary="material"
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsStackNavigator}
+        options={{
+          title: 'Settings',
+          tabBarLabel: 'Settings',
+          tabBarAccessibilityLabel: 'Settings',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              focused={focused}
+              color={color}
+              iconName="cog"
+              iconLibrary="material"
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+const SettingsStack = createNativeStackNavigator();
+
+const SettingsStackNavigator = () => {
+  const colorScheme = useColorScheme();
+
+  const screenOptions: NativeStackNavigationOptions = {
+    headerStyle: {
+      backgroundColor:
+        colorScheme === 'dark' ? colors.darkBackground : colors.white,
+    },
+    headerTintColor: colorScheme === 'dark' ? colors.text : colors.textDark,
+    headerTitleStyle: {
+      fontFamily: 'sans-serif-medium',
+      fontWeight: '600',
+      fontSize: 18,
+    },
+    headerShadowVisible: false,
+  };
+
+  return (
+    <SettingsStack.Navigator screenOptions={screenOptions}>
+      <SettingsStack.Screen
+        name="SettingsMain"
+        component={SettingsScreen}
+        options={{
+          title: 'Settings',
+          headerShown: true,
+        }}
+      />
+      <SettingsStack.Screen
+        name="Account"
+        component={AccountManageScreen}
+        options={{
+          title: 'Account',
+        }}
+      />
+      <SettingsStack.Screen
+        name="AccountManage"
+        component={AccountManageScreen}
+        options={{
+          title: 'Manage Account',
+        }}
+      />
+      <SettingsStack.Screen
+        name="Addons"
+        component={AddonsScreen}
+        options={{
+          title: 'Add-ons',
+        }}
+      />
+      <SettingsStack.Screen
+        name="CatalogSettings"
+        component={CatalogSettingsScreen}
+        options={{
+          title: 'Catalog',
+        }}
+      />
+      <SettingsStack.Screen
+        name="NotificationSettings"
+        component={NotificationSettingsScreen}
+        options={{
+          title: 'Notifications',
+        }}
+      />
+      <SettingsStack.Screen
+        name="MDBListSettings"
+        component={MDBListSettingsScreen}
+        options={{
+          title: 'MDBList',
+        }}
+      />
+      <SettingsStack.Screen
+        name="TMDBSettings"
+        component={TMDBSettingsScreen}
+        options={{
+          title: 'TMDB',
+        }}
+      />
+      <SettingsStack.Screen
+        name="HomeScreenSettings"
+        component={HomeScreenSettings}
+        options={{
+          title: 'Home Screen',
+        }}
+      />
+      <SettingsStack.Screen
+        name="HeroCatalogs"
+        component={HeroCatalogsScreen}
+        options={{
+          title: 'Hero Catalogs',
+        }}
+      />
+      <SettingsStack.Screen
+        name="TraktSettings"
+        component={TraktSettingsScreen}
+        options={{
+          title: 'Trakt',
+        }}
+      />
+      <SettingsStack.Screen
+        name="PlayerSettings"
+        component={PlayerSettingsScreen}
+        options={{
+          title: 'Player Settings',
+        }}
+      />
+      <SettingsStack.Screen
+        name="ThemeSettings"
+        component={ThemeScreen}
+        options={{
+          title: 'Theme',
+        }}
+      />
+      <SettingsStack.Screen
+        name="AISettings"
+        component={AISettingsScreen}
+        options={{
+          title: 'AI Settings',
+        }}
+      />
+      <SettingsStack.Screen
+        name="ContinueWatchingSettings"
+        component={ContinueWatchingSettingsScreen}
+        options={{
+          title: 'Continue Watching',
+        }}
+      />
+      <SettingsStack.Screen
+        name="Contributors"
+        component={ContributorsScreen}
+        options={{
+          title: 'Contributors',
+        }}
+      />
+      <SettingsStack.Screen
+        name="DebridIntegration"
+        component={DebridIntegrationScreen}
+        options={{
+          title: 'Debrid Integration',
+        }}
+      />
+      <SettingsStack.Screen
+        name="Top10Settings"
+        component={Top10SettingsScreen}
+        options={{
+          title: 'Top 10 Settings',
+        }}
+      />
+      <SettingsStack.Screen
+        name="Plugins"
+        component={PluginsScreen}
+        options={{
+          title: 'Plugins',
+        }}
+      />
+    </SettingsStack.Navigator>
+  );
+};
+
+interface AppNavigatorProps {}
+
+export const AppNavigator: React.FC<AppNavigatorProps> = () => {
+  const colorScheme = useColorScheme();
+  const [appState, setAppState] = useState(AppState.currentState);
+  const [isReady, setIsReady] = useState(false);
+
+  const navigationTheme =
+    colorScheme === 'dark' ? CustomNavigationDarkTheme : CustomNavigationLightTheme;
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', state => {
+      setAppState(state);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Small delay to allow app to fully initialize
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isReady) {
+    return null;
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: currentTheme.colors.darkBackground }}>
-      {/* Common StatusBar for all tabs */}
-      <StatusBar translucent barStyle="light-content" backgroundColor="transparent" />
-
-      <Tab.Navigator
-        tabBar={renderTabBar}
-        screenOptions={({ route, navigation, theme }) => ({
-          transitionSpec: {
-            animation: 'timing',
-            config: {
-              duration: 200,
-              easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
-            },
-          },
-          sceneStyleInterpolator: ({ current }) => ({
-            sceneStyle: {
-              opacity: current.progress.interpolate({
-                inputRange: [-1, 0, 1],
-                outputRange: [0, 1, 0],
-              }),
-              transform: [
-                {
-                  scale: current.progress.interpolate({
-                    inputRange: [-1, 0, 1],
-                    outputRange: [0.95, 1, 0.95],
-                  }),
-                },
-                {
-                  translateY: current.progress.interpolate({
-                    inputRange: [-1, 0, 1],
-                    outputRange: [8, 0, 8],
-                  }),
-                },
-              ],
-            },
-          }),
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: {
-            position: 'absolute',
-            borderTopWidth: 0,
-            elevation: 0,
-            backgroundColor: currentTheme.colors.darkBackground,
-          },
-          // Ensure background tabs are frozen and detached
-          freezeOnBlur: true,
-          lazy: true,
-          detachInactiveScreens: true,
-        })}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons
-                name={focused ? 'home' : 'home-outline'}
-                size={size}
-                color={color}
-              />
-            ),
-            freezeOnBlur: true,
-          }}
-        />
-        <Tab.Screen
-          name="Library"
-          component={LibraryScreen}
-          options={{
-            tabBarLabel: 'Library',
-            tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons
-                name={focused ? 'heart' : 'heart-outline'}
-                size={size}
-                color={color}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{
-            tabBarLabel: 'Search',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name={'magnify'} size={size} color={color} />
-            ),
-          }}
-        />
-        {appSettings?.enableDownloads !== false && (
-          <Tab.Screen
-            name="Downloads"
-            component={DownloadsScreen}
+    <PaperProvider
+      theme={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}
+    >
+      <SafeAreaProvider>
+        <NavigationContainer theme={navigationTheme} fallback={null}>
+          <PostHogProvider
+            apiKey="phc_v0K0K0K0K0K0K0K0K0K0K0K0K0K0K0K0"
             options={{
-              tabBarLabel: 'Downloads',
-              tabBarIcon: ({ color, size, focused }) => (
-                <MaterialCommunityIcons
-                  name={focused ? 'download' : 'download-outline'}
-                  size={size}
-                  color={color}
-                />
-              ),
+              host: 'https://eu.posthog.com',
             }}
-          />
-        )}
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{
-            tabBarLabel: 'Settings',
-            tabBarIcon: ({ color, size, focused }) => (
-              <MaterialCommunityIcons
-                name={focused ? 'cog' : 'cog-outline'}
-                size={size}
-                color={color}
-              />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-
-      {/* Profile Switcher Button for Android Phones (tablets use the floating nav bar) */}
-      {!isTablet && (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setShowProfileSwitcher(true)}
-          style={{
-            position: 'absolute',
-            top: insets.top + 12,
-            right: 16,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 20,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            zIndex: 100,
-          }}
-        >
-          <ProfileIcon size={18} color={currentTheme.colors.white} />
-          {activeProfile && (
-            <Text
-              style={{
-                color: currentTheme.colors.white,
-                fontWeight: '600',
-                fontSize: 12,
-              }}
-            >
-              {activeProfile.name.length > 8
-                ? activeProfile.name.slice(0, 8) + '...'
-                : activeProfile.name}
-            </Text>
-          )}
-        </TouchableOpacity>
-      )}
-
-      {/* Profile Switcher Bottom Sheet */}
-      <ProfileSwitcherBottomSheet
-        visible={showProfileSwitcher}
-        onClose={() => setShowProfileSwitcher(false)}
-      />
-    </View>
-  );
-};
-
-// Create custom fade animation interpolator for MetadataScreen
-const customFadeInterpolator = ({ current, layouts }: any) => {
-  return {
-    cardStyle: {
-      opacity: current.progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 1],
-      }),
-      transform: [
-        {
-          scale: current.progress.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.95, 1],
-          }),
-        },
-      ],
-    },
-    overlayStyle: {
-      opacity: current.progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 0.3],
-      }),
-    },
-  };
-};
-
-// Stack Navigator
-const InnerNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => {
-  const { currentTheme } = useTheme();
-  const { user, loading } = useAccount();
-  const insets = useSafeAreaInsets();
-
-  // Handle Android-specific optimizations
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      // Ensure system navigation bar is shown by default
-      try {
-        if (RNImmersiveMode) {
-          RNImmersiveMode.setBarMode('Normal');
-          RNImmersiveMode.fullLayout(false);
-        }
-      } catch (error) {
-        console.log('Immersive mode error:', error);
-      }
-
-      // Ensure consistent background color for Android
-      StatusBar.setBackgroundColor('transparent', true);
-      StatusBar.setTranslucent(true);
-    }
-  }, []);
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      <PaperProvider theme={CustomDarkTheme}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: currentTheme.colors.darkBackground,
-            ...(Platform.OS === 'android' && {
-              // Prevent white flashes on Android
-              opacity: 1,
-            }),
-          }}
-        >
-          <Stack.Navigator
-            initialRouteName={initialRouteName || 'MainTabs'}
-            screenOptions={{
-              headerShown: false,
-              // Freeze non-focused stack screens to prevent background re-renders (e.g., SeriesContent behind player)
-              freezeOnBlur: true,
-              // Use slide_from_right for consistency and smooth transitions
-              animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-              animationDuration: Platform.OS === 'android' ? 250 : 300,
-              // Ensure consistent background during transitions
-              contentStyle: {
-                backgroundColor: currentTheme.colors.darkBackground,
-              },
-              // Improve Android performance with custom interpolator
-              ...(Platform.OS === 'android' && {
-                cardStyleInterpolator: ({ current, layouts }: any) => {
-                  return {
-                    cardStyle: {
-                      transform: [
-                        {
-                          translateX: current.progress.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [layouts.screen.width, 0],
-                          }),
-                        },
-                      ],
-                      backgroundColor: currentTheme.colors.darkBackground,
-                    },
-                  };
-                },
-              }),
+            autocapture={{
+              captureLifecycles: true,
+              captureScreens: true,
             }}
           >
-            <Stack.Screen
-              name="Account"
-              component={AuthScreen as any}
-              options={{
-                headerShown: false,
-                animation: 'fade',
-                contentStyle: { backgroundColor: currentTheme.colors.darkBackground },
-              }}
-            />
-            <Stack.Screen
-              name="Onboarding"
-              component={OnboardingScreen}
-              options={{
-                headerShown: false,
-                animation: 'fade',
-                animationDuration: 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ProfileSelector"
-              component={ProfileSelectorScreen}
-              options={{
-                headerShown: false,
-                animation: 'fade',
-                animationDuration: 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="MainTabs"
-              component={MainTabs as any}
-              options={{
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AccountManage"
-              component={AccountManageScreen as any}
-              options={{
-                headerShown: false,
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Metadata"
-              component={MetadataScreen}
-              options={{
-                headerShown: false,
-                animation: Platform.OS === 'android' ? 'fade' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 200 : 300,
-                ...(Platform.OS === 'ios' && {
-                  cardStyleInterpolator: customFadeInterpolator,
-                  animationTypeForReplace: 'push',
-                  gestureEnabled: true,
-                  gestureDirection: 'horizontal',
-                }),
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Streams"
-              component={StreamsScreen as any}
-              options={{
-                headerShown: false,
-                animation: Platform.OS === 'ios' ? 'slide_from_bottom' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 200 : 300,
-                gestureEnabled: true,
-                gestureDirection: Platform.OS === 'ios' ? 'vertical' : 'horizontal',
-                ...(Platform.OS === 'ios' && { presentation: 'modal' }),
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-                // Freeze when blurred to stop timers/network without full unmount
-                freezeOnBlur: true,
-              }}
-            />
-            <Stack.Screen
-              name="PlayerIOS"
-              component={KSPlayerCore as any}
-              options={{
-                animation: 'default',
-                animationDuration: 0,
-                // fullScreenModal required for proper video rendering on iOS
-                presentation: 'fullScreenModal',
-                // Disable gestures during video playback
-                gestureEnabled: false,
-                // Ensure proper orientation handling
-                orientation: 'landscape',
-                contentStyle: {
-                  backgroundColor: '#000000', // Pure black for video player
-                },
-                // iPad-specific fullscreen options
-                statusBarHidden: true,
-                statusBarAnimation: 'none',
-                // Freeze when blurred to release resources safely
-                freezeOnBlur: true,
-              }}
-            />
-            <Stack.Screen
-              name="PlayerAndroid"
-              component={AndroidVideoPlayer as any}
-              options={{
-                animation: 'none',
-                animationDuration: 0,
-                presentation: 'card',
-                // Disable gestures during video playback
-                gestureEnabled: false,
-                // Ensure proper orientation handling
-                orientation: 'landscape',
-                contentStyle: {
-                  backgroundColor: '#000000', // Pure black for video player
-                },
-                // Freeze when blurred to release resources safely
-                freezeOnBlur: true,
-              }}
-            />
-            <Stack.Screen
-              name="Catalog"
-              component={CatalogScreen as any}
-              options={{
-                animation: 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Addons"
-              component={AddonsScreen as any}
-              options={{
-                animation: 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Search"
-              component={SearchScreen as any}
-              options={{
-                animation: Platform.OS === 'android' ? 'none' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 0 : 350,
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="CatalogSettings"
-              component={CatalogSettingsScreen as any}
-              options={{
-                animation: 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="HomeScreenSettings"
-              component={HomeScreenSettings}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'default',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ContinueWatchingSettings"
-              component={ContinueWatchingSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'default',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Contributors"
-              component={ContributorsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'default',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="HeroCatalogs"
-              component={HeroCatalogsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'default',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ShowRatings"
-              component={ShowRatingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'fade_from_bottom' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 200 : 200,
-                ...(Platform.OS === 'ios' && { presentation: 'modal' }),
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: 'transparent',
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Calendar"
-              component={CalendarScreen as any}
-              options={{
-                animation: 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="NotificationSettings"
-              component={NotificationSettingsScreen as any}
-              options={{
-                animation: 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="MDBListSettings"
-              component={MDBListSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TMDBSettings"
-              component={TMDBSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TraktSettings"
-              component={TraktSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="PlayerSettings"
-              component={PlayerSettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ThemeSettings"
-              component={ThemeScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="ScraperSettings"
-              component={PluginsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="CastMovies"
-              component={CastMoviesScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
-                animationDuration: Platform.OS === 'android' ? 250 : 200,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Update"
-              component={UpdateScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AISettings"
-              component={AISettingsScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-
-            <Stack.Screen
-              name="Backup"
-              component={BackupScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AIChat"
-              component={AIChatScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'fade' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 200 : 300,
-                presentation: Platform.OS === 'ios' ? 'fullScreenModal' : 'modal',
-                gestureEnabled: true,
-                gestureDirection: Platform.OS === 'ios' ? 'horizontal' : 'vertical',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="BackdropGallery"
-              component={BackdropGalleryScreen}
-              options={{
-                animation: 'slide_from_right',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: '#000',
-                },
-              }}
-            />
-            <Stack.Screen
-              name="DebridIntegration"
-              component={DebridIntegrationScreen}
-              options={{
-                animation: Platform.OS === 'android' ? 'slide_from_right' : 'slide_from_right',
-                animationDuration: Platform.OS === 'android' ? 250 : 300,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal',
-                headerShown: false,
-                contentStyle: {
-                  backgroundColor: currentTheme.colors.darkBackground,
-                },
-              }}
-            />
-          </Stack.Navigator>
-        </View>
-      </PaperProvider>
-    </SafeAreaProvider>
+            <LoadingProvider>
+              <ProfileProvider>
+                <RootNavigator />
+              </ProfileProvider>
+            </LoadingProvider>
+          </PostHogProvider>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </PaperProvider>
   );
 };
-
-const AppNavigator = ({ initialRouteName }: { initialRouteName?: keyof RootStackParamList }) => (
-  <PostHogProvider
-    apiKey="phc_sk6THCtV3thEAn6cTaA9kL2cHuKDBnlYiSL40ywdS6C"
-    options={{
-      host: 'https://us.i.posthog.com',
-    }}
-  >
-    <ProfileProvider>
-      <LoadingProvider>
-        <InnerNavigator initialRouteName={initialRouteName} />
-      </LoadingProvider>
-    </ProfileProvider>
-  </PostHogProvider>
-);
 
 export default AppNavigator;

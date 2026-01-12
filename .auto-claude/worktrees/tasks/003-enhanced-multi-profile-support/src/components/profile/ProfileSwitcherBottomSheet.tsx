@@ -167,6 +167,12 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
           const activeIndex = profiles.findIndex(p => p.id === activeProfile?.id);
           const initialIndex = activeIndex >= 0 ? activeIndex : 0;
           profileFocusGroup.focusItem(initialIndex);
+
+          // Actually apply native focus to the element
+          const itemRef = profileFocusGroup.getItemRef(initialIndex);
+          if (itemRef?.current?.focus) {
+            itemRef.current.focus();
+          }
         }, 100);
       }
     } else {
@@ -185,6 +191,12 @@ export const ProfileSwitcherBottomSheet: React.FC<ProfileSwitcherBottomSheetProp
     if (showPinModal && isTV) {
       setTimeout(() => {
         pinButtonFocusGroup.focusFirst();
+
+        // Actually apply native focus to the first button
+        const firstButtonRef = pinButtonFocusGroup.getItemRef(0);
+        if (firstButtonRef?.current?.focus) {
+          firstButtonRef.current.focus();
+        }
       }, 150);
     }
   }, [showPinModal, isTV]);

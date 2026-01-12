@@ -468,461 +468,507 @@ const SettingsScreen: React.FC = () => {
     return () => clearInterval(pollInterval);
   }, [selectedCategory, isTablet, totalDownloads]);
 
-  // Animate counting up when totalDownloads changes
+  // Animate the downloads number
   useEffect(() => {
-    if (totalDownloads === null || displayDownloads === null) return;
-    if (totalDownloads === displayDownloads) return;
+    if (!displayDownloads || !totalDownloads || displayDownloads === totalDownloads) {
+      setIsCountingUp(false);
+      return;
+    }
 
     setIsCountingUp(true);
-    const start = displayDownloads;
-    const end = totalDownloads;
-    const duration = 2000; // 2 seconds animation
-    const startTime = Date.now();
+    const difference = totalDownloads - displayDownloads;
+    const stepSize = Math.max(1, Math.ceil(difference / 30)); // 30 steps over the animation
+    const stepDuration = 20; // milliseconds per step
 
-    const animate = () => {
-      const now = Date.now();
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+    const interval = setInterval(() => {
+      setDisplayDownloads(prev => {
+        if (!prev) return prev;
+        const newValue = prev + stepSize;
+        if (newValue >= totalDownloads) {
+          clearInterval(interval);
+          setIsCountingUp(false);
+          return totalDownloads;
+        }
+        return newValue;
+      });
+    }, stepDuration);
 
-      // Ease out quad for smooth deceleration
-      const easeProgress = 1 - Math.pow(1 - progress, 2);
-      const current = Math.floor(start + (end - start) * easeProgress);
-
-      setDisplayDownloads(current);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        setDisplayDownloads(end);
-        setIsCountingUp(false);
-      }
-    };
-
-    requestAnimationFrame(animate);
+    return () => clearInterval(interval);
   }, [totalDownloads]);
 
-  const handleResetSettings = useCallback(() => {
-    openAlert('Reset Settings', 'Are you sure you want to reset all settings to default values?', [
-      { label: 'Cancel', onPress: () => {} },
-      {
-        label: 'Reset',
-        onPress: () => {
-          (Object.keys(DEFAULT_SETTINGS) as Array<keyof typeof DEFAULT_SETTINGS>).forEach(key => {
-            updateSetting(key, DEFAULT_SETTINGS[key]);
-          });
-        },
-      },
-    ]);
-  }, [updateSetting]);
+  const renderSettingsContent = () => {
+    // Account Section
+    if (selectedCategory === 'account' || !isTablet) {
+      if (isTablet && selectedCategory !== 'account') return null;
 
-  const handleClearMDBListCache = () => {
-    openAlert(
-      'Clear MDBList Cache',
-      'Are you sure you want to clear all cached MDBList data? This cannot be undone.',
-      [
-        { label: 'Cancel', onPress: () => {} },
-        {
-          label: 'Clear',
-          onPress: async () => {
-            try {
-              await mmkvStorage.removeItem('mdblist_cache');
-              openAlert('Success', 'MDBList cache has been cleared.');
-            } catch (error) {
-              openAlert('Error', 'Could not clear MDBList cache.');
-              if (__DEV__) console.error('Error clearing MDBList cache:', error);
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const CustomSwitch = ({
-    value,
-    onValueChange,
-  }: {
-    value: boolean;
-    onValueChange: (value: boolean) => void;
-  }) => {
-    const handleValueChange = (newValue: boolean) => {
-      triggerMedium();
-      onValueChange(newValue);
-    };
-
-    return (
-      <Switch
-        value={value}
-        onValueChange={handleValueChange}
-        trackColor={{ false: currentTheme.colors.elevation2, true: currentTheme.colors.primary }}
-        thumbColor={value ? currentTheme.colors.white : currentTheme.colors.mediumEmphasis}
-        ios_backgroundColor={currentTheme.colors.elevation2}
-      />
-    );
-  };
-
-  const ChevronRight = () => (
-    <Feather
-      name="chevron-right"
-      size={isTablet ? 24 : 20}
-      color={currentTheme.colors.mediumEmphasis}
-    />
-  );
-
-  // Filter categories based on conditions
-  const visibleCategories = SETTINGS_CATEGORIES.filter(category => {
-    if (category.id === 'developer' && !__DEV__) return false;
-    if (category.id === 'cache' && !mdblistKeySet) return false;
-    return true;
-  });
-
-  const renderCategoryContent = (categoryId: string) => {
-    switch (categoryId) {
-      case 'account':
-        return (
-          <SettingsCard title="ACCOUNT" isTablet={isTablet}>
+      return (
+        <ScrollView key="account" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Trakt" isTablet={isTablet}>
             <SettingItem
-              title="Profiles"
+              title={isAuthenticated && userProfile ? userProfile.username : 'Not Connected'}
               description={
-                activeProfile
-                  ? activeProfile.name
-                  : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''}`
+                isAuthenticated
+                  ? userProfile?.username
+                    ? `ID: ${userProfile.id}`
+                    : 'Connected'
+                  : 'Connect to Trakt to sync'
               }
-              icon="user"
-              renderControl={ChevronRight}
+              customIcon={<TraktIcon size={24} />}
+              onPress={() => {
+                if (isAuthenticated) {
+                  openAlert(
+                    'Disconnect Trakt?',
+                    'Are you sure you want to disconnect your Trakt account?',
+                    [
+                      {
+                        label: 'Cancel',
+                        onPress: () => {},
+                        style: { color: currentTheme.colors.primary },
+                      },
+                      {
+                        label: 'Disconnect',
+                        onPress: () => {
+                          updateSetting('traktApiKey', '');
+                          updateSetting('traktRefreshToken', '');
+                        },
+                        style: { color: currentTheme.colors.notification },
+                      },
+                    ]
+                  );
+                } else {
+                  navigation.navigate('AuthScreen', { provider: 'trakt' });
+                }
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+
+          <SettingsCard title="Profiles" isTablet={isTablet}>
+            <SettingItem
+              title={activeProfile?.name || 'Default'}
+              description={`${profiles.length} profile${profiles.length !== 1 ? 's' : ''} available`}
+              icon="users"
               onPress={() => setShowProfileSwitcher(true)}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Trakt"
-              description={
-                isAuthenticated ? `@${userProfile?.username || 'User'}` : 'Sign in to sync'
-              }
-              customIcon={
-                <TraktIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
-              }
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('TraktSettings')}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
+        </ScrollView>
+      );
+    }
 
-      case 'content':
-        return (
-          <SettingsCard title="CONTENT & DISCOVERY" isTablet={isTablet}>
+    // Content & Discovery Section
+    if (selectedCategory === 'content') {
+      return (
+        <ScrollView key="content" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Add-ons" isTablet={isTablet}>
             <SettingItem
-              title="Addons"
-              description={`${addonCount} installed`}
-              icon="layers"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('Addons')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Debrid Integration"
-              description="Connect Torbox for premium streams"
-              icon="link"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('DebridIntegration')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Plugins"
-              description="Manage plugins and repositories"
-              customIcon={
-                <PluginIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
+              title="Installed Add-ons"
+              description={
+                initialLoadComplete
+                  ? `${addonCount} add-on${addonCount !== 1 ? 's' : ''} installed`
+                  : 'Loading...'
               }
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('ScraperSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Catalogs"
-              description={`${catalogCount} active`}
-              icon="list"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('CatalogSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Home Screen"
-              description="Layout and content"
-              icon="home"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('HomeScreenSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Continue Watching"
-              description="Cache and playback behavior"
-              icon="play-circle"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('ContinueWatchingSettings')}
+              icon="package"
+              onPress={() => {
+                navigation.navigate('AddonStoreScreen');
+              }}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
 
-      case 'appearance':
-        return (
-          <SettingsCard title="APPEARANCE" isTablet={isTablet}>
+          <SettingsCard title="Catalogs" isTablet={isTablet}>
             <SettingItem
-              title="Theme"
-              description={currentTheme.name}
-              icon="sliders"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('ThemeSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Episode Layout"
+              title="Browse & Manage"
               description={
-                settings?.episodeLayoutStyle === 'horizontal' ? 'Horizontal' : 'Vertical'
+                initialLoadComplete
+                  ? `${catalogCount} enabled`
+                  : 'Loading...'
               }
               icon="grid"
-              renderControl={() => (
-                <CustomSwitch
-                  value={settings?.episodeLayoutStyle === 'horizontal'}
-                  onValueChange={value =>
-                    updateSetting('episodeLayoutStyle', value ? 'horizontal' : 'vertical')
-                  }
-                />
-              )}
-              isLast={isTablet}
-              isTablet={isTablet}
-            />
-            {!isTablet && (
-              <SettingItem
-                title="Streams Backdrop"
-                description="Show blurred backdrop on mobile streams"
-                icon="image"
-                renderControl={() => (
-                  <CustomSwitch
-                    value={settings?.enableStreamsBackdrop ?? true}
-                    onValueChange={value => updateSetting('enableStreamsBackdrop', value)}
-                  />
-                )}
-                isLast={true}
-                isTablet={isTablet}
-              />
-            )}
-          </SettingsCard>
-        );
-
-      case 'integrations':
-        return (
-          <SettingsCard title="INTEGRATIONS" isTablet={isTablet}>
-            <SettingItem
-              title="MDBList"
-              description={mdblistKeySet ? 'Connected' : 'Enable to add ratings & reviews'}
-              customIcon={
-                <MDBListIcon
-                  size={isTablet ? 24 : 20}
-                  colorPrimary={currentTheme.colors.primary}
-                  colorSecondary={currentTheme.colors.white}
-                />
-              }
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('MDBListSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="TMDB"
-              description="Metadata & logo source provider"
-              customIcon={
-                <TMDBIcon size={isTablet ? 24 : 20} color={currentTheme.colors.primary} />
-              }
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('TMDBSettings')}
+              onPress={() => {
+                navigation.navigate('CatalogScreen');
+              }}
+              badge={addonCount > 0 ? addonCount : undefined}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
 
-      case 'ai':
-        return (
-          <SettingsCard title="AI ASSISTANT" isTablet={isTablet}>
+          <SettingsCard title="Search & Discovery" isTablet={isTablet}>
             <SettingItem
-              title="OpenRouter API"
-              description={openRouterKeySet ? 'Connected' : 'Add your API key to enable AI chat'}
-              icon="cpu"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('AISettings')}
+              title="Trakt Lists"
+              description={isAuthenticated ? 'Connected' : 'Not connected'}
+              icon="bookmark"
+              onPress={() => navigation.navigate('SearchScreen')}
+              isLast={false}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Search Providers"
+              description="Configure search sources"
+              icon="search"
+              onPress={() => {}}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
+        </ScrollView>
+      );
+    }
 
-      case 'playback':
-        return (
-          <SettingsCard title="PLAYBACK" isTablet={isTablet}>
+    // Appearance Section
+    if (selectedCategory === 'appearance') {
+      return (
+        <ScrollView key="appearance" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Theme" isTablet={isTablet}>
             <SettingItem
-              title="Video Player"
+              title="Theme Mode"
               description={
-                Platform.OS === 'ios'
-                  ? settings?.preferredPlayer === 'internal'
-                    ? 'Built-in'
-                    : settings?.preferredPlayer?.toUpperCase() || 'Built-in'
-                  : settings?.useExternalPlayer
-                    ? 'External'
-                    : 'Built-in'
+                settings.themeMode === 'auto'
+                  ? 'System'
+                  : settings.themeMode === 'light'
+                    ? 'Light'
+                    : 'Dark'
               }
-              icon="play-circle"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('PlayerSettings')}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Show Trailers"
-              description="Display trailers in hero section"
-              icon="film"
+              icon="sun"
               renderControl={() => (
-                <Switch
-                  value={settings?.showTrailers ?? true}
+                <Picker
+                  selectedValue={settings.themeMode || 'auto'}
+                  style={{ width: 120, height: 50 }}
                   onValueChange={value => {
-                    triggerMedium();
-                    updateSetting('showTrailers', value);
+                    updateSetting('themeMode', value);
                   }}
-                  trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
-                  thumbColor={settings?.showTrailers ? '#fff' : '#f4f3f4'}
-                />
+                >
+                  <Picker.Item label="System" value="auto" />
+                  <Picker.Item label="Light" value="light" />
+                  <Picker.Item label="Dark" value="dark" />
+                </Picker>
               )}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Enable Downloads (Beta)"
-              description="Show Downloads tab and enable saving streams"
-              icon="download"
-              renderControl={() => (
-                <Switch
-                  value={settings?.enableDownloads ?? false}
-                  onValueChange={value => {
-                    triggerMedium();
-                    updateSetting('enableDownloads', value);
-                  }}
-                  trackColor={{ false: 'rgba(255,255,255,0.2)', true: currentTheme.colors.primary }}
-                  thumbColor={settings?.enableDownloads ? '#fff' : '#f4f3f4'}
-                />
-              )}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Notifications"
-              description="Episode reminders"
-              icon="bell"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('NotificationSettings')}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
 
-      case 'about':
-        return (
-          <SettingsCard title="ABOUT" isTablet={isTablet}>
+          <SettingsCard title="Display" isTablet={isTablet}>
             <SettingItem
-              title="Privacy Policy"
-              icon="lock"
-              onPress={() =>
-                Linking.openURL('https://tapframe.github.io/NuvioStreaming/#privacy-policy')
+              title="Compact Mode"
+              description="Show less content per screen"
+              icon="minimize-2"
+              renderControl={() => (
+                <Switch
+                  value={settings.compactMode || false}
+                  onValueChange={value => updateSetting('compactMode', value)}
+                />
+              )}
+              isLast={false}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Show Images"
+              description="Display poster and banner images"
+              icon="image"
+              renderControl={() => (
+                <Switch
+                  value={settings.showImages !== false}
+                  onValueChange={value => updateSetting('showImages', value)}
+                />
+              )}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // Integrations Section
+    if (selectedCategory === 'integrations') {
+      return (
+        <ScrollView key="integrations" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="TMDB" isTablet={isTablet}>
+            <SettingItem
+              title="API Key"
+              description={settings.tmdbApiKey ? 'Connected' : 'Not configured'}
+              customIcon={<TMDBIcon size={24} />}
+              onPress={() => {
+                navigation.navigate('SettingDetailScreen', {
+                  setting: 'tmdb',
+                  title: 'TMDB Configuration',
+                });
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+
+          <SettingsCard title="MDBList" isTablet={isTablet}>
+            <SettingItem
+              title="API Key"
+              description={mdblistKeySet ? 'Connected' : 'Not configured'}
+              customIcon={<MDBListIcon size={24} />}
+              onPress={() => {
+                navigation.navigate('SettingDetailScreen', {
+                  setting: 'mdblist',
+                  title: 'MDBList Configuration',
+                });
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+
+          <SettingsCard title="OpenRouter" isTablet={isTablet}>
+            <SettingItem
+              title="API Key"
+              description={openRouterKeySet ? 'Connected' : 'Not configured'}
+              icon="key"
+              onPress={() => {
+                navigation.navigate('SettingDetailScreen', {
+                  setting: 'openrouter',
+                  title: 'OpenRouter Configuration',
+                });
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // AI Assistant Section
+    if (selectedCategory === 'ai') {
+      return (
+        <ScrollView key="ai" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="AI Assistant" isTablet={isTablet}>
+            <SettingItem
+              title="Enable AI Assistant"
+              description="Get personalized recommendations"
+              icon="zap"
+              renderControl={() => (
+                <Switch
+                  value={settings.aiAssistantEnabled !== false}
+                  onValueChange={value => updateSetting('aiAssistantEnabled', value)}
+                />
+              )}
+              isLast={false}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Provider"
+              description={settings.aiProvider || 'Not configured'}
+              icon="cpu"
+              onPress={() => {
+                navigation.navigate('SettingDetailScreen', {
+                  setting: 'ai',
+                  title: 'AI Provider',
+                });
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // Playback Section
+    if (selectedCategory === 'playback') {
+      return (
+        <ScrollView key="playback" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Playback" isTablet={isTablet}>
+            <SettingItem
+              title="Default Player"
+              description={settings.defaultPlayer || 'System Default'}
+              icon="play-circle"
+              onPress={() => {}}
+              isLast={false}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Resume Playback"
+              description="Continue where you left off"
+              icon="bookmark"
+              renderControl={() => (
+                <Switch
+                  value={settings.resumePlayback !== false}
+                  onValueChange={value => updateSetting('resumePlayback', value)}
+                />
+              )}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // Backup & Restore Section
+    if (selectedCategory === 'backup') {
+      return (
+        <ScrollView key="backup" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Backup & Restore" isTablet={isTablet}>
+            <SettingItem
+              title="Backup Settings"
+              description="Export your configuration"
+              icon="download"
+              onPress={() => {
+                openAlert(
+                  'Backup Settings',
+                  'This feature is coming soon. You will be able to export your settings as a file.'
+                );
+              }}
+              isLast={false}
+              isTablet={isTablet}
+            />
+            <SettingItem
+              title="Restore Settings"
+              description="Import configuration file"
+              icon="upload"
+              onPress={() => {
+                openAlert(
+                  'Restore Settings',
+                  'This feature is coming soon. You will be able to import settings from a file.'
+                );
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // Updates Section
+    if (selectedCategory === 'updates') {
+      return (
+        <ScrollView key="updates" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Check for Updates" isTablet={isTablet}>
+            <SettingItem
+              title="Current Version"
+              description={getDisplayedAppVersion()}
+              icon="info"
+              onPress={() => {
+                openAlert(
+                  'Check for Updates',
+                  'You are using the latest version of the app.',
+                  [{ label: 'OK', onPress: () => {} }]
+                );
+              }}
+              badge={hasUpdateBadge ? 'New' : undefined}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // About Section
+    if (selectedCategory === 'about') {
+      return (
+        <ScrollView key="about" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="About" isTablet={isTablet}>
+            <SettingItem
+              title="Downloads"
+              description={
+                displayDownloads !== null
+                  ? displayDownloads.toLocaleString('en-US')
+                  : 'Loading...'
               }
-              renderControl={ChevronRight}
+              icon="download"
+              isLast={false}
               isTablet={isTablet}
             />
             <SettingItem
               title="Report Issue"
-              icon="alert-triangle"
-              onPress={() => Sentry.showFeedbackWidget()}
-              renderControl={ChevronRight}
+              description="GitHub Issues"
+              icon="alert-circle"
+              onPress={() => {
+                Linking.openURL('https://github.com/Safar-Gu/Kinema/issues');
+              }}
+              isLast={false}
               isTablet={isTablet}
             />
             <SettingItem
-              title="Version"
-              description={getDisplayedAppVersion()}
-              icon="info"
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Contributors"
-              description="View all contributors"
-              icon="users"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('Contributors')}
+              title="Website"
+              description="Learn more"
+              icon="globe"
+              onPress={() => {
+                Linking.openURL('https://kinema.watch');
+              }}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
 
-      case 'developer':
-        return __DEV__ ? (
-          <SettingsCard title="DEVELOPER" isTablet={isTablet}>
+          <SettingsCard title="Legal" isTablet={isTablet}>
             <SettingItem
-              title="Test Onboarding"
-              icon="play-circle"
-              onPress={() => navigation.navigate('Onboarding')}
-              renderControl={ChevronRight}
-              isTablet={isTablet}
-            />
-            <SettingItem
-              title="Reset Onboarding"
-              icon="refresh-ccw"
-              onPress={async () => {
-                try {
-                  await mmkvStorage.removeItem('hasCompletedOnboarding');
-                  openAlert(
-                    'Success',
-                    'Onboarding has been reset. Restart the app to see the onboarding flow.'
-                  );
-                } catch (error) {
-                  openAlert('Error', 'Failed to reset onboarding.');
-                }
+              title="Privacy Policy"
+              description="How we use your data"
+              icon="shield"
+              onPress={() => {
+                WebBrowser.openBrowserAsync('https://kinema.watch/privacy');
               }}
-              renderControl={ChevronRight}
+              isLast={false}
               isTablet={isTablet}
             />
             <SettingItem
-              title="Test Announcement"
-              icon="bell"
-              description="Show what's new overlay"
-              onPress={async () => {
-                try {
-                  await mmkvStorage.removeItem('announcement_v1.0.0_shown');
-                  openAlert(
-                    'Success',
-                    'Announcement reset. Restart the app to see the announcement overlay.'
-                  );
-                } catch (error) {
-                  openAlert('Error', 'Failed to reset announcement.');
-                }
+              title="Terms of Service"
+              description="Our terms"
+              icon="file-text"
+              onPress={() => {
+                WebBrowser.openBrowserAsync('https://kinema.watch/terms');
               }}
-              renderControl={ChevronRight}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    // Developer Section
+    if (selectedCategory === 'developer') {
+      return (
+        <ScrollView key="developer" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Developer Options" isTablet={isTablet}>
+            <SettingItem
+              title="Debug Logging"
+              description="Enable detailed logs"
+              icon="code"
+              renderControl={() => (
+                <Switch
+                  value={settings.debugLogging || false}
+                  onValueChange={value => updateSetting('debugLogging', value)}
+                />
+              )}
+              isLast={false}
               isTablet={isTablet}
             />
             <SettingItem
-              title="Clear All Data"
+              title="Clear Cache"
+              description="Free up storage"
               icon="trash-2"
               onPress={() => {
                 openAlert(
-                  'Clear All Data',
-                  'This will reset all settings and clear all cached data. Are you sure?',
+                  'Clear Cache?',
+                  'This will delete cached data but keep your settings.',
                   [
-                    { label: 'Cancel', onPress: () => {} },
+                    {
+                      label: 'Cancel',
+                      onPress: () => {},
+                      style: { color: currentTheme.colors.primary },
+                    },
                     {
                       label: 'Clear',
-                      onPress: async () => {
-                        try {
-                          await mmkvStorage.clear();
-                          openAlert('Success', 'All data cleared. Please restart the app.');
-                        } catch (error) {
-                          openAlert('Error', 'Failed to clear data.');
-                        }
+                      onPress: () => {
+                        catalogService.clearCache();
                       },
+                      style: { color: currentTheme.colors.notification },
                     },
                   ]
                 );
@@ -931,393 +977,109 @@ const SettingsScreen: React.FC = () => {
               isTablet={isTablet}
             />
           </SettingsCard>
-        ) : null;
 
-      case 'cache':
-        return mdblistKeySet ? (
-          <SettingsCard title="CACHE MANAGEMENT" isTablet={isTablet}>
+          <SettingsCard title="Advanced" isTablet={isTablet}>
             <SettingItem
-              title="Clear MDBList Cache"
-              icon="database"
-              onPress={handleClearMDBListCache}
-              isLast={true}
-              isTablet={isTablet}
-            />
-          </SettingsCard>
-        ) : null;
-
-      case 'backup':
-        return (
-          <SettingsCard title="BACKUP & RESTORE" isTablet={isTablet}>
-            <SettingItem
-              title="Backup & Restore"
-              description="Create and restore app backups"
-              icon="archive"
-              renderControl={ChevronRight}
-              onPress={() => navigation.navigate('Backup')}
-              isLast={true}
-              isTablet={isTablet}
-            />
-          </SettingsCard>
-        );
-
-      case 'updates':
-        return (
-          <SettingsCard title="UPDATES" isTablet={isTablet}>
-            <SettingItem
-              title="App Updates"
-              description="Check for updates and manage app version"
-              icon="refresh-ccw"
-              renderControl={ChevronRight}
-              badge={Platform.OS === 'android' && hasUpdateBadge ? 1 : undefined}
-              onPress={async () => {
-                if (Platform.OS === 'android') {
-                  try {
-                    await mmkvStorage.removeItem('@update_badge_pending');
-                  } catch {}
-                  setHasUpdateBadge(false);
-                }
-                navigation.navigate('Update');
+              title="API Base URL"
+              description={settings.apiBaseUrl || 'Default'}
+              icon="server"
+              onPress={() => {
+                navigation.navigate('SettingDetailScreen', {
+                  setting: 'apiBaseUrl',
+                  title: 'API Base URL',
+                });
               }}
               isLast={true}
               isTablet={isTablet}
             />
           </SettingsCard>
-        );
-
-      default:
-        return null;
+        </ScrollView>
+      );
     }
+
+    // Cache Section
+    if (selectedCategory === 'cache') {
+      return (
+        <ScrollView key="cache" showsVerticalScrollIndicator={false}>
+          <SettingsCard title="Cache Management" isTablet={isTablet}>
+            <SettingItem
+              title="Clear All Cache"
+              description="Remove all cached data"
+              icon="trash-2"
+              onPress={() => {
+                openAlert(
+                  'Clear All Cache?',
+                  'This will delete all cached data including images, metadata, and search results.',
+                  [
+                    {
+                      label: 'Cancel',
+                      onPress: () => {},
+                      style: { color: currentTheme.colors.primary },
+                    },
+                    {
+                      label: 'Clear',
+                      onPress: () => {
+                        catalogService.clearCache();
+                        setDisplayDownloads(totalDownloads);
+                      },
+                      style: { color: currentTheme.colors.notification },
+                    },
+                  ]
+                );
+              }}
+              isLast={true}
+              isTablet={isTablet}
+            />
+          </SettingsCard>
+        </ScrollView>
+      );
+    }
+
+    return null;
   };
 
-  // Keep headers below floating top navigator on tablets by adding extra offset
-  const tabletNavOffset = isTablet ? 64 : 0;
+  return (
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: currentTheme.colors.background,
+          paddingTop: Platform.OS === 'android' ? ANDROID_STATUSBAR_HEIGHT : 0,
+        },
+      ]}
+    >
+      <StatusBar barStyle={currentTheme.dark ? 'light-content' : 'dark-content'} />
 
-  if (isTablet) {
-    return (
-      <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-        <StatusBar barStyle={'light-content'} />
+      {isTablet ? (
         <View style={styles.tabletContainer}>
           <Sidebar
             selectedCategory={selectedCategory}
             onCategorySelect={setSelectedCategory}
             currentTheme={currentTheme}
-            categories={visibleCategories}
-            extraTopPadding={tabletNavOffset}
+            categories={SETTINGS_CATEGORIES}
+            extraTopPadding={0}
           />
-
-          <View
-            style={[
-              styles.tabletContent,
-              {
-                paddingTop:
-                  (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48) +
-                  tabletNavOffset,
-              },
-            ]}
-          >
-            <ScrollView
-              style={styles.tabletScrollView}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.tabletScrollContent}
-            >
-              {renderCategoryContent(selectedCategory)}
-
-              {selectedCategory === 'about' && (
-                <>
-                  {displayDownloads !== null && (
-                    <View style={styles.downloadsContainer}>
-                      <Text
-                        style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}
-                      >
-                        {displayDownloads.toLocaleString()}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.downloadsLabel,
-                          { color: currentTheme.colors.mediumEmphasis },
-                        ]}
-                      >
-                        downloads and counting
-                      </Text>
-                    </View>
-                  )}
-
-                  <View style={styles.discordContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.discordButton,
-                        {
-                          backgroundColor: 'transparent',
-                          paddingVertical: 0,
-                          paddingHorizontal: 0,
-                          marginBottom: 8,
-                        },
-                      ]}
-                      onPress={() => {
-                        triggerLight();
-                        WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                          presentationStyle:
-                            Platform.OS === 'ios'
-                              ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                              : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
-                        });
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <FastImage
-                        source={require('../../assets/support_me_on_kofi_red.png')}
-                        style={styles.kofiImage}
-                        resizeMode={FastImage.resizeMode.contain}
-                      />
-                    </TouchableOpacity>
-
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        gap: 12,
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <TouchableOpacity
-                        style={[
-                          styles.discordButton,
-                          { backgroundColor: currentTheme.colors.elevation1 },
-                        ]}
-                        onPress={() => {
-                          triggerLight();
-                          Linking.openURL('https://discord.gg/6w8dr3TSDN');
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <View style={styles.discordButtonContent}>
-                          <FastImage
-                            source={{ uri: 'https://pngimg.com/uploads/discord/discord_PNG3.png' }}
-                            style={styles.discordLogo}
-                            resizeMode={FastImage.resizeMode.contain}
-                          />
-                          <Text
-                            style={[
-                              styles.discordButtonText,
-                              { color: currentTheme.colors.highEmphasis },
-                            ]}
-                          >
-                            Discord
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[styles.discordButton, { backgroundColor: '#FF4500' + '15' }]}
-                        onPress={() => {
-                          triggerLight();
-                          Linking.openURL('https://www.reddit.com/r/Nuvio/');
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <View style={styles.discordButtonContent}>
-                          <FastImage
-                            source={{
-                              uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png',
-                            }}
-                            style={styles.discordLogo}
-                            resizeMode={FastImage.resizeMode.contain}
-                          />
-                          <Text style={[styles.discordButtonText, { color: '#FF4500' }]}>
-                            Reddit
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {/* Monkey Animation */}
-                  <View style={styles.monkeyContainer}>
-                    <LottieView
-                      source={require('../assets/lottie/monito.json')}
-                      autoPlay
-                      loop
-                      style={styles.monkeyAnimation}
-                      resizeMode="contain"
-                    />
-                  </View>
-
-                  <View style={styles.footer}>
-                    <Text
-                      style={[styles.footerText, { color: currentTheme.colors.mediumEmphasis }]}
-                    >
-                      Made with ❤️ by Tapframe and Friends
-                    </Text>
-                  </View>
-                </>
-              )}
-            </ScrollView>
-          </View>
+          <View style={styles.tabletContent}>{renderSettingsContent()}</View>
         </View>
-        <CustomAlert
-          visible={alertVisible}
-          title={alertTitle}
-          message={alertMessage}
-          actions={alertActions}
-          onClose={() => setAlertVisible(false)}
-        />
-        <ProfileSwitcherBottomSheet
-          visible={showProfileSwitcher}
-          onClose={() => setShowProfileSwitcher(false)}
-          onProfileSwitch={() => {
-            // Profile switched, optionally reload data if needed
-            loadData();
-          }}
-        />
-      </View>
-    );
-  }
-
-  // Mobile Layout (original)
-  return (
-    <View style={[styles.container, { backgroundColor: currentTheme.colors.darkBackground }]}>
-      <StatusBar barStyle={'light-content'} />
-      <ScreenHeader title="Settings" showProfileButton />
-      <View style={{ flex: 1 }}>
-        <View style={styles.contentContainer}>
-          <ScrollView
-            style={styles.scrollView}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {renderCategoryContent('account')}
-            {renderCategoryContent('content')}
-            {renderCategoryContent('appearance')}
-            {renderCategoryContent('integrations')}
-            {renderCategoryContent('ai')}
-            {renderCategoryContent('playback')}
-            {renderCategoryContent('backup')}
-            {renderCategoryContent('updates')}
-            {renderCategoryContent('about')}
-            {renderCategoryContent('developer')}
-            {renderCategoryContent('cache')}
-
-            {displayDownloads !== null && (
-              <View style={styles.downloadsContainer}>
-                <Text style={[styles.downloadsNumber, { color: currentTheme.colors.primary }]}>
-                  {displayDownloads.toLocaleString()}
-                </Text>
-                <Text
-                  style={[styles.downloadsLabel, { color: currentTheme.colors.mediumEmphasis }]}
-                >
-                  downloads and counting
-                </Text>
-              </View>
-            )}
-
-            {/* Support & Community Buttons */}
-            <View style={styles.discordContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.discordButton,
-                  {
-                    backgroundColor: 'transparent',
-                    paddingVertical: 0,
-                    paddingHorizontal: 0,
-                    marginBottom: 8,
-                  },
-                ]}
-                onPress={() => {
-                  triggerLight();
-                  WebBrowser.openBrowserAsync('https://ko-fi.com/tapframe', {
-                    presentationStyle:
-                      Platform.OS === 'ios'
-                        ? WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-                        : WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
-                  });
-                }}
-                activeOpacity={0.7}
-              >
-                <FastImage
-                  source={require('../../assets/support_me_on_kofi_red.png')}
-                  style={styles.kofiImage}
-                  resizeMode={FastImage.resizeMode.contain}
-                />
-              </TouchableOpacity>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 12,
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.discordButton,
-                    { backgroundColor: currentTheme.colors.elevation1 },
-                  ]}
-                  onPress={() => {
-                    triggerLight();
-                    Linking.openURL('https://discord.gg/6w8dr3TSDN');
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.discordButtonContent}>
-                    <FastImage
-                      source={{ uri: 'https://pngimg.com/uploads/discord/discord_PNG3.png' }}
-                      style={styles.discordLogo}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                    <Text
-                      style={[
-                        styles.discordButtonText,
-                        { color: currentTheme.colors.highEmphasis },
-                      ]}
-                    >
-                      Discord
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.discordButton, { backgroundColor: '#FF4500' + '15' }]}
-                  onPress={() => {
-                    triggerLight();
-                    Linking.openURL('https://www.reddit.com/r/Nuvio/');
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.discordButtonContent}>
-                    <FastImage
-                      source={{
-                        uri: 'https://www.iconpacks.net/icons/2/free-reddit-logo-icon-2436-thumb.png',
-                      }}
-                      style={styles.discordLogo}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                    <Text style={[styles.discordButtonText, { color: '#FF4500' }]}>Reddit</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Monkey Animation */}
-            <View style={styles.monkeyContainer}>
-              <LottieView
-                source={require('../assets/lottie/monito.json')}
-                autoPlay
-                loop
-                style={styles.monkeyAnimation}
-                resizeMode="contain"
-              />
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: currentTheme.colors.mediumEmphasis }]}>
-                Made with ❤️ by Tapframe and friends
-              </Text>
-            </View>
-          </ScrollView>
+      ) : (
+        <View style={styles.mobileContainer}>
+          <ScreenHeader
+            title="Settings"
+            showBackButton={false}
+            rightAction={() => {
+              setShowProfileSwitcher(true);
+            }}
+            rightIcon="users"
+          />
+          {renderSettingsContent()}
         </View>
-      </View>
+      )}
+
+      <ProfileSwitcherBottomSheet
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
+      />
+
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -1325,15 +1087,7 @@ const SettingsScreen: React.FC = () => {
         actions={alertActions}
         onClose={() => setAlertVisible(false)}
       />
-      <ProfileSwitcherBottomSheet
-        visible={showProfileSwitcher}
-        onClose={() => setShowProfileSwitcher(false)}
-        onProfileSwitch={() => {
-          // Profile switched, optionally reload data if needed
-          loadData();
-        }}
-      />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -1341,144 +1095,113 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // Mobile styles
-  contentContainer: {
-    flex: 1,
-    zIndex: 1,
-    width: '100%',
-  },
-  scrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    width: '100%',
-    paddingTop: 8,
-    paddingBottom: 100,
-  },
-
-  // Tablet-specific styles
   tabletContainer: {
     flex: 1,
     flexDirection: 'row',
   },
+  mobileContainer: {
+    flex: 1,
+  },
   sidebar: {
     width: 280,
     borderRightWidth: 1,
+    paddingHorizontal: 0,
   },
   sidebarHeader: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     borderBottomWidth: 1,
   },
   sidebarTitle: {
-    fontSize: 42,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
   },
   sidebarContent: {
-    flex: 1,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
   },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 12,
-    marginHorizontal: 12,
-    marginVertical: 2,
-    borderRadius: 10,
+    marginVertical: 4,
+    borderRadius: 8,
   },
   sidebarItemActive: {
-    borderRadius: 10,
+    borderRadius: 8,
   },
   sidebarItemIconContainer: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 8,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   sidebarItemText: {
     fontSize: 15,
-    marginLeft: 12,
+    flex: 1,
   },
   tabletContent: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 24 : 48,
+    paddingHorizontal: 24,
+    paddingVertical: 24,
   },
-  tabletScrollView: {
+  mobileContent: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
-  tabletScrollContent: {
-    paddingTop: 8,
-    paddingBottom: 40,
-  },
-
-  // Common card styles
   cardContainer: {
-    width: '100%',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   tabletCardContainer: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
   cardTitle: {
     fontSize: 12,
     fontWeight: '600',
-    letterSpacing: 1,
-    marginLeft: Math.max(16, width * 0.045),
-    marginBottom: 10,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
   },
   tabletCardTitle: {
-    fontSize: 12,
-    marginLeft: 4,
+    fontSize: 13,
     marginBottom: 12,
   },
   card: {
-    marginHorizontal: Math.max(16, width * 0.04),
-    borderRadius: 14,
+    borderRadius: 12,
     overflow: 'hidden',
-    width: undefined,
   },
   tabletCard: {
-    marginHorizontal: 0,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: Math.max(14, width * 0.04),
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    minHeight: Math.max(60, width * 0.15),
-    width: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   tabletSettingItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    minHeight: 68,
+    paddingVertical: 20,
   },
   settingItemBorder: {
-    // Border styling handled directly in the component with borderBottomWidth
+    borderBottomWidth: 1,
   },
   settingIconContainer: {
-    marginRight: 14,
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   tabletSettingIconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 11,
+    width: 48,
+    height: 48,
+    borderRadius: 10,
     marginRight: 16,
   },
   settingContent: {
@@ -1490,145 +1213,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingTitle: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 16,
     fontWeight: '500',
-    marginBottom: 2,
-    letterSpacing: -0.2,
   },
   tabletSettingTitle: {
     fontSize: 17,
-    fontWeight: '500',
-    marginBottom: 3,
+    fontWeight: '600',
   },
   settingDescription: {
-    fontSize: Math.min(13, width * 0.034),
-    opacity: 0.7,
+    fontSize: 13,
+    marginTop: 4,
   },
   tabletSettingDescription: {
     fontSize: 14,
-    opacity: 0.6,
+    marginTop: 6,
   },
   settingControl: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingLeft: 10,
+    marginLeft: 12,
   },
   badge: {
-    height: 20,
-    minWidth: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-    marginRight: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 8,
   },
   badgeText: {
-    color: 'white',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 8,
-    padding: 2,
-  },
-  segment: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    minWidth: 60,
-    alignItems: 'center',
-  },
-  segmentActive: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
-  },
-  segmentText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  segmentTextActive: {
-    color: 'white',
+    fontSize: 12,
     fontWeight: '600',
-  },
-  footer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 12,
-  },
-  footerText: {
-    fontSize: 13,
-    opacity: 0.5,
-    letterSpacing: 0.2,
-  },
-  // Support buttons
-  discordContainer: {
-    marginTop: 12,
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  discordButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    maxWidth: 200,
-  },
-  discordButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  discordLogo: {
-    width: 18,
-    height: 18,
-    marginRight: 10,
-  },
-  discordButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  kofiImage: {
-    height: 34,
-    width: 155,
-  },
-  downloadsContainer: {
-    marginTop: 32,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  downloadsNumber: {
-    fontSize: 36,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  downloadsLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    opacity: 0.5,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  loadingSpinner: {
-    width: 16,
-    height: 16,
-    borderWidth: 2,
-    borderRadius: 8,
-    borderTopColor: 'transparent',
-    marginRight: 8,
-  },
-  monkeyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 0,
-    marginBottom: 32,
-  },
-  monkeyAnimation: {
-    width: 180,
-    height: 180,
   },
 });
 

@@ -27,6 +27,12 @@ export interface CustomThemeDef {
   isEditable: boolean;
 }
 
+export interface Top10Settings {
+  enabled: boolean;
+  timeWindow: 'day' | 'week';
+  displayStyle: 'disney' | 'appletv' | 'numbered' | 'minimal';
+}
+
 export interface AppSettings {
   enableDarkMode: boolean;
   enableNotifications: boolean;
@@ -90,6 +96,8 @@ export interface AppSettings {
   useExternalPlayerForDownloads: boolean; // Enable/disable external player for downloaded content
   // TV Focus feedback
   enableFocusFeedback: boolean; // Enable/disable haptic feedback when focus changes on TV
+  // Top 10 Movies/Series feature
+  top10Settings: Top10Settings; // Configuration for Top 10 trending content section
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -153,6 +161,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enableStreamsBackdrop: true, // Enable by default (new behavior)
   // TV Focus feedback
   enableFocusFeedback: true, // Enable by default on TV platforms
+  // Top 10 Movies/Series feature
+  top10Settings: {
+    enabled: false, // Disabled by default
+    timeWindow: 'week', // Default to weekly trending
+    displayStyle: 'disney', // Default to Disney+ style badges
+  },
 };
 
 const SETTINGS_STORAGE_KEY = 'app_settings';
