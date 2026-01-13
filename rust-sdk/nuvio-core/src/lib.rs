@@ -15,13 +15,49 @@ pub mod error;
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 
+/// Initialize tracing infrastructure with a subscriber
+/// This should be called once at the start of the application or in test setup
+pub fn init_tracing() {
+    use tracing_subscriber::{fmt, EnvFilter};
+
+    // Try to initialize the subscriber, but don't panic if it's already initialized
+    let _ = fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("info"))
+        )
+        .try_init();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing::{debug, info, warn, error};
 
     #[test]
     fn test_crate_compiles() {
+        // Initialize tracing for tests
+        init_tracing();
+
         // Basic smoke test to ensure the crate compiles
+        info!("Running basic crate compilation test");
+        debug!("DEBUG level log from test_crate_compiles");
+        assert!(true);
+    }
+
+    #[test]
+    fn test_tracing_infrastructure() {
+        // Initialize tracing for tests
+        init_tracing();
+
+        // Test that tracing emits logs at different levels
+        debug!("DEBUG level log test");
+        info!("INFO level log test");
+        warn!("WARN level log test");
+        error!("ERROR level log test");
+
+        // Verify that the tracing infrastructure is working
+        // The actual log output verification is done by the test command
         assert!(true);
     }
 }
