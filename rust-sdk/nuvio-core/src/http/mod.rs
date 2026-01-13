@@ -68,11 +68,15 @@ pub mod tls;
 // HTTP error types module
 pub mod error;
 
+// FFI exports for cross-platform mobile (Kotlin/Swift) via UniFFI
+pub mod ffi;
+
 // Re-export core types
-pub use client::{create_client_with_config, get_client, get_client_with_middleware};
+pub use client::{create_client_with_config, get_client, get_client_with_middleware, get_runtime};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use cookies::has_cookie_store_enabled;
 pub use error::HttpError;
+pub use ffi::{http_delete, http_get, http_post, http_put, http_request, HttpRequest, HttpResponse};
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
 pub use retry::{
     create_custom_retry_middleware, create_retry_middleware, is_transient_status,
