@@ -3,13 +3,13 @@
   "spec": "029-rust-sdk-foundation-core-types-ffi-layer-setup",
   "state": "building",
   "subtasks": {
-    "completed": 11,
+    "completed": 17,
     "total": 18,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Build Scripts & Binding Generation",
+    "current": "Documentation & QA",
     "id": null,
     "total": 3
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 12,
-    "started_at": "2026-01-13T09:27:01.414744"
+    "number": 1,
+    "started_at": "2026-01-13T10:54:25.484919"
   },
-  "last_update": "2026-01-13T09:49:22.086635"
+  "last_update": "2026-01-13T10:54:25.612809"
 }
