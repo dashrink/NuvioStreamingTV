@@ -10,6 +10,7 @@
 //! - [`config`] - HTTP client configuration builder
 //! - [`middleware`] - Request/response interceptor implementations
 //! - [`retry`] - Retry logic with exponential backoff for transient failures
+//! - [`cookies`] - Cookie jar management for OAuth flows
 //!
 //! # Connection Pooling
 //!
@@ -56,9 +57,13 @@ pub mod middleware;
 // Retry logic with exponential backoff module
 pub mod retry;
 
+// Cookie jar management module
+pub mod cookies;
+
 // Re-export core types
 pub use client::{get_client, get_client_with_middleware};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
+pub use cookies::has_cookie_store_enabled;
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
 pub use retry::{
     create_custom_retry_middleware, create_retry_middleware, is_transient_status,
