@@ -631,4 +631,40 @@ mod tests {
             "HTTP 500 error: Internal Server Error"
         );
     }
+
+    // VERIFICATION TEST: test_cancelled_request_error
+    #[test]
+    fn test_cancelled_request_error() {
+        // Test that cancelled request errors are properly created and handled
+        let cancel_error = HttpError::cancellation("Request was cancelled by user");
+
+        // Verify the error is the correct variant
+        match &cancel_error {
+            HttpError::CancellationError { msg } => {
+                assert_eq!(msg, "Request was cancelled by user");
+                assert!(msg.contains("cancelled"));
+            }
+            _ => panic!("Expected CancellationError for cancelled request"),
+        }
+
+        // Test error display format
+        assert_eq!(
+            format!("{}", cancel_error),
+            "Request cancelled: Request was cancelled by user"
+        );
+
+        // Test that we can create with different messages
+        let abort_error = HttpError::cancellation("Operation aborted");
+        match abort_error {
+            HttpError::CancellationError { msg } => {
+                assert_eq!(msg, "Operation aborted");
+            }
+            _ => panic!("Expected CancellationError"),
+        }
+
+        // Test that cancellation errors are distinct from other error types
+        assert!(matches!(cancel_error, HttpError::CancellationError { .. }));
+        assert!(!matches!(cancel_error, HttpError::TimeoutError { .. }));
+        assert!(!matches!(cancel_error, HttpError::NetworkError { .. }));
+    }
 }
