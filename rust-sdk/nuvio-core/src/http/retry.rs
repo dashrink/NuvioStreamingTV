@@ -623,13 +623,12 @@ mod tests {
 
     #[test]
     fn test_retry_middleware_debug() {
-        // Verify we can create and inspect retry middleware
-        let middleware = create_retry_middleware();
+        // Verify we can create retry middleware
+        let _middleware = create_retry_middleware();
 
-        // The middleware should be creatable and inspectable
-        let debug_str = format!("{:?}", middleware);
-        assert!(!debug_str.is_empty());
-
-        tracing::info!("✓ Retry middleware is debuggable: {}", debug_str);
+        // The middleware should be creatable
+        // Note: RetryTransientMiddleware doesn't implement Debug, so we can't format it
+        // but we can verify it's created successfully
+        tracing::info!("✓ Retry middleware created successfully");
     }
 }

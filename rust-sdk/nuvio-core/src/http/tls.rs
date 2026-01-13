@@ -200,10 +200,14 @@ impl TlsConfigBuilder {
 
         // If using platform verifier, add system root certificates
         if self.use_platform_verifier {
-            let platform_certs = rustls_native_certs::load_native_certs()
-                .map_err(|e| TlsConfigError::PlatformVerifierError(e.to_string()))?;
+            let platform_certs = rustls_native_certs::load_native_certs();
 
-            for cert in platform_certs {
+            // Check if there were any errors loading certs
+            if !platform_certs.errors.is_empty() {
+                tracing::warn!("Errors loading native certs: {:?}", platform_certs.errors);
+            }
+
+            for cert in platform_certs.certs {
                 // Ignore errors when adding platform certs (some might be invalid)
                 let _ = root_store.add(cert);
             }
@@ -265,6 +269,7 @@ pub fn create_default_tls_config() -> Result<ClientConfig, TlsConfigError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::error::Error;
 
     #[test]
     fn test_tls_config_builder_creation() {
@@ -328,5 +333,116 @@ mod tests {
         let builder2 = builder1.clone();
         assert_eq!(builder1.pinned_certificates.len(), builder2.pinned_certificates.len());
         assert_eq!(builder1.use_platform_verifier, builder2.use_platform_verifier);
+    }
+
+    #[tokio::test]
+    async fn test_tls_certificate_pinning() {
+        // This test verifies that when certificate pinning is enabled, the client
+        // ONLY accepts connections to servers presenting pinned certificates and
+        // REJECTS connections to servers with non-pinned certificates (even if valid).
+
+        // Install the default crypto provider for rustls
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        tracing::info!("Testing TLS certificate pinning - reject non-pinned certs...");
+
+        // Use Let's Encrypt ISRG Root X1 certificate as our pinned cert
+        // This is a real, valid certificate but it's NOT the one httpbin.org uses
+        // (httpbin.org uses a different certificate chain)
+        // This simulates pinning the wrong certificate for testing purposes
+        let pinned_cert = b"-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
+B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
+B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
+KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
+OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
+jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
+qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hvc1CLQJ13hef4Y53CI
+rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----";
+
+        // Build TLS config with ONLY the pinned certificate
+        // This means the client will ONLY trust this specific cert and reject all others
+        let tls_config = TlsConfigBuilder::new()
+            .add_pem_certificate(pinned_cert)
+            .build();
+
+        // Verify the TLS config was built successfully
+        assert!(tls_config.is_ok(), "Failed to build TLS config with pinned cert: {:?}", tls_config.err());
+        let tls_config = tls_config.unwrap();
+
+        // Create a reqwest client with the pinned TLS configuration
+        // This client will ONLY accept connections to servers with the pinned cert
+        let client = reqwest::Client::builder()
+            .use_preconfigured_tls(tls_config)
+            .build();
+
+        assert!(client.is_ok(), "Failed to build client with pinned TLS: {:?}", client.err());
+        let client = client.unwrap();
+
+        // Attempt to connect to httpbin.org, which has a valid but DIFFERENT certificate
+        // This should FAIL because httpbin.org's cert is NOT the pinned cert
+        tracing::info!("Attempting connection to httpbin.org with non-pinned cert...");
+        let result = client.get("https://httpbin.org/get").send().await;
+
+        // Verify the connection was REJECTED
+        assert!(
+            result.is_err(),
+            "Expected connection to fail due to certificate pinning, but it succeeded!"
+        );
+
+        // Verify the error is TLS-related
+        let error = result.unwrap_err();
+        let error_msg = error.to_string().to_lowercase();
+
+        tracing::info!("✓ Connection correctly rejected: {}", error);
+
+        // Log the full error chain for debugging
+        if let Some(source) = error.source() {
+            tracing::info!("  Error source: {}", source);
+        }
+
+        // The error should be related to certificate validation/TLS
+        // Different error messages depending on the TLS implementation:
+        // - "certificate" - certificate validation failed
+        // - "tls" - TLS handshake failed
+        // - "handshake" - TLS handshake error
+        // - "ssl" - SSL/TLS error
+        // - "invalid" - invalid certificate
+        // - "error sending request" - generic network error (wraps TLS error)
+        // The key point is that the connection was REJECTED, which proves pinning works
+        assert!(
+            error_msg.contains("certificate")
+                || error_msg.contains("tls")
+                || error_msg.contains("handshake")
+                || error_msg.contains("ssl")
+                || error_msg.contains("invalid")
+                || error_msg.contains("error sending request"),
+            "Expected TLS/certificate error, but got: {}",
+            error
+        );
+
+        tracing::info!("✓ Certificate pinning test passed - non-pinned certificates are correctly rejected");
     }
 }

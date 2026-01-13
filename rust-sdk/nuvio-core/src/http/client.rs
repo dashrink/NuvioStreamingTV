@@ -761,7 +761,7 @@ mod tests {
         let base_client = get_client_with_middleware();
 
         // Wrap with additional logging middleware
-        let client_with_logging = ClientBuilder::new(base_client.clone())
+        let client_with_logging = ClientBuilder::new(get_client().clone())
             .with(LoggingMiddleware::new())
             .build();
 
