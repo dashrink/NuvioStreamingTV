@@ -6,6 +6,9 @@
 // Re-export uniffi for use throughout the crate
 pub use uniffi;
 
+// Domain types module
+pub mod types;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 
