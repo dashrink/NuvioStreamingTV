@@ -147,6 +147,7 @@
     "jar",
     "java",
     "javac",
+    "jest",
     "kotlin",
     "kotlinc",
     "ld",
@@ -173,6 +174,7 @@
     "xcodebuild"
   ],
   "script_commands": [
+    "./init.sh",
     "./update-version.sh",
     "bun",
     "npm",
@@ -197,6 +199,7 @@
       "react",
       "expo",
       "react-native",
+      "jest",
       "eslint",
       "prettier"
     ],
@@ -213,16 +216,20 @@
       "start",
       "android",
       "ios",
-      "postinstall"
+      "postinstall",
+      "test",
+      "test:watch",
+      "test:coverage"
     ],
     "make_targets": [],
     "poetry_scripts": [],
     "cargo_aliases": [],
     "shell_scripts": [
-      "update-version.sh"
+      "update-version.sh",
+      "init.sh"
     ]
   },
-  "project_dir": "/home/dashrink/Desktop/NuvioStreamingTV/.auto-claude/worktrees/tasks/002-enhanced-tv-navigation-system",
-  "created_at": "2026-01-11T18:36:11.272472",
-  "project_hash": "00d23f0360d4c5d502059015462b806c"
+  "project_dir": "/home/dashrink/Desktop/NuvioStreamingTV/.auto-claude/worktrees/tasks/028-architecture-analysis-migration-planning-for-nativ",
+  "created_at": "2026-01-13T11:32:26.894885",
+  "project_hash": "5998f63493772d5494dc7cf9232d1540"
 }
