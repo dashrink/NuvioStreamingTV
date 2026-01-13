@@ -41,10 +41,63 @@
 //! ```
 
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex, OnceLock, atomic::{AtomicU64, Ordering}};
 use uniffi;
 
-use crate::http::client::get_runtime;
+use crate::http::client::{get_runtime, spawn_request, HttpRequestHandle};
 use crate::http::error::HttpError;
+
+/// Global counter for generating unique handle IDs
+static NEXT_HANDLE_ID: AtomicU64 = AtomicU64::new(1);
+
+/// Global registry of active request handles for cancellation
+///
+/// This registry stores spawned HTTP requests that can be cancelled via their handle ID.
+/// The handles are stored as trait objects to allow different result types.
+static REQUEST_HANDLES: OnceLock<Mutex<HashMap<u64, RequestHandleWrapper>>> = OnceLock::new();
+
+/// Get or initialize the request handles registry
+fn get_request_handles() -> &'static Mutex<HashMap<u64, RequestHandleWrapper>> {
+    REQUEST_HANDLES.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+/// Wrapper for HttpRequestHandle that can be stored in the registry
+///
+/// This wrapper allows us to store handles with different result types in the same registry.
+/// It provides abort() and is_finished() methods that can be called without knowing the
+/// specific result type.
+struct RequestHandleWrapper {
+    /// Function to abort the request
+    abort_fn: Box<dyn Fn() + Send + Sync>,
+    /// Function to check if the request is finished
+    is_finished_fn: Box<dyn Fn() -> bool + Send + Sync>,
+}
+
+impl RequestHandleWrapper {
+    /// Create a new wrapper from an HttpRequestHandle
+    fn new<T>(handle: Arc<HttpRequestHandle<T>>) -> Self
+    where
+        T: Send + 'static,
+    {
+        let handle_abort = Arc::clone(&handle);
+        let handle_finished = Arc::clone(&handle);
+
+        Self {
+            abort_fn: Box::new(move || handle_abort.abort()),
+            is_finished_fn: Box::new(move || handle_finished.is_finished()),
+        }
+    }
+
+    /// Abort the wrapped request
+    fn abort(&self) {
+        (self.abort_fn)()
+    }
+
+    /// Check if the wrapped request is finished
+    fn is_finished(&self) -> bool {
+        (self.is_finished_fn)()
+    }
+}
 
 /// HTTP response returned from FFI functions
 ///
@@ -475,6 +528,308 @@ pub fn http_request(method: String, request: HttpRequest) -> Result<HttpResponse
     })
 }
 
+/// Perform a cancellable HTTP GET request (non-blocking, returns handle ID)
+///
+/// This function spawns an HTTP GET request in the background and returns a handle ID
+/// that can be used to cancel the request via `abort_request()` or check its status
+/// via `is_request_finished()`.
+///
+/// Unlike `http_get()`, this function returns immediately without waiting for the
+/// request to complete. The handle ID can be used to manage the request's lifecycle.
+///
+/// # Parameters
+///
+/// - `url`: The URL to request
+///
+/// # Returns
+///
+/// - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+///
+/// # Example (Kotlin)
+///
+/// ```kotlin
+/// val handleId = httpGetCancellable("https://api.example.com/data")
+/// // ... do other work ...
+/// if (needsCancel) {
+///     abortRequest(handleId)
+/// }
+/// ```
+///
+/// # Example (Swift)
+///
+/// ```swift
+/// let handleId = httpGetCancellable(url: "https://api.example.com/data")
+/// // ... do other work ...
+/// if needsCancel {
+///     abortRequest(handleId: handleId)
+/// }
+/// ```
+#[uniffi::export]
+pub fn http_get_cancellable(url: String) -> u64 {
+    tracing::info!("FFI: http_get_cancellable called with url={}", url);
+
+    // Generate unique handle ID
+    let handle_id = NEXT_HANDLE_ID.fetch_add(1, Ordering::SeqCst);
+
+    // Spawn the request asynchronously
+    let handle = spawn_request(async move {
+        tracing::debug!("FFI: Executing async GET request for handle {}", handle_id);
+
+        let client = crate::http::client::get_client_with_middleware();
+        let response = client.get(&url).send().await?;
+
+        let status_code = response.status().as_u16();
+
+        let mut headers = HashMap::new();
+        for (key, value) in response.headers().iter() {
+            if let Ok(value_str) = value.to_str() {
+                headers.insert(key.to_string(), value_str.to_string());
+            }
+        }
+
+        let body = response.text().await?;
+
+        Ok::<HttpResponse, reqwest_middleware::Error>(HttpResponse {
+            status_code,
+            body,
+            headers,
+        })
+    });
+
+    // Store handle in registry wrapped in Arc for shared ownership
+    let handle_arc = Arc::new(handle);
+    let wrapper = RequestHandleWrapper::new(Arc::clone(&handle_arc));
+
+    get_request_handles()
+        .lock()
+        .unwrap()
+        .insert(handle_id, wrapper);
+
+    tracing::info!("FFI: http_get_cancellable spawned with handle_id={}", handle_id);
+
+    handle_id
+}
+
+/// Perform a cancellable HTTP POST request (non-blocking, returns handle ID)
+///
+/// This function spawns an HTTP POST request in the background and returns a handle ID
+/// that can be used to cancel the request via `abort_request()` or check its status
+/// via `is_request_finished()`.
+///
+/// Unlike `http_post()`, this function returns immediately without waiting for the
+/// request to complete. The handle ID can be used to manage the request's lifecycle.
+///
+/// # Parameters
+///
+/// - `url`: The URL to request
+/// - `body`: The request body as a string (usually JSON)
+/// - `content_type`: The Content-Type header value (e.g., "application/json")
+///
+/// # Returns
+///
+/// - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+///
+/// # Example (Kotlin)
+///
+/// ```kotlin
+/// val handleId = httpPostCancellable(
+///     "https://api.example.com/data",
+///     """{"key": "value"}""",
+///     "application/json"
+/// )
+/// // ... do other work ...
+/// if (needsCancel) {
+///     abortRequest(handleId)
+/// }
+/// ```
+#[uniffi::export]
+pub fn http_post_cancellable(url: String, body: String, content_type: String) -> u64 {
+    tracing::info!("FFI: http_post_cancellable called with url={}", url);
+
+    // Generate unique handle ID
+    let handle_id = NEXT_HANDLE_ID.fetch_add(1, Ordering::SeqCst);
+
+    // Spawn the request asynchronously
+    let handle = spawn_request(async move {
+        tracing::debug!("FFI: Executing async POST request for handle {}", handle_id);
+
+        let client = crate::http::client::get_client_with_middleware();
+        let response = client
+            .post(&url)
+            .header("Content-Type", content_type)
+            .body(body)
+            .send()
+            .await?;
+
+        let status_code = response.status().as_u16();
+
+        let mut headers = HashMap::new();
+        for (key, value) in response.headers().iter() {
+            if let Ok(value_str) = value.to_str() {
+                headers.insert(key.to_string(), value_str.to_string());
+            }
+        }
+
+        let body = response.text().await?;
+
+        Ok::<HttpResponse, reqwest_middleware::Error>(HttpResponse {
+            status_code,
+            body,
+            headers,
+        })
+    });
+
+    // Store handle in registry
+    let handle_arc = Arc::new(handle);
+    let wrapper = RequestHandleWrapper::new(Arc::clone(&handle_arc));
+
+    get_request_handles()
+        .lock()
+        .unwrap()
+        .insert(handle_id, wrapper);
+
+    tracing::info!("FFI: http_post_cancellable spawned with handle_id={}", handle_id);
+
+    handle_id
+}
+
+/// Abort a request by its handle ID
+///
+/// This function cancels a request that was started with `http_get_cancellable()` or
+/// `http_post_cancellable()`. The request will be stopped and any associated resources
+/// will be released.
+///
+/// **Note**: Calling abort on an already finished request is safe and has no effect.
+/// Calling abort on an invalid handle ID will return an error.
+///
+/// # Parameters
+///
+/// - `handle_id`: The handle ID returned from a cancellable request function
+///
+/// # Returns
+///
+/// - `Ok(())`: Request was aborted successfully
+/// - `Err(HttpError)`: Invalid handle ID
+///
+/// # Example (Kotlin)
+///
+/// ```kotlin
+/// val handleId = httpGetCancellable("https://api.example.com/data")
+/// // ... later ...
+/// abortRequest(handleId)
+/// ```
+///
+/// # Example (Swift)
+///
+/// ```swift
+/// let handleId = httpGetCancellable(url: "https://api.example.com/data")
+/// // ... later ...
+/// try abortRequest(handleId: handleId)
+/// ```
+#[uniffi::export]
+pub fn abort_request(handle_id: u64) -> Result<(), HttpError> {
+    tracing::info!("FFI: abort_request called with handle_id={}", handle_id);
+
+    let handles = get_request_handles().lock().unwrap();
+
+    match handles.get(&handle_id) {
+        Some(wrapper) => {
+            wrapper.abort();
+            tracing::info!("FFI: Request {} aborted successfully", handle_id);
+            Ok(())
+        }
+        None => {
+            tracing::warn!("FFI: Invalid handle_id {} in abort_request", handle_id);
+            Err(HttpError::ConfigurationError {
+                msg: format!("Invalid handle ID: {}", handle_id),
+            })
+        }
+    }
+}
+
+/// Check if a request is finished
+///
+/// This function checks whether a request started with `http_get_cancellable()` or
+/// `http_post_cancellable()` has completed (either successfully, with an error, or
+/// was cancelled).
+///
+/// # Parameters
+///
+/// - `handle_id`: The handle ID returned from a cancellable request function
+///
+/// # Returns
+///
+/// - `Ok(true)`: Request is finished
+/// - `Ok(false)`: Request is still running
+/// - `Err(HttpError)`: Invalid handle ID
+///
+/// # Example (Kotlin)
+///
+/// ```kotlin
+/// val handleId = httpGetCancellable("https://api.example.com/data")
+/// while (!isRequestFinished(handleId)) {
+///     // ... do other work ...
+///     Thread.sleep(100)
+/// }
+/// ```
+///
+/// # Example (Swift)
+///
+/// ```swift
+/// let handleId = httpGetCancellable(url: "https://api.example.com/data")
+/// while try !isRequestFinished(handleId: handleId) {
+///     // ... do other work ...
+///     try await Task.sleep(nanoseconds: 100_000_000)
+/// }
+/// ```
+#[uniffi::export]
+pub fn is_request_finished(handle_id: u64) -> Result<bool, HttpError> {
+    let handles = get_request_handles().lock().unwrap();
+
+    match handles.get(&handle_id) {
+        Some(wrapper) => Ok(wrapper.is_finished()),
+        None => {
+            tracing::warn!("FFI: Invalid handle_id {} in is_request_finished", handle_id);
+            Err(HttpError::ConfigurationError {
+                msg: format!("Invalid handle ID: {}", handle_id),
+            })
+        }
+    }
+}
+
+/// Remove a finished request handle from the registry
+///
+/// This function cleans up a request handle after the request is finished.
+/// It's recommended to call this after a request completes to free resources.
+///
+/// # Parameters
+///
+/// - `handle_id`: The handle ID to remove
+///
+/// # Returns
+///
+/// - `Ok(())`: Handle removed successfully
+/// - `Err(HttpError)`: Invalid handle ID
+#[uniffi::export]
+pub fn remove_request_handle(handle_id: u64) -> Result<(), HttpError> {
+    tracing::debug!("FFI: remove_request_handle called with handle_id={}", handle_id);
+
+    let mut handles = get_request_handles().lock().unwrap();
+
+    match handles.remove(&handle_id) {
+        Some(_) => {
+            tracing::debug!("FFI: Request handle {} removed successfully", handle_id);
+            Ok(())
+        }
+        None => {
+            tracing::warn!("FFI: Invalid handle_id {} in remove_request_handle", handle_id);
+            Err(HttpError::ConfigurationError {
+                msg: format!("Invalid handle ID: {}", handle_id),
+            })
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -684,5 +1039,157 @@ mod tests {
         // If this test compiles and runs, all FFI exports are correctly defined
         // The actual HTTP method functions (http_get, http_post, http_put, http_delete)
         // are tested in integration tests since they require network access
+    }
+
+    /// Verification test: Test FFI cancellation mechanism
+    ///
+    /// This test verifies that the cancellable FFI methods work correctly:
+    /// 1. http_get_cancellable() spawns a request and returns a handle ID
+    /// 2. abort_request() can cancel the request by handle ID
+    /// 3. is_request_finished() correctly reports the request status
+    /// 4. remove_request_handle() cleans up the handle
+    #[tokio::test]
+    async fn test_ffi_cancellation() {
+        // Initialize tracing for test visibility
+        crate::init_tracing();
+
+        tracing::info!("=== Testing FFI Cancellation Mechanism ===");
+
+        // Test 1: Start a long-running request and cancel it
+        tracing::info!("Test 1: Spawning long-running cancellable GET request...");
+        let handle_id = http_get_cancellable("https://httpbin.org/delay/30".to_string());
+
+        tracing::info!("✓ Got handle_id: {}", handle_id);
+        assert!(handle_id > 0, "Handle ID should be positive");
+
+        // Verify request is not finished immediately
+        let is_finished = is_request_finished(handle_id);
+        match is_finished {
+            Ok(finished) => {
+                tracing::info!("✓ is_request_finished returned: {}", finished);
+                // It might already be finished if network is very fast, but typically should be false
+                // We don't assert false here because in test environments it might complete quickly
+            }
+            Err(e) => {
+                panic!("is_request_finished should not fail for valid handle: {:?}", e);
+            }
+        }
+
+        // Wait a moment to ensure the request has started
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+        // Abort the request
+        tracing::info!("Aborting request with handle_id={}...", handle_id);
+        let abort_result = abort_request(handle_id);
+        assert!(abort_result.is_ok(), "abort_request should succeed");
+        tracing::info!("✓ Request aborted successfully");
+
+        // Wait a bit for abort to take effect
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+
+        // Verify request is now finished
+        match is_request_finished(handle_id) {
+            Ok(finished) => {
+                assert!(finished, "Request should be finished after abort");
+                tracing::info!("✓ is_request_finished correctly reports true after abort");
+            }
+            Err(e) => {
+                panic!("is_request_finished should not fail after abort: {:?}", e);
+            }
+        }
+
+        // Test 2: Verify abort on already finished request is safe
+        tracing::info!("Test 2: Testing abort on already finished request...");
+        let abort_again_result = abort_request(handle_id);
+        assert!(abort_again_result.is_ok(), "Aborting finished request should be safe");
+        tracing::info!("✓ Aborting already finished request is safe");
+
+        // Test 3: Test remove_request_handle
+        tracing::info!("Test 3: Testing remove_request_handle...");
+        let remove_result = remove_request_handle(handle_id);
+        assert!(remove_result.is_ok(), "Removing handle should succeed");
+        tracing::info!("✓ Request handle removed successfully");
+
+        // Test 4: Verify operations on removed handle fail appropriately
+        tracing::info!("Test 4: Testing operations on removed handle...");
+        let is_finished_after_remove = is_request_finished(handle_id);
+        assert!(is_finished_after_remove.is_err(), "is_request_finished should fail for removed handle");
+
+        let abort_after_remove = abort_request(handle_id);
+        assert!(abort_after_remove.is_err(), "abort_request should fail for removed handle");
+
+        tracing::info!("✓ Operations on removed handle correctly return errors");
+
+        // Test 5: Test http_post_cancellable
+        tracing::info!("Test 5: Testing http_post_cancellable...");
+        let post_handle_id = http_post_cancellable(
+            "https://httpbin.org/delay/30".to_string(),
+            r#"{"test": "data"}"#.to_string(),
+            "application/json".to_string(),
+        );
+
+        assert!(post_handle_id > 0, "POST handle ID should be positive");
+        assert_ne!(post_handle_id, handle_id, "POST handle ID should be different from GET handle ID");
+        tracing::info!("✓ Got POST handle_id: {}", post_handle_id);
+
+        // Abort the POST request
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        let post_abort_result = abort_request(post_handle_id);
+        assert!(post_abort_result.is_ok(), "POST abort should succeed");
+        tracing::info!("✓ POST request aborted successfully");
+
+        // Clean up
+        let _ = remove_request_handle(post_handle_id);
+
+        // Test 6: Test multiple concurrent cancellable requests
+        tracing::info!("Test 6: Testing multiple concurrent cancellable requests...");
+        let mut handle_ids = Vec::new();
+
+        for i in 0..5 {
+            let handle = http_get_cancellable(format!("https://httpbin.org/delay/{}", i + 1));
+            handle_ids.push(handle);
+            tracing::debug!("Spawned request {} with handle_id={}", i, handle);
+        }
+
+        tracing::info!("✓ Spawned 5 concurrent cancellable requests");
+
+        // Abort all requests
+        for (i, &handle) in handle_ids.iter().enumerate() {
+            let result = abort_request(handle);
+            assert!(result.is_ok(), "Abort should succeed for request {}", i);
+        }
+        tracing::info!("✓ All 5 requests aborted successfully");
+
+        // Wait for aborts to take effect
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+        // Verify all are finished
+        for (i, &handle) in handle_ids.iter().enumerate() {
+            match is_request_finished(handle) {
+                Ok(finished) => {
+                    assert!(finished, "Request {} should be finished after abort", i);
+                }
+                Err(e) => {
+                    panic!("is_request_finished should not fail for request {}: {:?}", i, e);
+                }
+            }
+        }
+        tracing::info!("✓ All 5 requests confirmed finished");
+
+        // Clean up all handles
+        for &handle in &handle_ids {
+            let _ = remove_request_handle(handle);
+        }
+        tracing::info!("✓ All handles cleaned up");
+
+        tracing::info!("=== FFI Cancellation Mechanism Test PASSED ===");
+        tracing::info!("✓ Verified:");
+        tracing::info!("  - http_get_cancellable spawns requests and returns handle IDs");
+        tracing::info!("  - http_post_cancellable spawns requests and returns handle IDs");
+        tracing::info!("  - abort_request cancels requests by handle ID");
+        tracing::info!("  - is_request_finished reports correct status");
+        tracing::info!("  - remove_request_handle cleans up handles");
+        tracing::info!("  - Multiple concurrent cancellable requests work correctly");
+        tracing::info!("  - Operations on invalid/removed handles return errors");
     }
 }
