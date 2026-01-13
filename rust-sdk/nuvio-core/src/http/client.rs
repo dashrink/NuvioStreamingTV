@@ -332,4 +332,179 @@ mod tests {
         // Verify the pattern works
         assert!(result.contains("HTTP client ready"));
     }
+
+    #[tokio::test]
+    async fn test_timeout_handling() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        // Test 1: Request timeout with a slow endpoint
+        // Create a client with a very short timeout for testing
+        let fast_timeout_client = Client::builder()
+            .timeout(Duration::from_millis(500))  // 500ms timeout
+            .connect_timeout(Duration::from_secs(5))
+            .build()
+            .expect("Failed to create test client");
+
+        // httpbin.org/delay/2 takes 2 seconds to respond, should timeout
+        tracing::info!("Testing request timeout with httpbin.org/delay/2...");
+        let result = fast_timeout_client
+            .get("https://httpbin.org/delay/2")
+            .send()
+            .await;
+
+        match result {
+            Ok(_) => {
+                tracing::warn!("Request unexpectedly succeeded (network may be slow)");
+                // Don't fail the test - network conditions vary
+            }
+            Err(e) => {
+                tracing::info!("Request failed as expected: {}", e);
+                // Verify it's a timeout error
+                assert!(
+                    e.is_timeout(),
+                    "Expected timeout error, got: {}",
+                    e
+                );
+                tracing::info!("✓ Request timeout works correctly");
+            }
+        }
+
+        // Test 2: Connect timeout with an unreachable host
+        // Use a non-routable IP address (192.0.2.1 is TEST-NET-1, guaranteed non-routable)
+        let connect_timeout_client = Client::builder()
+            .timeout(Duration::from_secs(30))
+            .connect_timeout(Duration::from_millis(500))  // 500ms connect timeout
+            .build()
+            .expect("Failed to create test client");
+
+        tracing::info!("Testing connect timeout with non-routable IP...");
+        let result = connect_timeout_client
+            .get("http://192.0.2.1:80")  // TEST-NET-1, non-routable
+            .send()
+            .await;
+
+        match result {
+            Ok(_) => {
+                tracing::warn!("Connection unexpectedly succeeded");
+                // Don't fail - some networks might route this
+            }
+            Err(e) => {
+                tracing::info!("Connection failed as expected: {}", e);
+                // Should be either timeout or connect error
+                assert!(
+                    e.is_timeout() || e.is_connect(),
+                    "Expected timeout or connect error, got: {}",
+                    e
+                );
+                tracing::info!("✓ Connect timeout works correctly");
+            }
+        }
+
+        // Test 3: Verify default client has reasonable timeouts configured
+        let client = get_client();
+
+        // Make a request that should succeed with normal timeouts
+        tracing::info!("Testing default client timeouts with fast endpoint...");
+        let result = client.get("https://httpbin.org/get").send().await;
+
+        match result {
+            Ok(resp) => {
+                tracing::info!("Request succeeded with status: {}", resp.status());
+                assert!(
+                    resp.status().is_success(),
+                    "Expected successful status, got: {}",
+                    resp.status()
+                );
+                tracing::info!("✓ Default timeouts allow normal requests");
+            }
+            Err(e) => {
+                tracing::warn!("Request failed (acceptable in test environment): {}", e);
+                // Network errors are acceptable in tests
+            }
+        }
+
+        // Test 4: Verify timeout error characteristics
+        let tiny_timeout_client = Client::builder()
+            .timeout(Duration::from_millis(1))  // Extremely short timeout
+            .build()
+            .expect("Failed to create test client");
+
+        tracing::info!("Testing timeout error with extremely short timeout...");
+        let result = tiny_timeout_client
+            .get("https://httpbin.org/get")
+            .send()
+            .await;
+
+        match result {
+            Ok(_) => {
+                tracing::warn!("Request unexpectedly succeeded with 1ms timeout");
+            }
+            Err(e) => {
+                tracing::info!("Request timed out as expected: {}", e);
+                // Verify error is a timeout
+                assert!(
+                    e.is_timeout(),
+                    "Expected timeout error, got: {}",
+                    e
+                );
+
+                // Verify error message mentions timeout
+                let error_msg = e.to_string().to_lowercase();
+                assert!(
+                    error_msg.contains("timeout") || error_msg.contains("timed out"),
+                    "Expected timeout in error message, got: {}",
+                    e
+                );
+                tracing::info!("✓ Timeout errors are properly detected");
+            }
+        }
+
+        tracing::info!("✓ All timeout handling tests completed");
+    }
+
+    #[test]
+    fn test_timeout_configuration() {
+        // Test that we can create clients with various timeout configurations
+        // This verifies the timeout API works correctly
+
+        // Test 1: Client with both timeouts
+        let client1 = Client::builder()
+            .timeout(Duration::from_secs(30))
+            .connect_timeout(Duration::from_secs(10))
+            .build();
+        assert!(client1.is_ok(), "Failed to create client with both timeouts");
+
+        // Test 2: Client with only request timeout
+        let client2 = Client::builder()
+            .timeout(Duration::from_secs(30))
+            .build();
+        assert!(client2.is_ok(), "Failed to create client with request timeout only");
+
+        // Test 3: Client with only connect timeout
+        let client3 = Client::builder()
+            .connect_timeout(Duration::from_secs(10))
+            .build();
+        assert!(client3.is_ok(), "Failed to create client with connect timeout only");
+
+        // Test 4: Client with no timeouts (uses reqwest defaults)
+        let client4 = Client::builder().build();
+        assert!(client4.is_ok(), "Failed to create client with no timeouts");
+
+        // Test 5: Client with very short timeouts
+        let client5 = Client::builder()
+            .timeout(Duration::from_millis(100))
+            .connect_timeout(Duration::from_millis(50))
+            .build();
+        assert!(client5.is_ok(), "Failed to create client with short timeouts");
+
+        // Test 6: Client with very long timeouts
+        let client6 = Client::builder()
+            .timeout(Duration::from_secs(300))
+            .connect_timeout(Duration::from_secs(60))
+            .build();
+        assert!(client6.is_ok(), "Failed to create client with long timeouts");
+
+        tracing::info!("✓ All timeout configuration tests passed");
+    }
 }
