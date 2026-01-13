@@ -7,6 +7,7 @@
 //! # Core Components
 //!
 //! - [`client`] - HTTP client implementation with connection pooling
+//! - [`config`] - HTTP client configuration builder
 //!
 //! # Connection Pooling
 //!
@@ -25,9 +26,17 @@
 //!
 //! ```rust
 //! use nuvio_core::http::client::get_client;
+//! use nuvio_core::http::config::HttpClientConfig;
+//! use std::time::Duration;
 //!
-//! // Get the global HTTP client instance
+//! // Get the global HTTP client instance (uses default configuration)
 //! let client = get_client();
+//!
+//! // Or create a custom configuration for future use
+//! let config = HttpClientConfig::builder()
+//!     .request_timeout(Duration::from_secs(60))
+//!     .pool_max_idle_per_host(20)
+//!     .build();
 //!
 //! // The client is reused for all requests, enabling connection pooling
 //! // This is async code - must be run in a tokio runtime
@@ -36,5 +45,9 @@
 // HTTP client module
 pub mod client;
 
-// Re-export core client types
+// HTTP client configuration module
+pub mod config;
+
+// Re-export core types
 pub use client::get_client;
+pub use config::{HttpClientConfig, HttpClientConfigBuilder};
