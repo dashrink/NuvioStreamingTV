@@ -5,9 +5,10 @@
 
 // Domain type modules
 pub mod meta;
+pub mod stream;
 
 // Re-export domain types here as they are implemented
 pub use meta::Meta;
-// pub use stream::Stream;
+pub use stream::Stream;
 // pub use catalog::Catalog;
 // pub use profile::Profile;
