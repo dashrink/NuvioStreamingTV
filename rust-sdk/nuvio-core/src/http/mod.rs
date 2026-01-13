@@ -61,7 +61,7 @@ pub mod retry;
 pub mod cookies;
 
 // Re-export core types
-pub use client::{get_client, get_client_with_middleware};
+pub use client::{create_client_with_config, get_client, get_client_with_middleware};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use cookies::has_cookie_store_enabled;
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
