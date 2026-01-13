@@ -35,6 +35,9 @@ pub mod types;
 // Error types module
 pub mod error;
 
+// HTTP networking layer module
+pub mod http;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 
