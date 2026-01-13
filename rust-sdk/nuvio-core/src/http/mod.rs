@@ -12,6 +12,7 @@
 //! - [`retry`] - Retry logic with exponential backoff for transient failures
 //! - [`cookies`] - Cookie jar management for OAuth flows
 //! - [`tls`] - TLS configuration and certificate pinning
+//! - [`error`] - FFI-safe HTTP error types
 //!
 //! # Connection Pooling
 //!
@@ -64,10 +65,14 @@ pub mod cookies;
 // TLS configuration and certificate pinning module
 pub mod tls;
 
+// HTTP error types module
+pub mod error;
+
 // Re-export core types
 pub use client::{create_client_with_config, get_client, get_client_with_middleware};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use cookies::has_cookie_store_enabled;
+pub use error::HttpError;
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
 pub use retry::{
     create_custom_retry_middleware, create_retry_middleware, is_transient_status,
