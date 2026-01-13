@@ -357,6 +357,230 @@ pub fn create_client_with_config(config: &HttpClientConfig) -> Result<Client, re
     builder.build()
 }
 
+/// HTTP request handle for cancellation
+///
+/// This handle wraps a tokio `JoinHandle` and provides control over an in-flight HTTP request.
+/// You can use this handle to:
+/// - Cancel the request via `abort()`
+/// - Check if the request is finished via `is_finished()`
+/// - Wait for the request to complete via `await`
+///
+/// # Cancellation
+///
+/// **CRITICAL**: Dropping an `HttpRequestHandle` does NOT automatically cancel the request.
+/// You must explicitly call `abort()` to cancel the underlying task. This is a deliberate
+/// design decision in tokio to prevent accidental cancellations.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use nuvio_core::http::client::{get_client, spawn_request};
+///
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// let client = get_client();
+///
+/// // Spawn a long-running request
+/// let handle = spawn_request(async {
+///     client.get("https://httpbin.org/delay/10").send().await
+/// });
+///
+/// // Check if it's finished
+/// if !handle.is_finished() {
+///     // Cancel the request
+///     handle.abort();
+/// }
+///
+/// // Wait for the result (will be JoinError if aborted)
+/// match handle.await {
+///     Ok(Ok(response)) => println!("Request succeeded: {:?}", response),
+///     Ok(Err(e)) => println!("Request failed: {:?}", e),
+///     Err(e) => println!("Request was cancelled: {:?}", e),
+/// }
+/// # Ok(())
+/// # }
+/// ```
+///
+/// # Thread Safety
+///
+/// `HttpRequestHandle` is Send + Sync and can be safely passed between threads.
+pub struct HttpRequestHandle<T> {
+    /// The underlying tokio JoinHandle
+    handle: tokio::task::JoinHandle<T>,
+}
+
+impl<T> HttpRequestHandle<T> {
+    /// Create a new HttpRequestHandle wrapping a tokio JoinHandle
+    ///
+    /// # Arguments
+    ///
+    /// * `handle` - The tokio JoinHandle to wrap
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use nuvio_core::http::client::HttpRequestHandle;
+    /// use tokio::task;
+    ///
+    /// # async fn example() {
+    /// let join_handle = task::spawn(async {
+    ///     // Some async work
+    ///     42
+    /// });
+    ///
+    /// let request_handle = HttpRequestHandle::new(join_handle);
+    /// # }
+    /// ```
+    pub fn new(handle: tokio::task::JoinHandle<T>) -> Self {
+        Self { handle }
+    }
+
+    /// Abort the request
+    ///
+    /// This cancels the underlying async task, stopping the HTTP request and releasing
+    /// any associated resources. Once aborted, awaiting the handle will return a
+    /// `JoinError` with `is_cancelled()` returning true.
+    ///
+    /// **CRITICAL**: This is the ONLY way to cancel a request. Dropping the handle
+    /// does NOT cancel the underlying task.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use nuvio_core::http::client::{get_client, spawn_request};
+    ///
+    /// # async fn example() {
+    /// let client = get_client();
+    ///
+    /// // Start a request
+    /// let handle = spawn_request(async {
+    ///     client.get("https://httpbin.org/delay/10").send().await
+    /// });
+    ///
+    /// // Cancel it immediately
+    /// handle.abort();
+    ///
+    /// // The request is now cancelled
+    /// assert!(handle.is_finished());
+    /// # }
+    /// ```
+    pub fn abort(&self) {
+        self.handle.abort();
+    }
+
+    /// Check if the request has finished
+    ///
+    /// Returns `true` if the request has completed (either successfully, with an error,
+    /// or was cancelled), `false` if it's still running.
+    ///
+    /// This is a non-blocking check that can be used to poll the request status.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use nuvio_core::http::client::{get_client, spawn_request};
+    /// use tokio::time::{sleep, Duration};
+    ///
+    /// # async fn example() {
+    /// let client = get_client();
+    ///
+    /// // Start a fast request
+    /// let handle = spawn_request(async {
+    ///     client.get("https://httpbin.org/get").send().await
+    /// });
+    ///
+    /// // Wait a bit
+    /// sleep(Duration::from_millis(100)).await;
+    ///
+    /// // Check if finished
+    /// if handle.is_finished() {
+    ///     println!("Request completed!");
+    /// } else {
+    ///     println!("Request still running...");
+    /// }
+    /// # }
+    /// ```
+    pub fn is_finished(&self) -> bool {
+        self.handle.is_finished()
+    }
+
+    /// Get the task ID
+    ///
+    /// Returns a unique identifier for the underlying task. This can be useful for
+    /// debugging and logging.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use nuvio_core::http::client::{get_client, spawn_request};
+    ///
+    /// # async fn example() {
+    /// let client = get_client();
+    ///
+    /// let handle = spawn_request(async {
+    ///     client.get("https://httpbin.org/get").send().await
+    /// });
+    ///
+    /// println!("Task ID: {:?}", handle.id());
+    /// # }
+    /// ```
+    pub fn id(&self) -> tokio::task::Id {
+        self.handle.id()
+    }
+}
+
+impl<T> std::future::Future for HttpRequestHandle<T> {
+    type Output = Result<T, tokio::task::JoinError>;
+
+    fn poll(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
+        std::pin::Pin::new(&mut self.handle).poll(cx)
+    }
+}
+
+/// Spawn an HTTP request as a cancellable task
+///
+/// This is a convenience function that spawns an async task and returns an
+/// `HttpRequestHandle` that can be used to cancel the request or check its status.
+///
+/// # Arguments
+///
+/// * `future` - The async future to spawn (typically an HTTP request)
+///
+/// # Returns
+///
+/// Returns an `HttpRequestHandle` that can be used to control the spawned task.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use nuvio_core::http::client::{get_client, spawn_request};
+///
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// let client = get_client();
+///
+/// // Spawn a request
+/// let handle = spawn_request(async {
+///     client.get("https://httpbin.org/get").send().await
+/// });
+///
+/// // Do other work...
+///
+/// // Wait for the request to complete
+/// let response = handle.await??;
+/// println!("Status: {}", response.status());
+/// # Ok(())
+/// # }
+/// ```
+pub fn spawn_request<T>(future: impl std::future::Future<Output = T> + Send + 'static) -> HttpRequestHandle<T>
+where
+    T: Send + 'static,
+{
+    let handle = tokio::task::spawn(future);
+    HttpRequestHandle::new(handle)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -993,5 +1217,226 @@ mod tests {
         }
 
         tracing::info!("✓ TLS configuration integration test completed");
+    }
+
+    #[tokio::test]
+    async fn test_request_handle_creation() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing HttpRequestHandle creation and basic usage...");
+
+        // Test 1: Create a request handle with a simple async task
+        let handle = spawn_request(async {
+            // Simple computation
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            42
+        });
+
+        tracing::info!("✓ Request handle created successfully");
+
+        // Verify handle has an ID
+        let task_id = handle.id();
+        tracing::info!("✓ Task ID: {:?}", task_id);
+
+        // Wait for the task to complete
+        let result = handle.await;
+        assert!(result.is_ok(), "Task should complete successfully");
+        assert_eq!(result.unwrap(), 42, "Task should return expected value");
+
+        tracing::info!("✓ Request handle can be awaited and returns result");
+
+        // Test 2: Create a handle and check is_finished()
+        let handle = spawn_request(async {
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            "done"
+        });
+
+        // Should not be finished immediately
+        assert!(!handle.is_finished(), "Task should not be finished immediately");
+        tracing::info!("✓ is_finished() correctly returns false for running task");
+
+        // Wait for it to complete
+        let result = handle.await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "done");
+
+        tracing::info!("✓ Task completes and returns expected value");
+
+        // Test 3: Create handle with HTTP request
+        let client = get_client();
+        let handle = spawn_request(async move {
+            client.get("https://httpbin.org/get").send().await
+        });
+
+        tracing::info!("✓ Request handle created for HTTP request");
+
+        // Wait for the request to complete
+        let result = handle.await;
+
+        match result {
+            Ok(Ok(response)) => {
+                tracing::info!("✓ HTTP request succeeded with status: {}", response.status());
+                assert!(response.status().is_success());
+            }
+            Ok(Err(e)) => {
+                tracing::warn!("HTTP request failed (acceptable in test environment): {}", e);
+                // Network errors are acceptable in tests
+            }
+            Err(e) => {
+                tracing::warn!("Task failed (acceptable in test environment): {}", e);
+                // Task join errors are acceptable in tests
+            }
+        }
+
+        tracing::info!("✓ Request handle works with HTTP requests");
+
+        // Test 4: Test abort functionality
+        let handle = spawn_request(async {
+            // Long-running task
+            tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+            "should not complete"
+        });
+
+        // Verify not finished immediately
+        assert!(!handle.is_finished(), "Long task should not be finished immediately");
+
+        // Abort the task
+        handle.abort();
+        tracing::info!("✓ abort() called on request handle");
+
+        // Wait a bit for abort to take effect
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+
+        // Should be finished now
+        assert!(handle.is_finished(), "Task should be finished after abort");
+        tracing::info!("✓ is_finished() returns true after abort");
+
+        // Try to await the cancelled task
+        let result = handle.await;
+        assert!(result.is_err(), "Aborted task should return error");
+
+        let err = result.unwrap_err();
+        assert!(err.is_cancelled(), "Error should indicate task was cancelled");
+        tracing::info!("✓ Aborted task returns cancellation error");
+
+        // Test 5: Verify HttpRequestHandle can be created from raw JoinHandle
+        let join_handle = tokio::task::spawn(async {
+            123
+        });
+
+        let request_handle = HttpRequestHandle::new(join_handle);
+        let result = request_handle.await;
+        assert_eq!(result.unwrap(), 123);
+
+        tracing::info!("✓ HttpRequestHandle::new() works with raw JoinHandle");
+
+        tracing::info!("✓ All request handle creation tests passed!");
+    }
+
+    #[tokio::test]
+    async fn test_request_handle_abort_does_cancel() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing that abort() actually cancels the request...");
+
+        // Create a long-running request
+        let handle = spawn_request(async {
+            // This should be cancelled before it completes
+            tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+            "completed"
+        });
+
+        // Verify it's not finished yet
+        assert!(!handle.is_finished());
+
+        // Abort it
+        handle.abort();
+
+        // Wait a bit
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+
+        // Should be finished now
+        assert!(handle.is_finished());
+
+        // Try to get the result
+        let result = handle.await;
+        assert!(result.is_err(), "Aborted task should return error");
+        assert!(result.unwrap_err().is_cancelled(), "Error should be cancellation");
+
+        tracing::info!("✓ abort() successfully cancels the request");
+    }
+
+    #[tokio::test]
+    async fn test_request_handle_dropping_does_not_cancel() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing that dropping handle does NOT cancel the request...");
+
+        // Use a shared counter to track task completion
+        use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
+        let completed = Arc::new(AtomicBool::new(false));
+        let completed_clone = completed.clone();
+
+        // Create a request handle
+        let handle = spawn_request(async move {
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            completed_clone.store(true, Ordering::SeqCst);
+            "completed"
+        });
+
+        // Drop the handle WITHOUT calling abort()
+        drop(handle);
+
+        tracing::info!("✓ Handle dropped without calling abort()");
+
+        // Wait longer than the task duration
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+
+        // Task should have completed even though handle was dropped
+        assert!(
+            completed.load(Ordering::SeqCst),
+            "Task should complete even after handle is dropped"
+        );
+
+        tracing::info!("✓ Dropping handle does NOT cancel the underlying task");
+        tracing::info!("✓ This is the expected behavior per tokio documentation");
+    }
+
+    #[tokio::test]
+    async fn test_request_handle_with_middleware_client() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing request handle with middleware-wrapped client...");
+
+        let client = get_client_with_middleware();
+
+        // Create a handle for a request using middleware client
+        let handle = spawn_request(async move {
+            client.get("https://httpbin.org/get").send().await
+        });
+
+        tracing::info!("✓ Request handle created with middleware client");
+
+        // Wait for the request
+        let result = handle.await;
+
+        match result {
+            Ok(Ok(response)) => {
+                tracing::info!("✓ Request succeeded with status: {}", response.status());
+                assert!(response.status().is_success());
+            }
+            Ok(Err(e)) => {
+                tracing::warn!("HTTP request failed (acceptable in test environment): {}", e);
+            }
+            Err(e) => {
+                tracing::warn!("Task join failed (acceptable in test environment): {}", e);
+            }
+        }
+
+        tracing::info!("✓ Request handle works with middleware-wrapped client");
     }
 }

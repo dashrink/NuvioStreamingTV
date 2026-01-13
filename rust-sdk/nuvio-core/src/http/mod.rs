@@ -72,7 +72,10 @@ pub mod error;
 pub mod ffi;
 
 // Re-export core types
-pub use client::{create_client_with_config, get_client, get_client_with_middleware, get_runtime};
+pub use client::{
+    create_client_with_config, get_client, get_client_with_middleware, get_runtime,
+    spawn_request, HttpRequestHandle,
+};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use cookies::has_cookie_store_enabled;
 pub use error::HttpError;
