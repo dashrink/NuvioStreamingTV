@@ -57,7 +57,7 @@ pub mod middleware;
 pub mod retry;
 
 // Re-export core types
-pub use client::get_client;
+pub use client::{get_client, get_client_with_middleware};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
 pub use retry::{

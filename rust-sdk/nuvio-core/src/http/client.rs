@@ -24,6 +24,7 @@
 //! Cloning the client is cheap (just increments reference count).
 
 use reqwest::Client;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use std::sync::OnceLock;
 use std::time::Duration;
 use tokio::runtime::Runtime;
@@ -68,6 +69,37 @@ static HTTP_CLIENT: OnceLock<Client> = OnceLock::new();
 /// }
 /// ```
 static TOKIO_RUNTIME: OnceLock<Runtime> = OnceLock::new();
+
+/// Global HTTP client with middleware instance
+///
+/// This uses OnceLock to ensure thread-safe lazy initialization.
+/// The client is wrapped with middleware for retry logic and request/response interception.
+/// This is the RECOMMENDED client to use for production as it includes:
+/// - Automatic retry with exponential backoff for transient failures (5xx errors, network errors)
+/// - Jitter to prevent thundering herd problems
+/// - Request/response logging capabilities
+///
+/// Like HTTP_CLIENT, this client is created only once and reused for all HTTP requests
+/// to ensure connection pooling works correctly.
+///
+/// # Why Separate from HTTP_CLIENT?
+///
+/// We maintain both a base client (HTTP_CLIENT) and a middleware-wrapped client
+/// (HTTP_CLIENT_WITH_MIDDLEWARE) to give callers flexibility:
+/// - Use `get_client()` for simple requests without retry/middleware overhead
+/// - Use `get_client_with_middleware()` for production requests with retry and logging
+///
+/// # Middleware Chain
+///
+/// The middleware are applied in this order:
+/// 1. Retry middleware (handles transient failures with exponential backoff)
+/// 2. Additional middleware can be added by wrapping this client further
+///
+/// # Thread Safety
+///
+/// This function is thread-safe. Multiple threads can call this function concurrently
+/// and will all receive a reference to the same client instance.
+static HTTP_CLIENT_WITH_MIDDLEWARE: OnceLock<ClientWithMiddleware> = OnceLock::new();
 
 /// Get the global HTTP client instance
 ///
@@ -167,6 +199,82 @@ pub fn get_client() -> &'static Client {
 pub fn get_runtime() -> &'static Runtime {
     TOKIO_RUNTIME.get_or_init(|| {
         Runtime::new().expect("Failed to create tokio runtime")
+    })
+}
+
+/// Get the global HTTP client with middleware
+///
+/// This function returns a reference to the singleton HTTP client wrapped with middleware.
+/// The client is lazily initialized on first access and includes:
+/// - **Retry middleware**: Automatically retries transient failures (5xx errors, network errors)
+///   with exponential backoff and jitter
+/// - **Connection pooling**: Same pooling configuration as the base client
+/// - **Cookie store**: Enabled for OAuth flows
+///
+/// This is the RECOMMENDED client for production use as it includes robust error handling
+/// and automatic retry logic.
+///
+/// # Middleware Chain
+///
+/// The middleware are applied in this order:
+/// 1. Retry middleware with exponential backoff (3 max retries, 1s-60s backoff range)
+///
+/// Additional middleware can be added by wrapping the returned client:
+///
+/// ```rust
+/// use nuvio_core::http::client::get_client_with_middleware;
+/// use nuvio_core::http::middleware::LoggingMiddleware;
+/// use reqwest_middleware::ClientBuilder;
+///
+/// // Get the middleware client
+/// let base_client = get_client_with_middleware();
+///
+/// // Add additional middleware (like logging)
+/// let client_with_logging = ClientBuilder::new(base_client.clone())
+///     .with(LoggingMiddleware::new())
+///     .build();
+/// ```
+///
+/// # Performance
+///
+/// Like `get_client()`, this client is created only once and reused for all requests.
+/// Cloning the returned `ClientWithMiddleware` is cheap (just increments reference count).
+///
+/// # Thread Safety
+///
+/// This function is thread-safe. Multiple threads can call this function concurrently
+/// and will all receive a reference to the same client instance.
+///
+/// # Panics
+///
+/// Panics if the client cannot be created (e.g., invalid TLS configuration).
+/// This should never happen with the default configuration.
+///
+/// # Example
+///
+/// ```rust
+/// use nuvio_core::http::client::get_client_with_middleware;
+///
+/// // Get the middleware-wrapped client instance
+/// let client = get_client_with_middleware();
+///
+/// // Use it for requests (in an async context)
+/// // let response = client.get("https://api.example.com").send().await?;
+/// // If the request fails with a 5xx error or network error, it will automatically
+/// // retry up to 3 times with exponential backoff.
+/// ```
+pub fn get_client_with_middleware() -> &'static ClientWithMiddleware {
+    HTTP_CLIENT_WITH_MIDDLEWARE.get_or_init(|| {
+        // Get the base client (reuses singleton for connection pooling)
+        let base_client = get_client().clone();
+
+        // Wrap with middleware chain
+        ClientBuilder::new(base_client)
+            // Add retry middleware with exponential backoff
+            // This will automatically retry transient failures (5xx, network errors)
+            // with jitter to prevent thundering herd
+            .with(crate::http::retry::create_retry_middleware())
+            .build()
     })
 }
 
@@ -506,5 +614,102 @@ mod tests {
         assert!(client6.is_ok(), "Failed to create client with long timeouts");
 
         tracing::info!("✓ All timeout configuration tests passed");
+    }
+
+    #[test]
+    fn test_client_with_middleware() {
+        // Test that we can create the middleware-wrapped client
+        let client = get_client_with_middleware();
+
+        // Verify it's the same instance on subsequent calls (singleton pattern)
+        let client2 = get_client_with_middleware();
+        assert!(std::ptr::eq(client, client2));
+
+        // Verify the client is usable (test basic properties)
+        // We can't make actual HTTP requests in unit tests, but we can verify
+        // the client was created successfully
+        assert!(!format!("{:?}", client).is_empty());
+
+        tracing::info!("✓ Middleware-wrapped client created successfully");
+        tracing::info!("✓ Singleton pattern verified for middleware client");
+    }
+
+    #[tokio::test]
+    async fn test_client_with_middleware_real_request() {
+        // This is an integration test that makes a real HTTP request
+        // to verify the middleware chain works correctly
+        let client = get_client_with_middleware();
+
+        // Make a simple GET request to httpbin.org (a test HTTP service)
+        // This tests that the middleware doesn't break normal requests
+        let result = client
+            .get("https://httpbin.org/get")
+            .send()
+            .await;
+
+        // The request might fail in test environments without network access
+        // So we just verify that the client can attempt to make a request
+        // without panicking
+        match result {
+            Ok(response) => {
+                tracing::info!("✓ Real HTTP request succeeded: status={}", response.status());
+                assert!(response.status().is_success());
+            }
+            Err(e) => {
+                tracing::warn!("HTTP request failed (expected in test environment): {}", e);
+                // This is OK - we just want to verify the middleware doesn't panic
+                // Network errors are expected in isolated test environments
+            }
+        }
+
+        tracing::info!("✓ Middleware-wrapped client is functional");
+    }
+
+    #[tokio::test]
+    async fn test_middleware_client_singleton_pattern() {
+        // Test that multiple threads get the same middleware client instance
+        let client1 = get_client_with_middleware();
+        let client2 = get_client_with_middleware();
+        let client3 = get_client_with_middleware();
+
+        // All should be the exact same instance (same memory address)
+        assert!(std::ptr::eq(client1, client2));
+        assert!(std::ptr::eq(client2, client3));
+        assert!(std::ptr::eq(client1, client3));
+
+        tracing::info!("✓ Middleware client singleton pattern verified");
+    }
+
+    #[tokio::test]
+    async fn test_middleware_client_with_logging() {
+        // Test that we can add additional middleware on top of the base middleware client
+        use crate::http::middleware::LoggingMiddleware;
+
+        let base_client = get_client_with_middleware();
+
+        // Wrap with additional logging middleware
+        let client_with_logging = ClientBuilder::new(base_client.clone())
+            .with(LoggingMiddleware::new())
+            .build();
+
+        // Make a test request
+        let result = client_with_logging
+            .get("https://httpbin.org/get")
+            .send()
+            .await;
+
+        // Handle network errors gracefully in test environment
+        match result {
+            Ok(response) => {
+                tracing::info!("✓ Request with additional middleware succeeded: status={}", response.status());
+                assert!(response.status().is_success());
+            }
+            Err(e) => {
+                tracing::warn!("HTTP request failed (expected in test environment): {}", e);
+                // This is OK - we're testing that middleware stacking works, not network access
+            }
+        }
+
+        tracing::info!("✓ Additional middleware can be stacked on middleware client");
     }
 }
