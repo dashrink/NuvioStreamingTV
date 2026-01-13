@@ -44,15 +44,16 @@
 //! ```
 
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT};
+use rustls::ClientConfig;
 use std::time::Duration;
 
 /// HTTP client configuration
 ///
 /// This struct holds all configuration parameters for the HTTP client including
-/// timeouts, connection pool settings, cookie management, and default headers.
+/// timeouts, connection pool settings, cookie management, default headers, and TLS settings.
 ///
 /// Use [`HttpClientConfigBuilder`] to construct instances of this struct.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct HttpClientConfig {
     /// Overall request timeout (from start to response completion)
     pub request_timeout: Duration,
@@ -71,6 +72,14 @@ pub struct HttpClientConfig {
 
     /// Default headers to include in all requests
     pub default_headers: HeaderMap,
+
+    /// Optional custom TLS configuration for certificate pinning
+    ///
+    /// If provided, this TLS configuration will be used instead of the default
+    /// TLS settings. Use this to implement certificate pinning or custom TLS behavior.
+    ///
+    /// See [`crate::http::tls::TlsConfigBuilder`] for building TLS configurations.
+    pub tls_config: Option<ClientConfig>,
 }
 
 impl Default for HttpClientConfig {
@@ -98,6 +107,7 @@ impl Default for HttpClientConfig {
             pool_max_idle_per_host: 10,
             cookie_store_enabled: true,
             default_headers,
+            tls_config: None,
         }
     }
 }
@@ -141,7 +151,7 @@ impl HttpClientConfig {
 ///     .header("X-API-Key", "secret")
 ///     .build();
 /// ```
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct HttpClientConfigBuilder {
     request_timeout: Option<Duration>,
     connect_timeout: Option<Duration>,
@@ -149,6 +159,7 @@ pub struct HttpClientConfigBuilder {
     pool_max_idle_per_host: Option<usize>,
     cookie_store_enabled: Option<bool>,
     default_headers: HeaderMap,
+    tls_config: Option<ClientConfig>,
 }
 
 impl HttpClientConfigBuilder {
@@ -327,6 +338,42 @@ impl HttpClientConfigBuilder {
         self
     }
 
+    /// Sets a custom TLS configuration for certificate pinning
+    ///
+    /// This allows you to configure custom TLS behavior such as certificate pinning
+    /// to prevent Man-in-the-Middle attacks. The TLS configuration should be built
+    /// using [`crate::http::tls::TlsConfigBuilder`].
+    ///
+    /// **CRITICAL**: When certificate pinning is enabled, the client will ONLY accept
+    /// connections to servers presenting one of the pinned certificates. You must update
+    /// pinned certificates before they expire.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The rustls ClientConfig to use for TLS connections
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use nuvio_core::http::config::HttpClientConfig;
+    /// use nuvio_core::http::tls::TlsConfigBuilder;
+    ///
+    /// // Build TLS config with pinned certificate
+    /// let tls_config = TlsConfigBuilder::new()
+    ///     .add_pem_certificate(b"-----BEGIN CERTIFICATE-----\n...")
+    ///     .build()
+    ///     .expect("Failed to build TLS config");
+    ///
+    /// // Create HTTP client config with TLS pinning
+    /// let config = HttpClientConfig::builder()
+    ///     .tls_config(tls_config)
+    ///     .build();
+    /// ```
+    pub fn tls_config(mut self, config: ClientConfig) -> Self {
+        self.tls_config = Some(config);
+        self
+    }
+
     /// Builds the HTTP client configuration
     ///
     /// Any settings not explicitly set will use their default values.
@@ -361,6 +408,7 @@ impl HttpClientConfigBuilder {
                 .cookie_store_enabled
                 .unwrap_or(defaults.cookie_store_enabled),
             default_headers,
+            tls_config: self.tls_config,
         }
     }
 }
@@ -581,13 +629,16 @@ mod tests {
     }
 
     #[test]
-    fn test_config_debug() {
-        // Test that Debug trait works correctly
+    fn test_config_basic_creation() {
+        // Test that configuration can be created with defaults
+        // Note: Debug trait not implemented because ClientConfig doesn't support it
         let config = HttpClientConfig::default();
-        let debug_string = format!("{:?}", config);
 
-        assert!(debug_string.contains("HttpClientConfig"));
-        assert!(debug_string.contains("request_timeout"));
+        // Verify basic properties are accessible
+        assert_eq!(config.request_timeout, Duration::from_secs(30));
+        assert_eq!(config.connect_timeout, Duration::from_secs(10));
+        assert!(config.cookie_store_enabled);
+        assert!(config.tls_config.is_none());
     }
 
     #[test]

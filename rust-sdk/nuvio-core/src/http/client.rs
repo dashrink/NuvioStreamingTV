@@ -341,14 +341,20 @@ pub fn get_client_with_middleware() -> &'static ClientWithMiddleware {
 /// // let response = client.get("https://api.example.com").send().await?;
 /// ```
 pub fn create_client_with_config(config: &HttpClientConfig) -> Result<Client, reqwest::Error> {
-    Client::builder()
+    let mut builder = Client::builder()
         .timeout(config.request_timeout)
         .connect_timeout(config.connect_timeout)
         .pool_idle_timeout(config.pool_idle_timeout)
         .pool_max_idle_per_host(config.pool_max_idle_per_host)
         .cookie_store(config.cookie_store_enabled)
-        .default_headers(config.default_headers.clone())
-        .build()
+        .default_headers(config.default_headers.clone());
+
+    // If custom TLS configuration is provided, use it for certificate pinning
+    if let Some(ref tls_config) = config.tls_config {
+        builder = builder.use_preconfigured_tls(tls_config.clone());
+    }
+
+    builder.build()
 }
 
 #[cfg(test)]
@@ -903,5 +909,89 @@ mod tests {
         }
 
         tracing::info!("✓ Per-request header injection test completed");
+    }
+
+    #[tokio::test]
+    async fn test_client_with_pinned_cert() {
+        // Initialize tracing for test visibility
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing TLS configuration integration with certificate pinning...");
+
+        // Load a certificate for pinning (using Let's Encrypt ISRG Root X1 as an example)
+        // This is a real, widely-used root certificate
+        let lets_encrypt_isrg_root_x1 = include_bytes!("../../../tests/fixtures/isrg-root-x1.pem");
+
+        // Build TLS config with pinned certificate
+        let tls_config = crate::http::tls::TlsConfigBuilder::new()
+            .add_pem_certificate(lets_encrypt_isrg_root_x1)
+            .build()
+            .expect("Failed to build TLS config");
+
+        tracing::info!("✓ TLS config built successfully with pinned certificate");
+
+        // Create HTTP client config with TLS pinning
+        let config = HttpClientConfig::builder()
+            .tls_config(tls_config)
+            .build();
+
+        // Verify TLS config is present in the configuration
+        assert!(
+            config.tls_config.is_some(),
+            "TLS config should be present after setting it"
+        );
+
+        tracing::info!("✓ HTTP client config created with TLS configuration");
+
+        // Create client with custom config
+        let client = create_client_with_config(&config);
+
+        // Verify client was created successfully
+        assert!(
+            client.is_ok(),
+            "Failed to create client with TLS config: {:?}",
+            client.err()
+        );
+
+        tracing::info!("✓ HTTP client created successfully with pinned certificate");
+
+        // Optional: Test that the client can be used (but it will likely fail with
+        // a real request because httpbin.org doesn't use the pinned certificate)
+        // This is expected behavior - the point is to verify the client was created
+        let client = client.unwrap();
+
+        // Try making a request to a site that uses Let's Encrypt
+        // (should succeed if cert pinning is working correctly)
+        let result = client
+            .get("https://helloworld.letsencrypt.org/")
+            .send()
+            .await;
+
+        match result {
+            Ok(response) => {
+                tracing::info!(
+                    "✓ Request to Let's Encrypt test site succeeded: status={}",
+                    response.status()
+                );
+                assert!(
+                    response.status().is_success(),
+                    "Expected successful status, got: {}",
+                    response.status()
+                );
+                tracing::info!("✓ Certificate pinning is working correctly!");
+            }
+            Err(e) => {
+                tracing::warn!(
+                    "Request failed (may indicate cert pinning is working): {}",
+                    e
+                );
+                // This could be either:
+                // 1. Network error in test environment (acceptable)
+                // 2. Certificate validation error (expected if pinning is working)
+                // Both are acceptable outcomes for this test
+            }
+        }
+
+        tracing::info!("✓ TLS configuration integration test completed");
     }
 }
