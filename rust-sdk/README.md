@@ -251,7 +251,320 @@ Generated files:
 
 ## Usage Examples
 
-### Rust
+### HTTP Client
+
+The Nuvio Rust SDK includes a production-grade HTTP networking layer with connection pooling, automatic retry logic, cookie management, and FFI bindings for Kotlin and Swift.
+
+#### Basic HTTP Requests (Rust)
+
+```rust
+use nuvio_core::http::{get_client, http_get, HttpError};
+
+// Example 1: Using the async client directly
+async fn make_request() -> Result<(), HttpError> {
+    let client = get_client();
+    let response = client.get("https://api.example.com/data")
+        .send()
+        .await?;
+
+    let body = response.text().await?;
+    println!("Response: {}", body);
+    Ok(())
+}
+
+// Example 2: Using FFI-exported blocking functions
+fn make_request_blocking() -> Result<(), HttpError> {
+    let response = http_get("https://api.example.com/data".to_string())?;
+    println!("Status: {}", response.status_code);
+    println!("Body: {}", response.body);
+    Ok(())
+}
+```
+
+#### HTTP Client Configuration (Rust)
+
+```rust
+use nuvio_core::http::{HttpClientConfig, create_client_with_config};
+use std::time::Duration;
+
+// Create custom configuration
+let config = HttpClientConfig::builder()
+    .request_timeout(Duration::from_secs(60))      // Overall request timeout
+    .connect_timeout(Duration::from_secs(15))       // TCP connection timeout
+    .pool_max_idle_per_host(20)                     // Connection pool size
+    .user_agent("my-app/2.0")                       // Custom User-Agent
+    .header("X-API-Key", "your-api-key")            // Custom headers
+    .cookie_store_enabled(true)                     // Enable cookie jar
+    .build();
+
+// Create client with custom config
+let client = create_client_with_config(&config)?;
+```
+
+#### Request Cancellation (Rust)
+
+```rust
+use nuvio_core::http::{spawn_request, get_client};
+
+async fn cancellable_request() {
+    let client = get_client();
+
+    // Spawn a cancellable request
+    let handle = spawn_request(async move {
+        client.get("https://api.example.com/data").send().await
+    });
+
+    // Check if finished
+    if !handle.is_finished() {
+        // Cancel the request
+        handle.abort();
+    }
+
+    // Wait for result (will be error if cancelled)
+    match handle.await {
+        Ok(Ok(response)) => println!("Success: {}", response.status()),
+        Ok(Err(e)) => println!("Request failed: {}", e),
+        Err(e) => println!("Request was cancelled: {}", e),
+    }
+}
+```
+
+### HTTP Client FFI (Kotlin)
+
+```kotlin
+import uniffi.nuvio_core.*
+import kotlinx.coroutines.*
+
+// Example 1: Simple GET request
+suspend fun fetchData(url: String): HttpResponse = withContext(Dispatchers.IO) {
+    httpGet(url)
+}
+
+// Example 2: POST request with JSON body
+suspend fun postData(url: String, jsonBody: String): HttpResponse =
+    withContext(Dispatchers.IO) {
+        httpPost(url, jsonBody, "application/json")
+    }
+
+// Example 3: Custom request with headers
+suspend fun customRequest(url: String): HttpResponse = withContext(Dispatchers.IO) {
+    val request = HttpRequest(
+        url = url,
+        body = null,
+        headers = mapOf(
+            "Authorization" to "Bearer token",
+            "X-Custom-Header" to "custom-value"
+        )
+    )
+    httpRequest("GET", request)
+}
+
+// Example 4: Cancellable requests
+class ApiClient {
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    fun fetchDataAsync(url: String): Job {
+        return scope.launch {
+            // Start cancellable request
+            val handleId = httpGetCancellable(url)
+
+            try {
+                // Poll until finished
+                while (!isRequestFinished(handleId)) {
+                    delay(100)
+                }
+                println("Request completed")
+            } finally {
+                // Clean up handle
+                removeRequestHandle(handleId)
+            }
+        }
+    }
+
+    fun cancelRequest(job: Job) {
+        job.cancel()
+    }
+}
+
+// Example 5: Error handling
+suspend fun fetchWithErrorHandling(url: String) {
+    try {
+        val response = withContext(Dispatchers.IO) { httpGet(url) }
+        when {
+            response.statusCode in 200..299 -> {
+                println("Success: ${response.body}")
+            }
+            response.statusCode >= 400 -> {
+                println("HTTP error: ${response.statusCode}")
+            }
+        }
+    } catch (e: Exception.HttpError.NetworkError) {
+        println("Network error (code ${e.code}): ${e.msg}")
+    } catch (e: Exception.HttpError.TimeoutError) {
+        println("Request timeout: ${e.msg}")
+    } catch (e: Exception.HttpError.HttpStatusError) {
+        println("HTTP ${e.statusCode} error: ${e.msg}")
+    }
+}
+```
+
+### HTTP Client FFI (Swift)
+
+```swift
+import NuvioCore
+import Foundation
+
+// Example 1: Simple GET request
+func fetchData(url: String) async throws -> HttpResponse {
+    return try await Task {
+        try httpGet(url: url)
+    }.value
+}
+
+// Example 2: POST request with JSON body
+func postData(url: String, jsonBody: String) async throws -> HttpResponse {
+    return try await Task {
+        try httpPost(url: url, body: jsonBody, contentType: "application/json")
+    }.value
+}
+
+// Example 3: Custom request with headers
+func customRequest(url: String) async throws -> HttpResponse {
+    return try await Task {
+        let request = HttpRequest(
+            url: url,
+            body: nil,
+            headers: [
+                "Authorization": "Bearer token",
+                "X-Custom-Header": "custom-value"
+            ]
+        )
+        return try httpRequest(method: "GET", request: request)
+    }.value
+}
+
+// Example 4: Cancellable requests
+class ApiClient {
+    private var requestHandles: [UInt64] = []
+
+    func fetchDataAsync(url: String) async throws {
+        // Start cancellable request
+        let handleId = httpGetCancellable(url: url)
+        requestHandles.append(handleId)
+
+        defer {
+            // Clean up handle when done
+            try? removeRequestHandle(handleId: handleId)
+            requestHandles.removeAll { $0 == handleId }
+        }
+
+        // Poll until finished
+        while try !isRequestFinished(handleId: handleId) {
+            try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        }
+
+        print("Request completed")
+    }
+
+    func cancelAllRequests() {
+        for handleId in requestHandles {
+            try? abortRequest(handleId: handleId)
+        }
+    }
+}
+
+// Example 5: Error handling
+func fetchWithErrorHandling(url: String) async {
+    do {
+        let response = try await fetchData(url: url)
+
+        switch response.statusCode {
+        case 200..<300:
+            print("Success: \(response.body)")
+        case 400...:
+            print("HTTP error: \(response.statusCode)")
+        default:
+            break
+        }
+    } catch let error as HttpError.NetworkError {
+        print("Network error (code \(error.code)): \(error.msg)")
+    } catch let error as HttpError.TimeoutError {
+        print("Request timeout: \(error.msg)")
+    } catch let error as HttpError.HttpStatusError {
+        print("HTTP \(error.statusCode) error: \(error.msg)")
+    } catch {
+        print("Unexpected error: \(error)")
+    }
+}
+
+// Example 6: Using with SwiftUI
+struct ContentView: View {
+    @State private var data: String = ""
+    @State private var isLoading = false
+
+    var body: some View {
+        VStack {
+            if isLoading {
+                ProgressView()
+            } else {
+                Text(data)
+            }
+        }
+        .task {
+            await loadData()
+        }
+    }
+
+    func loadData() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let response = try await fetchData(url: "https://api.example.com/data")
+            data = response.body
+        } catch {
+            print("Failed to load data: \(error)")
+        }
+    }
+}
+```
+
+### HTTP Client Features
+
+**Connection Pooling**
+- Automatic connection reuse with configurable pool size
+- Keep-alive connections for improved performance
+- Default: 10 idle connections per host, 90s keep-alive
+
+**Automatic Retry Logic**
+- Exponential backoff with jitter for transient failures
+- Retries 5xx errors and network errors (up to 3 attempts)
+- Does NOT retry 4xx client errors
+- Configurable retry policy
+
+**Cookie Management**
+- Automatic cookie storage and handling
+- Supports OAuth flows (like Trakt API)
+- RFC6265 compliant cookie handling
+
+**TLS Certificate Pinning**
+- Pin specific certificates for critical APIs
+- Prevent MITM attacks
+- Uses rustls for pure Rust TLS stack
+
+**Request Cancellation**
+- Cancel in-flight requests via abort()
+- Automatic resource cleanup
+- Thread-safe cancellation
+
+**Error Handling**
+- Detailed error types (Network, Timeout, HTTP Status, TLS)
+- FFI-safe error propagation to Kotlin/Swift
+- Structured error information
+
+### Domain Types
+
+#### Rust
 
 ```rust
 use nuvio_core::types::meta::Meta;
@@ -284,7 +597,7 @@ let json = serde_json::to_string(&meta)?;
 let deserialized: Meta = serde_json::from_str(&json)?;
 ```
 
-### Kotlin (Android)
+#### Kotlin (Android)
 
 ```kotlin
 import uniffi.nuvio_core.*
@@ -314,7 +627,7 @@ try {
 }
 ```
 
-### Swift (iOS/macOS)
+#### Swift (iOS/macOS)
 
 ```swift
 import nuvio_core
