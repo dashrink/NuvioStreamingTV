@@ -8,6 +8,7 @@
 //!
 //! - [`client`] - HTTP client implementation with connection pooling
 //! - [`config`] - HTTP client configuration builder
+//! - [`middleware`] - Request/response interceptor implementations
 //!
 //! # Connection Pooling
 //!
@@ -48,6 +49,10 @@ pub mod client;
 // HTTP client configuration module
 pub mod config;
 
+// Request/response middleware module
+pub mod middleware;
+
 // Re-export core types
 pub use client::get_client;
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
+pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
