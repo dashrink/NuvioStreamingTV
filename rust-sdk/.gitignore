@@ -1,0 +1,35 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo.lock (for libraries, we typically don't commit this)
+# Uncomment if you want to track it for reproducible builds
+# Cargo.lock
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Build outputs
+*.so
+*.dylib
+*.dll
+*.a
+
+# Editor backup files
+*~
+\#*\#
+.\#*
+
+# Testing
+/coverage/
+
+# Logs
+*.log
