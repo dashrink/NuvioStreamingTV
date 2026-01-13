@@ -26,6 +26,7 @@
 use reqwest::Client;
 use std::sync::OnceLock;
 use std::time::Duration;
+use tokio::runtime::Runtime;
 
 /// Global HTTP client instance
 ///
@@ -33,6 +34,40 @@ use std::time::Duration;
 /// The client is created only once and reused for all HTTP requests,
 /// which is CRITICAL for connection pooling to work correctly.
 static HTTP_CLIENT: OnceLock<Client> = OnceLock::new();
+
+/// Global tokio runtime instance
+///
+/// This uses OnceLock to ensure thread-safe lazy initialization.
+/// The runtime is created only once and reused for all async operations,
+/// which is CRITICAL for FFI calls - creating a runtime is extremely expensive
+/// (involves spinning up thread pools).
+///
+/// # Why We Need This
+///
+/// For FFI exports via uniffi, we use blocking adapters that call `Runtime::block_on()`
+/// to convert async Rust functions to synchronous functions callable from Kotlin/Swift.
+/// Reusing a single global runtime across all FFI calls is essential for performance.
+///
+/// # Never Do This
+///
+/// ```rust,ignore
+/// // WRONG - Creates a new runtime for each FFI call (extremely expensive!)
+/// fn some_ffi_function() {
+///     let rt = Runtime::new().unwrap(); // DON'T DO THIS
+///     rt.block_on(async { ... });
+/// }
+/// ```
+///
+/// # Always Do This
+///
+/// ```rust
+/// // CORRECT - Reuse global runtime
+/// fn some_ffi_function() {
+///     let rt = get_runtime(); // Reuses global runtime
+///     rt.block_on(async { ... });
+/// }
+/// ```
+static TOKIO_RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
 /// Get the global HTTP client instance
 ///
@@ -86,6 +121,52 @@ pub fn get_client() -> &'static Client {
             .cookie_store(true)
             .build()
             .expect("Failed to create HTTP client")
+    })
+}
+
+/// Get the global tokio runtime instance
+///
+/// This function returns a reference to the singleton tokio runtime.
+/// The runtime is lazily initialized on first access with the default configuration
+/// (multi-threaded runtime with all features enabled).
+///
+/// # Performance Critical
+///
+/// Creating a tokio runtime is extremely expensive - it involves:
+/// - Creating a thread pool (typically one thread per CPU core)
+/// - Setting up work-stealing schedulers
+/// - Initializing I/O drivers
+/// - Setting up timers and other runtime infrastructure
+///
+/// **NEVER** create a new runtime for each operation. Always reuse this global instance.
+///
+/// # Thread Safety
+///
+/// This function is thread-safe. Multiple threads can call this function concurrently
+/// and will all receive a reference to the same runtime instance.
+///
+/// # Panics
+///
+/// Panics if the runtime cannot be created (e.g., insufficient system resources).
+/// This should never happen in normal conditions.
+///
+/// # Example
+///
+/// ```rust
+/// use nuvio_core::http::client::get_runtime;
+///
+/// // Get the global runtime instance
+/// let rt = get_runtime();
+///
+/// // Use it to run async code synchronously (for FFI)
+/// let result = rt.block_on(async {
+///     // Your async code here
+///     42
+/// });
+/// ```
+pub fn get_runtime() -> &'static Runtime {
+    TOKIO_RUNTIME.get_or_init(|| {
+        Runtime::new().expect("Failed to create tokio runtime")
     })
 }
 
@@ -180,5 +261,75 @@ mod tests {
 
         // The test succeeds if the client can be called multiple times without panicking
         assert!(true);
+    }
+
+    #[test]
+    fn test_runtime_singleton() {
+        // Get the runtime multiple times
+        let runtime1 = get_runtime();
+        let runtime2 = get_runtime();
+        let runtime3 = get_runtime();
+
+        // All should be the exact same instance (same memory address)
+        assert!(std::ptr::eq(runtime1, runtime2));
+        assert!(std::ptr::eq(runtime2, runtime3));
+        assert!(std::ptr::eq(runtime1, runtime3));
+
+        // Verify the runtime is usable
+        let result = runtime1.block_on(async {
+            // Simple async operation
+            tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+            42
+        });
+
+        // The async operation should complete successfully
+        assert_eq!(result, 42);
+    }
+
+    #[test]
+    fn test_runtime_reuse_for_ffi() {
+        // Simulate FFI usage pattern - multiple blocking calls using the same runtime
+        let rt = get_runtime();
+
+        // First FFI call
+        let result1 = rt.block_on(async {
+            "first call"
+        });
+        assert_eq!(result1, "first call");
+
+        // Second FFI call
+        let result2 = rt.block_on(async {
+            "second call"
+        });
+        assert_eq!(result2, "second call");
+
+        // Third FFI call
+        let result3 = rt.block_on(async {
+            "third call"
+        });
+        assert_eq!(result3, "third call");
+
+        // All calls should use the same runtime instance without creating new ones
+        let rt2 = get_runtime();
+        assert!(std::ptr::eq(rt, rt2));
+    }
+
+    #[test]
+    fn test_runtime_with_client() {
+        // Test using the runtime with the HTTP client
+        // This simulates the FFI pattern where we use Runtime::block_on
+        // to call async HTTP methods synchronously
+        let rt = get_runtime();
+        let client = get_client();
+
+        // Use block_on to run an async HTTP operation synchronously
+        let result = rt.block_on(async {
+            // We're not making a real request in this test, just verifying the pattern works
+            // In a real FFI function, this would be: client.get(url).send().await
+            format!("HTTP client ready: {:?}", client)
+        });
+
+        // Verify the pattern works
+        assert!(result.contains("HTTP client ready"));
     }
 }
