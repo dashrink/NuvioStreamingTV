@@ -1,0 +1,498 @@
+%% Comprehensive Dependency Graph for NuvioStreamingTV
+%% This file contains multiple Mermaid diagrams showing module relationships
+%% Last Updated: 2026-01-13
+%% Purpose: Visual dependency analysis for tri-layer architecture migration
+
+%% ============================================================================
+%% DIAGRAM 1: High-Level Architecture Layers
+%% ============================================================================
+
+graph TB
+    subgraph UI["UI Layer (React Native)"]
+        Screens["Screens (50+)"]
+        Components["Components (170+)"]
+        Hooks["Custom Hooks (38+)"]
+        Contexts["Context Providers (15)"]
+    end
+
+    subgraph ServiceLayer["Service Layer (29 Services)"]
+        DataServices["Data Services"]
+        StorageServices["Storage Services"]
+        ExternalIntegrations["External Integrations"]
+        FeatureServices["Feature Services"]
+    end
+
+    subgraph External["External APIs & Native Modules"]
+        APIs["TMDB | Trakt | Stremio | MDBList"]
+        NativeModules["MMKV | Google Cast | Video Players"]
+        FileSystem["File System | expo-file-system"]
+    end
+
+    Screens --> Components
+    Components --> Hooks
+    Hooks --> Contexts
+    Contexts --> ServiceLayer
+    ServiceLayer --> External
+
+    style UI fill:#e1f5ff,stroke:#01579b
+    style ServiceLayer fill:#fff3e0,stroke:#e65100
+    style External fill:#f3e5f5,stroke:#4a148c
+
+%% ============================================================================
+%% DIAGRAM 2: Context Provider Dependencies
+%% ============================================================================
+
+graph TB
+    subgraph ContextHierarchy["Context Provider Dependency Hierarchy"]
+        PerformanceContext["PerformanceContext<br/>(ROOT - No dependencies)"]
+        ThemeContext["ThemeContext"]
+        AccountContext["AccountContext"]
+        ProfileContext["ProfileContext"]
+        FocusContext["FocusContext<br/>(TV Navigation)"]
+        TVNavigationContext["TVNavigationContext"]
+        TraktContext["TraktContext"]
+        DownloadsContext["DownloadsContext"]
+        CatalogContext["CatalogContext"]
+        GenreContext["GenreContext"]
+        LoadingContext["LoadingContext<br/>(Pure UI)"]
+        ToastContext["ToastContext"]
+        TrailerContext["TrailerContext"]
+        HeaderVisibility["HeaderVisibility<br/>(Pure UI)"]
+        ScrollToTopContext["ScrollToTopContext<br/>(Pure UI)"]
+    end
+
+    subgraph Services["Service Dependencies"]
+        mmkvStorage["mmkvStorage"]
+        accountService["accountService"]
+        settingsService["settingsService"]
+        traktService["traktService"]
+        storageService["storageService"]
+        catalogService["catalogService"]
+        tmdbService["tmdbService"]
+        cacheService["cacheService"]
+        toastService["toastService"]
+        trailerService["trailerService"]
+    end
+
+    PerformanceContext --> ThemeContext
+
+    AccountContext --> mmkvStorage
+    AccountContext --> accountService
+    AccountContext --> ProfileContext
+
+    ProfileContext --> mmkvStorage
+    ProfileContext --> settingsService
+    ProfileContext --> TraktContext
+    ProfileContext --> DownloadsContext
+
+    FocusContext --> mmkvStorage
+    FocusContext --> TVNavigationContext
+
+    TraktContext --> traktService
+    TraktContext --> mmkvStorage
+
+    DownloadsContext --> storageService
+    DownloadsContext --> mmkvStorage
+
+    CatalogContext --> catalogService
+
+    GenreContext --> tmdbService
+    GenreContext --> cacheService
+
+    ToastContext --> toastService
+
+    TrailerContext --> trailerService
+
+    style PerformanceContext fill:#4caf50,stroke:#1b5e20,color:#fff
+    style AccountContext fill:#2196f3,stroke:#0d47a1,color:#fff
+    style ProfileContext fill:#2196f3,stroke:#0d47a1,color:#fff
+    style FocusContext fill:#ff9800,stroke:#e65100,color:#fff
+    style TVNavigationContext fill:#ff9800,stroke:#e65100,color:#fff
+    style TraktContext fill:#9c27b0,stroke:#4a148c,color:#fff
+    style DownloadsContext fill:#9c27b0,stroke:#4a148c,color:#fff
+    style LoadingContext fill:#9e9e9e,stroke:#424242,color:#fff
+    style HeaderVisibility fill:#9e9e9e,stroke:#424242,color:#fff
+    style ScrollToTopContext fill:#9e9e9e,stroke:#424242,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 3: Service Layer Dependencies
+%% ============================================================================
+
+graph TB
+    subgraph CoreStorage["Core Storage Services (Foundation)"]
+        MMKV["mmkvStorage<br/>(Native MMKV)"]
+        Cache["cacheService<br/>(In-memory LRU)"]
+        Storage["storageService<br/>(File System)"]
+    end
+
+    subgraph ExternalAPIs["External API Services"]
+        TMDB["tmdbService<br/>TMDB API<br/>40 req/10s"]
+        Trakt["traktService<br/>Trakt API (OAuth)<br/>10k req/day"]
+        Stremio["stremioService<br/>Stremio Addons"]
+        MDBList["mdblistService<br/>MDBList API"]
+        Trailer["trailerService<br/>Local/YouTube"]
+    end
+
+    subgraph BusinessLogic["Business Logic Services"]
+        Catalog["catalogService"]
+        Addon["addonService"]
+        Account["accountService"]
+        Watched["watchedService"]
+        Downloads["downloadsService"]
+    end
+
+    subgraph Features["Feature Services"]
+        Plugin["pluginService"]
+        AI["aiService<br/>OpenRouter API"]
+        Campaign["campaignService"]
+        Notification["notificationService"]
+        VideoPlayer["videoPlayerService"]
+        Cast["chromecastService"]
+    end
+
+    %% Core dependencies
+    TMDB --> Cache
+    TMDB --> MMKV
+    Trakt --> Cache
+    Trakt --> MMKV
+    Stremio --> Cache
+    Stremio --> Addon
+    MDBList --> Cache
+    Trailer --> MMKV
+
+    Catalog --> Addon
+    Catalog -.Intentional Coupling.-> Addon
+    Account --> MMKV
+    Watched --> MMKV
+    Watched --> Trakt
+    Downloads --> Storage
+    Downloads --> MMKV
+
+    Plugin --> MMKV
+    AI --> MMKV
+    Campaign --> MMKV
+    Notification --> MMKV
+    VideoPlayer --> MMKV
+    Cast --> MMKV
+
+    Storage --> FileSystemNative["expo-file-system"]
+
+    style MMKV fill:#f44336,stroke:#b71c1c,color:#fff
+    style Cache fill:#f44336,stroke:#b71c1c,color:#fff
+    style Storage fill:#f44336,stroke:#b71c1c,color:#fff
+    style TMDB fill:#4caf50,stroke:#1b5e20,color:#fff
+    style Trakt fill:#4caf50,stroke:#1b5e20,color:#fff
+    style Stremio fill:#4caf50,stroke:#1b5e20,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 4: Critical Path - Authentication Flow
+%% ============================================================================
+
+graph LR
+    User["User Login"]
+    AccountCtx["AccountContext"]
+    AccountSvc["accountService"]
+    MMKVAuth["MMKV Storage<br/>(Session)"]
+    ProfileCtx["ProfileContext"]
+    ProfileSvc["settingsService"]
+    PIN["PIN Verification<br/>(SHA-256)"]
+
+    User --> AccountCtx
+    AccountCtx --> AccountSvc
+    AccountSvc --> MMKVAuth
+    AccountCtx --> ProfileCtx
+    ProfileCtx --> ProfileSvc
+    ProfileCtx --> MMKVAuth
+    ProfileCtx --> PIN
+
+    style User fill:#2196f3,stroke:#0d47a1,color:#fff
+    style AccountCtx fill:#ff9800,stroke:#e65100,color:#fff
+    style ProfileCtx fill:#ff9800,stroke:#e65100,color:#fff
+    style MMKVAuth fill:#4caf50,stroke:#1b5e20,color:#fff
+    style PIN fill:#f44336,stroke:#b71c1c,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 5: Critical Path - Content Playback
+%% ============================================================================
+
+graph TB
+    UserPlay["User Initiates Playback"]
+    VideoPlayerComp["VideoPlayer Component"]
+    VideoPlayerSvc["videoPlayerService"]
+    CacheSvc["cacheService<br/>(Stream Cache)"]
+    StreamioSvc["stremioService"]
+    TMDBSvc["tmdbService<br/>(Metadata)"]
+    TraktSyncCtx["TraktContext<br/>(Scrobbling)"]
+    NativePlayer["Native Video Player<br/>KSPlayer (iOS)<br/>MPV (Android)"]
+
+    UserPlay --> VideoPlayerComp
+    VideoPlayerComp --> VideoPlayerSvc
+    VideoPlayerSvc --> CacheSvc
+    CacheSvc --> StreamioSvc
+    VideoPlayerComp --> TMDBSvc
+    VideoPlayerComp --> TraktSyncCtx
+    VideoPlayerSvc --> NativePlayer
+
+    style UserPlay fill:#2196f3,stroke:#0d47a1,color:#fff
+    style VideoPlayerComp fill:#ff9800,stroke:#e65100,color:#fff
+    style NativePlayer fill:#4caf50,stroke:#1b5e20,color:#fff
+    style TraktSyncCtx fill:#9c27b0,stroke:#4a148c,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 6: Critical Path - TV Navigation
+%% ============================================================================
+
+graph TB
+    RemoteInput["TV Remote Input<br/>(D-Pad)"]
+    FocusCtx["FocusContext<br/>(Focus State)"]
+    TVNavCtx["TVNavigationContext<br/>(Spatial Navigation)"]
+    FocusableComp["Focusable Component"]
+    FocusMemory["MMKV Storage<br/>(Focus Memory)"]
+    VoiceSearch["voiceSearchService"]
+
+    RemoteInput --> FocusCtx
+    FocusCtx --> FocusMemory
+    FocusCtx --> TVNavCtx
+    TVNavCtx --> VoiceSearch
+    TVNavCtx --> FocusableComp
+    FocusableComp --> FocusMemory
+
+    style RemoteInput fill:#2196f3,stroke:#0d47a1,color:#fff
+    style FocusCtx fill:#ff9800,stroke:#e65100,color:#fff
+    style TVNavCtx fill:#ff9800,stroke:#e65100,color:#fff
+    style FocusableComp fill:#4caf50,stroke:#1b5e20,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 7: Critical Path - Offline Content
+%% ============================================================================
+
+graph TB
+    UserDownload["User Downloads Content"]
+    DownloadsCtx["DownloadsContext"]
+    DownloadsSvc["downloadsService"]
+    StorageSvc["storageService"]
+    FileSystem["expo-file-system<br/>(Native)"]
+    MMKVMeta["MMKV Storage<br/>(Metadata)"]
+    VideoPlayerOffline["VideoPlayer<br/>(Offline Mode)"]
+
+    UserDownload --> DownloadsCtx
+    DownloadsCtx --> DownloadsSvc
+    DownloadsSvc --> StorageSvc
+    StorageSvc --> FileSystem
+    DownloadsSvc --> MMKVMeta
+    DownloadsCtx --> VideoPlayerOffline
+    VideoPlayerOffline --> FileSystem
+
+    style UserDownload fill:#2196f3,stroke:#0d47a1,color:#fff
+    style DownloadsCtx fill:#ff9800,stroke:#e65100,color:#fff
+    style FileSystem fill:#4caf50,stroke:#1b5e20,color:#fff
+    style VideoPlayerOffline fill:#9c27b0,stroke:#4a148c,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 8: Critical Path - External Sync (Trakt)
+%% ============================================================================
+
+graph TB
+    TraktCtx["TraktContext"]
+    ProfileCtx["ProfileContext"]
+    TraktSvc["traktService"]
+    TraktAPI["Trakt API<br/>(OAuth 2.0)"]
+    MMKVCache["MMKV Storage<br/>(Cache: 30s TTL)"]
+    BackgroundPoll["Background Polling<br/>(2s interval)"]
+    OptimisticUpdate["Optimistic Updates"]
+
+    ProfileCtx --> TraktCtx
+    TraktCtx --> TraktSvc
+    TraktSvc --> TraktAPI
+    TraktSvc --> MMKVCache
+    TraktCtx --> BackgroundPoll
+    TraktCtx --> OptimisticUpdate
+    OptimisticUpdate --> MMKVCache
+
+    style TraktCtx fill:#9c27b0,stroke:#4a148c,color:#fff
+    style TraktAPI fill:#4caf50,stroke:#1b5e20,color:#fff
+    style OptimisticUpdate fill:#ff9800,stroke:#e65100,color:#fff
+    style BackgroundPoll fill:#2196f3,stroke:#0d47a1,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 9: Component to Context Dependencies (Sample)
+%% ============================================================================
+
+graph TB
+    subgraph PlayerComponents["Video Player Components"]
+        VideoPlayer["VideoPlayer.tsx"]
+        PlayerControls["PlayerControls.tsx"]
+        ProgressBar["ProgressBar.tsx"]
+    end
+
+    subgraph ContextLayer["Context Layer"]
+        AccountCtx2["AccountContext"]
+        ProfileCtx2["ProfileContext"]
+        TraktCtx2["TraktContext"]
+        DownloadsCtx2["DownloadsContext"]
+        ToastCtx2["ToastContext"]
+        PerformanceCtx2["PerformanceContext"]
+        ThemeCtx2["ThemeContext"]
+        FocusCtx2["FocusContext (TV)"]
+    end
+
+    subgraph NativeLayer["Native Modules"]
+        RNVideo["react-native-video"]
+        VLC["expo-libvlc-player"]
+        KSPlayer["KSPlayer (iOS)"]
+        MPV["MPV (Android)"]
+    end
+
+    VideoPlayer --> AccountCtx2
+    VideoPlayer --> ProfileCtx2
+    VideoPlayer --> TraktCtx2
+    VideoPlayer --> DownloadsCtx2
+    VideoPlayer --> ToastCtx2
+    VideoPlayer --> RNVideo
+    VideoPlayer --> VLC
+
+    PlayerControls --> PerformanceCtx2
+    PlayerControls --> ThemeCtx2
+    PlayerControls --> FocusCtx2
+
+    RNVideo --> KSPlayer
+    RNVideo --> MPV
+
+    style VideoPlayer fill:#ff9800,stroke:#e65100,color:#fff
+    style PlayerControls fill:#ff9800,stroke:#e65100,color:#fff
+    style KSPlayer fill:#4caf50,stroke:#1b5e20,color:#fff
+    style MPV fill:#4caf50,stroke:#1b5e20,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 10: External API Dependencies
+%% ============================================================================
+
+graph TB
+    subgraph App["Application Layer"]
+        Services["Service Layer"]
+        Contexts["Context Providers"]
+    end
+
+    subgraph ExternalAPIs["External APIs"]
+        TMDBAPI["TMDB API<br/>40 req/10s<br/>7-day cache"]
+        TraktAPI["Trakt API<br/>OAuth 2.0<br/>10k req/day"]
+        StremioAPI["Stremio Addons<br/>HTTP Protocol"]
+        MDBListAPI["MDBList API<br/>Aggregated Ratings"]
+        GitHubAPI["GitHub API<br/>Release Updates<br/>60 req/hour"]
+        TrailerAPI["Trailer Services<br/>Local + YouTube"]
+        CampaignAPI["Campaign API<br/>Config + Queue"]
+        IntroDBAPI["IntroDB API<br/>Skip Intro"]
+        ParentalAPI["Parental Guide API"]
+        OpenRouterAPI["OpenRouter AI API<br/>Bearer Auth"]
+    end
+
+    Services --> TMDBAPI
+    Services --> TraktAPI
+    Services --> StremioAPI
+    Services --> MDBListAPI
+    Services --> GitHubAPI
+    Services --> TrailerAPI
+    Services --> CampaignAPI
+    Services --> IntroDBAPI
+    Services --> ParentalAPI
+    Services --> OpenRouterAPI
+
+    Contexts --> Services
+
+    style TMDBAPI fill:#4caf50,stroke:#1b5e20,color:#fff
+    style TraktAPI fill:#9c27b0,stroke:#4a148c,color:#fff
+    style StremioAPI fill:#2196f3,stroke:#0d47a1,color:#fff
+    style OpenRouterAPI fill:#ff9800,stroke:#e65100,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 11: Native Module Dependencies
+%% ============================================================================
+
+graph TB
+    subgraph RNApp["React Native Application"]
+        Components2["Components"]
+        Services2["Services"]
+        Contexts2["Contexts"]
+    end
+
+    subgraph NativeModules["Native Modules (25+)"]
+        MMKV2["react-native-mmkv<br/>(C++ Storage)"]
+        GoogleCast["react-native-google-cast<br/>(iOS/Android SDK)"]
+        RNVideo2["react-native-video<br/>(KSPlayer/MPV)"]
+        VLC2["expo-libvlc-player"]
+        FileSystem2["expo-file-system"]
+        Notifications["expo-notifications"]
+        DeviceInfo["react-native-device-info"]
+        BottomSheet["@gorhom/bottom-sheet"]
+        Reanimated["react-native-reanimated"]
+    end
+
+    subgraph Platform["Platform Native Code"]
+        iOSNative["iOS Native (Swift)<br/>KSPlayer<br/>Google Cast SDK"]
+        AndroidNative["Android Native (Kotlin)<br/>MPV<br/>Google Cast SDK"]
+    end
+
+    Components2 --> NativeModules
+    Services2 --> NativeModules
+    Contexts2 --> NativeModules
+
+    GoogleCast --> iOSNative
+    GoogleCast --> AndroidNative
+    RNVideo2 --> iOSNative
+    RNVideo2 --> AndroidNative
+
+    style MMKV2 fill:#f44336,stroke:#b71c1c,color:#fff
+    style GoogleCast fill:#4caf50,stroke:#1b5e20,color:#fff
+    style RNVideo2 fill:#2196f3,stroke:#0d47a1,color:#fff
+    style iOSNative fill:#ff9800,stroke:#e65100,color:#fff
+    style AndroidNative fill:#9c27b0,stroke:#4a148c,color:#fff
+
+%% ============================================================================
+%% DIAGRAM 12: Migration Critical Paths (Priority Order)
+%% ============================================================================
+
+graph TB
+    subgraph Priority1["Priority 1: Authentication & State (Critical)"]
+        Auth["AccountContext + ProfileContext<br/>→ Rust SDK Auth Module"]
+        Storage["MMKV Storage<br/>→ Rust Storage Abstraction"]
+        PIN["PIN Security (SHA-256)<br/>→ Rust Crypto"]
+    end
+
+    subgraph Priority2["Priority 2: TV Navigation (High)"]
+        Focus["FocusContext<br/>→ Rust Focus Management"]
+        TVNav["TVNavigationContext<br/>→ Native Kotlin/Swift"]
+        Focusable["Focusable Components<br/>→ Native UI"]
+    end
+
+    subgraph Priority3["Priority 3: Content & Playback (High)"]
+        Catalog["CatalogContext + catalogService<br/>→ Rust Catalog Core"]
+        Streams["stremioService + Stream Discovery<br/>→ Rust HTTP Client"]
+        Downloads["DownloadsContext<br/>→ Rust Download Manager"]
+    end
+
+    subgraph Priority4["Priority 4: External Sync (Medium)"]
+        TraktSync["TraktContext + traktService<br/>→ Rust API Client"]
+        TMDB["tmdbService<br/>→ Rust API Client"]
+        Cache["cacheService<br/>→ Rust LRU Cache"]
+    end
+
+    subgraph Priority5["Priority 5: UI Layer (Low)"]
+        Theme["ThemeContext<br/>→ Native UI Theming"]
+        Loading["LoadingContext<br/>→ Native UI State"]
+        Toast["ToastContext<br/>→ Native Notifications"]
+    end
+
+    Priority1 --> Priority2
+    Priority2 --> Priority3
+    Priority3 --> Priority4
+    Priority4 --> Priority5
+
+    style Priority1 fill:#f44336,stroke:#b71c1c,color:#fff
+    style Priority2 fill:#ff9800,stroke:#e65100,color:#fff
+    style Priority3 fill:#ffc107,stroke:#f57f17
+    style Priority4 fill:#4caf50,stroke:#1b5e20,color:#fff
+    style Priority5 fill:#2196f3,stroke:#0d47a1,color:#fff
+
+%% ============================================================================
+%% End of Dependency Graph
+%% ============================================================================
