@@ -1,7 +1,30 @@
-// Nuvio Core SDK
-//
-// This library provides the foundational types and FFI layer for the Nuvio Streaming TV SDK.
-// It uses UniFFI to generate Kotlin and Swift bindings for cross-platform mobile development.
+//! Nuvio Core SDK
+//!
+//! This library provides the foundational types and FFI layer for the Nuvio Streaming TV SDK.
+//! It uses UniFFI to generate Kotlin and Swift bindings for cross-platform mobile development.
+//!
+//! # Core Types
+//!
+//! The SDK provides four main domain types:
+//! - [`types::Meta`] - Metadata for content items (movies, TV shows)
+//! - [`types::Stream`] - Video stream information (URL, quality, format)
+//! - [`types::Catalog`] - Collections of content items
+//! - [`types::Profile`] - User profile with personalization settings
+//!
+//! # Error Handling
+//!
+//! All errors are represented by [`error::NuvioError`], which is FFI-safe and can
+//! cross language boundaries to Kotlin and Swift.
+//!
+//! # Example
+//!
+//! ```rust
+//! use nuvio_core::types::Meta;
+//!
+//! // Create a new content metadata
+//! let meta = Meta::new("123".to_string(), "The Matrix".to_string());
+//! assert_eq!(meta.name, "The Matrix");
+//! ```
 
 // Re-export uniffi for use throughout the crate
 pub use uniffi;
