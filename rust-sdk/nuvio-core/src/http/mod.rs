@@ -11,6 +11,7 @@
 //! - [`middleware`] - Request/response interceptor implementations
 //! - [`retry`] - Retry logic with exponential backoff for transient failures
 //! - [`cookies`] - Cookie jar management for OAuth flows
+//! - [`tls`] - TLS configuration and certificate pinning
 //!
 //! # Connection Pooling
 //!
@@ -60,6 +61,9 @@ pub mod retry;
 // Cookie jar management module
 pub mod cookies;
 
+// TLS configuration and certificate pinning module
+pub mod tls;
+
 // Re-export core types
 pub use client::{create_client_with_config, get_client, get_client_with_middleware};
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
@@ -69,3 +73,4 @@ pub use retry::{
     create_custom_retry_middleware, create_retry_middleware, is_transient_status,
     DEFAULT_MAX_BACKOFF, DEFAULT_MAX_RETRIES, DEFAULT_MIN_BACKOFF,
 };
+pub use tls::{create_default_tls_config, TlsConfigBuilder, TlsConfigError};

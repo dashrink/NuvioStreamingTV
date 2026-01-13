@@ -33,6 +33,7 @@ reqwest_cookie_store = "0.8"
 # TLS certificate pinning
 rustls = "0.23"
 rustls-pemfile = "2.2"
+rustls-native-certs = "0.8"
 
 # Async trait support
 async-trait = "0.1"
