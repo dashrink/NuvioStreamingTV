@@ -9,6 +9,7 @@
 //! - [`client`] - HTTP client implementation with connection pooling
 //! - [`config`] - HTTP client configuration builder
 //! - [`middleware`] - Request/response interceptor implementations
+//! - [`retry`] - Retry logic with exponential backoff for transient failures
 //!
 //! # Connection Pooling
 //!
@@ -52,7 +53,14 @@ pub mod config;
 // Request/response middleware module
 pub mod middleware;
 
+// Retry logic with exponential backoff module
+pub mod retry;
+
 // Re-export core types
 pub use client::get_client;
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use middleware::{HeaderInjectionMiddleware, LoggingMiddleware};
+pub use retry::{
+    create_custom_retry_middleware, create_retry_middleware, is_transient_status,
+    DEFAULT_MAX_BACKOFF, DEFAULT_MAX_RETRIES, DEFAULT_MIN_BACKOFF,
+};
