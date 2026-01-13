@@ -920,7 +920,7 @@ mod tests {
 
         // Load a certificate for pinning (using Let's Encrypt ISRG Root X1 as an example)
         // This is a real, widely-used root certificate
-        let lets_encrypt_isrg_root_x1 = include_bytes!("../../../tests/fixtures/isrg-root-x1.pem");
+        let lets_encrypt_isrg_root_x1 = include_bytes!("../../tests/fixtures/isrg-root-x1.pem");
 
         // Build TLS config with pinned certificate
         let tls_config = crate::http::tls::TlsConfigBuilder::new()

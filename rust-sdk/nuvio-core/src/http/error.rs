@@ -195,6 +195,26 @@ impl From<reqwest::Error> for HttpError {
     }
 }
 
+/// Convert from reqwest_middleware::Error to HttpError
+///
+/// This implementation handles errors from the middleware-wrapped HTTP client.
+/// Most reqwest_middleware errors wrap an underlying reqwest::Error, which we
+/// extract and convert using the existing From<reqwest::Error> implementation.
+impl From<reqwest_middleware::Error> for HttpError {
+    fn from(err: reqwest_middleware::Error) -> Self {
+        match err {
+            // Middleware errors usually wrap a reqwest error
+            reqwest_middleware::Error::Reqwest(reqwest_err) => Self::from(reqwest_err),
+            // Middleware-specific errors (from retry logic, etc.)
+            reqwest_middleware::Error::Middleware(middleware_err) => {
+                Self::Unknown {
+                    msg: middleware_err.to_string(),
+                }
+            }
+        }
+    }
+}
+
 /// Convert from TlsConfigError to HttpError
 impl From<crate::http::tls::TlsConfigError> for HttpError {
     fn from(err: crate::http::tls::TlsConfigError) -> Self {
@@ -471,9 +491,9 @@ mod tests {
         let general_network = HttpError::network(0, "General network error");
 
         // Verify DNS failure
-        match dns_failure {
+        match &dns_failure {
             HttpError::NetworkError { code, msg } => {
-                assert_eq!(code, 1);
+                assert_eq!(*code, 1);
                 assert!(msg.contains("DNS"));
                 assert!(msg.contains("example.com"));
             }
@@ -481,27 +501,27 @@ mod tests {
         }
 
         // Verify connection refused
-        match connection_refused {
+        match &connection_refused {
             HttpError::NetworkError { code, msg } => {
-                assert_eq!(code, 2);
+                assert_eq!(*code, 2);
                 assert!(msg.contains("refused"));
             }
             _ => panic!("Expected NetworkError for connection refused"),
         }
 
         // Verify connection reset
-        match connection_reset {
+        match &connection_reset {
             HttpError::NetworkError { code, msg } => {
-                assert_eq!(code, 3);
+                assert_eq!(*code, 3);
                 assert!(msg.contains("reset"));
             }
             _ => panic!("Expected NetworkError for connection reset"),
         }
 
         // Verify general network error
-        match general_network {
+        match &general_network {
             HttpError::NetworkError { code, msg } => {
-                assert_eq!(code, 0);
+                assert_eq!(*code, 0);
                 assert!(msg.contains("network"));
             }
             _ => panic!("Expected NetworkError for general network error"),
@@ -521,7 +541,7 @@ mod tests {
         let read_timeout = HttpError::timeout("Read operation timed out");
 
         // Verify request timeout
-        match request_timeout {
+        match &request_timeout {
             HttpError::TimeoutError { msg } => {
                 assert!(msg.contains("Request"));
                 assert!(msg.contains("30 seconds"));
@@ -530,7 +550,7 @@ mod tests {
         }
 
         // Verify connect timeout
-        match connect_timeout {
+        match &connect_timeout {
             HttpError::TimeoutError { msg } => {
                 assert!(msg.contains("Connection"));
                 assert!(msg.contains("10 seconds"));
@@ -539,7 +559,7 @@ mod tests {
         }
 
         // Verify read timeout
-        match read_timeout {
+        match &read_timeout {
             HttpError::TimeoutError { msg } => {
                 assert!(msg.contains("Read"));
                 assert!(msg.contains("timed out"));
@@ -589,17 +609,17 @@ mod tests {
         }
 
         // Verify 5xx errors
-        match error_500 {
+        match &error_500 {
             HttpError::HttpStatusError { status_code, msg } => {
-                assert_eq!(status_code, 500);
+                assert_eq!(*status_code, 500);
                 assert_eq!(msg, "Internal Server Error");
             }
             _ => panic!("Expected HttpStatusError"),
         }
 
-        match error_503 {
+        match &error_503 {
             HttpError::HttpStatusError { status_code, .. } => {
-                assert_eq!(status_code, 503);
+                assert_eq!(*status_code, 503);
             }
             _ => panic!("Expected HttpStatusError"),
         }
