@@ -45,5 +45,10 @@ url = "2.5"
 # Middleware extensions
 task-local-extensions = "0.1"
 
+[features]
+# Feature flag to enable uniffi binding generation (Kotlin/Swift)
+# Usage: cargo build --features uniffi-bindgen
+uniffi-bindgen = ["uniffi/cli"]
+
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }
