@@ -526,4 +526,97 @@ mod tests {
         tracing::info!("  - Expiration: Yes");
         tracing::info!("  - Max-Age: Yes");
     }
+
+    #[tokio::test]
+    async fn test_oauth_cookie_flow() {
+        // Test OAuth cookie flow with session cookies
+        let _ = tracing_subscriber::fmt::try_init();
+
+        tracing::info!("Testing OAuth cookie flow with session persistence...");
+
+        let client = get_client();
+
+        // Step 1: Simulate OAuth authorization endpoint (sets session cookies)
+        tracing::info!("Step 1: OAuth authorization endpoint (setting session cookies)...");
+        let auth_result = client
+            .get("https://httpbin.org/cookies/set?oauth_session=abc123&csrf_token=xyz789")
+            .send()
+            .await;
+
+        match auth_result {
+            Ok(response) => {
+                tracing::info!("✓ OAuth authorization: status={}", response.status());
+                assert!(
+                    response.status().is_success() || response.status().is_redirection(),
+                    "Expected successful or redirect status, got: {}",
+                    response.status()
+                );
+            }
+            Err(e) => {
+                tracing::warn!("OAuth authorization failed (acceptable in test environment): {}", e);
+                return;
+            }
+        }
+
+        // Step 2: Simulate token exchange (cookies automatically included)
+        tracing::info!("Step 2: Token exchange endpoint (verifying cookies are sent)...");
+        let token_result = client
+            .get("https://httpbin.org/cookies")
+            .send()
+            .await;
+
+        match token_result {
+            Ok(response) => {
+                tracing::info!("✓ Token exchange: status={}", response.status());
+                assert!(response.status().is_success());
+
+                let body_text = response.text().await.expect("Failed to read response body");
+                tracing::info!("Token exchange response: {}", body_text);
+
+                // Verify OAuth session cookie was automatically sent
+                assert!(
+                    body_text.contains("oauth_session") || body_text.contains("abc123"),
+                    "Expected OAuth session cookie to be sent, got: {}",
+                    body_text
+                );
+
+                tracing::info!("✓ OAuth session cookies automatically included in token exchange");
+            }
+            Err(e) => {
+                tracing::warn!("Token exchange failed (acceptable in test environment): {}", e);
+                return;
+            }
+        }
+
+        // Step 3: Simulate authenticated API call (cookies still maintained)
+        tracing::info!("Step 3: Authenticated API call (verifying session persistence)...");
+        let api_result = client
+            .get("https://httpbin.org/cookies")
+            .send()
+            .await;
+
+        match api_result {
+            Ok(response) => {
+                tracing::info!("✓ Authenticated API call: status={}", response.status());
+                assert!(response.status().is_success());
+
+                let body_text = response.text().await.expect("Failed to read response body");
+                tracing::info!("API call response: {}", body_text);
+
+                // Verify session is still maintained
+                assert!(
+                    body_text.contains("oauth_session"),
+                    "Expected session to persist across OAuth flow, got: {}",
+                    body_text
+                );
+
+                tracing::info!("✓ OAuth session maintained across entire flow");
+            }
+            Err(e) => {
+                tracing::warn!("API call failed (acceptable in test environment): {}", e);
+            }
+        }
+
+        tracing::info!("✓ OAuth cookie flow test completed successfully");
+    }
 }
