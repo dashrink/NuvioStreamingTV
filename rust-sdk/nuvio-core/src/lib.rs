@@ -9,6 +9,9 @@ pub use uniffi;
 // Domain types module
 pub mod types;
 
+// Error types module
+pub mod error;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 
