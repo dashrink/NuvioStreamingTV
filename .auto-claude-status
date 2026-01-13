@@ -1,17 +1,17 @@
 {
   "active": true,
-  "spec": "029-rust-sdk-foundation-core-types-ffi-layer-setup",
+  "spec": "030-rust-sdk-http-client-network-layer",
   "state": "building",
   "subtasks": {
-    "completed": 17,
-    "total": 18,
+    "completed": 0,
+    "total": 33,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Documentation & QA",
+    "current": "Dependencies & Core HTTP Client",
     "id": null,
-    "total": 3
+    "total": 5
   },
   "workers": {
     "active": 0,
@@ -19,7 +19,7 @@
   },
   "session": {
     "number": 1,
-    "started_at": "2026-01-13T10:54:25.484919"
+    "started_at": "2026-01-13T11:48:22.332617"
   },
-  "last_update": "2026-01-13T10:54:25.612809"
+  "last_update": "2026-01-13T11:48:22.388173"
 }
