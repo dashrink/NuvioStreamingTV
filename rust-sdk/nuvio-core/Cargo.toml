@@ -1,0 +1,18 @@
+[package]
+name = "nuvio-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]  # CRITICAL: cdylib required for FFI
+
+[dependencies]
+uniffi = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+thiserror = { workspace = true }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
