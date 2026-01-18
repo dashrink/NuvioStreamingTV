@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build content details/metadata screens in Jetpack Compose. Display movie/show details, cast/crew, ratings, trailers, comments, similar content recommendations. Implement season/episode selection for TV shows. Add watchlist, rating, and share actions. Fetch enhanced metadata from Rust SDK (TMDB + Trakt). TV and mobile layout variants.",
+  "title": "Phase 2.4: Android Content Details/Metadata Screens",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase2-android-details",
+  "descriptionHistory": [
+    {
+      "description": "Build content details/metadata screens in Jetpack Compose. Display movie/show details, cast/crew, ratings, trailers, comments, similar content recommendations. Implement season/episode selection for TV shows. Add watchlist, rating, and share actions. Fetch enhanced metadata from Rust SDK (TMDB + Trakt). TV and mobile layout variants.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase2-android-architecture"]
+}

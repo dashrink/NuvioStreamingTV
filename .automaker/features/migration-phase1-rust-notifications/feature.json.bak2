@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Migrate notification system from TypeScript to Rust SDK. Port notificationService.ts (29KB) logic including local/remote notifications, scheduling, and notification management. Integrate with platform-specific notification APIs (iOS: UserNotifications, Android: NotificationManager) via UniFFI.",
+  "title": "Phase 1.4: Rust SDK Notification System",
+  "priority": 2,
+  "status": "in_progress",
+  "branchName": "",
+  "id": "migration-phase1-rust-notifications",
+  "descriptionHistory": [
+    {
+      "description": "Migrate notification system from TypeScript to Rust SDK. Port notificationService.ts (29KB) logic including local/remote notifications, scheduling, and notification management. Integrate with platform-specific notification APIs (iOS: UserNotifications, Android: NotificationManager) via UniFFI.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase1-rust-storage"
+  ],
+  "startedAt": "2026-01-18T15:55:17.280Z",
+  "updatedAt": "2026-01-18T15:55:17.581Z"
+}

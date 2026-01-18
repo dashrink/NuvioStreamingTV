@@ -1,6 +1,6 @@
 {
   "category": "refactor",
-  "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within the Rust core.",
+  "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within Rust core. Coordinates with platform-specific file access APIs on Android (SAF) and Apple (FileManager).",
   "title": "Rust SDK: Local Media Scanner",
   "priority": 2,
   "status": "backlog",
@@ -11,6 +11,11 @@
       "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within the Rust core.",
       "timestamp": "2026-01-18T11:34:00.649Z",
       "source": "initial"
+    },
+    {
+      "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within Rust core. Coordinates with platform-specific file access APIs on Android (SAF) and Apple (FileManager).",
+      "timestamp": "2026-01-18T15:41:33.409Z",
+      "source": "edit"
     }
   ],
   "skipTests": false,

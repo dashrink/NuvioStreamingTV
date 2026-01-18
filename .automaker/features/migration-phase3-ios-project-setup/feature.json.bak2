@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Set up Xcode project structure for iOS/tvOS with SwiftUI. Create multi-target project (iOS app, tvOS app, shared framework). Configure Swift Package Manager or CocoaPods for dependencies. Set up MVVM architecture with Combine/async-await, dependency injection container, navigation system. Implement iOS 15+ and tvOS 15+ deployment targets.",
+  "title": "Phase 3.1: iOS/tvOS Xcode Project Setup with SwiftUI",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase3-ios-project-setup",
+  "descriptionHistory": [
+    {
+      "description": "Set up Xcode project structure for iOS/tvOS with SwiftUI. Create multi-target project (iOS app, tvOS app, shared framework). Configure Swift Package Manager or CocoaPods for dependencies. Set up MVVM architecture with Combine/async-await, dependency injection container, navigation system. Implement iOS 15+ and tvOS 15+ deployment targets.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase1-rust-bindings"]
+}

@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build profile management, search, and watchlist screens in Jetpack Compose. Implement user profile switching with PIN protection, advanced search with filters and voice input (TV), watchlist management with quick actions, library view with sorting/grouping. Integrate Rust SDK for Trakt sync and local storage.",
+  "title": "Phase 2.7: Android Profile/Search/Watchlist Screens",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase2-android-secondary",
+  "descriptionHistory": [
+    {
+      "description": "Build profile management, search, and watchlist screens in Jetpack Compose. Implement user profile switching with PIN protection, advanced search with filters and voice input (TV), watchlist management with quick actions, library view with sorting/grouping. Integrate Rust SDK for Trakt sync and local storage.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase2-android-architecture"]
+}

@@ -18,10 +18,16 @@ oauth2 = { workspace = true }
 reqwest = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
+flate2 = "1.0"
+# Cache dependencies
+moka = { version = "0.12", features = ["future"] }
+sled = "0.34"
+tokio = { workspace = true }
 
 [dev-dependencies]
-tokio = { workspace = true }
+tokio-test = "0.4"
 wiremock = "0.6"
+tempfile = "3.8"
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

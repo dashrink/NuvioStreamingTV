@@ -1,0 +1,16 @@
+{
+  "category": "refactor",
+  "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust, including search, download, and parsing.",
+  "title": "Rust SDK: Subtitle Service Integration",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "main",
+  "id": "feature-1768736040649-4pg308p4j",
+  "descriptionHistory": [
+    {
+      "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust, including search, download, and parsing.",
+      "timestamp": "2026-01-18T11:34:00.649Z",
+      "source": "initial"
+    }
+  ]
+}

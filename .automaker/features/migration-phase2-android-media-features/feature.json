@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Implement Casting, Picture-in-Picture, and background playback for Android. Add Google Cast integration (Chromecast), Picture-in-Picture mode for mobile (Android 8+), background audio playback, media session controls (lock screen/notification controls), Android Auto integration. Handle playback state persistence.",
+  "title": "Phase 2.10: Android Media Features (Cast/PiP/Background)",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase2-android-media-features",
+  "descriptionHistory": [
+    {
+      "description": "Implement Casting, Picture-in-Picture, and background playback for Android. Add Google Cast integration (Chromecast), Picture-in-Picture mode for mobile (Android 8+), background audio playback, media session controls (lock screen/notification controls), Android Auto integration. Handle playback state persistence.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase2-android-exoplayer"]
+}

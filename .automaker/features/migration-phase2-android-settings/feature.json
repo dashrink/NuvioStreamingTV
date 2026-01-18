@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build all settings screens in Jetpack Compose (20+ settings pages). Implement general settings, player settings, subtitle/audio preferences, quality/bandwidth settings, Trakt.tv auth, TMDB config, addon management, theme selector, parental controls, backup/restore UI, profile management. Use Rust SDK for data persistence via storage layer.",
+  "title": "Phase 2.6: Android Settings Screens",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase2-android-settings",
+  "descriptionHistory": [
+    {
+      "description": "Build all settings screens in Jetpack Compose (20+ settings pages). Implement general settings, player settings, subtitle/audio preferences, quality/bandwidth settings, Trakt.tv auth, TMDB config, addon management, theme selector, parental controls, backup/restore UI, profile management. Use Rust SDK for data persistence via storage layer.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase2-android-architecture"]
+}

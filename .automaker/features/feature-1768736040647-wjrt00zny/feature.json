@@ -1,6 +1,6 @@
 {
   "category": "refactor",
-  "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
+  "description": "Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.",
   "title": "Rust SDK: Real-time Sync Client",
   "priority": 1,
   "status": "backlog",
@@ -11,6 +11,11 @@
       "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
       "timestamp": "2026-01-18T11:34:00.648Z",
       "source": "initial"
+    },
+    {
+      "description": "Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.",
+      "timestamp": "2026-01-18T15:41:33.407Z",
+      "source": "edit"
     }
   ],
   "skipTests": false,

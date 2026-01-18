@@ -164,6 +164,26 @@
       <name>Real-time Chat for Watch Party</name>
       <description>Text and voice chat integration for watch party sessions with emoji reactions, GIF support, and message history.</description>
     </feature>
+    <feature>
+      <name>Phase 1.1: Rust SDK Storage Layer (MMKV Replacement)</name>
+      <description>Migrate storage layer from TypeScript MMKV to Rust SDK. Implement unified key-value storage abstraction in nuvio-core with platform-specific backends (iOS: UserDefaults, Android: SharedPreferences). Replace storageService.ts, mmkvStorage.ts functionality. Expose async API via UniFFI for Kotlin/Swift bindings.</description>
+    </feature>
+    <feature>
+      <name>Phase 1.5: Rust SDK Backup/Restore System</name>
+      <description>Migrate backup and restore functionality from TypeScript to Rust SDK. Port backupService.ts (40KB) including cloud backup integration, local backup creation, data export/import, and restore functionality. Implement secure serialization and compression in Rust.</description>
+    </feature>
+    <feature>
+      <name>Phase 1.4: Rust SDK Notification System</name>
+      <description>Migrate notification system from TypeScript to Rust SDK. Port notificationService.ts (29KB) logic including local/remote notifications, scheduling, and notification management. Integrate with platform-specific notification APIs (iOS: UserNotifications, Android: NotificationManager) via UniFFI.</description>
+    </feature>
+    <feature>
+      <name>Phase 1.2: Rust SDK Cache Management</name>
+      <description>Implement cache management system in Rust SDK. Migrate cacheService.ts and streamCacheService.ts logic to nuvio-core. Include metadata caching, stream result caching, TTL management, and cache invalidation strategies. Expose via UniFFI for native access.</description>
+    </feature>
+    <feature>
+      <name>Phase 1.3: Rust SDK Complete Catalog/Stremio Logic</name>
+      <description>Complete catalog and Stremio service migration to Rust SDK. Finish migrating catalogService.ts (59KB) and stremioService.ts (72KB) business logic to nuvio-core. Ensure full addon protocol support, catalog browsing, filtering, and data source selection. Already partially implemented - complete remaining features.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

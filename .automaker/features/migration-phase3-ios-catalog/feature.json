@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build catalog browsing screens in SwiftUI. Implement grid layouts using LazyVGrid (tvOS: 6 columns, iPad: 4-5 columns, iPhone: 2-3 columns). Add filtering by genre/year/rating, sorting options, infinite scroll with pagination. Integrate Rust SDK catalog service for Stremio addon browsing. Support tvOS focus engine and iOS scroll views.",
+  "title": "Phase 3.4: iOS/tvOS Catalog Browsing Screens",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase3-ios-catalog",
+  "descriptionHistory": [
+    {
+      "description": "Build catalog browsing screens in SwiftUI. Implement grid layouts using LazyVGrid (tvOS: 6 columns, iPad: 4-5 columns, iPhone: 2-3 columns). Add filtering by genre/year/rating, sorting options, infinite scroll with pagination. Integrate Rust SDK catalog service for Stremio addon browsing. Support tvOS focus engine and iOS scroll views.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase3-ios-sdk-integration"]
+}

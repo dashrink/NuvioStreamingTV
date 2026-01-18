@@ -1,0 +1,1 @@
+I'll start by exploring the codebase to understand the existing structure and what needs to be migrated. Let me first get an overview of the project.

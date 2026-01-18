@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build home screen with carousels in SwiftUI (iOS + tvOS). Implement hero carousel with auto-advance using TabView/PageView, category rows with LazyHStack, continue watching section, watchlist integration. tvOS version: 10-foot UI with focus-based navigation. iOS version: compact layouts for iPhone/iPad with swipe gestures. Fetch data from Rust SDK.",
+  "title": "Phase 3.3: iOS/tvOS Home Screen with Carousels",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase3-ios-home",
+  "descriptionHistory": [
+    {
+      "description": "Build home screen with carousels in SwiftUI (iOS + tvOS). Implement hero carousel with auto-advance using TabView/PageView, category rows with LazyHStack, continue watching section, watchlist integration. tvOS version: 10-foot UI with focus-based navigation. iOS version: compact layouts for iPhone/iPad with swipe gestures. Fetch data from Rust SDK.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase3-ios-sdk-integration"]
+}

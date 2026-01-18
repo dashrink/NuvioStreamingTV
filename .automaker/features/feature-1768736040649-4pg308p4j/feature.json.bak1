@@ -4,7 +4,7 @@
   "title": "Rust SDK: Subtitle Service Integration",
   "priority": 2,
   "status": "backlog",
-  "branchName": "main",
+  "branchName": "feature/main-1768737498638-wauv",
   "id": "feature-1768736040649-4pg308p4j",
   "descriptionHistory": [
     {
@@ -12,5 +12,15 @@
       "timestamp": "2026-01-18T11:34:00.649Z",
       "source": "initial"
     }
-  ]
+  ],
+  "skipTests": false,
+  "model": "github-copilot/claude-opus-4.5",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "full",
+  "requirePlanApproval": false,
+  "workMode": "auto",
+  "dependencies": []
 }

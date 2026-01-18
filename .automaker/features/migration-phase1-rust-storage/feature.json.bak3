@@ -1,0 +1,33 @@
+{
+  "category": "refactor",
+  "description": "Migrate storage layer from TypeScript MMKV to Rust SDK. Implement unified key-value storage abstraction in nuvio-core with platform-specific backends (iOS: UserDefaults, Android: SharedPreferences). Replace storageService.ts, mmkvStorage.ts functionality. Expose async API via UniFFI for Kotlin/Swift bindings.",
+  "title": "Phase 1.1: Rust SDK Storage Layer (MMKV Replacement)",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "",
+  "id": "migration-phase1-rust-storage",
+  "descriptionHistory": [
+    {
+      "description": "Migrate storage layer from TypeScript MMKV to Rust SDK. Implement unified key-value storage abstraction in nuvio-core with platform-specific backends (iOS: UserDefaults, Android: SharedPreferences/SQLite). Replace storageService.ts, mmkvStorage.ts functionality. Expose async API via UniFFI for Kotlin/Swift bindings.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    },
+    {
+      "description": "Migrate storage layer from TypeScript MMKV to Rust SDK. Implement unified key-value storage abstraction in nuvio-core with platform-specific backends (iOS: UserDefaults, Android: SharedPreferences). Replace storageService.ts, mmkvStorage.ts functionality. Expose async API via UniFFI for Kotlin/Swift bindings.",
+      "timestamp": "2026-01-18T15:49:51.338Z",
+      "source": "edit"
+    }
+  ],
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [],
+  "startedAt": "2026-01-18T15:51:54.366Z",
+  "updatedAt": "2026-01-18T15:50:56.805Z"
+}

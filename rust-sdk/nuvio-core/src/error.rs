@@ -26,6 +26,13 @@ pub enum NuvioError {
         msg: String,
     },
 
+    /// Error occurred in cache operations
+    #[error("Cache error: {msg}")]
+    CacheError {
+        /// Detailed error message describing the cache error
+        msg: String,
+    },
+
     /// Unknown or unexpected error occurred
     #[error("Unknown error: {msg}")]
     Unknown {
@@ -33,6 +40,9 @@ pub enum NuvioError {
         msg: String,
     },
 }
+
+/// Convenient Result type alias for Nuvio operations
+pub type NuvioResult<T> = Result<T, NuvioError>;
 
 impl NuvioError {
     /// Creates a new SerializationError with the given message
@@ -43,6 +53,11 @@ impl NuvioError {
     /// Creates a new ValidationError with the given message
     pub fn validation(msg: impl Into<String>) -> Self {
         Self::ValidationError { msg: msg.into() }
+    }
+
+    /// Creates a new CacheError with the given message
+    pub fn cache(msg: impl Into<String>) -> Self {
+        Self::CacheError { msg: msg.into() }
     }
 
     /// Creates a new Unknown error with the given message

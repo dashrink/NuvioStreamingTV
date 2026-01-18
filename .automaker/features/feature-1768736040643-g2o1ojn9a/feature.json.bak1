@@ -3,7 +3,7 @@
   "description": "Implement the unified search engine in Rust, aggregating and deduplicating results from TMDB, Stremio, and Trakt. This replaces the JS-side aggregation logic.",
   "title": "Rust SDK: Unified Search Aggregation",
   "priority": 1,
-  "status": "in_progress",
+  "status": "backlog",
   "branchName": "feature/main-1768736141133-ingt",
   "id": "feature-1768736040643-g2o1ojn9a",
   "descriptionHistory": [
@@ -24,5 +24,5 @@
   "workMode": "custom",
   "dependencies": [],
   "startedAt": "2026-01-18T11:36:53.545Z",
-  "updatedAt": "2026-01-18T11:36:53.828Z"
+  "updatedAt": "2026-01-18T11:36:55.702Z"
 }

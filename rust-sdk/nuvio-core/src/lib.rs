@@ -38,6 +38,24 @@ pub mod error;
 // Trakt.tv API integration module
 pub mod trakt;
 
+// HTTP client module
+pub mod http;
+
+// Cache management module
+pub mod cache;
+
+// Profile management module (if not already exported)
+pub mod profile;
+
+// Stremio service module (if not already exported)
+pub mod stremio_service;
+
+// Backup and restore module
+pub mod backup;
+
+// Notification management module
+pub mod notifications;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 

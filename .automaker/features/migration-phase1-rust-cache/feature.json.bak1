@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Implement cache management system in Rust SDK. Migrate cacheService.ts and streamCacheService.ts logic to nuvio-core. Include metadata caching, stream result caching, TTL management, and cache invalidation strategies. Expose via UniFFI for native access.",
+  "title": "Phase 1.2: Rust SDK Cache Management",
+  "priority": 1,
+  "status": "verified",
+  "branchName": "",
+  "id": "migration-phase1-rust-cache",
+  "descriptionHistory": [
+    {
+      "description": "Implement cache management system in Rust SDK. Migrate cacheService.ts and streamCacheService.ts logic to nuvio-core. Include metadata caching, stream result caching, TTL management, and cache invalidation strategies. Expose via UniFFI for native access.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase1-rust-storage"
+  ],
+  "startedAt": "2026-01-18T15:54:52.717Z",
+  "updatedAt": "2026-01-18T16:05:58.165Z"
+}

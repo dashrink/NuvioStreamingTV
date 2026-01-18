@@ -4,7 +4,7 @@
   "title": "Rust SDK: Real-time Sync Client",
   "priority": 1,
   "status": "backlog",
-  "branchName": "main",
+  "branchName": "feature/main-1768736907644-rhnc",
   "id": "feature-1768736040647-wjrt00zny",
   "descriptionHistory": [
     {
@@ -14,14 +14,14 @@
     }
   ],
   "skipTests": false,
-  "model": "github-copilot/gemini-3-pro-preview",
+  "model": "github-copilot/claude-opus-4.5",
   "thinkingLevel": "none",
   "reasoningEffort": "none",
   "imagePaths": [],
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
+  "workMode": "auto",
   "dependencies": [],
   "startedAt": "2026-01-18T11:47:27.206Z",
   "updatedAt": "2026-01-18T11:47:29.769Z"

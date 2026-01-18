@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Complete catalog and Stremio service migration to Rust SDK. Finish migrating catalogService.ts (59KB) and stremioService.ts (72KB) business logic to nuvio-core. Ensure full addon protocol support, catalog browsing, filtering, and data source selection. Already partially implemented - complete remaining features.",
+  "title": "Phase 1.3: Rust SDK Complete Catalog/Stremio Logic",
+  "priority": 1,
+  "status": "completed",
+  "branchName": "",
+  "id": "migration-phase1-rust-catalog",
+  "descriptionHistory": [
+    {
+      "description": "Complete catalog and Stremio service migration to Rust SDK. Finish migrating catalogService.ts (59KB) and stremioService.ts (72KB) business logic to nuvio-core. Ensure full addon protocol support, catalog browsing, filtering, and data source selection. Already partially implemented - complete remaining features.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase1-rust-cache"
+  ],
+  "startedAt": "2026-01-18T16:06:13.328Z",
+  "updatedAt": "2026-01-18T16:08:24.892Z"
+}

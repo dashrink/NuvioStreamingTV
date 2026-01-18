@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Migrate backup and restore functionality from TypeScript to Rust SDK. Port backupService.ts (40KB) including cloud backup integration, local backup creation, data export/import, and restore functionality. Implement secure serialization and compression in Rust.",
+  "title": "Phase 1.5: Rust SDK Backup/Restore System",
+  "priority": 2,
+  "status": "completed",
+  "branchName": "",
+  "id": "migration-phase1-rust-backup",
+  "descriptionHistory": [
+    {
+      "description": "Migrate backup and restore functionality from TypeScript to Rust SDK. Port backupService.ts (40KB) including cloud backup integration, local backup creation, data export/import, and restore functionality. Implement secure serialization and compression in Rust.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase1-rust-storage"
+  ],
+  "startedAt": "2026-01-18T15:55:04.596Z",
+  "updatedAt": "2026-01-18T16:05:07.799Z"
+}

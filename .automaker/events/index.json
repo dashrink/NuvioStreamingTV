@@ -2,6 +2,60 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1768752504897-56729164",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T16:08:24.897Z",
+      "featureId": "migration-phase1-rust-catalog"
+    },
+    {
+      "id": "evt-1768752358169-82d2c200",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T16:05:58.169Z",
+      "featureId": "migration-phase1-rust-cache"
+    },
+    {
+      "id": "evt-1768752316540-c247e2dc",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T16:05:16.540Z",
+      "featureId": "migration-phase1-rust-notifications"
+    },
+    {
+      "id": "evt-1768752307805-8f4ba0a7",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T16:05:07.805Z",
+      "featureId": "migration-phase1-rust-backup"
+    },
+    {
+      "id": "evt-1768751634755-de225aa4",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T15:53:54.755Z",
+      "featureId": "migration-phase1-rust-storage"
+    },
+    {
+      "id": "evt-1768751456806-f250ac24",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T15:50:56.806Z",
+      "featureId": "migration-phase1-rust-storage"
+    },
+    {
+      "id": "evt-1768751430120-aa2136a2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T15:50:30.120Z",
+      "featureId": "migration-phase1-rust-storage"
+    },
+    {
+      "id": "evt-1768751421580-733b6e7a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T15:50:21.580Z",
+      "featureId": "migration-phase1-rust-storage"
+    },
+    {
+      "id": "evt-1768751411676-d69d91ef",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T15:50:11.676Z",
+      "featureId": "migration-phase1-rust-storage"
+    },
+    {
       "id": "evt-1768737576332-7ea08436",
       "trigger": "feature_error",
       "timestamp": "2026-01-18T11:59:36.332Z",

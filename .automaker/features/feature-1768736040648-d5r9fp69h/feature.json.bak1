@@ -4,7 +4,7 @@
   "title": "Rust SDK: Local Media Scanner",
   "priority": 2,
   "status": "backlog",
-  "branchName": "main",
+  "branchName": "feature/main-1768737525994-h2p9",
   "id": "feature-1768736040648-d5r9fp69h",
   "descriptionHistory": [
     {
@@ -12,5 +12,15 @@
       "timestamp": "2026-01-18T11:34:00.649Z",
       "source": "initial"
     }
-  ]
+  ],
+  "skipTests": false,
+  "model": "google/antigravity-gemini-3-pro",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "auto",
+  "dependencies": []
 }

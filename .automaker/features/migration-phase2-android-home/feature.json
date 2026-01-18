@@ -1,0 +1,26 @@
+{
+  "category": "feature",
+  "description": "Build home screen with carousels in Jetpack Compose (TV + Mobile variants). Implement hero carousel with auto-advance, category rows, continue watching section, watchlist integration. TV version: 10-foot UI with D-pad navigation. Mobile version: touch-optimized with swipe gestures. Integrate Rust SDK for data fetching.",
+  "title": "Phase 2.2: Android Home Screen (TV + Mobile)",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "",
+  "id": "migration-phase2-android-home",
+  "descriptionHistory": [
+    {
+      "description": "Build home screen with carousels in Jetpack Compose (TV + Mobile variants). Implement hero carousel with auto-advance, category rows, continue watching section, watchlist integration. TV version: 10-foot UI with D-pad navigation. Mobile version: touch-optimized with swipe gestures. Integrate Rust SDK for data fetching.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": ["migration-phase2-android-architecture"]
+}

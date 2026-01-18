@@ -31,6 +31,61 @@
       "dismissed": true,
       "featureId": "watch-together-chat",
       "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "358959e1-a4d6-4ba1-a6a1-8d84852fec43",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"migration-phase1-rust-storage\" has been verified and is complete.",
+      "createdAt": "2026-01-18T15:53:54.750Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "migration-phase1-rust-storage",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "c4f5dc2a-32a0-4ad9-966a-914187f72d98",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"migration-phase1-rust-backup\" has been verified and is complete.",
+      "createdAt": "2026-01-18T16:05:07.800Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "migration-phase1-rust-backup",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "84226dad-d0c9-463c-9b63-9e24dc5bdfb7",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"migration-phase1-rust-notifications\" has been verified and is complete.",
+      "createdAt": "2026-01-18T16:05:16.534Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "migration-phase1-rust-notifications",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "4de90351-24b3-41f2-946f-27f2c0aad617",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"migration-phase1-rust-cache\" has been verified and is complete.",
+      "createdAt": "2026-01-18T16:05:58.166Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "migration-phase1-rust-cache",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "c7b886b0-96bf-46ea-afa6-598d6c8580da",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"migration-phase1-rust-catalog\" has been verified and is complete.",
+      "createdAt": "2026-01-18T16:08:24.894Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "migration-phase1-rust-catalog",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
     }
   ]
 }
