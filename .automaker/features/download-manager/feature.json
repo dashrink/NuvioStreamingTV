@@ -1,0 +1,12 @@
+{
+  "id": "download-manager",
+  "category": "Core",
+  "title": "Offline Download Manager",
+  "description": "Enables downloading content for offline viewing with queue management, pause/resume support, storage quota management, and automatic cleanup of expired downloads.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.751Z",
+  "updatedAt": "2026-01-18T03:19:59.751Z"
+}

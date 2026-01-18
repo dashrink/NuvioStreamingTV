@@ -142,7 +142,7 @@ async fn test_full_addon_lifecycle() {
     // ========================================================================
 
     let catalog_result = service
-        .get_catalog("com.example.lifecycle", "movie", "top", 1)
+              .get_catalog("com.example.lifecycle", "movie", "top", 1, None)
         .await;
 
     assert!(
@@ -549,7 +549,7 @@ async fn test_catalog_pagination() {
 
     // Fetch first page
     let page1 = service
-        .get_catalog("addon.pagination", "movie", "top", 1)
+        .get_catalog("addon.pagination", "movie", "top", 1, None)
         .await
         .expect("Failed to fetch first page");
 
@@ -636,7 +636,7 @@ async fn test_empty_results_handling() {
 
     // Test empty catalog
     let catalog = service
-        .get_catalog("addon.empty", "movie", "top", 1)
+        .get_catalog("addon.empty", "movie", "top", 1, None)
         .await
         .expect("Empty catalog should succeed");
     assert_eq!(catalog.len(), 0, "Catalog should be empty");

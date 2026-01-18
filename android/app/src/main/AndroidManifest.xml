@@ -44,5 +44,27 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
+    <activity
+        android:name=".player.PlayerActivity"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+        android:exported="false"
+        android:launchMode="singleTask"
+        android:resizeableActivity="true"
+        android:supportsPictureInPicture="true"
+        android:theme="@style/AppTheme"
+        android:screenOrientation="sensorLandscape" />
+
+    <activity
+        android:name=".MainComposeActivity"
+        android:exported="true"
+        android:theme="@style/Theme.Nuvio.Compose"
+        android:screenOrientation="userLandscape">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="nuvio" android:host="home" />
+        </intent-filter>
+    </activity>
   </application>
 </manifest>

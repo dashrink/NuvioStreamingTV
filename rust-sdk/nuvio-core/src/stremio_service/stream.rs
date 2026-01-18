@@ -270,7 +270,8 @@ pub async fn resolve_streams(
         .collect();
 
     // Wait for all tasks to complete
-    let results = futures::future::join_all(tasks).await;
+    // Wait for all tasks to complete
+    let results: Vec<Result<AddonStreamResult, tokio::task::JoinError>> = futures::future::join_all(tasks).await;
 
     // Convert task results to AddonStreamResult
     results
@@ -680,8 +681,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_aggregate_streams() {
-        let mock_server1 = MockServer::start().await;
-        let mock_server2 = MockServer::start().await;
+        let mock_server1: MockServer = MockServer::start().await;
+        let mock_server2: MockServer = MockServer::start().await;
 
         Mock::given(method("GET"))
             .and(path("/stream/movie/tt1234567.json"))
@@ -733,7 +734,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_aggregate_streams_with_failures() {
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         Mock::given(method("GET"))
             .and(path("/stream/movie/tt1234567.json"))

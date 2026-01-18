@@ -35,6 +35,21 @@ pub mod types;
 // Error types module
 pub mod error;
 
+// Profile management module
+pub mod profile;
+
+// Stremio service module
+pub mod stremio_service;
+
+// TMDB module
+pub mod tmdb;
+
+// Trakt module
+pub mod trakt;
+
+// HTTP module
+pub mod http;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 

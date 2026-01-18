@@ -18,7 +18,7 @@ fn default_healthy() -> bool {
 ///
 /// An addon is a remote service that provides content catalogs, metadata, and streams.
 /// Each addon has a manifest that describes its capabilities and supported content types.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct Addon {
     /// Unique identifier for this addon
     pub id: String,
@@ -111,7 +111,7 @@ impl Addon {
 ///
 /// Extra properties allow filtering catalog results by genre, search query, etc.
 /// Per Stremio protocol specification.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct CatalogExtra {
     /// Property name (e.g., "genre", "search", "skip")
     pub name: String,
@@ -167,8 +167,8 @@ impl CatalogExtra {
 ///
 /// Catalogs provide collections of content organized by type (movie, series, etc.)
 /// with optional filtering via extra properties.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Catalog {
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
+pub struct StremioCatalog {
     /// Content type (e.g., "movie", "series", "tv", "channel")
     pub content_type: String,
 
@@ -191,15 +191,15 @@ pub struct Catalog {
     pub extra: Option<Vec<CatalogExtra>>,
 }
 
-impl Catalog {
+impl StremioCatalog {
     /// Creates a new Catalog with required fields.
     ///
     /// # Examples
     ///
     /// ```
-    /// use nuvio_core::stremio_service::types::Catalog;
+    /// use nuvio_core::stremio_service::types::StremioCatalog;
     ///
-    /// let catalog = Catalog::new(
+    /// let catalog = StremioCatalog::new(
     ///     "movie".to_string(),
     ///     "top".to_string(),
     ///     "Top Movies".to_string(),
@@ -223,7 +223,7 @@ impl Catalog {
 /// Represents a resource type supported by an addon.
 ///
 /// Resources define what operations an addon supports (catalog, meta, stream, subtitles).
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct ResourceObject {
     /// Resource name (e.g., "catalog", "meta", "stream", "subtitles")
     pub name: String,
@@ -268,7 +268,7 @@ impl ResourceObject {
 /// The manifest describes an addon's capabilities, supported content types,
 /// available catalogs, and resources. This is the primary discovery mechanism
 /// for Stremio addons.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct Manifest {
     /// Unique addon identifier (reverse domain notation recommended)
     pub id: String,
@@ -289,7 +289,7 @@ pub struct Manifest {
     pub original_url: Option<String>,
 
     /// Catalogs provided by this addon
-    pub catalogs: Option<Vec<Catalog>>,
+    pub catalogs: Option<Vec<StremioCatalog>>,
 
     /// Resources supported by this addon
     pub resources: Option<Vec<ResourceObject>>,
@@ -350,7 +350,7 @@ impl Manifest {
 ///
 /// Subtitles can be provided directly via URL or embedded in stream responses.
 /// Supports multiple formats (SRT, VTT, ASS, SSA).
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct Subtitle {
     /// Unique identifier for this subtitle
     pub id: String,
@@ -430,7 +430,7 @@ impl Subtitle {
 /// Source object for archive streams (RAR, ZIP, 7z, etc.).
 ///
 /// Used when streams are contained in archive files that need extraction.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct SourceObject {
     /// URL to the archive file
     pub url: String,
@@ -469,7 +469,7 @@ impl SourceObject {
 /// Streams can come from various sources: direct HTTP URLs, YouTube, BitTorrent,
 /// Usenet, or archive files. The stream object contains all necessary information
 /// to resolve and play the content.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
 pub struct StremioStream {
     // Primary stream sources (one must be provided)
     /// Direct HTTP(S)/FTP(S)/RTMP URL
@@ -689,8 +689,8 @@ impl StremioStream {
 ///
 /// Meta objects contain information about movies, series, TV shows, or other content
 /// including posters, descriptions, cast, ratings, etc.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Meta {
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, uniffi::Record)]
+pub struct StremioMeta {
     /// Unique identifier (usually IMDb ID or similar)
     pub id: String,
 
@@ -758,15 +758,15 @@ pub struct Meta {
     pub behavior_hints: Option<HashMap<String, String>>,
 }
 
-impl Meta {
+impl StremioMeta {
     /// Creates a new Meta with required fields.
     ///
     /// # Examples
     ///
     /// ```
-    /// use nuvio_core::stremio_service::types::Meta;
+    /// use nuvio_core::stremio_service::types::StremioMeta;
     ///
-    /// let meta = Meta::new(
+    /// let meta = StremioMeta::new(
     ///     "tt1234567".to_string(),
     ///     "movie".to_string(),
     ///     "Example Movie".to_string(),
@@ -890,7 +890,7 @@ mod tests {
             "Test manifest".to_string(),
         );
 
-        manifest.catalogs = Some(vec![Catalog::new(
+        manifest.catalogs = Some(vec![StremioCatalog::new(
             "movie".to_string(),
             "top".to_string(),
             "Top Movies".to_string(),
@@ -1001,7 +1001,7 @@ mod tests {
 
     #[test]
     fn test_meta_new() {
-        let meta = Meta::new(
+        let meta = StremioMeta::new(
             "tt1234567".to_string(),
             "movie".to_string(),
             "Test Movie".to_string(),
@@ -1016,7 +1016,7 @@ mod tests {
 
     #[test]
     fn test_meta_serde_roundtrip() {
-        let mut original = Meta::new(
+        let mut original = StremioMeta::new(
             "tt9999999".to_string(),
             "series".to_string(),
             "Test Series".to_string(),
@@ -1026,14 +1026,14 @@ mod tests {
         original.imdb_rating = Some("8.5".to_string());
 
         let json = serde_json::to_string(&original).expect("Failed to serialize Meta");
-        let deserialized: Meta = serde_json::from_str(&json).expect("Failed to deserialize Meta");
+        let deserialized: StremioMeta = serde_json::from_str(&json).expect("Failed to deserialize Meta");
 
         assert_eq!(original, deserialized);
     }
 
     #[test]
     fn test_catalog_new() {
-        let catalog = Catalog::new(
+        let catalog = StremioCatalog::new(
             "movie".to_string(),
             "trending".to_string(),
             "Trending Movies".to_string(),
@@ -1047,7 +1047,7 @@ mod tests {
 
     #[test]
     fn test_catalog_serde_roundtrip() {
-        let mut catalog = Catalog::new(
+        let mut catalog = StremioCatalog::new(
             "series".to_string(),
             "top".to_string(),
             "Top Series".to_string(),
@@ -1056,7 +1056,7 @@ mod tests {
         catalog.item_count = Some(100);
 
         let json = serde_json::to_string(&catalog).expect("Failed to serialize Catalog");
-        let deserialized: Catalog =
+        let deserialized: StremioCatalog =
             serde_json::from_str(&json).expect("Failed to deserialize Catalog");
 
         assert_eq!(catalog, deserialized);

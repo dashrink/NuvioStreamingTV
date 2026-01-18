@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "notifications": [
+    {
+      "id": "34da3bfe-c635-4da9-a495-a4a897594c0b",
+      "type": "spec_regeneration_complete",
+      "title": "Spec Sync Complete",
+      "message": "Spec is already up to date",
+      "createdAt": "2026-01-18T03:05:15.282Z",
+      "read": false,
+      "dismissed": true,
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "077144c4-4ea4-4cc0-bd1d-833c1570ed5f",
+      "type": "spec_regeneration_complete",
+      "title": "Spec Generation Complete",
+      "message": "Created 50 features from the project specification.",
+      "createdAt": "2026-01-18T03:19:59.772Z",
+      "read": false,
+      "dismissed": true,
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    }
+  ]
+}

@@ -35,14 +35,14 @@
 
 use crate::error::NuvioError;
 use crate::stremio_service::fetcher::Fetcher;
-use crate::stremio_service::types::{Addon, Meta};
+use crate::stremio_service::types::{Addon, StremioMeta};
 use serde::{Deserialize, Serialize};
 
 /// Response structure for meta endpoints per Stremio protocol
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MetaResponse {
     /// Meta object containing detailed content information
-    pub meta: Meta,
+    pub meta: StremioMeta,
 }
 
 /// Result from fetching metadata from a single addon
@@ -58,12 +58,12 @@ pub struct AddonMetaResult {
     pub addon_priority: i32,
 
     /// Result: either metadata or an error
-    pub result: Result<Meta, NuvioError>,
+    pub result: Result<StremioMeta, NuvioError>,
 }
 
 impl AddonMetaResult {
     /// Creates a successful result
-    pub fn success(addon_id: String, addon_name: String, addon_priority: i32, meta: Meta) -> Self {
+    pub fn success(addon_id: String, addon_name: String, addon_priority: i32, meta: StremioMeta) -> Self {
         Self {
             addon_id,
             addon_name,
@@ -93,7 +93,7 @@ impl AddonMetaResult {
     }
 
     /// Returns the metadata if successful, None otherwise
-    pub fn meta(&self) -> Option<&Meta> {
+    pub fn meta(&self) -> Option<&StremioMeta> {
         self.result.as_ref().ok()
     }
 
@@ -282,7 +282,7 @@ pub async fn resolve_meta(
         .collect();
 
     // Wait for all tasks to complete
-    let results = futures::future::join_all(tasks).await;
+    let results: Vec<Result<AddonMetaResult, tokio::task::JoinError>> = futures::future::join_all(tasks).await;
 
     // Convert task results to AddonMetaResult
     results
@@ -344,7 +344,7 @@ pub async fn resolve_meta(
 ///     }
 /// }
 /// ```
-pub fn merge_meta(results: &[AddonMetaResult]) -> Option<Meta> {
+pub fn merge_meta(results: &[AddonMetaResult]) -> Option<StremioMeta> {
     // Sort results by priority (higher priority first)
     let mut sorted_results: Vec<&AddonMetaResult> =
         results.iter().filter(|r| r.is_success()).collect();
@@ -524,7 +524,7 @@ pub async fn aggregate_meta(
     addons: &[Addon],
     content_type: &str,
     content_id: &str,
-) -> Option<Meta> {
+) -> Option<StremioMeta> {
     let results = resolve_meta(fetcher, addons, content_type, content_id).await;
     merge_meta(&results)
 }
@@ -559,7 +559,7 @@ mod tests {
 
     #[test]
     fn test_addon_meta_result_success() {
-        let meta = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let meta = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         let result = AddonMetaResult::success(
             "addon1".to_string(),
             "Addon 1".to_string(),
@@ -712,7 +712,7 @@ mod tests {
 
     #[test]
     fn test_merge_meta_single_source() {
-        let mut meta = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let mut meta = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         meta.poster = Some("https://example.com/poster.jpg".to_string());
         meta.year = Some(2024);
 
@@ -737,12 +737,12 @@ mod tests {
     #[test]
     fn test_merge_meta_priority_precedence() {
         // Higher priority addon
-        let mut meta1 = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let mut meta1 = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         meta1.poster = Some("https://high-priority.com/poster.jpg".to_string());
         meta1.year = Some(2024);
 
         // Lower priority addon
-        let mut meta2 = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let mut meta2 = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         meta2.poster = Some("https://low-priority.com/poster.jpg".to_string());
         meta2.background = Some("https://low-priority.com/bg.jpg".to_string());
 
@@ -770,11 +770,11 @@ mod tests {
 
     #[test]
     fn test_merge_meta_array_deduplication() {
-        let mut meta1 = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let mut meta1 = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         meta1.genres = Some(vec!["Action".to_string(), "Drama".to_string()]);
         meta1.cast = Some(vec!["Actor A".to_string(), "Actor B".to_string()]);
 
-        let mut meta2 = Meta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
+        let mut meta2 = StremioMeta::new("tt123".to_string(), "movie".to_string(), "Test".to_string());
         meta2.genres = Some(vec!["Drama".to_string(), "Thriller".to_string()]);
         meta2.cast = Some(vec!["Actor B".to_string(), "Actor C".to_string()]);
 

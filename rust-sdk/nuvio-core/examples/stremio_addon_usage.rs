@@ -210,7 +210,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Demonstrate error handling when addon is not found
     match service
-        .get_catalog("nonexistent.addon", "movie", "top", 1)
+          .get_catalog("nonexistent.addon", "movie", "top", 1, None)
         .await
     {
         Ok(_) => println!("Unexpected success"),

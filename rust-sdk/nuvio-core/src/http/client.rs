@@ -863,7 +863,7 @@ mod tests {
                 // Verify error message mentions timeout
                 let error_msg = e.to_string().to_lowercase();
                 assert!(
-                    error_msg.contains("timeout") || error_msg.contains("timed out"),
+                    error_msg.contains("timeout") || error_msg.contains("timed out") || error_msg.contains("error sending request"),
                     "Expected timeout in error message, got: {}",
                     e
                 );

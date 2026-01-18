@@ -1,0 +1,12 @@
+{
+  "id": "subtitle-service",
+  "category": "Core",
+  "title": "External Subtitle Integration Service",
+  "description": "Integrates with OpenSubtitles and other subtitle providers for automatic subtitle search, download, and synchronization. Supports multiple languages and user-uploaded subtitles.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.752Z",
+  "updatedAt": "2026-01-18T03:19:59.752Z"
+}

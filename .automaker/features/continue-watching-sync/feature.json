@@ -1,0 +1,12 @@
+{
+  "id": "continue-watching-sync",
+  "category": "Sync",
+  "title": "Cross-Device Continue Watching Sync",
+  "description": "Real-time synchronization of watch progress across all devices using WebSocket connections. Automatically updates playback position and resume points.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.757Z",
+  "updatedAt": "2026-01-18T03:19:59.757Z"
+}

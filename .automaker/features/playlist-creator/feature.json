@@ -1,0 +1,12 @@
+{
+  "id": "playlist-creator",
+  "category": "Content",
+  "title": "Custom Playlist Creator",
+  "description": "Create custom playlists of movies and episodes with automatic playback, shuffle mode, and sharing capabilities. Supports themed playlists and marathon modes.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.758Z",
+  "updatedAt": "2026-01-18T03:19:59.758Z"
+}

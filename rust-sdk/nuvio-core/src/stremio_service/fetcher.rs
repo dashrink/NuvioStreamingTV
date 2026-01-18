@@ -162,7 +162,7 @@ impl Fetcher {
             })
             .collect();
 
-        let results = futures::future::join_all(tasks).await;
+        let results: Vec<Result<Result<String, NuvioError>, tokio::task::JoinError>> = futures::future::join_all(tasks).await;
 
         results
             .into_iter()

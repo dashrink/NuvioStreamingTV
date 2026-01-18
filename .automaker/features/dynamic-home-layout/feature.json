@@ -1,0 +1,14 @@
+{
+  "id": "dynamic-home-layout",
+  "category": "UI",
+  "title": "Dynamic Home Screen Layout",
+  "description": "AI-powered home screen that adapts layout and content sections based on viewing patterns, time of day, and user preferences with A/B testing.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [
+    "smart-recommendation-engine"
+  ],
+  "createdAt": "2026-01-18T03:19:59.771Z",
+  "updatedAt": "2026-01-18T03:19:59.771Z"
+}

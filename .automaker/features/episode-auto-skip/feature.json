@@ -1,0 +1,12 @@
+{
+  "id": "episode-auto-skip",
+  "category": "Playback",
+  "title": "Intro/Outro Auto-Skip",
+  "description": "Machine learning-powered automatic detection and skipping of show intros, outros, and recaps with user-configurable behavior and manual skip buttons.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.760Z",
+  "updatedAt": "2026-01-18T03:19:59.760Z"
+}

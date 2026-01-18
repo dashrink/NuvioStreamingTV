@@ -1,0 +1,12 @@
+{
+  "id": "sleep-timer",
+  "category": "Playback",
+  "title": "Sleep Timer & Auto-Pause",
+  "description": "Configurable sleep timer that pauses playback after set duration with fade-out audio, end-of-episode option, and inactivity detection.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.766Z",
+  "updatedAt": "2026-01-18T03:19:59.766Z"
+}

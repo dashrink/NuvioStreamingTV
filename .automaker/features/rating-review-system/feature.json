@@ -1,0 +1,12 @@
+{
+  "id": "rating-review-system",
+  "category": "Social",
+  "title": "User Rating & Review System",
+  "description": "In-app rating and review system synced with Trakt, allowing users to rate content, write reviews, and see aggregated community ratings.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.761Z",
+  "updatedAt": "2026-01-18T03:19:59.761Z"
+}

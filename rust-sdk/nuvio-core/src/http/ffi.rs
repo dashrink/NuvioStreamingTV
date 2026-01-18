@@ -901,8 +901,8 @@ mod tests {
         assert_eq!(cloned.headers, request.headers);
     }
 
-    #[tokio::test]
-    async fn test_http_get_integration() {
+    #[test]
+    fn test_http_get_integration() {
         // Initialize tracing for test visibility
         crate::init_tracing();
 
@@ -923,8 +923,8 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn test_http_post_integration() {
+    #[test]
+    fn test_http_post_integration() {
         // Initialize tracing for test visibility
         crate::init_tracing();
 
@@ -949,8 +949,8 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn test_http_request_custom() {
+    #[test]
+    fn test_http_request_custom() {
         // Initialize tracing for test visibility
         crate::init_tracing();
 

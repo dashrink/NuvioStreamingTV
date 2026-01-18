@@ -25,17 +25,17 @@ mkdir -p ../bindings/kotlin ../bindings/swift
 # Generate Kotlin bindings
 echo "Generating Kotlin bindings..."
 cargo run --bin uniffi-bindgen generate \
-    --library target/release/libnuvio_core.so \
+    --library ../target/release/libnuvio_core.so \
     --language kotlin \
     --out-dir ../bindings/kotlin \
     --config uniffi.toml \
     || cargo run --bin uniffi-bindgen generate \
-       --library target/release/libnuvio_core.dylib \
+       --library ../target/release/libnuvio_core.dylib \
        --language kotlin \
        --out-dir ../bindings/kotlin \
        --config uniffi.toml \
     || cargo run --bin uniffi-bindgen generate \
-       --library target/release/nuvio_core.dll \
+       --library ../target/release/nuvio_core.dll \
        --language kotlin \
        --out-dir ../bindings/kotlin \
        --config uniffi.toml
@@ -43,17 +43,17 @@ cargo run --bin uniffi-bindgen generate \
 # Generate Swift bindings
 echo "Generating Swift bindings..."
 cargo run --bin uniffi-bindgen generate \
-    --library target/release/libnuvio_core.so \
+    --library ../target/release/libnuvio_core.so \
     --language swift \
     --out-dir ../bindings/swift \
     --config uniffi.toml \
     || cargo run --bin uniffi-bindgen generate \
-       --library target/release/libnuvio_core.dylib \
+       --library ../target/release/libnuvio_core.dylib \
        --language swift \
        --out-dir ../bindings/swift \
        --config uniffi.toml \
     || cargo run --bin uniffi-bindgen generate \
-       --library target/release/nuvio_core.dll \
+       --library ../target/release/nuvio_core.dll \
        --language swift \
        --out-dir ../bindings/swift \
        --config uniffi.toml

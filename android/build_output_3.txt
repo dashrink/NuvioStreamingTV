@@ -1,0 +1,2105 @@
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-module-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-updates-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-module-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-updates-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-launcher-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+> Task :expo-module-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-dev-launcher-gradle-plugin:classes UP-TO-DATE
+> Task :expo-module-gradle-plugin:classes UP-TO-DATE
+> Task :expo-updates-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-updates-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-module-gradle-plugin:jar UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:jar UP-TO-DATE
+> Task :expo-updates-gradle-plugin:classes UP-TO-DATE
+> Task :expo-updates-gradle-plugin:jar UP-TO-DATE
+
+> Configure project :app
+ ℹ️  [33mApplying gradle plugin[0m '[32mexpo-dev-launcher-gradle-plugin[0m'
+ ℹ️  [33mApplying gradle plugin[0m '[32mexpo-updates-gradle-plugin[0m'
+
+> Configure project :
+[32m[ExpoRootProject][0m Using the following versions:
+  - buildTools:  [32m36.0.0[0m
+  - minSdk:      [32m26[0m
+  - compileSdk:  [32m36[0m
+  - targetSdk:   [32m36[0m
+  - ndk:         [32m27.1.12297006[0m
+  - kotlin:      [32m2.1.20[0m
+  - ksp:         [32m2.1.20-2.0.1[0m
+
+> Configure project :expo
+
+Using expo modules
+  - [32mexpo-constants[0m (18.0.12)
+  - [32mexpo-dev-client[0m (6.0.20)
+  - [32mexpo-dev-launcher[0m (6.0.20)
+  - [32mexpo-dev-menu[0m (7.0.18)
+  - [32mexpo-dev-menu-interface[0m (2.0.0)
+  - [32mexpo-eas-client[0m (1.0.8)
+  - [32mexpo-json-utils[0m (0.15.0)
+  - [32mexpo-libvlc-player[0m (2.3.1)
+  - [32mexpo-manifests[0m (1.0.10)
+  - [32mexpo-modules-core[0m (3.0.29)
+  - [32mexpo-random[0m (14.0.1)
+  - [32mexpo-structured-headers[0m (5.0.0)
+  - [32mexpo-updates[0m (29.0.15)
+  - [32mexpo-updates-interface[0m (2.0.0)
+  - [32mreact-native-image-colors[0m (2.0.0)
+  - [33m[📦][0m [32mexpo-application[0m (7.0.8)
+  - [33m[📦][0m [32mexpo-asset[0m (12.0.11)
+  - [33m[📦][0m [32mexpo-blur[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-brightness[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-crypto[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-device[0m (8.0.10)
+  - [33m[📦][0m [32mexpo-document-picker[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-file-system[0m (19.0.21)
+  - [33m[📦][0m [32mexpo-font[0m (14.0.10)
+  - [33m[📦][0m [32mexpo-haptics[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-intent-launcher[0m (13.0.8)
+  - [33m[📦][0m [32mexpo-keep-awake[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-linear-gradient[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-linking[0m (8.0.10)
+  - [33m[📦][0m [32mexpo-localization[0m (17.0.8)
+  - [33m[📦][0m [32mexpo-notifications[0m (0.32.15)
+  - [33m[📦][0m [32mexpo-screen-orientation[0m (9.0.8)
+  - [33m[📦][0m [32mexpo-sharing[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-system-ui[0m (6.0.9)
+  - [33m[📦][0m [32mexpo-web-browser[0m (15.0.10)
+
+
+> Configure project :react-native-mmkv
+[NitroModules] 🔥 NitroMmkv is boosted by nitro!
+
+> Configure project :react-native-nitro-modules
+[NitroModules] 🔥 Your app is boosted by nitro modules!
+
+> Configure project :react-native-video
+Kotlin version is correct: 2.1.20
+AndroidX version is correct: 1.9.3
+useExoplayerIMA: false
+useExoplayerSmoothStreaming: true
+useExoplayerDash: true
+useExoplayerHls: true
+useExoplayerRtsp: false
+buildFromSource: false
+
+> Task :expo-dev-launcher:preBuild UP-TO-DATE
+> Task :expo-dev-menu-interface:preBuild UP-TO-DATE
+> Task :expo-dev-menu:preBuild UP-TO-DATE
+> Task :expo-eas-client:preBuild UP-TO-DATE
+> Task :expo-dev-client:preBuild UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:preBuild UP-TO-DATE
+> Task :expo-modules-core:preBuild UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:preDebugBuild UP-TO-DATE
+> Task :expo-random:preBuild UP-TO-DATE
+> Task :expo-json-utils:preBuild UP-TO-DATE
+> Task :expo-manifests:preBuild UP-TO-DATE
+> Task :expo-libvlc-player:preBuild UP-TO-DATE
+> Task :expo-structured-headers:preBuild UP-TO-DATE
+> Task :expo-updates-interface:preBuild UP-TO-DATE
+> Task :expo-updates:preBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preBuild UP-TO-DATE
+> Task :react-native-google-cast:preBuild UP-TO-DATE
+> Task :react-native-image-colors:preBuild UP-TO-DATE
+> Task :react-native-immersive-mode:preBuild UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:mergeDebugJniLibFolders
+> Task :adrianso_react-native-device-brightness:mergeDebugNativeLibs NO-SOURCE
+> Task :adrianso_react-native-device-brightness:stripDebugDebugSymbols NO-SOURCE
+> Task :adrianso_react-native-device-brightness:copyDebugJniLibsProjectAndLocalJars
+> Task :adrianso_react-native-device-brightness:generateDebugBuildConfig
+> Task :adrianso_react-native-device-brightness:generateDebugResValues
+> Task :adrianso_react-native-device-brightness:generateDebugResources
+> Task :lottie-react-native:generateCodegenSchemaFromJavaScript
+
+> Task :expo-constants:createExpoConfig
+env: load .env.local
+env: export EXPO_PUBLIC_USE_REMOTE_CACHE EXPO_PUBLIC_CACHE_SERVER_URL EXPO_PUBLIC_DISABLE_LOCAL_CACHE EXPO_PUBLIC_MOVIEBOX_PRIMARY_KEY EXPO_PUBLIC_MOVIEBOX_TMDB_API_KEY EXPO_PUBLIC_TRAKT_CLIENT_ID EXPO_PUBLIC_TRAKT_CLIENT_SECRET EXPO_PUBLIC_TRAKT_REDIRECT_URI
+[app.config.js] Loading config from: app.json
+
+> Task :expo-constants:preBuild
+> Task :react-native-community_slider:generateCodegenSchemaFromJavaScript
+> Task :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
+> Task :d11_react-native-fast-image:generateCodegenSchemaFromJavaScript
+> Task :react-native-get-random-values:generateCodegenSchemaFromJavaScript
+> Task :adrianso_react-native-device-brightness:packageDebugResources
+> Task :react-native-community_blur:generateCodegenSchemaFromJavaScript
+> Task :adrianso_react-native-device-brightness:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-bottom-tabs:generateCodegenSchemaFromJavaScript
+> Task :adrianso_react-native-device-brightness:mergeDebugShaders
+> Task :adrianso_react-native-device-brightness:compileDebugShaders NO-SOURCE
+> Task :adrianso_react-native-device-brightness:generateDebugAssets UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:mergeDebugAssets
+> Task :adrianso_react-native-device-brightness:javaPreCompileDebug
+> Task :adrianso_react-native-device-brightness:prepareDebugArtProfile UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:prepareLintJarForPublish UP-TO-DATE
+
+> Task :react-native-mmkv:generateCodegenSchemaFromJavaScript
+No modules to process in combine-js-to-schema-cli. If this is unexpected, please check if you set up your NativeComponent correctly. See combine-js-to-schema.js for how codegen finds modules.
+
+> Task :react-native-nitro-modules:generateCodegenSchemaFromJavaScript
+> Task :adrianso_react-native-device-brightness:processDebugJavaRes NO-SOURCE
+> Task :adrianso_react-native-device-brightness:parseDebugLocalResources
+> Task :react-native-get-random-values:generateCodegenArtifactsFromSchema
+> Task :react-native-community_slider:generateCodegenArtifactsFromSchema
+> Task :react-native-community_slider:preBuild
+> Task :react-native-get-random-values:preBuild
+> Task :react-native-bottom-tabs:generateCodegenArtifactsFromSchema
+> Task :react-native-bottom-tabs:preBuild
+> Task :react-native-gesture-handler:generateCodegenArtifactsFromSchema
+> Task :lottie-react-native:generateCodegenArtifactsFromSchema
+> Task :lottie-react-native:preBuild
+> Task :react-native-gesture-handler:preBuild
+> Task :adrianso_react-native-device-brightness:generateDebugRFile
+> Task :d11_react-native-fast-image:generateCodegenArtifactsFromSchema
+> Task :adrianso_react-native-device-brightness:extractDebugAnnotations
+> Task :react-native-community_blur:generateCodegenArtifactsFromSchema
+> Task :d11_react-native-fast-image:preBuild
+> Task :react-native-community_blur:preBuild
+
+> Task :adrianso_react-native-device-brightness:processDebugManifest
+package="org.capslock.RNDeviceBrightness" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@adrianso/react-native-device-brightness/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="org.capslock.RNDeviceBrightness" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@adrianso/react-native-device-brightness/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-mmkv:generateCodegenArtifactsFromSchema
+> Task :react-native-mmkv:preBuild
+> Task :react-native-video:preBuild UP-TO-DATE
+> Task :react-native-reanimated:assertMinimalReactNativeVersionTask
+> Task :react-native-reanimated:assertNewArchitectureEnabledTask SKIPPED
+> Task :adrianso_react-native-device-brightness:mergeDebugJavaResource
+> Task :react-native-worklets:assertMinimalReactNativeVersionTask
+> Task :react-native-worklets:assertNewArchitectureEnabledTask SKIPPED
+> Task :react-native-safe-area-context:generateCodegenSchemaFromJavaScript
+> Task :react-native-reanimated:assertWorkletsVersionTask
+> Task :react-native-vector-icons:generateCodegenSchemaFromJavaScript
+> Task :react-native-nitro-modules:generateCodegenArtifactsFromSchema
+> Task :react-native-picker_picker:generateCodegenSchemaFromJavaScript
+> Task :react-native-screens:generateCodegenSchemaFromJavaScript
+> Task :sentry_react-native:generateCodegenSchemaFromJavaScript
+> Task :react-native-svg:generateCodegenSchemaFromJavaScript
+> Task :react-native-nitro-modules:prepareHeaders
+> Task :react-native-nitro-modules:preBuild
+> Task :d11_react-native-fast-image:preDebugBuild
+> Task :d11_react-native-fast-image:writeDebugAarMetadata
+> Task :expo-constants:preDebugBuild
+> Task :expo-constants:writeDebugAarMetadata
+> Task :expo-dev-client:preDebugBuild UP-TO-DATE
+> Task :react-native-worklets:generateCodegenSchemaFromJavaScript
+> Task :expo-dev-client:writeDebugAarMetadata
+> Task :expo-dev-launcher:preDebugBuild UP-TO-DATE
+> Task :expo-dev-launcher:writeDebugAarMetadata
+> Task :expo-dev-menu:preDebugBuild UP-TO-DATE
+> Task :expo-dev-menu:writeDebugAarMetadata
+> Task :expo-dev-menu-interface:preDebugBuild UP-TO-DATE
+> Task :expo-dev-menu-interface:writeDebugAarMetadata
+> Task :expo-eas-client:preDebugBuild UP-TO-DATE
+> Task :expo-eas-client:writeDebugAarMetadata
+> Task :expo-json-utils:preDebugBuild UP-TO-DATE
+> Task :expo-json-utils:writeDebugAarMetadata
+> Task :expo-libvlc-player:preDebugBuild UP-TO-DATE
+> Task :expo-libvlc-player:writeDebugAarMetadata
+> Task :expo-manifests:preDebugBuild UP-TO-DATE
+> Task :expo-manifests:writeDebugAarMetadata
+> Task :expo-modules-core:preDebugBuild UP-TO-DATE
+> Task :expo-modules-core:writeDebugAarMetadata
+> Task :expo-random:preDebugBuild UP-TO-DATE
+> Task :expo-random:writeDebugAarMetadata
+> Task :expo-structured-headers:preDebugBuild UP-TO-DATE
+> Task :expo-structured-headers:writeDebugAarMetadata
+> Task :expo-updates:preDebugBuild UP-TO-DATE
+> Task :expo-updates:writeDebugAarMetadata
+> Task :expo-updates-interface:preDebugBuild UP-TO-DATE
+> Task :expo-updates-interface:writeDebugAarMetadata
+> Task :lottie-react-native:preDebugBuild
+> Task :react-native-reanimated:generateCodegenSchemaFromJavaScript
+> Task :lottie-react-native:writeDebugAarMetadata
+> Task :react-native-bottom-tabs:preDebugBuild
+> Task :react-native-vector-icons:generateCodegenArtifactsFromSchema
+> Task :react-native-vector-icons:preBuild
+> Task :react-native-community_blur:preDebugBuild
+> Task :react-native-bottom-tabs:writeDebugAarMetadata
+> Task :react-native-community_netinfo:preDebugBuild UP-TO-DATE
+> Task :react-native-community_blur:writeDebugAarMetadata
+> Task :react-native-community_slider:preDebugBuild
+> Task :react-native-community_netinfo:writeDebugAarMetadata
+> Task :react-native-gesture-handler:preDebugBuild
+> Task :react-native-community_slider:writeDebugAarMetadata
+> Task :react-native-get-random-values:preDebugBuild
+> Task :react-native-screens:generateCodegenArtifactsFromSchema
+> Task :react-native-screens:preBuild
+> Task :react-native-google-cast:preDebugBuild UP-TO-DATE
+> Task :react-native-gesture-handler:writeDebugAarMetadata
+> Task :react-native-image-colors:preDebugBuild UP-TO-DATE
+> Task :react-native-get-random-values:writeDebugAarMetadata
+> Task :react-native-immersive-mode:preDebugBuild UP-TO-DATE
+> Task :react-native-google-cast:writeDebugAarMetadata
+> Task :react-native-mmkv:preDebugBuild
+> Task :react-native-immersive-mode:writeDebugAarMetadata
+> Task :react-native-nitro-modules:preDebugBuild
+> Task :react-native-nitro-modules:writeDebugAarMetadata
+> Task :react-native-screens:preDebugBuild
+> Task :react-native-mmkv:writeDebugAarMetadata
+> Task :react-native-vector-icons:preDebugBuild
+> Task :react-native-image-colors:writeDebugAarMetadata
+> Task :react-native-video:preDebugBuild UP-TO-DATE
+> Task :react-native-screens:writeDebugAarMetadata
+> Task :react-native-vector-icons:writeDebugAarMetadata
+> Task :d11_react-native-fast-image:generateDebugResValues
+> Task :expo-constants:generateDebugResValues
+> Task :react-native-video:writeDebugAarMetadata
+> Task :d11_react-native-fast-image:generateDebugResources
+> Task :expo-dev-client:generateDebugResValues
+> Task :expo-constants:generateDebugResources
+> Task :expo-dev-client:generateDebugResources
+> Task :d11_react-native-fast-image:packageDebugResources
+> Task :react-native-safe-area-context:generateCodegenArtifactsFromSchema
+> Task :react-native-safe-area-context:preBuild
+> Task :expo-dev-launcher:generateDebugResValues
+> Task :react-native-safe-area-context:preDebugBuild
+> Task :expo-dev-launcher:generateDebugResources
+> Task :expo-constants:packageDebugResources
+> Task :app:generateAutolinkingNewArchitectureFiles UP-TO-DATE
+> Task :app:generateAutolinkingPackageList UP-TO-DATE
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :expo-dev-menu:generateDebugResValues
+> Task :react-native-safe-area-context:writeDebugAarMetadata
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:generateReactNativeEntryPoint UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-eas-client:generateDebugResValues
+> Task :expo-eas-client:generateDebugResources
+> Task :expo-dev-menu:generateDebugResources
+> Task :expo-dev-menu-interface:generateDebugResValues
+> Task :expo-eas-client:packageDebugResources
+> Task :expo-dev-client:packageDebugResources
+> Task :expo-dev-menu-interface:generateDebugResources
+> Task :expo-json-utils:generateDebugResValues
+> Task :expo-libvlc-player:generateDebugResValues
+> Task :expo-json-utils:generateDebugResources
+> Task :expo-libvlc-player:generateDebugResources
+> Task :expo-dev-menu-interface:packageDebugResources
+> Task :expo-manifests:generateDebugResValues
+> Task :expo-manifests:generateDebugResources
+> Task :react-native-picker_picker:generateCodegenArtifactsFromSchema
+> Task :expo-json-utils:packageDebugResources
+> Task :react-native-picker_picker:preBuild
+> Task :react-native-picker_picker:preDebugBuild
+> Task :expo-libvlc-player:packageDebugResources
+> Task :expo-manifests:packageDebugResources
+> Task :expo-modules-core:generateDebugResValues
+> Task :expo-random:generateDebugResValues
+> Task :react-native-picker_picker:writeDebugAarMetadata
+> Task :expo-modules-core:generateDebugResources
+> Task :expo-random:generateDebugResources
+> Task :expo-structured-headers:generateDebugResValues
+> Task :expo-updates:generateDebugResValues
+> Task :expo-structured-headers:generateDebugResources
+> Task :expo-updates:generateDebugResources
+> Task :expo-modules-core:packageDebugResources
+> Task :expo-random:packageDebugResources
+> Task :lottie-react-native:generateDebugResValues
+> Task :expo-updates-interface:generateDebugResValues
+> Task :react-native-svg:generateCodegenArtifactsFromSchema
+> Task :react-native-svg:preBuild
+> Task :react-native-svg:preDebugBuild
+> Task :expo-updates-interface:generateDebugResources
+> Task :expo-updates:packageDebugResources
+> Task :lottie-react-native:generateDebugResources
+> Task :react-native-worklets:generateCodegenArtifactsFromSchema
+> Task :expo-structured-headers:packageDebugResources
+> Task :react-native-bottom-tabs:generateDebugResValues
+> Task :sentry_react-native:generateCodegenArtifactsFromSchema
+> Task :sentry_react-native:preBuild
+> Task :sentry_react-native:preDebugBuild
+> Task :react-native-community_blur:generateDebugResValues
+> Task :react-native-svg:writeDebugAarMetadata
+> Task :react-native-community_netinfo:generateDebugResValues
+> Task :react-native-community_blur:generateDebugResources
+> Task :sentry_react-native:writeDebugAarMetadata
+> Task :react-native-bottom-tabs:generateDebugResources
+> Task :lottie-react-native:packageDebugResources
+> Task :expo-updates-interface:packageDebugResources
+> Task :react-native-community_slider:generateDebugResValues
+> Task :react-native-community_netinfo:generateDebugResources
+> Task :react-native-gesture-handler:generateDebugResValues
+> Task :react-native-get-random-values:generateDebugResValues
+> Task :react-native-community_slider:generateDebugResources
+> Task :react-native-gesture-handler:generateDebugResources
+> Task :react-native-get-random-values:generateDebugResources
+> Task :react-native-community_netinfo:packageDebugResources
+> Task :react-native-reanimated:generateCodegenArtifactsFromSchema
+> Task :react-native-bottom-tabs:packageDebugResources
+> Task :react-native-google-cast:generateDebugResValues
+> Task :react-native-gesture-handler:packageDebugResources
+> Task :react-native-image-colors:generateDebugResValues
+> Task :react-native-worklets:prepareWorkletsHeadersForPrefabs
+> Task :react-native-worklets:preBuild
+> Task :react-native-google-cast:generateDebugResources
+> Task :react-native-immersive-mode:generateDebugResValues
+> Task :react-native-worklets:preDebugBuild
+> Task :expo-dev-menu:packageDebugResources
+> Task :react-native-get-random-values:packageDebugResources
+> Task :react-native-community_slider:packageDebugResources
+> Task :react-native-image-colors:generateDebugResources
+> Task :react-native-immersive-mode:generateDebugResources
+> Task :react-native-mmkv:generateDebugResValues
+> Task :react-native-picker_picker:generateDebugResValues
+> Task :react-native-nitro-modules:generateDebugResValues
+> Task :react-native-community_blur:packageDebugResources
+> Task :react-native-mmkv:generateDebugResources
+> Task :react-native-picker_picker:generateDebugResources
+> Task :react-native-worklets:writeDebugAarMetadata
+> Task :react-native-safe-area-context:generateDebugResValues
+> Task :expo-dev-launcher:packageDebugResources
+> Task :react-native-google-cast:packageDebugResources
+> Task :react-native-image-colors:packageDebugResources
+> Task :react-native-immersive-mode:packageDebugResources
+> Task :react-native-screens:generateDebugResValues
+> Task :react-native-svg:generateDebugResValues
+> Task :react-native-worklets:generateDebugResValues
+> Task :react-native-nitro-modules:generateDebugResources
+> Task :react-native-safe-area-context:generateDebugResources
+> Task :react-native-vector-icons:generateDebugResValues
+> Task :react-native-screens:generateDebugResources
+> Task :react-native-video:generateDebugResValues
+> Task :react-native-svg:generateDebugResources
+> Task :react-native-worklets:generateDebugResources
+> Task :react-native-vector-icons:generateDebugResources
+> Task :react-native-video:generateDebugResources
+> Task :react-native-mmkv:packageDebugResources
+> Task :sentry_react-native:generateDebugResValues
+> Task :react-native-picker_picker:packageDebugResources
+> Task :react-native-svg:packageDebugResources
+> Task :react-native-worklets:packageDebugResources
+> Task :react-native-safe-area-context:packageDebugResources
+> Task :react-native-vector-icons:packageDebugResources
+> Task :sentry_react-native:generateDebugResources
+> Task :expo-constants:extractDeepLinksDebug
+> Task :d11_react-native-fast-image:extractDeepLinksDebug
+> Task :react-native-nitro-modules:packageDebugResources
+> Task :expo-dev-launcher:extractDeepLinksDebug
+> Task :expo-dev-client:extractDeepLinksDebug
+> Task :expo-dev-menu:extractDeepLinksDebug
+> Task :expo-dev-menu-interface:extractDeepLinksDebug
+> Task :sentry_react-native:packageDebugResources
+> Task :expo-dev-client:processDebugManifest
+> Task :expo-eas-client:extractDeepLinksDebug
+> Task :expo-json-utils:extractDeepLinksDebug
+
+> Task :d11_react-native-fast-image:processDebugManifest
+package="com.dylanvann.fastimage" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@d11/react-native-fast-image/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.dylanvann.fastimage" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@d11/react-native-fast-image/android/src/main/AndroidManifest.xml.
+
+> Task :expo-libvlc-player:extractDeepLinksDebug
+> Task :expo-dev-menu:processDebugManifest
+> Task :expo-constants:processDebugManifest
+> Task :expo-eas-client:processDebugManifest
+> Task :react-native-video:packageDebugResources
+> Task :expo-manifests:extractDeepLinksDebug
+> Task :expo-modules-core:extractDeepLinksDebug
+> Task :expo-dev-menu-interface:processDebugManifest
+> Task :expo-structured-headers:extractDeepLinksDebug
+> Task :expo-random:extractDeepLinksDebug
+> Task :expo-updates:extractDeepLinksDebug
+> Task :expo-json-utils:processDebugManifest
+> Task :react-native-screens:packageDebugResources
+> Task :expo-libvlc-player:processDebugManifest
+> Task :expo-updates-interface:extractDeepLinksDebug
+> Task :lottie-react-native:extractDeepLinksDebug
+> Task :react-native-bottom-tabs:extractDeepLinksDebug
+> Task :expo-manifests:processDebugManifest
+
+> Task :expo-modules-core:processDebugManifest
+/home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/AndroidManifest.xml:8:9-11:45 Warning:
+	meta-data#com.facebook.soloader.enabled@android:value was tagged at AndroidManifest.xml:8 to replace other declarations but no other declaration present
+
+> Task :react-native-reanimated:prepareReanimatedHeadersForPrefabs
+> Task :react-native-reanimated:preBuild
+> Task :react-native-reanimated:preDebugBuild
+> Task :expo-random:processDebugManifest
+> Task :expo-structured-headers:processDebugManifest
+> Task :expo-updates:processDebugManifest
+> Task :react-native-community_netinfo:extractDeepLinksDebug
+> Task :expo-dev-launcher:processDebugManifest
+> Task :react-native-community_blur:extractDeepLinksDebug
+> Task :react-native-reanimated:generateDebugResValues
+> Task :react-native-gesture-handler:extractDeepLinksDebug
+> Task :react-native-community_slider:extractDeepLinksDebug
+> Task :react-native-get-random-values:extractDeepLinksDebug
+> Task :react-native-reanimated:writeDebugAarMetadata
+> Task :react-native-reanimated:generateDebugResources
+> Task :react-native-google-cast:extractDeepLinksDebug
+> Task :react-native-reanimated:packageDebugResources
+> Task :react-native-image-colors:extractDeepLinksDebug
+
+> Task :react-native-community_slider:processDebugManifest
+package="com.reactnativecommunity.slider" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/slider/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.slider" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/slider/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-immersive-mode:extractDeepLinksDebug
+> Task :react-native-bottom-tabs:processDebugManifest
+
+> Task :react-native-community_netinfo:processDebugManifest
+package="com.reactnativecommunity.netinfo" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.netinfo" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-get-random-values:processDebugManifest
+> Task :react-native-nitro-modules:extractDeepLinksDebug
+> Task :expo-updates-interface:processDebugManifest
+> Task :lottie-react-native:processDebugManifest
+> Task :react-native-image-colors:processDebugManifest
+> Task :react-native-mmkv:extractDeepLinksDebug
+
+> Task :react-native-community_blur:processDebugManifest
+package="com.reactnativecommunity.blurview" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/blur/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.blurview" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/blur/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-google-cast:processDebugManifest
+package="com.reactnative.googlecast" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-google-cast/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnative.googlecast" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-google-cast/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-picker_picker:extractDeepLinksDebug
+> Task :react-native-reanimated:extractDeepLinksDebug
+> Task :react-native-safe-area-context:extractDeepLinksDebug
+> Task :react-native-svg:extractDeepLinksDebug
+> Task :react-native-gesture-handler:processDebugManifest
+> Task :react-native-vector-icons:extractDeepLinksDebug
+> Task :react-native-screens:extractDeepLinksDebug
+
+> Task :react-native-immersive-mode:processDebugManifest
+package="com.rnimmersivemode" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-immersive-mode/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.rnimmersivemode" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-immersive-mode/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-nitro-modules:processDebugManifest
+> Task :react-native-worklets:extractDeepLinksDebug
+> Task :react-native-video:extractDeepLinksDebug
+> Task :sentry_react-native:extractDeepLinksDebug
+> Task :react-native-mmkv:processDebugManifest
+
+> Task :react-native-safe-area-context:processDebugManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-vector-icons:processDebugManifest
+package="com.oblador.vectoricons" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-vector-icons/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.oblador.vectoricons" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-vector-icons/android/src/main/AndroidManifest.xml.
+
+> Task :adrianso_react-native-device-brightness:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :expo-constants:compileDebugLibraryResources
+> Task :d11_react-native-fast-image:compileDebugLibraryResources
+
+> Task :react-native-picker_picker:processDebugManifest
+package="com.reactnativecommunity.picker" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-picker/picker/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.picker" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-picker/picker/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-screens:processDebugManifest
+> Task :react-native-svg:processDebugManifest
+
+> Task :sentry_react-native:processDebugManifest
+package="io.sentry.react" found in source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="io.sentry.react" from the source AndroidManifest.xml: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@sentry/react-native/android/src/main/AndroidManifest.xml.
+
+> Task :react-native-reanimated:processDebugManifest
+> Task :expo-dev-client:compileDebugLibraryResources
+> Task :d11_react-native-fast-image:parseDebugLocalResources
+> Task :react-native-video:processDebugManifest
+> Task :react-native-worklets:processDebugManifest
+> Task :expo-json-utils:compileDebugLibraryResources
+> Task :expo-dev-client:parseDebugLocalResources
+> Task :expo:generatePackagesList
+> Task :expo:preBuild
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :expo:preDebugBuild
+> Task :expo-dev-menu:parseDebugLocalResources
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :expo:generateDebugResValues
+> Task :expo:generateDebugResources
+> Task :expo:packageDebugResources
+> Task :d11_react-native-fast-image:generateDebugRFile
+> Task :expo-dev-launcher:parseDebugLocalResources
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :expo:extractDeepLinksDebug
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :expo-dev-menu-interface:compileDebugLibraryResources
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :expo-eas-client:compileDebugLibraryResources
+> Task :expo:compileDebugLibraryResources
+> Task :expo:writeDebugAarMetadata
+> Task :expo-constants:parseDebugLocalResources
+> Task :expo-dev-launcher:compileDebugLibraryResources
+> Task :expo-dev-client:generateDebugRFile
+> Task :expo:processDebugManifest
+> Task :expo:parseDebugLocalResources
+> Task :expo-libvlc-player:compileDebugLibraryResources
+> Task :expo-dev-menu:compileDebugLibraryResources
+> Task :expo-json-utils:parseDebugLocalResources
+> Task :expo-modules-core:compileDebugLibraryResources
+> Task :expo-dev-launcher:generateDebugRFile
+> Task :expo-dev-menu-interface:parseDebugLocalResources
+> Task :expo-eas-client:parseDebugLocalResources
+> Task :adrianso_react-native-device-brightness:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-manifests:compileDebugLibraryResources
+> Task :expo-dev-menu:generateDebugRFile
+> Task :adrianso_react-native-device-brightness:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-constants:generateDebugRFile
+> Task :expo:generateDebugRFile
+> Task :expo-json-utils:generateDebugRFile
+> Task :expo-libvlc-player:parseDebugLocalResources
+> Task :expo-updates:compileDebugLibraryResources
+> Task :expo-structured-headers:compileDebugLibraryResources
+> Task :expo-random:compileDebugLibraryResources
+> Task :expo-manifests:parseDebugLocalResources
+> Task :expo-dev-menu-interface:generateDebugRFile
+> Task :expo-updates-interface:compileDebugLibraryResources
+> Task :lottie-react-native:compileDebugLibraryResources
+> Task :expo-eas-client:generateDebugRFile
+> Task :expo-modules-core:parseDebugLocalResources
+> Task :expo-random:parseDebugLocalResources
+> Task :expo-updates:parseDebugLocalResources
+> Task :react-native-community_blur:compileDebugLibraryResources
+> Task :react-native-community_netinfo:compileDebugLibraryResources
+> Task :react-native-bottom-tabs:compileDebugLibraryResources
+> Task :expo-libvlc-player:generateDebugRFile
+> Task :expo-updates-interface:parseDebugLocalResources
+> Task :expo-structured-headers:parseDebugLocalResources
+> Task :lottie-react-native:parseDebugLocalResources
+> Task :expo-random:generateDebugRFile
+> Task :expo-updates:generateDebugRFile
+> Task :expo-modules-core:generateDebugRFile
+> Task :react-native-community_slider:compileDebugLibraryResources
+> Task :expo-manifests:generateDebugRFile
+> Task :react-native-gesture-handler:compileDebugLibraryResources
+> Task :react-native-get-random-values:compileDebugLibraryResources
+> Task :react-native-image-colors:compileDebugLibraryResources
+> Task :adrianso_react-native-device-brightness:syncDebugLibJars
+> Task :adrianso_react-native-device-brightness:writeDebugAarMetadata
+> Task :react-native-google-cast:compileDebugLibraryResources
+> Task :react-native-bottom-tabs:parseDebugLocalResources
+> Task :react-native-community_slider:parseDebugLocalResources
+> Task :react-native-community_netinfo:parseDebugLocalResources
+> Task :expo-updates-interface:generateDebugRFile
+> Task :lottie-react-native:generateDebugRFile
+> Task :react-native-community_blur:parseDebugLocalResources
+> Task :adrianso_react-native-device-brightness:bundleDebugAar
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:assembleDebug
+> Task :react-native-gesture-handler:parseDebugLocalResources
+> Task :react-native-get-random-values:parseDebugLocalResources
+> Task :react-native-google-cast:parseDebugLocalResources
+> Task :expo-structured-headers:generateDebugRFile
+> Task :react-native-image-colors:parseDebugLocalResources
+> Task :react-native-immersive-mode:compileDebugLibraryResources
+> Task :react-native-bottom-tabs:generateDebugRFile
+> Task :react-native-mmkv:compileDebugLibraryResources
+> Task :react-native-community_slider:generateDebugRFile
+> Task :react-native-community_netinfo:generateDebugRFile
+> Task :react-native-nitro-modules:compileDebugLibraryResources
+> Task :react-native-google-cast:generateDebugRFile
+> Task :react-native-immersive-mode:parseDebugLocalResources
+> Task :adrianso_react-native-device-brightness:compileDebugLibraryResources
+> Task :react-native-community_blur:generateDebugRFile
+> Task :react-native-picker_picker:compileDebugLibraryResources
+> Task :react-native-mmkv:parseDebugLocalResources
+> Task :adrianso_react-native-device-brightness:extractDeepLinksDebug
+> Task :react-native-get-random-values:generateDebugRFile
+> Task :react-native-gesture-handler:generateDebugRFile
+> Task :react-native-nitro-modules:parseDebugLocalResources
+> Task :react-native-reanimated:compileDebugLibraryResources
+> Task :react-native-picker_picker:parseDebugLocalResources
+> Task :react-native-safe-area-context:compileDebugLibraryResources
+> Task :react-native-image-colors:generateDebugRFile
+> Task :react-native-svg:compileDebugLibraryResources
+> Task :adrianso_react-native-device-brightness:bundleLibCompileToJarDebug
+> Task :react-native-immersive-mode:generateDebugRFile
+> Task :react-native-reanimated:parseDebugLocalResources
+> Task :react-native-nitro-modules:generateDebugRFile
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :react-native-vector-icons:compileDebugLibraryResources
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :react-native-screens:parseDebugLocalResources
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :react-native-mmkv:generateDebugRFile
+> Task :react-native-worklets:compileDebugLibraryResources
+> Task :react-native-picker_picker:generateDebugRFile
+> Task :react-native-safe-area-context:parseDebugLocalResources
+> Task :expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:generateDebugRFile
+> Task :expo-constants:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-vector-icons:parseDebugLocalResources
+> Task :expo-constants:generateDebugBuildConfig
+> Task :react-native-worklets:parseDebugLocalResources
+> Task :react-native-svg:parseDebugLocalResources
+> Task :d11_react-native-fast-image:generateDebugBuildConfig
+> Task :react-native-reanimated:generateDebugRFile
+> Task :react-native-video:compileDebugLibraryResources
+> Task :expo-modules-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sentry_react-native:compileDebugLibraryResources
+> Task :expo-dev-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-video:parseDebugLocalResources
+> Task :expo:generateDebugBuildConfig
+> Task :expo-dev-launcher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-safe-area-context:generateDebugRFile
+> Task :expo-dev-menu:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:compileDebugLibraryResources
+> Task :expo-dev-menu-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-constants:javaPreCompileDebug
+> Task :expo-json-utils:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-menu:generateDebugBuildConfig
+> Task :expo-manifests:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-modules-core:generateDebugBuildConfig
+> Task :expo-dev-menu-interface:generateDebugBuildConfig
+> Task :expo-json-utils:generateDebugBuildConfig
+> Task :sentry_react-native:parseDebugLocalResources
+> Task :react-native-vector-icons:generateDebugRFile
+> Task :expo-manifests:generateDebugBuildConfig
+> Task :react-native-svg:generateDebugRFile
+> Task :expo-dev-menu-interface:javaPreCompileDebug
+> Task :react-native-worklets:generateDebugRFile
+> Task :expo-json-utils:javaPreCompileDebug
+> Task :expo-eas-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-manifests:javaPreCompileDebug
+> Task :expo-libvlc-player:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-random:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-menu:javaPreCompileDebug
+> Task :expo-dev-launcher:generateDebugBuildConfig
+> Task :d11_react-native-fast-image:javaPreCompileDebug
+> Task :expo-libvlc-player:generateDebugBuildConfig
+> Task :expo-dev-launcher:dataBindingMergeDependencyArtifactsDebug
+> Task :expo-structured-headers:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-eas-client:generateDebugBuildConfig
+> Task :react-native-video:generateDebugRFile
+> Task :expo-dev-client:dataBindingMergeDependencyArtifactsDebug
+> Task :expo-updates:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-image-colors:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-interface:generateDebugBuildConfig
+> Task :expo-dev-client:generateDebugBuildConfig
+> Task :expo-structured-headers:generateDebugBuildConfig
+> Task :expo-random:generateDebugBuildConfig
+> Task :expo-dev-launcher:checkApolloVersions
+> Task :expo-structured-headers:javaPreCompileDebug
+> Task :expo-eas-client:javaPreCompileDebug
+> Task :expo-random:javaPreCompileDebug
+> Task :react-native-bottom-tabs:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :lottie-react-native:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates:generateDebugBuildConfig
+> Task :sentry_react-native:generateDebugRFile
+> Task :expo-updates-interface:javaPreCompileDebug
+> Task :react-native-bottom-tabs:generateDebugBuildConfig
+> Task :expo:javaPreCompileDebug
+> Task :react-native-image-colors:generateDebugBuildConfig
+> Task :react-native-community_blur:generateDebugBuildConfig
+> Task :lottie-react-native:generateDebugBuildConfig
+> Task :react-native-community_netinfo:generateDebugBuildConfig
+> Task :react-native-community_blur:javaPreCompileDebug
+> Task :react-native-image-colors:javaPreCompileDebug
+> Task :react-native-community_netinfo:javaPreCompileDebug
+> Task :react-native-community_slider:generateDebugBuildConfig
+> Task :expo-libvlc-player:javaPreCompileDebug
+> Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-gesture-handler:generateDebugBuildConfig
+> Task :react-native-reanimated:generateDebugBuildConfig
+> Task :react-native-community_slider:javaPreCompileDebug
+> Task :react-native-reanimated:javaPreCompileDebug
+> Task :expo-updates:javaPreCompileDebug
+> Task :react-native-worklets:generateDebugBuildConfig
+> Task :app:processDebugResources UP-TO-DATE
+> Task :react-native-gesture-handler:javaPreCompileDebug
+> Task :react-native-svg:generateDebugBuildConfig
+> Task :react-native-worklets:javaPreCompileDebug
+> Task :react-native-get-random-values:generateDebugBuildConfig
+> Task :react-native-svg:javaPreCompileDebug
+> Task :react-native-get-random-values:javaPreCompileDebug
+> Task :expo-dev-client:dataBindingGenBaseClassesDebug
+> Task :expo-dev-launcher:dataBindingGenBaseClassesDebug
+> Task :expo-modules-core:javaPreCompileDebug
+> Task :expo-dev-client:javaPreCompileDebug
+> Task :lottie-react-native:javaPreCompileDebug
+> Task :react-native-bottom-tabs:javaPreCompileDebug
+> Task :react-native-google-cast:generateDebugBuildConfig
+> Task :react-native-google-cast:javaPreCompileDebug
+> Task :react-native-bottom-tabs:kaptGenerateStubsDebugKotlin
+> Task :react-native-bottom-tabs:kaptDebugKotlin SKIPPED
+> Task :expo-dev-launcher:generateServiceApolloOptions
+> Task :react-native-get-random-values:compileDebugJavaWithJavac
+> Task :expo-dev-launcher:javaPreCompileDebug
+> Task :react-native-get-random-values:bundleLibCompileToJarDebug
+> Task :react-native-immersive-mode:generateDebugBuildConfig
+> Task :react-native-immersive-mode:javaPreCompileDebug
+
+> Task :react-native-community_blur:compileDebugJavaWithJavac
+Note: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/blur/android/src/main/java/com/reactnativecommunity/blurview/BlurViewPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-worklets:compileDebugJavaWithJavac
+Note: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-worklets/android/src/main/java/com/swmansion/worklets/WorkletsPackage.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-community_blur:bundleLibCompileToJarDebug
+> Task :react-native-mmkv:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-worklets:bundleLibCompileToJarDebug
+
+> Task :react-native-community_netinfo:compileDebugJavaWithJavac
+/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/netinfo/android/src/main/java/com/reactnativecommunity/netinfo/NetInfoModule.java:47: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+    public void onCatalystInstanceDestroy() {
+                ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :react-native-mmkv:generateDebugBuildConfig
+> Task :react-native-nitro-modules:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-nitro-modules:generateDebugBuildConfig
+
+> Task :react-native-community_slider:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-community_netinfo:bundleLibCompileToJarDebug
+> Task :react-native-mmkv:javaPreCompileDebug
+> Task :react-native-picker_picker:generateDebugBuildConfig
+> Task :react-native-picker_picker:javaPreCompileDebug
+> Task :react-native-community_slider:bundleLibCompileToJarDebug
+> Task :react-native-nitro-modules:javaPreCompileDebug
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-safe-area-context:generateDebugBuildConfig
+
+> Task :react-native-immersive-mode:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-immersive-mode:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:javaPreCompileDebug
+> Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:generateDebugBuildConfig
+
+> Task :d11_react-native-fast-image:compileDebugJavaWithJavac
+Note: [2] Wrote GeneratedAppGlideModule with: [com.bumptech.glide.integration.webp.WebpGlideLibraryModule, com.github.penfeizhou.animation.glide.GlideAnimationModule, com.bumptech.glide.integration.okhttp3.OkHttpLibraryGlideModule, com.bumptech.glide.integration.avif.AvifGlideModule, com.fastimage.svg.SvgModule, com.dylanvann.fastimage.FastImageOkHttpProgressGlideModule]
+
+> Task :react-native-picker_picker:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :expo-dev-launcher:generateServiceApolloSources
+w: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/graphql/GetBranches.graphql: (21, 11): Apollo: Use of deprecated field `runtimeVersion`
+w: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/graphql/GetBranches.graphql: (34, 3): Apollo: Variable `platform` is unused
+w: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/graphql/GetUpdates.graphql: (14, 11): Apollo: Use of deprecated field `runtimeVersion`
+
+> Task :react-native-picker_picker:bundleLibCompileToJarDebug
+> Task :react-native-screens:javaPreCompileDebug
+> Task :react-native-vector-icons:generateDebugBuildConfig
+> Task :react-native-vector-icons:javaPreCompileDebug
+
+> Task :react-native-reanimated:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-reanimated:bundleLibCompileToJarDebug
+> Task :react-native-video:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-video:generateDebugBuildConfig
+
+> Task :react-native-google-cast:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-video:javaPreCompileDebug
+> Task :sentry_react-native:generateDebugBuildConfig
+> Task :sentry_react-native:javaPreCompileDebug
+
+> Task :react-native-vector-icons:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-vector-icons:bundleLibCompileToJarDebug
+> Task :react-native-google-cast:bundleLibCompileToJarDebug
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :expo:mergeDebugShaders
+> Task :expo:compileDebugShaders NO-SOURCE
+> Task :expo:generateDebugAssets UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:createDebugUpdatesResources UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :expo:mergeDebugAssets
+> Task :expo-constants:mergeDebugShaders
+> Task :expo-constants:compileDebugShaders NO-SOURCE
+> Task :expo-constants:generateDebugAssets UP-TO-DATE
+> Task :expo-dev-client:mergeDebugShaders
+> Task :expo-dev-client:compileDebugShaders NO-SOURCE
+> Task :expo-dev-client:generateDebugAssets UP-TO-DATE
+> Task :expo-dev-client:mergeDebugAssets
+> Task :expo-constants:mergeDebugAssets
+> Task :expo-dev-launcher:mergeDebugShaders
+> Task :expo-dev-launcher:compileDebugShaders NO-SOURCE
+> Task :expo-dev-launcher:generateDebugAssets UP-TO-DATE
+> Task :expo-dev-menu:mergeDebugShaders
+> Task :expo-dev-launcher:mergeDebugAssets
+> Task :expo-dev-menu:compileDebugShaders NO-SOURCE
+> Task :expo-dev-menu:generateDebugAssets UP-TO-DATE
+> Task :expo-dev-menu-interface:mergeDebugShaders
+> Task :expo-dev-menu-interface:compileDebugShaders NO-SOURCE
+> Task :expo-dev-menu-interface:generateDebugAssets UP-TO-DATE
+> Task :expo-dev-menu:mergeDebugAssets
+> Task :expo-dev-menu-interface:mergeDebugAssets
+> Task :expo-json-utils:mergeDebugShaders
+> Task :expo-eas-client:mergeDebugShaders
+> Task :expo-json-utils:compileDebugShaders NO-SOURCE
+> Task :expo-json-utils:generateDebugAssets UP-TO-DATE
+> Task :expo-eas-client:compileDebugShaders NO-SOURCE
+> Task :expo-eas-client:generateDebugAssets UP-TO-DATE
+> Task :expo-json-utils:mergeDebugAssets
+> Task :expo-eas-client:mergeDebugAssets
+> Task :expo-libvlc-player:mergeDebugShaders
+> Task :expo-libvlc-player:compileDebugShaders NO-SOURCE
+> Task :expo-libvlc-player:generateDebugAssets UP-TO-DATE
+> Task :expo-manifests:mergeDebugShaders
+> Task :expo-manifests:compileDebugShaders NO-SOURCE
+> Task :expo-manifests:generateDebugAssets UP-TO-DATE
+> Task :expo-libvlc-player:mergeDebugAssets
+> Task :expo-manifests:mergeDebugAssets
+> Task :expo-modules-core:mergeDebugShaders
+> Task :expo-modules-core:compileDebugShaders NO-SOURCE
+> Task :expo-modules-core:generateDebugAssets UP-TO-DATE
+> Task :expo-random:mergeDebugShaders
+> Task :expo-random:compileDebugShaders NO-SOURCE
+> Task :expo-random:generateDebugAssets UP-TO-DATE
+> Task :expo-modules-core:mergeDebugAssets
+> Task :expo-random:mergeDebugAssets
+> Task :expo-structured-headers:mergeDebugShaders
+> Task :expo-structured-headers:compileDebugShaders NO-SOURCE
+> Task :expo-structured-headers:generateDebugAssets UP-TO-DATE
+> Task :expo-structured-headers:mergeDebugAssets
+> Task :expo-updates:mergeDebugShaders
+> Task :expo-updates:compileDebugShaders NO-SOURCE
+> Task :expo-updates:generateDebugAssets UP-TO-DATE
+> Task :expo-updates-interface:mergeDebugShaders
+> Task :expo-updates-interface:compileDebugShaders NO-SOURCE
+> Task :expo-updates-interface:generateDebugAssets UP-TO-DATE
+> Task :expo-updates:mergeDebugAssets
+> Task :expo-updates-interface:mergeDebugAssets
+> Task :lottie-react-native:mergeDebugShaders
+> Task :lottie-react-native:compileDebugShaders NO-SOURCE
+> Task :lottie-react-native:generateDebugAssets UP-TO-DATE
+> Task :react-native-bottom-tabs:mergeDebugShaders
+> Task :react-native-bottom-tabs:compileDebugShaders NO-SOURCE
+> Task :react-native-bottom-tabs:generateDebugAssets UP-TO-DATE
+> Task :lottie-react-native:mergeDebugAssets
+> Task :react-native-bottom-tabs:mergeDebugAssets
+> Task :react-native-community_blur:mergeDebugShaders
+> Task :react-native-community_blur:compileDebugShaders NO-SOURCE
+> Task :react-native-community_blur:generateDebugAssets UP-TO-DATE
+> Task :react-native-community_netinfo:mergeDebugShaders
+> Task :react-native-community_netinfo:compileDebugShaders NO-SOURCE
+> Task :react-native-community_netinfo:generateDebugAssets UP-TO-DATE
+> Task :react-native-community_blur:mergeDebugAssets
+> Task :react-native-community_slider:mergeDebugShaders
+> Task :react-native-community_netinfo:mergeDebugAssets
+> Task :react-native-community_slider:compileDebugShaders NO-SOURCE
+> Task :react-native-community_slider:generateDebugAssets UP-TO-DATE
+> Task :react-native-gesture-handler:mergeDebugShaders
+> Task :react-native-gesture-handler:compileDebugShaders NO-SOURCE
+> Task :react-native-gesture-handler:generateDebugAssets UP-TO-DATE
+> Task :react-native-community_slider:mergeDebugAssets
+> Task :react-native-gesture-handler:mergeDebugAssets
+> Task :react-native-get-random-values:mergeDebugShaders
+> Task :react-native-get-random-values:compileDebugShaders NO-SOURCE
+> Task :react-native-get-random-values:generateDebugAssets UP-TO-DATE
+> Task :react-native-get-random-values:mergeDebugAssets
+
+> Task :d11_react-native-fast-image:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/@d11/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewWithUrl.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-google-cast:mergeDebugShaders
+> Task :react-native-google-cast:compileDebugShaders NO-SOURCE
+> Task :react-native-google-cast:generateDebugAssets UP-TO-DATE
+> Task :react-native-image-colors:mergeDebugShaders
+> Task :react-native-image-colors:compileDebugShaders NO-SOURCE
+> Task :react-native-image-colors:generateDebugAssets UP-TO-DATE
+> Task :react-native-google-cast:mergeDebugAssets
+> Task :react-native-image-colors:mergeDebugAssets
+> Task :react-native-immersive-mode:mergeDebugShaders
+> Task :react-native-immersive-mode:compileDebugShaders NO-SOURCE
+> Task :react-native-immersive-mode:generateDebugAssets UP-TO-DATE
+> Task :react-native-mmkv:mergeDebugShaders
+> Task :react-native-mmkv:compileDebugShaders NO-SOURCE
+> Task :react-native-mmkv:generateDebugAssets UP-TO-DATE
+> Task :react-native-immersive-mode:mergeDebugAssets
+> Task :react-native-mmkv:mergeDebugAssets
+> Task :react-native-nitro-modules:mergeDebugShaders
+> Task :react-native-nitro-modules:compileDebugShaders NO-SOURCE
+> Task :react-native-nitro-modules:generateDebugAssets UP-TO-DATE
+> Task :react-native-picker_picker:mergeDebugShaders
+> Task :react-native-picker_picker:compileDebugShaders NO-SOURCE
+> Task :react-native-picker_picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-nitro-modules:mergeDebugAssets
+> Task :react-native-picker_picker:mergeDebugAssets
+> Task :react-native-reanimated:mergeDebugShaders
+> Task :react-native-reanimated:compileDebugShaders NO-SOURCE
+> Task :react-native-reanimated:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugShaders
+> Task :react-native-reanimated:mergeDebugAssets
+> Task :react-native-safe-area-context:compileDebugShaders NO-SOURCE
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :react-native-screens:mergeDebugShaders
+> Task :react-native-screens:compileDebugShaders NO-SOURCE
+> Task :react-native-screens:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugAssets
+> Task :react-native-screens:mergeDebugAssets
+> Task :react-native-vector-icons:mergeDebugShaders
+> Task :react-native-vector-icons:compileDebugShaders NO-SOURCE
+> Task :react-native-vector-icons:generateDebugAssets UP-TO-DATE
+> Task :react-native-video:mergeDebugShaders
+> Task :react-native-video:compileDebugShaders NO-SOURCE
+> Task :react-native-video:generateDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:mergeDebugAssets
+> Task :react-native-video:mergeDebugAssets
+> Task :react-native-worklets:mergeDebugShaders
+> Task :react-native-worklets:compileDebugShaders NO-SOURCE
+> Task :react-native-worklets:generateDebugAssets UP-TO-DATE
+> Task :react-native-reanimated:bundleLibRuntimeToJarDebug
+> Task :react-native-worklets:mergeDebugAssets
+> Task :react-native-worklets:bundleLibRuntimeToJarDebug
+> Task :react-native-google-cast:bundleLibRuntimeToJarDebug
+> Task :adrianso_react-native-device-brightness:bundleLibRuntimeToJarDebug
+> Task :d11_react-native-fast-image:bundleLibCompileToJarDebug
+> Task :d11_react-native-fast-image:mergeDebugShaders
+> Task :d11_react-native-fast-image:compileDebugShaders NO-SOURCE
+> Task :d11_react-native-fast-image:generateDebugAssets UP-TO-DATE
+> Task :d11_react-native-fast-image:mergeDebugAssets
+> Task :d11_react-native-fast-image:bundleLibRuntimeToJarDebug
+
+> Task :sentry_react-native:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :sentry_react-native:bundleLibCompileToJarDebug
+> Task :sentry_react-native:mergeDebugShaders
+> Task :sentry_react-native:compileDebugShaders NO-SOURCE
+> Task :sentry_react-native:generateDebugAssets UP-TO-DATE
+> Task :sentry_react-native:mergeDebugAssets
+> Task :react-native-community_blur:bundleLibRuntimeToJarDebug
+> Task :react-native-nitro-modules:compileDebugKotlin
+
+> Task :lottie-react-native:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:12:8 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:21:17 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:72:16 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:74:13 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:76:13 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:78:13 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:108:28 'static fun isAttachedToWindow(p0: View): Boolean' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:138:28 'static fun isAttachedToWindow(p0: View): Boolean' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:148:28 'static fun isAttachedToWindow(p0: View): Boolean' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewManagerImpl.kt:157:28 'static fun isAttachedToWindow(p0: View): Boolean' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewPropertyManager.kt:22:8 'class ReactFontManager : Any' is deprecated. This class is deprecated and will be deleted in the near future. Please use [com.facebook.react.common.assets.ReactFontManager] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewPropertyManager.kt:76:24 'class ReactFontManager : Any' is deprecated. This class is deprecated and will be deleted in the near future. Please use [com.facebook.react.common.assets.ReactFontManager] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottieAnimationViewPropertyManager.kt:90:24 'class ReactFontManager : Any' is deprecated. This class is deprecated and will be deleted in the near future. Please use [com.facebook.react.common.assets.ReactFontManager] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/main/java/com/airbnb/android/react/lottie/LottiePackage.kt:11:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/src/newarch/com/airbnb/android/react/lottie/LottieAnimationViewManager.kt:107:18 'fun receiveCommand(view: LottieAnimationView, commandName: String, args: ReadableArray?): Unit' is deprecated. args is not nullable, please update your method signature.
+
+> Task :react-native-nitro-modules:compileDebugJavaWithJavac
+> Task :react-native-nitro-modules:bundleLibCompileToJarDebug
+> Task :lottie-react-native:compileDebugJavaWithJavac
+> Task :lottie-react-native:bundleLibCompileToJarDebug
+> Task :lottie-react-native:bundleLibRuntimeToJarDebug
+
+> Task :react-native-svg:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-svg:bundleLibCompileToJarDebug
+> Task :react-native-mmkv:compileDebugKotlin
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+
+> Task :react-native-mmkv:compileDebugJavaWithJavac
+Note: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-mmkv/android/src/main/java/com/margelo/nitro/mmkv/NitroMmkvPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-mmkv:bundleLibCompileToJarDebug
+> Task :react-native-svg:mergeDebugShaders
+> Task :react-native-svg:compileDebugShaders NO-SOURCE
+> Task :react-native-svg:generateDebugAssets UP-TO-DATE
+> Task :react-native-svg:mergeDebugAssets
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :react-native-svg:bundleLibRuntimeToJarDebug
+> Task :react-native-mmkv:bundleLibRuntimeToJarDebug
+> Task :react-native-nitro-modules:bundleLibRuntimeToJarDebug
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+> Task :react-native-safe-area-context:bundleLibCompileToJarDebug
+> Task :react-native-community_netinfo:bundleLibRuntimeToJarDebug
+> Task :react-native-safe-area-context:bundleLibRuntimeToJarDebug
+
+> Task :react-native-bottom-tabs:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/ImageSource.kt:74:48 'fun getInstance(): ResourceDrawableIdHelper' is deprecated. Use .instance instead, this API is for backward compat.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabViewPackage.kt:16:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnNativeLayoutEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnNativeLayoutEvent.kt:8:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnNativeLayoutEvent.kt:18:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnNativeLayoutEvent.kt:18:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnNativeLayoutEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnTabBarMeasuredEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnTabBarMeasuredEvent.kt:8:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnTabBarMeasuredEvent.kt:18:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnTabBarMeasuredEvent.kt:18:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/OnTabBarMeasuredEvent.kt:22:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/PageSelectedEvent.kt:6:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/PageSelectedEvent.kt:9:66 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/PageSelectedEvent.kt:18:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/PageSelectedEvent.kt:18:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/PageSelectedEvent.kt:19:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/TabLongPressedEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/TabLongPressedEvent.kt:8:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/TabLongPressedEvent.kt:18:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/TabLongPressedEvent.kt:18:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/events/TabLongPressedEvent.kt:22:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+
+> Task :react-native-community_slider:bundleLibRuntimeToJarDebug
+> Task :react-native-picker_picker:bundleLibRuntimeToJarDebug
+> Task :sentry_react-native:bundleLibRuntimeToJarDebug
+> Task :react-native-bottom-tabs:compileDebugJavaWithJavac
+> Task :react-native-bottom-tabs:bundleLibCompileToJarDebug
+> Task :react-native-bottom-tabs:bundleLibRuntimeToJarDebug
+> Task :react-native-get-random-values:bundleLibRuntimeToJarDebug
+> Task :react-native-immersive-mode:bundleLibRuntimeToJarDebug
+> Task :react-native-vector-icons:bundleLibRuntimeToJarDebug
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :d11_react-native-fast-image:processDebugJavaRes
+> Task :lottie-react-native:processDebugJavaRes
+> Task :react-native-bottom-tabs:processDebugJavaRes
+> Task :react-native-community_blur:processDebugJavaRes NO-SOURCE
+> Task :react-native-community_netinfo:processDebugJavaRes NO-SOURCE
+> Task :react-native-community_slider:processDebugJavaRes NO-SOURCE
+> Task :react-native-get-random-values:processDebugJavaRes NO-SOURCE
+> Task :react-native-google-cast:processDebugJavaRes NO-SOURCE
+> Task :react-native-immersive-mode:processDebugJavaRes NO-SOURCE
+> Task :react-native-mmkv:processDebugJavaRes
+> Task :react-native-nitro-modules:processDebugJavaRes
+> Task :react-native-picker_picker:processDebugJavaRes NO-SOURCE
+> Task :react-native-reanimated:processDebugJavaRes NO-SOURCE
+> Task :react-native-safe-area-context:processDebugJavaRes
+> Task :react-native-svg:processDebugJavaRes NO-SOURCE
+> Task :react-native-vector-icons:processDebugJavaRes NO-SOURCE
+> Task :react-native-worklets:processDebugJavaRes NO-SOURCE
+> Task :sentry_react-native:processDebugJavaRes NO-SOURCE
+> Task :adrianso_react-native-device-brightness:copyDebugJniLibsProjectOnly
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :react-native-nitro-modules:configureCMakeDebug[arm64-v8a]
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :d11_react-native-fast-image:mergeDebugJniLibFolders
+> Task :d11_react-native-fast-image:mergeDebugNativeLibs NO-SOURCE
+> Task :d11_react-native-fast-image:copyDebugJniLibsProjectOnly
+> Task :expo:mergeDebugJniLibFolders
+> Task :expo:mergeDebugNativeLibs NO-SOURCE
+> Task :expo:copyDebugJniLibsProjectOnly
+> Task :expo-constants:mergeDebugJniLibFolders
+> Task :expo-constants:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-constants:copyDebugJniLibsProjectOnly
+> Task :expo-dev-client:mergeDebugJniLibFolders
+> Task :expo-dev-client:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-dev-client:copyDebugJniLibsProjectOnly
+> Task :expo-dev-launcher:mergeDebugJniLibFolders
+> Task :expo-dev-launcher:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-dev-launcher:copyDebugJniLibsProjectOnly
+> Task :expo-dev-menu:mergeDebugJniLibFolders
+> Task :expo-dev-menu:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-dev-menu:copyDebugJniLibsProjectOnly
+> Task :expo-dev-menu-interface:mergeDebugJniLibFolders
+> Task :expo-dev-menu-interface:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-dev-menu-interface:copyDebugJniLibsProjectOnly
+> Task :expo-eas-client:mergeDebugJniLibFolders
+> Task :expo-eas-client:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-eas-client:copyDebugJniLibsProjectOnly
+> Task :expo-json-utils:mergeDebugJniLibFolders
+> Task :expo-json-utils:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-json-utils:copyDebugJniLibsProjectOnly
+> Task :expo-libvlc-player:mergeDebugJniLibFolders
+> Task :expo-libvlc-player:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-libvlc-player:copyDebugJniLibsProjectOnly
+> Task :expo-manifests:mergeDebugJniLibFolders
+> Task :expo-manifests:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-manifests:copyDebugJniLibsProjectOnly
+> Task :expo-modules-core:configureCMakeDebug[arm64-v8a]
+> Task :expo-random:mergeDebugJniLibFolders
+> Task :expo-random:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-random:copyDebugJniLibsProjectOnly
+> Task :expo-structured-headers:mergeDebugJniLibFolders
+> Task :expo-structured-headers:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-structured-headers:copyDebugJniLibsProjectOnly
+> Task :expo-updates:mergeDebugJniLibFolders
+> Task :expo-updates:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-updates:copyDebugJniLibsProjectOnly
+> Task :expo-updates-interface:mergeDebugJniLibFolders
+> Task :expo-updates-interface:mergeDebugNativeLibs NO-SOURCE
+> Task :expo-updates-interface:copyDebugJniLibsProjectOnly
+> Task :lottie-react-native:mergeDebugJniLibFolders
+> Task :lottie-react-native:mergeDebugNativeLibs NO-SOURCE
+> Task :lottie-react-native:copyDebugJniLibsProjectOnly
+> Task :react-native-bottom-tabs:mergeDebugJniLibFolders
+> Task :react-native-bottom-tabs:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-bottom-tabs:copyDebugJniLibsProjectOnly
+> Task :react-native-community_blur:mergeDebugJniLibFolders
+> Task :react-native-community_blur:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-community_blur:copyDebugJniLibsProjectOnly
+> Task :react-native-community_netinfo:mergeDebugJniLibFolders
+> Task :react-native-community_netinfo:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-community_netinfo:copyDebugJniLibsProjectOnly
+> Task :react-native-community_slider:mergeDebugJniLibFolders
+> Task :react-native-community_slider:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-community_slider:copyDebugJniLibsProjectOnly
+> Task :react-native-gesture-handler:mergeDebugJniLibFolders
+> Task :react-native-get-random-values:mergeDebugJniLibFolders
+> Task :react-native-get-random-values:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-get-random-values:copyDebugJniLibsProjectOnly
+> Task :react-native-image-colors:mergeDebugJniLibFolders
+> Task :react-native-image-colors:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-image-colors:copyDebugJniLibsProjectOnly
+> Task :react-native-immersive-mode:mergeDebugJniLibFolders
+> Task :react-native-immersive-mode:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-google-cast:mergeDebugJniLibFolders
+> Task :react-native-google-cast:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-immersive-mode:copyDebugJniLibsProjectOnly
+> Task :react-native-mmkv:mergeDebugJniLibFolders
+> Task :react-native-google-cast:copyDebugJniLibsProjectOnly
+> Task :react-native-reanimated:mergeDebugJniLibFolders
+> Task :react-native-picker_picker:mergeDebugJniLibFolders
+> Task :react-native-picker_picker:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-picker_picker:copyDebugJniLibsProjectOnly
+> Task :react-native-safe-area-context:mergeDebugJniLibFolders
+> Task :react-native-safe-area-context:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectOnly
+> Task :react-native-screens:configureCMakeDebug[arm64-v8a]
+> Task :react-native-svg:mergeDebugJniLibFolders
+> Task :react-native-svg:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-svg:copyDebugJniLibsProjectOnly
+> Task :react-native-vector-icons:mergeDebugJniLibFolders
+> Task :react-native-vector-icons:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-vector-icons:copyDebugJniLibsProjectOnly
+> Task :react-native-video:mergeDebugJniLibFolders
+> Task :react-native-video:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-video:copyDebugJniLibsProjectOnly
+> Task :sentry_react-native:mergeDebugJniLibFolders
+> Task :sentry_react-native:mergeDebugNativeLibs NO-SOURCE
+> Task :sentry_react-native:copyDebugJniLibsProjectOnly
+> Task :d11_react-native-fast-image:stripDebugDebugSymbols NO-SOURCE
+> Task :d11_react-native-fast-image:copyDebugJniLibsProjectAndLocalJars
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :expo:stripDebugDebugSymbols NO-SOURCE
+> Task :expo:copyDebugJniLibsProjectAndLocalJars
+> Task :expo:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo:prepareDebugArtProfile UP-TO-DATE
+> Task :expo:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-constants:stripDebugDebugSymbols NO-SOURCE
+> Task :d11_react-native-fast-image:extractDebugAnnotations
+> Task :d11_react-native-fast-image:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :d11_react-native-fast-image:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :d11_react-native-fast-image:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :d11_react-native-fast-image:prepareDebugArtProfile UP-TO-DATE
+> Task :d11_react-native-fast-image:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-constants:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-constants:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-constants:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-constants:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-dev-client:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-dev-client:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-dev-client:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-dev-client:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-dev-client:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-dev-launcher:stripDebugDebugSymbols NO-SOURCE
+> Task :d11_react-native-fast-image:mergeDebugJavaResource
+> Task :expo-dev-launcher:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-dev-launcher:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-dev-launcher:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-dev-launcher:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-dev-menu:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-dev-menu:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-dev-menu:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-dev-menu:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-dev-menu:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-dev-menu-interface:stripDebugDebugSymbols NO-SOURCE
+> Task :d11_react-native-fast-image:syncDebugLibJars
+> Task :expo-dev-menu-interface:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-dev-menu-interface:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-dev-menu-interface:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-dev-menu-interface:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-eas-client:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-eas-client:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-eas-client:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-eas-client:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-eas-client:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-json-utils:stripDebugDebugSymbols NO-SOURCE
+> Task :d11_react-native-fast-image:bundleDebugAar
+> Task :d11_react-native-fast-image:assembleDebug
+> Task :expo-json-utils:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-json-utils:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-json-utils:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-json-utils:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-manifests:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-libvlc-player:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-manifests:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-manifests:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-manifests:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-libvlc-player:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-libvlc-player:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-manifests:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-libvlc-player:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-random:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-libvlc-player:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-structured-headers:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-random:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-random:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-random:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-structured-headers:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-structured-headers:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-structured-headers:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-structured-headers:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-updates:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-random:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-updates:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-updates:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-updates-interface:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-updates:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-updates:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-updates-interface:copyDebugJniLibsProjectAndLocalJars
+> Task :expo-updates-interface:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-updates-interface:prepareDebugArtProfile UP-TO-DATE
+> Task :lottie-react-native:stripDebugDebugSymbols NO-SOURCE
+> Task :expo-updates-interface:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-bottom-tabs:stripDebugDebugSymbols NO-SOURCE
+> Task :lottie-react-native:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-bottom-tabs:copyDebugJniLibsProjectAndLocalJars
+> Task :lottie-react-native:extractDebugAnnotations
+> Task :lottie-react-native:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :lottie-react-native:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :lottie-react-native:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :lottie-react-native:prepareDebugArtProfile UP-TO-DATE
+> Task :lottie-react-native:prepareLintJarForPublish UP-TO-DATE
+> Task :lottie-react-native:mergeDebugJavaResource
+> Task :react-native-bottom-tabs:extractDebugAnnotations
+> Task :react-native-bottom-tabs:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-bottom-tabs:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-bottom-tabs:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-bottom-tabs:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-bottom-tabs:prepareLintJarForPublish UP-TO-DATE
+> Task :lottie-react-native:syncDebugLibJars
+> Task :lottie-react-native:bundleDebugAar
+> Task :lottie-react-native:assembleDebug
+> Task :react-native-community_blur:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-community_blur:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-community_blur:extractDebugAnnotations
+> Task :react-native-community_blur:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-community_netinfo:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-community_blur:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-community_blur:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-community_blur:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-community_netinfo:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-community_blur:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-modules-core:compileDebugKotlin
+> Task :react-native-community_blur:mergeDebugJavaResource
+> Task :react-native-community_netinfo:extractDebugAnnotations
+> Task :react-native-community_netinfo:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-community_blur:syncDebugLibJars
+> Task :react-native-community_netinfo:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-community_netinfo:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-community_netinfo:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-community_netinfo:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-community_netinfo:mergeDebugJavaResource
+> Task :react-native-community_blur:bundleDebugAar
+> Task :react-native-community_blur:assembleDebug
+> Task :react-native-community_slider:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-community_slider:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-community_netinfo:syncDebugLibJars
+> Task :react-native-bottom-tabs:mergeDebugJavaResource
+> Task :react-native-community_netinfo:bundleDebugAar
+> Task :react-native-community_netinfo:assembleDebug
+> Task :react-native-gesture-handler:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-gesture-handler:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-gesture-handler:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-community_slider:extractDebugAnnotations
+> Task :react-native-community_slider:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-get-random-values:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-bottom-tabs:syncDebugLibJars
+> Task :react-native-get-random-values:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-community_slider:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-community_slider:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-community_slider:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-community_slider:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-get-random-values:extractDebugAnnotations
+> Task :react-native-get-random-values:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-bottom-tabs:bundleDebugAar
+> Task :react-native-bottom-tabs:assembleDebug
+> Task :react-native-get-random-values:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-google-cast:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-get-random-values:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-get-random-values:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-community_slider:mergeDebugJavaResource
+> Task :react-native-google-cast:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-get-random-values:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-get-random-values:mergeDebugJavaResource
+> Task :react-native-community_slider:syncDebugLibJars
+> Task :react-native-get-random-values:syncDebugLibJars
+> Task :react-native-get-random-values:bundleDebugAar
+> Task :react-native-community_slider:bundleDebugAar
+> Task :react-native-get-random-values:assembleDebug
+> Task :react-native-community_slider:assembleDebug
+> Task :react-native-immersive-mode:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-image-colors:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-image-colors:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-image-colors:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-image-colors:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-image-colors:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-google-cast:extractDebugAnnotations
+> Task :react-native-google-cast:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-immersive-mode:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-google-cast:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-immersive-mode:extractDebugAnnotations
+> Task :react-native-google-cast:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-google-cast:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-immersive-mode:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-immersive-mode:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-google-cast:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-mmkv:extractDebugAnnotations
+> Task :react-native-immersive-mode:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-immersive-mode:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-mmkv:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-mmkv:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-google-cast:mergeDebugJavaResource
+> Task :react-native-immersive-mode:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-mmkv:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-mmkv:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-mmkv:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-mmkv:mergeDebugJavaResource
+> Task :react-native-immersive-mode:mergeDebugJavaResource
+> Task :react-native-mmkv:syncDebugLibJars
+> Task :react-native-picker_picker:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-picker_picker:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-immersive-mode:syncDebugLibJars
+> Task :react-native-picker_picker:extractDebugAnnotations
+> Task :react-native-picker_picker:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-picker_picker:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-picker_picker:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-picker_picker:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-picker_picker:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-immersive-mode:bundleDebugAar
+> Task :react-native-immersive-mode:assembleDebug
+> Task :react-native-picker_picker:mergeDebugJavaResource
+> Task :react-native-google-cast:syncDebugLibJars
+> Task :react-native-reanimated:extractDebugAnnotations
+> Task :react-native-reanimated:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-reanimated:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-reanimated:mergeDebugConsumerProguardFiles
+> Task :react-native-reanimated:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-reanimated:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-google-cast:bundleDebugAar
+> Task :react-native-google-cast:assembleDebug
+> Task :react-native-reanimated:mergeDebugJavaResource
+> Task :react-native-safe-area-context:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-picker_picker:syncDebugLibJars
+> Task :react-native-reanimated:syncDebugLibJars
+> Task :react-native-safe-area-context:extractDebugAnnotations
+> Task :react-native-safe-area-context:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-svg:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-safe-area-context:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-svg:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-safe-area-context:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-safe-area-context:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugJavaResource
+> Task :react-native-picker_picker:bundleDebugAar
+> Task :react-native-picker_picker:assembleDebug
+> Task :react-native-vector-icons:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-svg:extractDebugAnnotations
+> Task :react-native-svg:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-svg:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-vector-icons:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-safe-area-context:syncDebugLibJars
+> Task :react-native-svg:mergeDebugConsumerProguardFiles
+> Task :react-native-svg:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-svg:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-svg:mergeDebugJavaResource
+> Task :react-native-safe-area-context:bundleDebugAar
+> Task :react-native-safe-area-context:assembleDebug
+> Task :react-native-vector-icons:extractDebugAnnotations
+> Task :react-native-video:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-vector-icons:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-vector-icons:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-video:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-video:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-vector-icons:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-vector-icons:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-video:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-video:prepareLintJarForPublish UP-TO-DATE
+> Task :sentry_react-native:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-vector-icons:prepareLintJarForPublish UP-TO-DATE
+> Task :sentry_react-native:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-vector-icons:mergeDebugJavaResource
+> Task :react-native-vector-icons:syncDebugLibJars
+> Task :sentry_react-native:extractDebugAnnotations
+> Task :sentry_react-native:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :sentry_react-native:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :sentry_react-native:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-vector-icons:bundleDebugAar
+> Task :react-native-vector-icons:assembleDebug
+> Task :sentry_react-native:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-svg:syncDebugLibJars
+> Task :sentry_react-native:prepareLintJarForPublish UP-TO-DATE
+> Task :sentry_react-native:mergeDebugJavaResource
+> Task :sentry_react-native:syncDebugLibJars
+> Task :react-native-svg:bundleDebugAar
+> Task :react-native-svg:assembleDebug
+> Task :sentry_react-native:bundleDebugAar
+> Task :sentry_react-native:assembleDebug
+> Task :react-native-worklets:configureCMakeDebug[arm64-v8a]
+> Task :react-native-screens:compileDebugKotlin
+> Task :react-native-video:compileDebugKotlin
+> Task :react-native-gesture-handler:compileDebugKotlin
+> Task :react-native-nitro-modules:buildCMakeDebug[arm64-v8a]
+> Task :expo-modules-core:buildCMakeDebug[arm64-v8a]
+> Task :react-native-screens:buildCMakeDebug[arm64-v8a]
+> Task :react-native-worklets:buildCMakeDebug[arm64-v8a][worklets]
+
+> Task :react-native-video:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/DataSourceUtil.kt:64:23 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt:49:9 'fun setUseArtwork(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/ReactVideoPackage.kt:14:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-video/android/src/main/java/com/brentvatne/react/VideoManagerModule.kt:23:106 'val DEFAULT: Int' is deprecated. UIManagerType.DEFAULT will be deleted in the next release of React Native. Use [LEGACY] instead.
+
+> Task :react-native-video:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-video:bundleLibCompileToJarDebug
+> Task :react-native-video:processDebugJavaRes
+> Task :react-native-video:bundleLibRuntimeToJarDebug
+> Task :react-native-video:extractDebugAnnotations
+> Task :react-native-video:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-video:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-video:mergeDebugJavaResource
+> Task :react-native-video:syncDebugLibJars
+> Task :react-native-video:bundleDebugAar
+> Task :react-native-video:assembleDebug
+> Task :react-native-screens:configureCMakeDebug[armeabi-v7a]
+
+> Task :react-native-gesture-handler:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerRootView.kt:41:43 The corresponding parameter in the supertype 'ReactViewGroup' is named 'ev'. This may cause problems when calling this function with named arguments.
+
+> Task :react-native-gesture-handler:compileDebugJavaWithJavac
+> Task :react-native-gesture-handler:processDebugJavaRes
+> Task :react-native-gesture-handler:bundleLibCompileToJarDebug
+> Task :react-native-gesture-handler:bundleLibRuntimeToJarDebug
+> Task :react-native-gesture-handler:extractDebugAnnotations
+> Task :react-native-gesture-handler:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-gesture-handler:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-gesture-handler:mergeDebugJavaResource
+> Task :react-native-gesture-handler:syncDebugLibJars
+> Task :react-native-nitro-modules:configureCMakeDebug[armeabi-v7a]
+> Task :react-native-screens:buildCMakeDebug[armeabi-v7a]
+> Task :react-native-screens:configureCMakeDebug[x86]
+> Task :expo-modules-core:configureCMakeDebug[armeabi-v7a]
+> Task :react-native-worklets:configureCMakeDebug[armeabi-v7a]
+
+> Task :react-native-screens:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:58:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'name'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:59:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'reactContext'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:72:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:49:77 Unchecked cast of '(CoordinatorLayout.Behavior<View!>?..CoordinatorLayout.Behavior<*>?)' to 'BottomSheetBehavior<Screen>'.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:218:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:221:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:398:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:405:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:408:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:413:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:428:18 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:48:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): WindowInsetsCompat' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:49:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:51:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:52:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:7:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:25:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:32:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'left'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:33:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'top'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:34:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'right'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:35:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'bottom'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:71:9 The corresponding parameter in the supertype 'RootView' is named 'childView'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:72:9 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:79:46 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:83:9 The corresponding parameter in the supertype 'RootView' is named 'childView'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:84:9 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:95:34 The corresponding parameter in the supertype 'RootView' is named 't'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:63:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:64:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:68:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:69:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/tabs/TabsHostViewManager.kt:37:9 The corresponding parameter in the supertype 'TabsHostViewManager' is named 'view'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/safearea/SafeAreaView.kt:183:31 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+
+> Task :react-native-nitro-modules:buildCMakeDebug[armeabi-v7a]
+> Task :react-native-screens:buildCMakeDebug[x86]
+> Task :react-native-screens:compileDebugJavaWithJavac
+> Task :react-native-screens:processDebugJavaRes
+> Task :react-native-screens:bundleLibCompileToJarDebug
+> Task :react-native-screens:bundleLibRuntimeToJarDebug
+> Task :react-native-screens:configureCMakeDebug[x86_64]
+> Task :expo-modules-core:buildCMakeDebug[armeabi-v7a]
+> Task :react-native-worklets:buildCMakeDebug[armeabi-v7a][worklets]
+> Task :react-native-nitro-modules:configureCMakeDebug[x86]
+> Task :react-native-screens:buildCMakeDebug[x86_64]
+> Task :react-native-screens:mergeDebugJniLibFolders
+> Task :react-native-screens:extractDebugAnnotations
+> Task :react-native-screens:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-screens:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-screens:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-screens:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-screens:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-screens:mergeDebugJavaResource
+> Task :react-native-screens:mergeDebugNativeLibs
+> Task :react-native-screens:syncDebugLibJars
+> Task :react-native-screens:copyDebugJniLibsProjectOnly
+> Task :react-native-screens:stripDebugDebugSymbols
+> Task :react-native-screens:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-screens:bundleDebugAar
+> Task :react-native-screens:assembleDebug
+> Task :expo-modules-core:configureCMakeDebug[x86]
+
+> Task :expo-modules-core:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:48:87 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:91:85 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:120:83 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/apploader/AppLoaderProvider.kt:34:52 Unchecked cast of 'Class<*>!' to 'Class<out HeadlessAppLoader>'.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:30:8 'typealias ErrorManagerModule = JSLoggerModule' is deprecated. Use JSLoggerModule instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:253:21 'typealias ErrorManagerModule = JSLoggerModule' is deprecated. Use JSLoggerModule instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:343:21 'val DEFAULT: Int' is deprecated. UIManagerType.DEFAULT will be deleted in the next release of React Native. Use [LEGACY] instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/defaultmodules/NativeModulesProxyModule.kt:16:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/PromiseImpl.kt:65:51 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/PromiseImpl.kt:69:22 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewDefinitionBuilder.kt:464:16 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewDefinitionBuilder.kt:464:30 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewManagerDefinition.kt:41:16 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewManagerDefinition.kt:41:30 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+
+> Task :react-native-worklets:configureCMakeDebug[x86]
+> Task :react-native-nitro-modules:buildCMakeDebug[x86]
+> Task :react-native-nitro-modules:configureCMakeDebug[x86_64]
+> Task :expo-modules-core:buildCMakeDebug[x86]
+> Task :react-native-worklets:buildCMakeDebug[x86][worklets]
+> Task :react-native-nitro-modules:buildCMakeDebug[x86_64]
+> Task :react-native-nitro-modules:externalNativeBuildDebug
+> Task :react-native-nitro-modules:generateJsonModelDebug
+> Task :react-native-nitro-modules:prefabDebugConfigurePackage
+> Task :react-native-nitro-modules:prefabDebugPackage
+> Task :react-native-nitro-modules:mergeDebugJniLibFolders
+> Task :react-native-mmkv:configureCMakeDebug[arm64-v8a]
+> Task :react-native-nitro-modules:extractDebugAnnotations
+> Task :react-native-nitro-modules:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-nitro-modules:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-nitro-modules:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-nitro-modules:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-nitro-modules:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-nitro-modules:mergeDebugJavaResource
+> Task :react-native-nitro-modules:syncDebugLibJars
+> Task :react-native-nitro-modules:mergeDebugNativeLibs
+> Task :react-native-nitro-modules:stripDebugDebugSymbols
+> Task :react-native-nitro-modules:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-nitro-modules:copyDebugJniLibsProjectOnly
+> Task :react-native-worklets:configureCMakeDebug[x86_64]
+
+> Task :expo-modules-core:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :expo-modules-core:processDebugJavaRes
+> Task :expo-modules-core:configureCMakeDebug[x86_64]
+> Task :expo-modules-core:bundleLibRuntimeToJarDebug
+> Task :expo-modules-core:bundleLibCompileToJarDebug
+> Task :react-native-nitro-modules:bundleDebugAar
+> Task :react-native-nitro-modules:assembleDebug
+> Task :react-native-mmkv:buildCMakeDebug[arm64-v8a]
+> Task :react-native-worklets:buildCMakeDebug[x86_64][worklets]
+> Task :expo-modules-core:buildCMakeDebug[x86_64]
+> Task :react-native-mmkv:configureCMakeDebug[armeabi-v7a]
+> Task :expo-dev-client:compileDebugKotlin NO-SOURCE
+> Task :expo-structured-headers:compileDebugKotlin NO-SOURCE
+> Task :expo-dev-client:compileDebugJavaWithJavac
+> Task :expo-dev-client:bundleLibCompileToJarDebug
+> Task :expo-dev-client:bundleLibRuntimeToJarDebug
+> Task :expo-updates-interface:compileDebugKotlin
+> Task :expo-json-utils:compileDebugKotlin
+> Task :expo-updates-interface:compileDebugJavaWithJavac
+> Task :expo-updates-interface:bundleLibCompileToJarDebug
+> Task :expo-updates-interface:bundleLibRuntimeToJarDebug
+> Task :expo-random:compileDebugKotlin
+> Task :expo-json-utils:compileDebugJavaWithJavac
+> Task :expo-json-utils:bundleLibCompileToJarDebug
+> Task :expo-json-utils:bundleLibRuntimeToJarDebug
+> Task :expo-eas-client:compileDebugKotlin
+> Task :expo-structured-headers:compileDebugJavaWithJavac
+> Task :expo-structured-headers:bundleLibCompileToJarDebug
+> Task :expo-structured-headers:bundleLibRuntimeToJarDebug
+
+> Task :expo-dev-menu-interface:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu-interface/android/src/main/java/expo/interfaces/devmenu/DevMenuInterfacePackage.kt:14:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu-interface/android/src/main/java/expo/interfaces/devmenu/ReactHostWrapper.kt:5:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu-interface/android/src/main/java/expo/interfaces/devmenu/ReactHostWrapper.kt:19:41 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu-interface/android/src/main/java/expo/interfaces/devmenu/ReactHostWrapper.kt:20:33 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+
+> Task :expo-dev-client:processDebugJavaRes NO-SOURCE
+> Task :expo-json-utils:processDebugJavaRes
+> Task :expo-structured-headers:processDebugJavaRes NO-SOURCE
+> Task :expo-updates-interface:processDebugJavaRes
+> Task :expo-modules-core:mergeDebugJniLibFolders
+> Task :expo-random:compileDebugJavaWithJavac
+> Task :expo-random:bundleLibCompileToJarDebug
+> Task :expo-random:bundleLibRuntimeToJarDebug
+> Task :expo-eas-client:compileDebugJavaWithJavac
+> Task :expo-eas-client:bundleLibCompileToJarDebug
+> Task :expo-eas-client:bundleLibRuntimeToJarDebug
+> Task :expo-eas-client:processDebugJavaRes
+> Task :expo-random:processDebugJavaRes
+> Task :expo-dev-client:extractDebugAnnotations
+> Task :expo-dev-client:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-dev-client:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-dev-client:mergeDebugJavaResource
+> Task :expo-dev-client:syncDebugLibJars
+> Task :expo-dev-client:bundleDebugAar
+> Task :expo-dev-client:assembleDebug
+> Task :expo-eas-client:extractDebugAnnotations
+> Task :expo-eas-client:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-eas-client:mergeDebugConsumerProguardFiles UP-TO-DATE
+
+> Task :expo-constants:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-constants/android/src/main/java/expo/modules/constants/ConstantsModule.kt:12:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+
+> Task :expo-eas-client:mergeDebugJavaResource
+> Task :expo-dev-menu-interface:compileDebugJavaWithJavac
+> Task :expo-eas-client:syncDebugLibJars
+> Task :expo-dev-menu-interface:bundleLibCompileToJarDebug
+> Task :expo-dev-menu-interface:bundleLibRuntimeToJarDebug
+> Task :expo-eas-client:bundleDebugAar
+> Task :expo-eas-client:assembleDebug
+> Task :expo-dev-menu-interface:processDebugJavaRes
+> Task :expo-modules-core:extractDebugAnnotations
+> Task :expo-dev-menu-interface:extractDebugAnnotations
+> Task :expo-dev-menu-interface:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-dev-menu-interface:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-dev-menu-interface:mergeDebugJavaResource
+> Task :expo-modules-core:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :expo-modules-core:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-modules-core:mergeDebugConsumerProguardFiles
+> Task :expo-modules-core:prepareDebugArtProfile UP-TO-DATE
+> Task :expo-modules-core:prepareLintJarForPublish UP-TO-DATE
+> Task :expo-modules-core:mergeDebugNativeLibs
+> Task :expo-random:extractDebugAnnotations
+> Task :expo-modules-core:mergeDebugJavaResource
+> Task :expo-constants:compileDebugJavaWithJavac
+> Task :expo-modules-core:stripDebugDebugSymbols
+> Task :expo-constants:bundleLibCompileToJarDebug
+> Task :expo-random:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-constants:bundleLibRuntimeToJarDebug
+> Task :expo-random:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-constants:processDebugJavaRes
+> Task :expo-random:mergeDebugJavaResource
+> Task :expo-constants:extractDebugAnnotations
+> Task :expo-constants:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-constants:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-image-colors:compileDebugKotlin
+> Task :expo-random:syncDebugLibJars
+> Task :expo-random:bundleDebugAar
+> Task :expo-random:assembleDebug
+> Task :expo-structured-headers:extractDebugAnnotations
+> Task :expo-structured-headers:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-structured-headers:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-structured-headers:mergeDebugJavaResource
+> Task :expo-structured-headers:syncDebugLibJars
+> Task :expo-structured-headers:bundleDebugAar
+> Task :expo-structured-headers:assembleDebug
+> Task :expo-updates-interface:extractDebugAnnotations
+> Task :expo-updates-interface:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-updates-interface:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-updates-interface:mergeDebugJavaResource
+> Task :expo-updates-interface:syncDebugLibJars
+> Task :expo-modules-core:copyDebugJniLibsProjectOnly
+> Task :expo-constants:mergeDebugJavaResource
+> Task :react-native-image-colors:compileDebugJavaWithJavac
+> Task :expo-constants:syncDebugLibJars
+> Task :react-native-image-colors:bundleLibCompileToJarDebug
+> Task :react-native-image-colors:bundleLibRuntimeToJarDebug
+> Task :expo-constants:bundleDebugAar
+> Task :expo-constants:assembleDebug
+> Task :react-native-image-colors:processDebugJavaRes
+> Task :react-native-worklets:externalNativeBuildDebug
+> Task :react-native-worklets:generateJsonModelDebug
+> Task :react-native-worklets:prefabDebugConfigurePackage
+> Task :expo-json-utils:extractDebugAnnotations
+> Task :expo-updates-interface:bundleDebugAar
+> Task :expo-updates-interface:assembleDebug
+> Task :expo-json-utils:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-dev-menu-interface:syncDebugLibJars
+> Task :expo-json-utils:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :react-native-image-colors:extractDebugAnnotations
+> Task :react-native-image-colors:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-image-colors:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-dev-menu-interface:bundleDebugAar
+> Task :expo-dev-menu-interface:assembleDebug
+> Task :expo-json-utils:mergeDebugJavaResource
+> Task :react-native-image-colors:mergeDebugJavaResource
+> Task :expo-json-utils:syncDebugLibJars
+> Task :react-native-image-colors:syncDebugLibJars
+> Task :expo-json-utils:bundleDebugAar
+> Task :expo-json-utils:assembleDebug
+> Task :react-native-image-colors:bundleDebugAar
+> Task :react-native-image-colors:assembleDebug
+> Task :expo-modules-core:syncDebugLibJars
+> Task :expo-modules-core:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-worklets:prefabDebugPackage
+> Task :react-native-worklets:mergeDebugJniLibFolders
+> Task :react-native-worklets:extractDebugAnnotations
+> Task :react-native-worklets:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :react-native-worklets:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :react-native-worklets:mergeDebugConsumerProguardFiles
+> Task :react-native-worklets:prepareDebugArtProfile UP-TO-DATE
+> Task :react-native-worklets:prepareLintJarForPublish UP-TO-DATE
+> Task :react-native-worklets:mergeDebugJavaResource
+> Task :react-native-worklets:syncDebugLibJars
+> Task :expo-modules-core:bundleDebugAar
+> Task :expo-modules-core:assembleDebug
+> Task :react-native-worklets:mergeDebugNativeLibs
+
+> Task :expo-manifests:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/EmbeddedManifest.kt:19:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/EmbeddedManifest.kt:19:86 'fun getLegacyID(): String' is deprecated. Prefer scopeKey or projectId depending on use case.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/ExpoUpdatesManifest.kt:16:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/Manifest.kt:13:3 Deprecations and opt-ins on a method overridden from 'Any' may not be reported.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/Manifest.kt:15:12 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+
+> Task :react-native-worklets:stripDebugDebugSymbols
+> Task :expo-manifests:compileDebugJavaWithJavac
+> Task :expo-manifests:bundleLibCompileToJarDebug
+> Task :expo-manifests:processDebugJavaRes
+> Task :expo-manifests:bundleLibRuntimeToJarDebug
+> Task :expo-manifests:extractDebugAnnotations
+> Task :expo-manifests:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-manifests:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-manifests:mergeDebugJavaResource
+> Task :expo-manifests:syncDebugLibJars
+> Task :expo-manifests:bundleDebugAar
+> Task :expo-manifests:assembleDebug
+> Task :react-native-worklets:copyDebugJniLibsProjectOnly
+> Task :react-native-worklets:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-reanimated:configureCMakeDebug[arm64-v8a]
+> Task :expo-libvlc-player:compileDebugKotlin
+> Task :expo-libvlc-player:compileDebugJavaWithJavac
+> Task :expo-libvlc-player:processDebugJavaRes
+> Task :expo-libvlc-player:bundleLibCompileToJarDebug
+> Task :expo-libvlc-player:bundleLibRuntimeToJarDebug
+> Task :expo-libvlc-player:extractDebugAnnotations
+> Task :expo-libvlc-player:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-libvlc-player:mergeDebugConsumerProguardFiles
+> Task :expo-libvlc-player:mergeDebugJavaResource
+> Task :expo-libvlc-player:syncDebugLibJars
+> Task :react-native-reanimated:configureCMakeDebug[armeabi-v7a]
+> Task :expo-libvlc-player:bundleDebugAar
+> Task :expo-libvlc-player:assembleDebug
+> Task :react-native-mmkv:buildCMakeDebug[armeabi-v7a]
+> Task :react-native-mmkv:configureCMakeDebug[x86]
+> Task :react-native-reanimated:configureCMakeDebug[x86]
+> Task :react-native-reanimated:configureCMakeDebug[x86_64]
+> Task :react-native-reanimated:generateJsonModelDebug
+> Task :react-native-reanimated:prefabDebugConfigurePackage UP-TO-DATE
+> Task :react-native-worklets:bundleDebugAar
+> Task :react-native-worklets:assembleDebug
+
+> Task :expo-dev-menu:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/debug/java/expo/modules/devmenu/DevMenuManager.kt:406:43 The corresponding parameter in the supertype 'DevMenuManagerInterface' is named 'shouldAutoLaunch'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/com/facebook/react/devsupport/DevMenuSettingsBase.kt:6:8 'class PreferenceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/com/facebook/react/devsupport/DevMenuSettingsBase.kt:18:51 'class PreferenceManager : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/com/facebook/react/devsupport/DevMenuSettingsBase.kt:18:69 'static fun getDefaultSharedPreferences(p0: Context!): SharedPreferences!' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/com/facebook/react/devsupport/DevMenuSettingsBase.kt:51:13 This code uses error suppression for 'NOTHING_TO_OVERRIDE'. While it might compile and work, the compiler behavior is UNSPECIFIED and WILL NOT BE PRESERVED. Please report your use case to the Kotlin issue tracker instead: https://kotl.in/issue
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/com/facebook/react/devsupport/DevMenuSettingsBase.kt:58:13 This code uses error suppression for 'NOTHING_TO_OVERRIDE'. While it might compile and work, the compiler behavior is UNSPECIFIED and WILL NOT BE PRESERVED. Please report your use case to the Kotlin issue tracker instead: https://kotl.in/issue
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/expo/modules/devmenu/DevMenuPackage.kt:28:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-menu/android/src/main/java/expo/modules/devmenu/DevMenuPackage.kt:47:78 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+
+> Task :expo-dev-menu:compileDebugJavaWithJavac
+> Task :expo-dev-menu:processDebugJavaRes
+> Task :expo-dev-menu:bundleLibCompileToJarDebug
+> Task :expo-dev-menu:bundleLibRuntimeToJarDebug
+> Task :expo-dev-menu:extractDebugAnnotations
+> Task :expo-dev-menu:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-dev-menu:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-dev-menu:mergeDebugJavaResource
+> Task :expo-dev-menu:syncDebugLibJars
+> Task :expo-dev-menu:bundleDebugAar
+> Task :expo-dev-menu:assembleDebug
+> Task :expo-updates:kspDebugKotlin
+> Task :react-native-mmkv:buildCMakeDebug[x86]
+> Task :react-native-mmkv:configureCMakeDebug[x86_64]
+> Task :app:configureCMakeDebug[arm64-v8a]
+> Task :react-native-reanimated:buildCMakeDebug[arm64-v8a][reanimated]
+> Task :react-native-gesture-handler:configureCMakeDebug[arm64-v8a]
+> Task :expo-dev-launcher:compileDebugKotlin
+> Task :react-native-mmkv:buildCMakeDebug[x86_64]
+> Task :react-native-mmkv:mergeDebugNativeLibs
+> Task :react-native-mmkv:stripDebugDebugSymbols
+> Task :react-native-mmkv:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-mmkv:copyDebugJniLibsProjectOnly
+> Task :react-native-mmkv:bundleDebugAar
+> Task :react-native-mmkv:assembleDebug
+
+> Task :expo-dev-launcher:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/DevLauncherController.kt:474:81 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/compose/models/BranchViewModel.kt:80:31 'val runtimeVersion: String' is deprecated. Use 'runtime' field .
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/helpers/DevLauncherReactUtils.kt:7:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/helpers/DevLauncherReactUtils.kt:78:20 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/helpers/DevLauncherReactUtils.kt:155:20 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/helpers/DevLauncherReactUtils.kt:246:11 'fun newInstance(): CapturedType(*)!' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/launcher/DevLauncherActivity.kt:19:5 'fun overridePendingTransition(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/launcher/DevLauncherActivity.kt:36:5 'fun overridePendingTransition(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/modules/DevLauncherModule.kt:16:29 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherBridgeDevSupportManager.kt:49:38 This code uses error suppression for 'NOTHING_TO_OVERRIDE'. While it might compile and work, the compiler behavior is UNSPECIFIED and WILL NOT BE PRESERVED. Please report your use case to the Kotlin issue tracker instead: https://kotl.in/issue
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherBridgelessDevSupportManager.kt:48:38 This code uses error suppression for 'NOTHING_TO_OVERRIDE'. While it might compile and work, the compiler behavior is UNSPECIFIED and WILL NOT BE PRESERVED. Please report your use case to the Kotlin issue tracker instead: https://kotl.in/issue
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherDevSupportManagerFactory.kt:19:5 The corresponding parameter in the supertype 'DevSupportManagerFactory' is named 'reactInstanceManagerHelper'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherDevSupportManagerFactory.kt:48:5 The corresponding parameter in the supertype 'DevSupportManagerFactory' is named 'reactInstanceManagerHelper'. This may cause problems when calling this function with named arguments.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherDevSupportManagerSwapper.kt:6:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/debug/java/expo/modules/devlauncher/react/DevLauncherDevSupportManagerSwapper.kt:34:58 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/DevLauncherPackage.kt:15:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/DevLauncherRecentlyOpenedAppsRegistry.kt:33:47 Unchecked cast of 'MutableMap<Any?, Any?>' to 'MutableMap<String, Any>'.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/DevLauncherRecentlyOpenedAppsRegistry.kt:51:27 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:37:23 'constructor(p0: String!, p1: Bitmap!, p2: Int): ActivityManager.TaskDescription' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:63:61 'static field FLAG_TRANSLUCENT_STATUS: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:92:45 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:95:68 'static field SYSTEM_UI_FLAG_LIGHT_STATUS_BAR: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:99:67 'static field SYSTEM_UI_FLAG_LIGHT_STATUS_BAR: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:103:67 'static field SYSTEM_UI_FLAG_LIGHT_STATUS_BAR: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:107:15 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:115:59 'static field FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:116:61 'static field FLAG_FORCE_NOT_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:118:59 'static field FLAG_FORCE_NOT_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:119:61 'static field FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:131:23 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): WindowInsets' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:132:25 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:134:25 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:135:25 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:150:15 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:160:63 'static field FLAG_TRANSLUCENT_NAVIGATION: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:161:25 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:171:63 'static field FLAG_TRANSLUCENT_NAVIGATION: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:175:33 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:176:33 'static field SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:177:21 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:190:29 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:191:62 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:191:101 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:192:63 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:192:102 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:192:136 'static field SYSTEM_UI_FLAG_IMMERSIVE: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:193:70 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:193:109 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:193:143 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/launcher/configurators/DevLauncherExpoActivityConfigurator.kt:196:17 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+
+> Task :expo-dev-launcher:compileDebugJavaWithJavac
+> Task :expo-dev-launcher:processDebugJavaRes
+> Task :expo-dev-launcher:extractDebugAnnotations
+> Task :expo-dev-launcher:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-dev-launcher:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :expo-dev-launcher:bundleLibRuntimeToJarDebug
+> Task :expo-dev-launcher:mergeDebugJavaResource
+> Task :expo-dev-launcher:bundleLibCompileToJarDebug
+> Task :expo-dev-launcher:syncDebugLibJars
+> Task :expo-dev-launcher:bundleDebugAar
+> Task :expo-dev-launcher:assembleDebug
+> Task :expo-updates:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesConfiguration.kt:317:13 'fun get(p0: String!): Any?' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesController.kt:40:39 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesDevLauncherController.kt:195:133 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesModule.kt:49:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesModule.kt:98:38 'fun toString(): String' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesPackage.kt:7:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesPackage.kt:56:85 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/Converters.kt:56:30 Java type mismatch: inferred type is 'ByteArray?', but 'ByteArray' was expected.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/DatabaseIntegrityCheck.kt:38:39 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/Reaper.kt:50:41 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/Reaper.kt:68:41 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/loader/Loader.kt:246:63 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/loader/LoaderTask.kt:360:101 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/manifest/EmbeddedUpdate.kt:33:89 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/manifest/ExpoUpdatesUpdate.kt:37:92 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/CheckForUpdateProcedure.kt:141:100 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/CheckForUpdateProcedure.kt:174:100 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/RelaunchProcedure.kt:137:44 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/RestartReactAppExtensions.kt:25:3 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StartupProcedure.kt:158:36 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StartupProcedure.kt:192:34 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StateMachineSerialExecutorQueue.kt:64:45 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+
+> Task :expo-updates:compileDebugJavaWithJavac
+> Task :expo-updates:processDebugJavaRes
+> Task :expo-updates:bundleLibCompileToJarDebug
+> Task :expo-updates:extractDebugAnnotations
+> Task :expo-updates:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo-updates:bundleLibRuntimeToJarDebug
+> Task :expo-updates:mergeDebugConsumerProguardFiles
+> Task :expo-updates:mergeDebugJavaResource
+> Task :expo-updates:syncDebugLibJars
+> Task :expo-updates:bundleDebugAar
+> Task :expo-updates:assembleDebug
+
+> Task :expo:compileDebugKotlin
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ExpoModulesPackage.kt:34:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ExpoReactHostFactory.kt:8:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ExpoReactHostFactory.kt:80:22 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:24:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:58:33 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:105:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:105:38 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:113:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:114:21 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:168:36 'constructor(activity: Activity, reactNativeHost: ReactNativeHost?, appKey: String?, launchOptions: Bundle?, fabricEnabled: Boolean): ReactDelegate' is deprecated. Deprecated since 0.81.0, use one of the other constructors instead.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:279:77 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:282:22 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:286:54 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:6:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:15:9 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:47:60 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:7:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:16:23 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:89:16 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:101:38 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:30:39 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:42:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/dashrink/Desktop/NuvioStreamingTV/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:44:11 'fun deallocate(): Unit' is deprecated. Use sharedObjectDidRelease() instead.
+
+> Task :expo:compileDebugJavaWithJavac
+> Task :expo:processDebugJavaRes
+> Task :expo:bundleLibRuntimeToJarDebug
+> Task :expo:bundleLibCompileToJarDebug
+> Task :expo:extractDebugAnnotations
+> Task :expo:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :expo:mergeDebugConsumerProguardFiles
+> Task :expo:mergeDebugJavaResource
+> Task :expo:syncDebugLibJars
+> Task :expo:bundleDebugAar
+> Task :expo:assembleDebug
+> Task :react-native-reanimated:buildCMakeDebug[armeabi-v7a][reanimated]
+> Task :react-native-reanimated:buildCMakeDebug[x86][reanimated]
+> Task :react-native-reanimated:buildCMakeDebug[x86_64][reanimated]
+> Task :react-native-reanimated:externalNativeBuildDebug
+> Task :react-native-reanimated:prefabDebugPackage
+> Task :app:kaptGenerateStubsDebugKotlin UP-TO-DATE
+> Task :react-native-reanimated:mergeDebugNativeLibs
+> Task :react-native-reanimated:stripDebugDebugSymbols
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :react-native-reanimated:copyDebugJniLibsProjectOnly
+> Task :react-native-reanimated:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-gesture-handler:buildCMakeDebug[arm64-v8a]
+> Task :react-native-gesture-handler:configureCMakeDebug[armeabi-v7a]
+> Task :app:kaptDebugKotlin FAILED
+> Task :react-native-gesture-handler:buildCMakeDebug[armeabi-v7a]
+> Task :app:buildCMakeDebug[arm64-v8a]
+> Task :react-native-reanimated:bundleDebugAar
+
+[Incubating] Problems report is available at: file:///home/dashrink/Desktop/NuvioStreamingTV/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kaptDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.gradle.internal.KaptWithoutKotlincTask$KaptExecutionWorkAction
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 11m 46s
+1296 actionable tasks: 1049 executed, 247 up-to-date

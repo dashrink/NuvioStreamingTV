@@ -51,8 +51,8 @@
 //! - Memory safety guarantees from Rust
 //! - No dependency on system TLS libraries
 
-use rustls::pki_types::{CertificateDer, ServerName};
 use rustls::{ClientConfig, RootCertStore};
+use rustls::pki_types::{CertificateDer, ServerName};
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -200,21 +200,23 @@ impl TlsConfigBuilder {
 
         // If using platform verifier, add system root certificates
         if self.use_platform_verifier {
-            let platform_certs = rustls_native_certs::load_native_certs();
-
-            // Check if there were any errors loading certs
-            if !platform_certs.errors.is_empty() {
-                tracing::warn!("Errors loading native certs: {:?}", platform_certs.errors);
+            let cert_result = rustls_native_certs::load_native_certs();
+            
+            if !cert_result.errors.is_empty() {
+                 tracing::warn!("Errors loading native certs: {:?}", cert_result.errors);
             }
 
-            for cert in platform_certs.certs {
-                // Ignore errors when adding platform certs (some might be invalid)
+            for cert in cert_result.certs {
+                // Ignore errors when adding platform certs
                 let _ = root_store.add(cert);
             }
         }
 
         // Build TLS client configuration
-        let config = ClientConfig::builder()
+        let provider = rustls::crypto::ring::default_provider();
+        let config = ClientConfig::builder_with_provider(Arc::new(provider))
+            .with_safe_default_protocol_versions()
+            .map_err(|e| TlsConfigError::ConfigBuildError(format!("Failed to set defaults: {}", e)))?
             .with_root_certificates(root_store)
             .with_no_client_auth();
 

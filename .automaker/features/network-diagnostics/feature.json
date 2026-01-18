@@ -1,0 +1,12 @@
+{
+  "id": "network-diagnostics",
+  "category": "Core",
+  "title": "Network Diagnostics & Speed Test",
+  "description": "Built-in network diagnostics with speed testing, latency monitoring, addon connectivity checks, and troubleshooting suggestions for playback issues.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.763Z",
+  "updatedAt": "2026-01-18T03:19:59.763Z"
+}

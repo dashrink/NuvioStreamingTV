@@ -1,0 +1,12 @@
+{
+  "id": "social-sharing",
+  "category": "Social",
+  "title": "Social Sharing Integration",
+  "description": "Share what you're watching to social platforms (Twitter, Facebook, Instagram) with rich media cards, automatic Trakt.tv sharing, and custom sharing templates.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.756Z",
+  "updatedAt": "2026-01-18T03:19:59.756Z"
+}

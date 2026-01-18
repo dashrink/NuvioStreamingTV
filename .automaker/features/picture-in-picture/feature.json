@@ -1,0 +1,12 @@
+{
+  "id": "picture-in-picture",
+  "category": "Playback",
+  "title": "Picture-in-Picture Mode",
+  "description": "System-level PiP support for multitasking while watching with resizable window, playback controls, and automatic pause on window close.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.765Z",
+  "updatedAt": "2026-01-18T03:19:59.765Z"
+}

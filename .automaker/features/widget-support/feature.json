@@ -1,0 +1,12 @@
+{
+  "id": "widget-support",
+  "category": "UI",
+  "title": "Home Screen Widgets",
+  "description": "Native widgets for iOS/Android showing continue watching, trending content, upcoming episodes, and quick search access.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.767Z",
+  "updatedAt": "2026-01-18T03:19:59.767Z"
+}

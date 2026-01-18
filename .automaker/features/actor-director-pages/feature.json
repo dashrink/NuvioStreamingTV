@@ -1,0 +1,12 @@
+{
+  "id": "actor-director-pages",
+  "category": "Content",
+  "title": "Actor & Director Profile Pages",
+  "description": "Dedicated pages for cast and crew with biography, filmography, photos, awards, and related content recommendations using TMDB person data.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.768Z",
+  "updatedAt": "2026-01-18T03:19:59.768Z"
+}

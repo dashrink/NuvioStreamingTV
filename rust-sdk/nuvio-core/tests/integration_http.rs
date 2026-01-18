@@ -39,7 +39,7 @@ async fn test_real_http_get() {
 
     let client = get_client();
 
-    let result = client.get("https://httpbin.org/get").send().await;
+    let result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/get").send().await;
 
     match result {
         Ok(response) => {
@@ -47,7 +47,7 @@ async fn test_real_http_get() {
             assert!(response.status().is_success());
 
             // Parse response body as JSON
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("Response body parsed as JSON: {:?}", json);
@@ -89,7 +89,7 @@ async fn test_real_http_post() {
         "test": true
     });
 
-    let result = client
+    let result: Result<reqwest::Response, reqwest::Error> = client
         .post("https://httpbin.org/post")
         .json(&payload)
         .send()
@@ -101,7 +101,7 @@ async fn test_real_http_post() {
             assert!(response.status().is_success());
 
             // Parse response body as JSON
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("Response body parsed as JSON: {:?}", json);
@@ -148,7 +148,7 @@ async fn test_real_cookie_handling() {
     let set_url = format!("https://httpbin.org/cookies/set?{}={}", cookie_name, cookie_value);
 
     tracing::info!("Setting cookie via: {}", set_url);
-    let set_result = client.get(&set_url).send().await;
+    let set_result: Result<reqwest::Response, reqwest::Error> = client.get(&set_url).send().await;
 
     match set_result {
         Ok(response) => {
@@ -159,14 +159,14 @@ async fn test_real_cookie_handling() {
 
             // Step 2: Verify cookies are sent in subsequent request
             tracing::info!("Verifying cookies are sent in subsequent request");
-            let verify_result = client.get("https://httpbin.org/cookies").send().await;
+            let verify_result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/cookies").send().await;
 
             match verify_result {
                 Ok(verify_response) => {
                     tracing::info!("Cookie verification request succeeded with status: {}", verify_response.status());
 
                     // Parse response to check if our cookie was sent
-                    let json_result = verify_response.json::<serde_json::Value>().await;
+                    let json_result: Result<serde_json::Value, reqwest::Error> = verify_response.json::<serde_json::Value>().await;
                     match json_result {
                         Ok(json) => {
                             tracing::info!("Cookies response: {:?}", json);
@@ -375,7 +375,7 @@ async fn test_real_custom_headers() {
             assert!(response.status().is_success());
 
             // Parse response to verify headers were sent
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("Headers response: {:?}", json);
@@ -422,7 +422,7 @@ async fn test_real_connection_pooling() {
     // Make 5 sequential requests to verify connection reuse
     for i in 1..=5 {
         tracing::info!("Making request {} of 5", i);
-        let result = client.get("https://httpbin.org/get").send().await;
+        let result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/get").send().await;
 
         match result {
             Ok(response) => {
@@ -458,7 +458,7 @@ async fn test_real_concurrent_requests() {
         let client_clone = client.clone();
         let handle = tokio::spawn(async move {
             tracing::info!("Concurrent request {} starting", i);
-            let result = client_clone.get("https://httpbin.org/get").send().await;
+            let result: Result<reqwest::Response, reqwest::Error> = client_clone.get("https://httpbin.org/get").send().await;
             match result {
                 Ok(response) => {
                     tracing::info!("Concurrent request {} succeeded with status: {}", i, response.status());
@@ -502,7 +502,7 @@ async fn test_real_middleware_client() {
     let client = get_client_with_middleware();
 
     // Make a simple request with the middleware client
-    let result = client.get("https://httpbin.org/get").send().await;
+    let result: Result<reqwest::Response, reqwest_middleware::Error> = client.get("https://httpbin.org/get").send().await;
 
     match result {
         Ok(response) => {
@@ -543,7 +543,7 @@ async fn test_e2e_oauth_cookie_flow() {
     // Simulates: GET /oauth/authorize endpoint setting session_id and state cookies
     tracing::info!("Step 1: Authorization request (sets session cookies)");
     let auth_url = "https://httpbin.org/cookies/set?session_id=oauth_session_abc123&state=auth_state_xyz789";
-    let auth_result = client.get(auth_url).send().await;
+    let auth_result: Result<reqwest::Response, reqwest::Error> = client.get(auth_url).send().await;
 
     match auth_result {
         Ok(response) => {
@@ -561,7 +561,7 @@ async fn test_e2e_oauth_cookie_flow() {
     // Step 2: Token exchange request (cookies automatically included)
     // Simulates: POST /oauth/token endpoint that requires session cookie
     tracing::info!("Step 2: Token exchange request (cookies automatically sent)");
-    let token_result = client.get("https://httpbin.org/cookies").send().await;
+    let token_result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/cookies").send().await;
 
     match token_result {
         Ok(response) => {
@@ -569,7 +569,7 @@ async fn test_e2e_oauth_cookie_flow() {
             assert!(response.status().is_success());
 
             // Parse response to verify cookies were sent
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("Token exchange response: {:?}", json);
@@ -613,7 +613,7 @@ async fn test_e2e_oauth_cookie_flow() {
     // Step 3: Authenticated API request (session still maintained)
     // Simulates: GET /api/user endpoint that requires authentication via session cookie
     tracing::info!("Step 3: Authenticated API request (session cookies still present)");
-    let api_result = client.get("https://httpbin.org/cookies").send().await;
+    let api_result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/cookies").send().await;
 
     match api_result {
         Ok(response) => {
@@ -621,7 +621,7 @@ async fn test_e2e_oauth_cookie_flow() {
             assert!(response.status().is_success());
 
             // Parse response to verify cookies are still present
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("API request response: {:?}", json);
@@ -817,7 +817,7 @@ async fn test_e2e_concurrent_requests() {
     tracing::info!("  - No race conditions or deadlocks");
 
     let start = std::time::Instant::now();
-    let mut handles = vec![];
+    let mut handles: Vec<tokio::task::JoinHandle<Result<String, String>>> = vec![];
 
     // Spawn concurrent GET requests to different endpoints to test variety
     for i in 1..=num_requests {
@@ -832,7 +832,7 @@ async fn test_e2e_concurrent_requests() {
 
         let handle = tokio::spawn(async move {
             tracing::info!("Concurrent request {} starting to {}", i, endpoint);
-            let result = client_clone.get(&endpoint).send().await;
+            let result: Result<reqwest::Response, _> = client_clone.get(&endpoint).send().await;
             match result {
                 Ok(response) => {
                     let status = response.status();
@@ -854,9 +854,9 @@ async fn test_e2e_concurrent_requests() {
 
     // Wait for all requests to complete
     tracing::info!("Waiting for all {} concurrent requests to complete", num_requests);
-    let mut results = vec![];
+    let mut results: Vec<String> = vec![];
     let mut success_count = 0;
-    let mut failed_requests = vec![];
+    let mut failed_requests: Vec<String> = vec![];
 
     for (idx, handle) in handles.into_iter().enumerate() {
         match handle.await {
@@ -970,7 +970,7 @@ async fn test_e2e_request_cancellation() {
 
     let start = std::time::Instant::now();
     let request_future = client.get("https://httpbin.org/delay/10").send();
-    let timeout_result = tokio::time::timeout(Duration::from_secs(1), request_future).await;
+    let timeout_result: Result<Result<reqwest::Response, reqwest::Error>, tokio::time::error::Elapsed> = tokio::time::timeout(Duration::from_secs(1), request_future).await;
     let cancellation_duration = start.elapsed();
 
     match timeout_result {
@@ -1011,7 +1011,7 @@ async fn test_e2e_request_cancellation() {
     tracing::info!("  - Making normal GET request to /get");
     tracing::info!("  - Expected: Request succeeds normally");
 
-    let verify_result = client.get("https://httpbin.org/get").send().await;
+    let verify_result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/get").send().await;
 
     match verify_result {
         Ok(response) => {
@@ -1020,7 +1020,7 @@ async fn test_e2e_request_cancellation() {
             assert!(response.status().is_success(), "Expected successful status after cancellation");
 
             // Parse response to fully verify client health
-            let json_result = response.json::<serde_json::Value>().await;
+            let json_result: Result<serde_json::Value, reqwest::Error> = response.json::<serde_json::Value>().await;
             match json_result {
                 Ok(json) => {
                     tracing::info!("✓ Response body parsed successfully");
@@ -1048,7 +1048,7 @@ async fn test_e2e_request_cancellation() {
     for i in 1..=3 {
         tracing::info!("Cancelling request {}/3", i);
         let request_future = client.get("https://httpbin.org/delay/5").send();
-        let result = tokio::time::timeout(Duration::from_millis(500), request_future).await;
+    let result: Result<Result<reqwest::Response, reqwest::Error>, tokio::time::error::Elapsed> = tokio::time::timeout(Duration::from_millis(500), request_future).await;
 
         match result {
             Err(_elapsed) => {
@@ -1072,7 +1072,7 @@ async fn test_e2e_request_cancellation() {
 
     // Final verification
     tracing::info!("Final verification: Client health check");
-    let final_result = client.get("https://httpbin.org/get").send().await;
+    let final_result: Result<reqwest::Response, reqwest::Error> = client.get("https://httpbin.org/get").send().await;
 
     match final_result {
         Ok(response) => {

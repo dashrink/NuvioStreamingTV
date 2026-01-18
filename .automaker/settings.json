@@ -1,19 +1,5 @@
 {
   "version": 1,
-  "theme": "solarized",
-  "currentWorktree": {
-    "path": null,
-    "branch": "feat/tvos-support"
-  },
-  "worktrees": [
-    {
-      "path": "/home/dashrink/Desktop/NuvioStreamingTV",
-      "branch": "feat/tvos-support",
-      "isMain": true,
-      "isCurrent": true,
-      "hasWorktree": true,
-      "hasChanges": true,
-      "changedFilesCount": 26
-    }
-  ]
+  "useWorktrees": true,
+  "defaultDeleteBranch": true
 }

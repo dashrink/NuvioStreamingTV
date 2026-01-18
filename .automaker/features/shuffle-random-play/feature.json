@@ -1,0 +1,12 @@
+{
+  "id": "shuffle-random-play",
+  "category": "Playback",
+  "title": "Shuffle & Random Episode Play",
+  "description": "Random episode selector for TV shows with weighted randomization based on ratings, unwatched episodes priority, and shuffle playlists.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.766Z",
+  "updatedAt": "2026-01-18T03:19:59.766Z"
+}

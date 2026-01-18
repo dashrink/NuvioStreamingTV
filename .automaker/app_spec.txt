@@ -3,317 +3,245 @@
   <project_name>Nuvio Streaming TV</project_name>
 
   <overview>
-    Nuvio Streaming TV is a fork of the NuvioStreaming repository, extending it to support Android TV (Google TV) and Apple tvOS platforms in addition to its existing iOS, Android mobile, Android tablet, and iPadOS support. The project is a modern, cross-platform media hub application built with React Native and Expo that provides content streaming capabilities through a flexible addon/plugin ecosystem compatible with the Stremio protocol. The application serves as a media discovery and streaming interface, allowing users to browse, search, and stream media content through user-installed plugins and addons. Key goals include maintaining modular architecture to facilitate upstream sync from the original repository, preserving all existing functionality while adding TV-specific navigation, remote control handling, and optimized UI/UX for the 10-foot viewing experience on living room screens.
+    Nuvio Streaming TV is a cross-platform content streaming application that serves as a centralized hub for streaming content discovery, organization, and playback. The project is built with a Rust SDK core (nuvio-core) that provides native bindings for Kotlin (Android) and Swift (iOS/tvOS) through UniFFI, enabling seamless cross-platform integration. The application is fully compatible with Stremio addons ecosystem, allowing users to discover and stream content from multiple addon sources. It integrates with Trakt.tv for comprehensive user activity tracking including continue watching, watchlists, scrobbling, and personalized catalogs. TMDB (The Movie Database) provides rich metadata, imagery, and content information. The frontend is built with React Native and Expo, supporting mobile phones, tablets, and TV platforms (Android TV, Apple TV) with dedicated TV-optimized components and navigation patterns.
   </overview>
 
   <technology_stack>
-    <technology>React Native (react-native-tvos variant for TV support)</technology>
-    <technology>Expo SDK 54</technology>
-    <technology>TypeScript</technology>
-    <technology>React Navigation 7.x (Native Stack + Bottom Tabs)</technology>
-    <technology>React Native Reanimated 4.x</technology>
-    <technology>React Native Gesture Handler</technology>
-    <technology>React Native Video 6.x</technology>
-    <technology>expo-libvlc-player</technology>
-    <technology>MMKV (react-native-mmkv) for storage</technology>
-    <technology>Axios for HTTP requests</technology>
-    <technology>FlashList (@shopify/flash-list) for optimized lists</technology>
-    <technology>FastImage (@d11/react-native-fast-image)</technology>
-    <technology>Lottie (lottie-react-native) for animations</technology>
-    <technology>React Native Paper (Material Design)</technology>
-    <technology>Sentry for error tracking</technology>
-    <technology>PostHog for analytics</technology>
-    <technology>Expo Updates for OTA updates</technology>
-    <technology>Expo File System</technology>
-    <technology>Expo Notifications</technology>
-    <technology>React Native Google Cast</technology>
-    <technology>Trakt.tv API integration</technology>
-    <technology>TMDB API integration</technology>
-    <technology>MDBList API integration</technology>
-    <technology>Hermes JavaScript Engine</technology>
-    <technology>@react-native-tvos/config-tv for TV configuration</technology>
-    <technology>Bottom Sheet (@gorhom/bottom-sheet)</technology>
-    <technology>Cheerio for HTML parsing</technology>
-    <technology>CryptoJS for encryption</technology>
-    <technology>date-fns for date handling</technology>
+    <technology>Rust (2021 edition) - Core SDK with FFI bindings</technology>
+    <technology>UniFFI 0.30.0 - Cross-platform FFI binding generator for Kotlin/Swift</technology>
+    <technology>React Native 0.81.4 - Cross-platform mobile UI framework</technology>
+    <technology>Expo 54 - React Native development platform and build tools</technology>
+    <technology>TypeScript - Frontend type-safe development</technology>
+    <technology>Tokio - Async runtime for Rust</technology>
+    <technology>Reqwest with rustls-tls - HTTP client with native TLS</technology>
+    <technology>Serde/serde_json - Serialization framework</technology>
+    <technology>OAuth2 - Authentication flows for Trakt integration</technology>
+    <technology>Argon2 - Password hashing for PIN security</technology>
+    <technology>React Navigation 7 - Navigation library</technology>
+    <technology>React Native MMKV - Fast key-value storage</technology>
+    <technology>Expo Video/VLC/KSPlayer - Multi-player video playback</technology>
+    <technology>React Native Reanimated 4 - Animations</technology>
+    <technology>Shopify FlashList - High-performance lists</technology>
+    <technology>Lottie React Native - Animation support</technology>
+    <technology>React Native Gesture Handler - Touch gestures</technology>
+    <technology>PostHog React Native - Analytics</technology>
+    <technology>Sentry React Native - Error tracking</technology>
+    <technology>react-native-google-cast - Chromecast support</technology>
+    <technology>wiremock - HTTP mocking for tests</technology>
+    <technology>Jest/jest-expo - Testing framework</technology>
+    <technology>ESLint/Prettier - Code quality tools</technology>
   </technology_stack>
 
   <core_capabilities>
-    <capability>Cross-platform media streaming for iOS, Android, iPadOS, Android tablets, Android TV, and Apple tvOS</capability>
-    <capability>Stremio-compatible addon ecosystem for content discovery and streaming</capability>
-    <capability>Multi-source stream aggregation from various addon providers</capability>
-    <capability>Trakt.tv integration for watchlist sync, watch history, and progress tracking</capability>
-    <capability>TMDB integration for rich metadata, posters, backdrops, and cast information</capability>
-    <capability>MDBList integration for aggregated ratings from multiple sources</capability>
-    <capability>Debrid service integration (TorBox) for premium high-quality streams</capability>
-    <capability>Continue watching functionality with progress sync</capability>
-    <capability>Library management with watchlist, collection, and ratings</capability>
-    <capability>Global content search across all installed addons</capability>
-    <capability>Offline downloads capability</capability>
-    <capability>Custom subtitle support with SRT/VTT parsing and sync adjustment</capability>
-    <capability>Multiple video player implementations (KSPlayer for iOS, MPV for Android)</capability>
-    <capability>TV remote control navigation with D-pad support</capability>
-    <capability>Focus-based navigation system for TV platforms</capability>
-    <capability>Theming system with customizable accent colors</capability>
-    <capability>Calendar view for upcoming episode releases</capability>
-    <capability>AI-powered chat assistant for content discussions</capability>
-    <capability>Backup and restore functionality</capability>
-    <capability>OTA updates support</capability>
-    <capability>Google Cast integration for casting to Chromecast devices</capability>
-    <capability>Parental guide overlays with content warnings</capability>
-    <capability>Skip intro detection and automation</capability>
+    <capability>Stremio Addon Integration - Full compatibility with Stremio addon ecosystem for content discovery, catalog browsing, stream resolution, and metadata aggregation from multiple addon sources</capability>
+    <capability>Trakt.tv Integration - OAuth authentication (PKCE + device code flows), watch history sync, watchlist management, collection tracking, ratings, playback progress, and scrobbling for movies and TV shows</capability>
+    <capability>TMDB Integration - Content search (movies, TV, people), detailed metadata retrieval, episode information, credits, recommendations, similar content, trending/popular catalogs, and image URL generation with caching</capability>
+    <capability>Multi-Profile System - Up to 5 user profiles with admin/standard/kids types, PIN protection with Argon2 hashing, age rating restrictions, individual preferences, and watch history isolation</capability>
+    <capability>Cross-Platform Native Core - Rust SDK with UniFFI bindings generating native Kotlin and Swift code for optimal performance</capability>
+    <capability>Production HTTP Layer - Connection pooling, configurable timeouts, retry logic with exponential backoff, TLS certificate handling, cookie management, and middleware support</capability>
+    <capability>TV Platform Support - Dedicated components for Android TV and Apple TV with focus management, D-pad navigation, voice search, and spatial navigation</capability>
+    <capability>Video Playback - Multi-player support (MPV, VLC, KSPlayer) with subtitle styling, quality selection, speed control, and gesture controls</capability>
+    <capability>Offline Queue - Queued operations for Trakt sync when offline</capability>
+    <capability>Content Catalogs - Dynamic catalog fetching with pagination, search, and filtering across addons</capability>
   </core_capabilities>
 
   <implemented_features>
     <feature>
-      <name>TV Mode Support</name>
-      <description>Dedicated hooks (useTVMode, useTVEventHandler, useTVBackHandler) that handle TV-specific behaviors including remote control navigation, back button handling, and platform detection. Only active on TV platforms to ensure zero impact on mobile.</description>
+      <name>Stremio Service</name>
+      <description>Complete Stremio addon integration service with addon discovery, manifest parsing/validation, catalog fetching with pagination, stream resolution from multiple addons, and metadata aggregation with priority-based conflict resolution. Supports parallel fetching, configurable timeouts, retry logic, and response validation.</description>
       <file_locations>
-        <location>src/hooks/useTVMode.ts</location>
-        <location>src/hooks/useTVEventHandler.ts</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Focusable Component</name>
-      <description>Modular component providing focus handling for Android TV and Apple TV while falling back to standard Pressable on mobile. Includes animated scaling on focus, configurable focus ring/glow, spatial navigation via nextFocus props, Apple TV Parallax effect support.</description>
-      <file_locations>
-        <location>src/components/common/Focusable.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>TV-Specific Configuration</name>
-      <description>Separate app configuration (app.tv.json) for TV builds with Android TV leanback launcher integration, tvOS support flags, and TV-specific permissions and settings.</description>
-      <file_locations>
-        <location>app.tv.json</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Home Screen with Featured Content</name>
-      <description>Rich home screen featuring hero carousel, Apple TV-style hero sections, continue watching section, this week releases, and catalog sections with addon content.</description>
-      <file_locations>
-        <location>src/screens/HomeScreen.tsx</location>
-        <location>src/components/home/HeroCarousel.tsx</location>
-        <location>src/components/home/AppleTVHero.tsx</location>
-        <location>src/components/home/ContinueWatchingSection.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Stremio Addon Service</name>
-      <description>Complete Stremio protocol implementation supporting addon installation, catalog fetching, stream resolution, and metadata retrieval from multiple addon sources.</description>
-      <file_locations>
-        <location>src/services/stremioService.ts</location>
-        <location>src/services/catalogService.ts</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Multi-Platform Video Players</name>
-      <description>Platform-specific video player implementations - KSPlayer-based player for iOS/tvOS and MPV-based player for Android/Android TV with shared hooks for state management, controls, and subtitles.</description>
-      <file_locations>
-        <location>src/components/player/KSPlayerCore.tsx</location>
-        <location>src/components/player/AndroidVideoPlayer.tsx</location>
-        <location>src/components/player/hooks/</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/addon.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/catalog.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/stream.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/meta.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/fetcher.rs</location>
+        <location>rust-sdk/nuvio-core/src/stremio_service/types.rs</location>
       </file_locations>
     </feature>
     <feature>
       <name>Trakt Integration</name>
-      <description>Full Trakt.tv API integration including OAuth authentication, watch history sync, watchlist management, collection management, ratings, and auto-sync functionality.</description>
+      <description>Full Trakt.tv API integration including OAuth2 authentication with PKCE and device code flows, token refresh handling, secure token storage, scrobbling for movies and episodes with duplicate prevention, sync manager for watched history/watchlist/collection/ratings, playback progress tracking, and offline queue for network resilience.</description>
       <file_locations>
-        <location>src/services/traktService.ts</location>
-        <location>src/contexts/TraktContext.tsx</location>
-        <location>src/hooks/useTraktIntegration.ts</location>
+        <location>rust-sdk/nuvio-core/src/trakt/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/auth.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/client.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/sync.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/scrobble.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/queue.rs</location>
+        <location>rust-sdk/nuvio-core/src/trakt/storage.rs</location>
       </file_locations>
     </feature>
     <feature>
-      <name>TMDB Metadata Service</name>
-      <description>TMDB API integration for fetching movie/TV show metadata, posters, backdrops, cast information, trailers, and release information.</description>
+      <name>TMDB Integration</name>
+      <description>Comprehensive TMDB API client with search functionality (TV, movies, people, multi), detailed content metadata (shows, movies, seasons, episodes), cast/crew credits, person profiles with combined credits, external IDs, collections, recommendations, similar content, trending/popular/top-rated catalogs, image URL generation with size variants, and intelligent caching with TTL.</description>
       <file_locations>
-        <location>src/services/tmdbService.ts</location>
-        <location>src/screens/TMDBSettingsScreen.tsx</location>
+        <location>rust-sdk/nuvio-core/src/tmdb/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/tmdb/models.rs</location>
+        <location>rust-sdk/nuvio-core/src/tmdb/storage.rs</location>
+        <location>rust-sdk/nuvio-core/src/tmdb/error.rs</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Library Screen</name>
-      <description>Personal library management screen displaying Trakt folders (watchlist, collection, watched, ratings) with grid view of content items.</description>
+      <name>Profile Management System</name>
+      <description>Multi-profile system supporting up to 5 profiles with admin/standard/kids types. Features include PIN protection with Argon2 hashing and verification, age rating restrictions, per-profile preferences (language, subtitles, autoplay, quality), isolated watch history per profile, profile switching, and full export/import functionality for backup and restore.</description>
       <file_locations>
-        <location>src/screens/LibraryScreen.tsx</location>
+        <location>rust-sdk/nuvio-core/src/profile/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/profile/manager.rs</location>
+        <location>rust-sdk/nuvio-core/src/profile/security.rs</location>
+        <location>rust-sdk/nuvio-core/src/profile/store.rs</location>
+        <location>rust-sdk/nuvio-core/src/types/profile.rs</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Search Screen</name>
-      <description>Global search functionality across all installed addons with recent searches, discover catalogs, and responsive grid layouts.</description>
+      <name>HTTP Networking Layer</name>
+      <description>Production-grade HTTP client with singleton pattern for connection pooling, configurable timeouts, retry middleware with exponential backoff for transient failures, cookie jar management for OAuth flows, TLS configuration with certificate pinning support, request/response middleware, and FFI-safe error handling.</description>
       <file_locations>
-        <location>src/screens/SearchScreen.tsx</location>
-        <location>src/components/search/</location>
+        <location>rust-sdk/nuvio-core/src/http/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/client.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/config.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/middleware.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/retry.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/tls.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/cookies.rs</location>
+        <location>rust-sdk/nuvio-core/src/http/ffi.rs</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Metadata Screen</name>
-      <description>Detailed content information display including hero sections, cast/crew, ratings, trailers, season/episode listings for series, and more like this recommendations.</description>
+      <name>Core Domain Types</name>
+      <description>FFI-compatible domain types with UniFFI records: Meta (content metadata with IMDB/TMDB IDs), Stream (video stream info with quality/format/codec), Catalog (content collections), and Profile (user profiles with preferences). All types support serde serialization for storage and API communication.</description>
       <file_locations>
-        <location>src/screens/MetadataScreen.tsx</location>
-        <location>src/components/metadata/</location>
+        <location>rust-sdk/nuvio-core/src/types/mod.rs</location>
+        <location>rust-sdk/nuvio-core/src/types/meta.rs</location>
+        <location>rust-sdk/nuvio-core/src/types/stream.rs</location>
+        <location>rust-sdk/nuvio-core/src/types/catalog.rs</location>
+        <location>rust-sdk/nuvio-core/src/types/profile.rs</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Streams Screen</name>
-      <description>Stream selection interface showing available streams from all addon providers with quality badges, provider logos, and auto-play functionality.</description>
+      <name>Video Player Components</name>
+      <description>Platform-specific video player implementations with MPV player for Android and KSPlayer for iOS. Features include gesture controls (seek, volume, brightness), playback state management, track selection (audio/subtitles), speed control, next episode navigation, and opening animations.</description>
       <file_locations>
-        <location>src/screens/streams/StreamsScreen.tsx</location>
-        <location>src/screens/streams/</location>
+        <location>src/components/player/android/MpvPlayer.tsx</location>
+        <location>src/components/player/android/components/GestureControls.tsx</location>
+        <location>src/components/player/android/components/VideoSurface.tsx</location>
+        <location>src/components/player/ios/components/KSPlayerSurface.tsx</location>
+        <location>src/components/player/ios/hooks/useKSPlayer.ts</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Downloads System</name>
-      <description>Offline downloads capability with download queue management, progress tracking, and local playback support.</description>
+      <name>TV Platform Components</name>
+      <description>Dedicated TV platform support with focus management, D-pad navigation, context menus, voice search integration, and spatial navigation. Includes TV-optimized versions of core components (ContentItem, CatalogSection, HeroCarousel, StreamCard) with appropriate touch targets and animations.</description>
       <file_locations>
-        <location>src/screens/DownloadsScreen.tsx</location>
-        <location>src/contexts/DownloadsContext.tsx</location>
+        <location>src/components/tv/TVContextMenu.tsx</location>
+        <location>src/components/tv/TVFocusGuard.tsx</location>
+        <location>src/components/tv/TVNavigationBackHandlerProvider.tsx</location>
+        <location>src/components/tv/TVVoiceSearch.tsx</location>
+        <location>src/hooks/useTVEventHandler.ts</location>
+        <location>src/utils/tvStyles/</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Settings System</name>
-      <description>Comprehensive settings screens organized into categories: Content Discovery, Appearance, Integrations, Playback, About, and Developer settings.</description>
+      <name>Home Screen Experience</name>
+      <description>Rich home screen with hero carousel, featured content section, continue watching integration, catalog sections with horizontal scrolling, Apple TV-style hero sections, and skeleton loaders for smooth loading states.</description>
       <file_locations>
-        <location>src/screens/SettingsScreen.tsx</location>
-        <location>src/screens/settings/</location>
+        <location>src/components/home/HeroCarousel.tsx</location>
+        <location>src/components/home/CatalogSection.tsx</location>
+        <location>src/components/home/ContinueWatchingSection.tsx</location>
+        <location>src/components/home/FeaturedContent.tsx</location>
+        <location>src/components/home/AppleTVHero.tv.tsx</location>
+        <location>src/components/home/ContentItem.tsx</location>
       </file_locations>
     </feature>
     <feature>
-      <name>Debrid Integration</name>
-      <description>Premium debrid service integration (TorBox) for accessing cached high-quality streams with faster speeds.</description>
+      <name>Error Handling System</name>
+      <description>Comprehensive FFI-safe error types using thiserror with named fields for UniFFI compatibility. Covers security, profile, storage, serialization, validation, network, timeout, manifest, and addon errors with proper Display implementations and conversion traits.</description>
       <file_locations>
-        <location>src/screens/DebridIntegrationScreen.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>AI Chat Assistant</name>
-      <description>AI-powered chat feature for discussing content, getting recommendations, and asking questions about movies/shows.</description>
-      <file_locations>
-        <location>src/screens/AIChatScreen.tsx</location>
-        <location>src/services/aiService.ts</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Calendar Feature</name>
-      <description>Calendar view showing upcoming episode releases for shows in user&apos;s watchlist or collection.</description>
-      <file_locations>
-        <location>src/screens/CalendarScreen.tsx</location>
-        <location>src/services/robustCalendarCache.ts</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Theme System</name>
-      <description>Customizable theming with multiple accent color options and dark mode support across the application.</description>
-      <file_locations>
-        <location>src/contexts/ThemeContext.tsx</location>
-        <location>src/screens/ThemeScreen.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Plugin/Scraper System</name>
-      <description>Local scraper/plugin service for extending streaming capabilities with custom content sources.</description>
-      <file_locations>
-        <location>src/services/pluginService.ts</location>
-        <location>src/screens/PluginsScreen.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Backup &amp; Restore</name>
-      <description>System for backing up and restoring user data including addons, settings, watch progress, and library items.</description>
-      <file_locations>
-        <location>src/screens/BackupScreen.tsx</location>
-        <location>src/services/backupService.ts</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Onboarding Flow</name>
-      <description>First-time user onboarding experience introducing app features and guiding initial setup.</description>
-      <file_locations>
-        <location>src/screens/OnboardingScreen.tsx</location>
-        <location>src/components/FirstTimeWelcome.tsx</location>
-      </file_locations>
-    </feature>
-    <feature>
-      <name>Update System</name>
-      <description>In-app update checking and installation for Android with GitHub release integration and OTA updates via Expo Updates.</description>
-      <file_locations>
-        <location>src/services/updateService.ts</location>
-        <location>src/screens/UpdateScreen.tsx</location>
-        <location>src/hooks/useUpdatePopup.ts</location>
+        <location>rust-sdk/nuvio-core/src/error.rs</location>
       </file_locations>
     </feature>
   </implemented_features>
 
   <additional_requirements>
-    <requirement>react-native-tvos package required (aliased as react-native in package.json)</requirement>
-    <requirement>@react-native-tvos/config-tv devDependency for TV prebuild configuration</requirement>
-    <requirement>Expo SDK 54 or compatible version</requirement>
-    <requirement>Node.js 18+ recommended</requirement>
-    <requirement>Android TV: Leanback Launcher category in AndroidManifest.xml</requirement>
-    <requirement>tvOS: supportsTV flag enabled in iOS configuration</requirement>
-    <requirement>Environment variables required: EXPO_PUBLIC_TRAKT_CLIENT_ID, EXPO_PUBLIC_TRAKT_CLIENT_SECRET</requirement>
-    <requirement>Sentry DSN configuration for error tracking</requirement>
-    <requirement>PostHog API key for analytics</requirement>
-    <requirement>TMDB API key for metadata (configured in TMDBSettings)</requirement>
-    <requirement>MDBList API key for aggregated ratings (optional)</requirement>
-    <requirement>Physical TV devices or emulators for testing TV-specific functionality</requirement>
+    <requirement>Trakt.tv API credentials (client_id, client_secret) required for Trakt integration</requirement>
+    <requirement>TMDB API key required for metadata and image services</requirement>
+    <requirement>Rust toolchain with cargo for building the SDK</requirement>
+    <requirement>Xcode for iOS/tvOS development and Swift bindings</requirement>
+    <requirement>Android SDK with Kotlin support for Android bindings</requirement>
+    <requirement>Node.js and npm/yarn for React Native development</requirement>
+    <requirement>Expo CLI for development and building</requirement>
+    <requirement>iOS devices require TestFlight for beta distribution</requirement>
+    <requirement>Android TV and Apple TV simulators/devices for TV testing</requirement>
+    <requirement>Internet connectivity required for addon discovery and API calls</requirement>
   </additional_requirements>
 
   <development_guidelines>
-    <guideline>Maintain modular architecture to facilitate syncing with upstream NuvioStreaming repository</guideline>
-    <guideline>Use Platform.isTV checks to conditionally apply TV-specific code paths</guideline>
-    <guideline>Implement TV navigation using the Focusable component wrapper for all interactive elements</guideline>
-    <guideline>Keep TV-specific hooks (useTVMode, useTVEventHandler) isolated and zero-impact on mobile builds</guideline>
-    <guideline>Use react-native-tvos variant of React Native for TV support</guideline>
-    <guideline>Apply @react-native-tvos/config-tv plugin for TV-specific build configuration</guideline>
-    <guideline>Separate TV configuration in app.tv.json while maintaining app.json for mobile</guideline>
-    <guideline>Use APP_VARIANT=tv environment variable for TV builds</guideline>
-    <guideline>Follow existing TypeScript conventions with strict typing</guideline>
-    <guideline>Use MMKV for persistent storage instead of AsyncStorage for performance</guideline>
-    <guideline>Implement responsive layouts that adapt to phone, tablet, and TV screen sizes</guideline>
-    <guideline>Use FlashList for optimized list rendering on all platforms</guideline>
-    <guideline>Apply Hermes JavaScript engine for improved performance</guideline>
-    <guideline>Maintain compatibility with Expo managed workflow where possible</guideline>
-    <guideline>Use react-native-reanimated for smooth animations across all platforms</guideline>
-    <guideline>Implement D-pad navigation support using nextFocus* props on Focusable components</guideline>
-    <guideline>Test on physical TV devices to ensure proper focus management and remote control behavior</guideline>
+    <guideline>Use UniFFI for all Rust-to-native bindings - ensure all types use named fields (no tuple variants)</guideline>
+    <guideline>Follow async/await patterns with Tokio runtime for network operations</guideline>
+    <guideline>Implement proper error handling with NuvioError types that can cross FFI boundaries</guideline>
+    <guideline>Use serde for JSON serialization with proper derive macros</guideline>
+    <guideline>Maintain thread-safe state with Arc&lt;RwLock&lt;&gt;&gt; patterns in services</guideline>
+    <guideline>Implement comprehensive unit tests with wiremock for HTTP mocking</guideline>
+    <guideline>Use platform-specific components (.tv.tsx suffix) for TV platform differences</guideline>
+    <guideline>Follow React Native best practices with FlashList for long lists</guideline>
+    <guideline>Implement proper caching with TTL for TMDB and other API responses</guideline>
+    <guideline>Use MMKV for fast key-value storage on mobile platforms</guideline>
+    <guideline>Maintain type safety with TypeScript in the React Native layer</guideline>
+    <guideline>Use ESLint and Prettier for code quality and formatting</guideline>
+    <guideline>Implement proper PIN security with Argon2 hashing - never store plaintext</guideline>
+    <guideline>Handle offline scenarios with queued operations for Trakt sync</guideline>
   </development_guidelines>
 
   <implementation_roadmap>
     <phase>
-      <name>Phase 1: TV Foundation</name>
+      <name>Core Rust SDK Foundation</name>
       <status>completed</status>
-      <description>Core TV infrastructure including react-native-tvos integration, TV configuration files (app.tv.json), Focusable component for focus management, useTVMode and useTVEventHandler hooks, and basic D-pad navigation support.</description>
+      <description>Implemented core domain types (Meta, Stream, Catalog, Profile), error handling system, UniFFI scaffolding for FFI bindings, and basic project structure with workspace configuration.</description>
     </phase>
     <phase>
-      <name>Phase 2: Navigation &amp; Layout Optimization</name>
+      <name>HTTP Networking Layer</name>
+      <status>completed</status>
+      <description>Built production-grade HTTP client with connection pooling, retry middleware, TLS configuration, cookie management, and FFI exports for cross-platform use.</description>
+    </phase>
+    <phase>
+      <name>Stremio Addon Integration</name>
+      <status>completed</status>
+      <description>Implemented full Stremio service with addon discovery, manifest parsing, catalog fetching, stream resolution, metadata aggregation, and parallel fetching with configurable timeouts.</description>
+    </phase>
+    <phase>
+      <name>Trakt.tv Integration</name>
+      <status>completed</status>
+      <description>Completed Trakt integration with OAuth authentication (PKCE and device code), token management, sync manager for all data types, scrobbling with duplicate prevention, and offline queue.</description>
+    </phase>
+    <phase>
+      <name>TMDB Integration</name>
+      <status>completed</status>
+      <description>Implemented comprehensive TMDB client with search, detailed metadata, credits, recommendations, trending catalogs, image URL generation, and intelligent caching.</description>
+    </phase>
+    <phase>
+      <name>Profile Management</name>
+      <status>completed</status>
+      <description>Built multi-profile system with PIN security, age restrictions, preferences, watch history isolation, and export/import functionality.</description>
+    </phase>
+    <phase>
+      <name>React Native Frontend</name>
+      <status>completed</status>
+      <description>Developed mobile and TV UI with React Native, including home screen, catalog browsing, content details, stream selection, and video playback components.</description>
+    </phase>
+    <phase>
+      <name>TV Platform Optimization</name>
+      <status>completed</status>
+      <description>Created TV-specific components with focus management, D-pad navigation, voice search, and spatial navigation for Android TV and Apple TV.</description>
+    </phase>
+    <phase>
+      <name>Video Player Integration</name>
+      <status>completed</status>
+      <description>Integrated platform-specific players (MPV for Android, KSPlayer for iOS) with gesture controls, track selection, and playback state management.</description>
+    </phase>
+    <phase>
+      <name>Native Binding Generation</name>
       <status>in_progress</status>
-      <description>Optimize all screens for TV viewing experience including larger touch targets, focus-based navigation patterns, 10-foot UI adjustments, and proper spatial navigation using nextFocus props across all interactive elements.</description>
-    </phase>
-    <phase>
-      <name>Phase 3: Video Player TV Controls</name>
-      <status>in_progress</status>
-      <description>Enhance video players (KSPlayerCore for tvOS, AndroidVideoPlayer for Android TV) with TV remote control support including play/pause, seek, track selection, and speed control via D-pad and media keys.</description>
-    </phase>
-    <phase>
-      <name>Phase 4: Home Screen TV Experience</name>
-      <status>pending</status>
-      <description>Optimize HomeScreen with AppleTVHero component refinements, focus-based horizontal scrolling catalogs, featured content carousel with auto-focus, and TV-optimized continue watching section.</description>
-    </phase>
-    <phase>
-      <name>Phase 5: Search &amp; Library TV UX</name>
-      <status>pending</status>
-      <description>Implement TV-optimized search with on-screen keyboard support (TVTextInput component exists), voice search integration where available, and grid-based library navigation with proper focus management.</description>
-    </phase>
-    <phase>
-      <name>Phase 6: Settings &amp; Onboarding for TV</name>
-      <status>pending</status>
-      <description>Adapt all settings screens for TV navigation, create TV-specific onboarding flow, and ensure all modal dialogs and bottom sheets work properly with remote control navigation.</description>
-    </phase>
-    <phase>
-      <name>Phase 7: Testing &amp; Polish</name>
-      <status>pending</status>
-      <description>Comprehensive testing on physical Android TV (Google TV) and Apple TV devices, focus ring visual refinements, performance optimization for TV hardware, and edge case handling for various TV remote configurations.</description>
+      <description>UniFFI binding generation for Kotlin and Swift is configured. Continued refinement of generated bindings for optimal native integration and performance.</description>
     </phase>
   </implementation_roadmap>
 </project_specification>

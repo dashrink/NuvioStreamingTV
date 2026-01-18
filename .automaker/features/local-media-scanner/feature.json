@@ -1,0 +1,12 @@
+{
+  "id": "local-media-scanner",
+  "category": "Core",
+  "title": "Local Media Library Scanner",
+  "description": "Scan and index local video files with automatic metadata matching via TMDB/IMDB, poster artwork, and integration into main library.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.769Z",
+  "updatedAt": "2026-01-18T03:19:59.769Z"
+}

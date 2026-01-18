@@ -1,0 +1,12 @@
+{
+  "id": "multi-device-management",
+  "category": "Core",
+  "title": "Multi-Device Management Dashboard",
+  "description": "Manage all signed-in devices with active session monitoring, remote sign-out, device nicknames, and security alerts for new device logins.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.771Z",
+  "updatedAt": "2026-01-18T03:19:59.771Z"
+}

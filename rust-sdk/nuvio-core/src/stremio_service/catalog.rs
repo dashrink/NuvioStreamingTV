@@ -24,7 +24,7 @@
 
 use crate::error::NuvioError;
 use crate::stremio_service::fetcher::Fetcher;
-use crate::stremio_service::types::{Manifest, Meta};
+use crate::stremio_service::types::{Manifest, StremioMeta};
 use serde::{Deserialize, Serialize};
 
 /// Default page size for catalog pagination
@@ -34,7 +34,7 @@ const DEFAULT_PAGE_SIZE: u32 = 20;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CatalogResponse {
     /// Array of meta objects
-    pub metas: Vec<Meta>,
+    pub metas: Vec<StremioMeta>,
 
     /// Optional flag indicating if more results are available
     #[serde(rename = "hasMore")]
@@ -55,6 +55,9 @@ pub struct CatalogParams {
 
     /// Maximum number of items to return
     pub limit: u32,
+
+    /// Search query (optional)
+    pub search: Option<String>,
 }
 
 impl CatalogParams {
@@ -76,7 +79,14 @@ impl CatalogParams {
             catalog_id,
             skip,
             limit,
+            search: None,
         }
+    }
+
+    /// Sets the search query
+    pub fn with_search(mut self, search: String) -> Self {
+        self.search = Some(search);
+        self
     }
 
     /// Creates CatalogParams for a specific page (1-indexed)
@@ -100,6 +110,7 @@ impl CatalogParams {
             catalog_id,
             skip,
             limit: DEFAULT_PAGE_SIZE,
+            search: None,
         }
     }
 
@@ -202,13 +213,36 @@ fn build_catalog_url(base_url: &str, params: &CatalogParams, query_params: Optio
         urlencoding::encode(&params.catalog_id)
     );
 
-    // Add pagination query parameters
-    let mut query_parts = Vec::new();
+    // Prepare extra args for path parameter (Stremio v3 style: /catalog/type/id/skip=20&limit=20.json)
+    let mut extras_parts = Vec::new();
 
-    if params.skip > 0 || params.limit != DEFAULT_PAGE_SIZE {
-        query_parts.push(format!("skip={}", params.skip));
-        query_parts.push(format!("limit={}", params.limit));
+    // Search
+    if let Some(ref search) = params.search {
+        if !search.is_empty() {
+            extras_parts.push(format!("search={}", urlencoding::encode(search)));
+        }
     }
+
+    // Pagination
+    if params.skip > 0 {
+        extras_parts.push(format!("skip={}", params.skip));
+    }
+    if params.limit != DEFAULT_PAGE_SIZE {
+        extras_parts.push(format!("limit={}", params.limit));
+    }
+
+    // Reconstruction of URL if extras exist
+    if !extras_parts.is_empty() {
+        // Remove the .json suffix added earlier
+        url.truncate(url.len() - 5); 
+        // Append extras and .json
+        url.push('/');
+        url.push_str(&extras_parts.join("&"));
+        url.push_str(".json");
+    }
+
+    // Add manifest query params if present (appended as ?foo=bar)
+    let mut query_parts = Vec::new();
 
     // Add manifest query params if present
     if let Some(qp) = query_params {
@@ -248,7 +282,7 @@ pub async fn fetch_catalog_all_pages(
     content_type: String,
     catalog_id: String,
     max_pages: u32,
-) -> Result<Vec<Meta>, NuvioError> {
+) -> Result<Vec<StremioMeta>, NuvioError> {
     let mut all_metas = Vec::new();
     let mut page = 1;
 
@@ -342,7 +376,8 @@ mod tests {
         let url = build_catalog_url("https://example.com", &params, None);
 
         assert!(url.contains("skip=20"));
-        assert!(url.contains("limit=20"));
+        // Limit is default (20) so it shouldn't be in URL
+        assert!(!url.contains("limit=20"));
         assert!(url.starts_with("https://example.com/catalog/series/trending.json?"));
     }
 
@@ -351,7 +386,8 @@ mod tests {
         let params = CatalogParams::new("movie".to_string(), "top".to_string(), 0, 50);
         let url = build_catalog_url("https://example.com", &params, None);
 
-        assert!(url.contains("skip=0"));
+        // Skip is 0 so it shouldn't be in URL
+        assert!(!url.contains("skip=0"));
         assert!(url.contains("limit=50"));
     }
 
@@ -450,7 +486,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         Mock::given(method("GET"))
             .and(path("/catalog/movie/top.json"))
@@ -484,7 +520,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         let response_json = r#"{
             "metas": [
@@ -533,7 +569,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         let response_json = r#"{
             "metas": [],
@@ -569,7 +605,7 @@ mod tests {
         use wiremock::matchers::{method, path, query_param};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Page 1
         let page1_json = r#"{
@@ -582,7 +618,9 @@ mod tests {
         Mock::given(method("GET"))
             .and(path("/catalog/movie/top.json"))
             .and(query_param("skip", "20"))
-            .and(query_param("limit", "20"))
+            .and(query_param("skip", "20"))
+            // limit is default so not sent
+            // .and(query_param("limit", "20"))
             .respond_with(ResponseTemplate::new(200).set_body_string(page1_json))
             .mount(&mock_server)
             .await;
@@ -611,7 +649,7 @@ mod tests {
         use wiremock::matchers::{method, path, query_param};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Page 1 (no query params since skip=0 and limit=DEFAULT_PAGE_SIZE)
         let page1_json = r#"{
@@ -675,7 +713,7 @@ mod tests {
         use wiremock::matchers::{method, path, query_param};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Page 1 - with results (no query params)
         let page1_json = r#"{

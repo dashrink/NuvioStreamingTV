@@ -1,0 +1,12 @@
+{
+  "id": "chromecast-integration",
+  "category": "Playback",
+  "title": "Chromecast & AirPlay Casting",
+  "description": "Full casting support for Chromecast and AirPlay devices with queue management, remote playback control, and subtitle casting support.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.754Z",
+  "updatedAt": "2026-01-18T03:19:59.754Z"
+}

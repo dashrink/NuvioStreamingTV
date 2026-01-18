@@ -1,0 +1,12 @@
+{
+  "id": "quick-actions-menu",
+  "category": "UI",
+  "title": "Context Quick Actions Menu",
+  "description": "Long-press/right-click context menu for content items with quick access to add to watchlist, mark as watched, rate, share, and view details.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.768Z",
+  "updatedAt": "2026-01-18T03:19:59.768Z"
+}

@@ -10,7 +10,7 @@
 //! error handling across FFI boundaries.
 
 use crate::error::NuvioError;
-use crate::stremio_service::types::{Manifest, Meta, StremioStream, Subtitle};
+use crate::stremio_service::types::{Manifest, StremioMeta, StremioStream, Subtitle};
 use serde::de::DeserializeOwned;
 
 /// Maximum response size (5MB) to prevent memory exhaustion from addon responses
@@ -186,7 +186,7 @@ pub fn validate_stream(stream: &StremioStream) -> Result<(), NuvioError> {
 /// # Returns
 ///
 /// Ok(()) if valid, or ValidationError describing the issue
-pub fn validate_meta(meta: &Meta) -> Result<(), NuvioError> {
+pub fn validate_meta(meta: &StremioMeta) -> Result<(), NuvioError> {
     if meta.id.is_empty() {
         return Err(NuvioError::validation("Meta id is required"));
     }
@@ -304,8 +304,8 @@ fn escape_html_entities(text: &str) -> String {
 /// # Returns
 ///
 /// A new Meta object with sanitized fields
-pub fn sanitize_meta(meta: Meta) -> Meta {
-    Meta {
+pub fn sanitize_meta(meta: StremioMeta) -> StremioMeta {
+    StremioMeta {
         id: meta.id,
         content_type: meta.content_type,
         name: sanitize_html(&meta.name),
@@ -415,9 +415,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(NuvioError::ResponseTooLarge { size, max_size }) => {
+            Err(NuvioError::ResponseTooLarge { size, limit }) => {
                 assert_eq!(size, MAX_RESPONSE_SIZE + 1);
-                assert_eq!(max_size, MAX_RESPONSE_SIZE);
+                assert_eq!(limit, MAX_RESPONSE_SIZE);
             }
             _ => panic!("Expected ResponseTooLarge error"),
         }
@@ -432,9 +432,9 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(NuvioError::ResponseTooLarge { size, max_size }) => {
+            Err(NuvioError::ResponseTooLarge { size, limit }) => {
                 assert_eq!(size, 2048);
-                assert_eq!(max_size, custom_limit);
+                assert_eq!(limit, custom_limit);
             }
             _ => panic!("Expected ResponseTooLarge error"),
         }
@@ -588,7 +588,7 @@ mod tests {
 
     #[test]
     fn test_validate_meta_success() {
-        let meta = Meta::new(
+        let meta = StremioMeta::new(
             "tt1234567".to_string(),
             "movie".to_string(),
             "Test Movie".to_string(),
@@ -599,7 +599,7 @@ mod tests {
 
     #[test]
     fn test_validate_meta_missing_id() {
-        let meta = Meta::new(
+        let meta = StremioMeta::new(
             "".to_string(),
             "movie".to_string(),
             "Test Movie".to_string(),
@@ -759,7 +759,7 @@ mod tests {
 
     #[test]
     fn test_sanitize_meta() {
-        let meta = Meta {
+        let meta = StremioMeta {
             id: "tt123".to_string(),
             content_type: "movie".to_string(),
             name: "Test <script>alert()</script> Movie".to_string(),

@@ -1,0 +1,12 @@
+{
+  "id": "vpn-integration",
+  "category": "Security",
+  "title": "VPN Integration & Detection",
+  "description": "VPN connection detection, recommended VPN settings for streaming, and integration warnings for addon compatibility with VPN status indicator.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "simple",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.769Z",
+  "updatedAt": "2026-01-18T03:19:59.769Z"
+}

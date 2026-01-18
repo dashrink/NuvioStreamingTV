@@ -6,12 +6,34 @@
 use thiserror::Error;
 use uniffi;
 
+pub type NuvioResult<T> = std::result::Result<T, NuvioError>;
+
 /// Error types that can occur in the Nuvio Core SDK.
 ///
 /// All variants use named fields to ensure compatibility with UniFFI's FFI layer.
 /// These errors can be safely propagated across language boundaries to Kotlin and Swift.
 #[derive(uniffi::Error, Debug, Error)]
 pub enum NuvioError {
+    /// Error occurred during security operations (hashing, verification)
+    #[error("Security error: {msg}")]
+    SecurityError {
+        /// Detailed error message describing what went wrong
+        msg: String,
+    },
+
+    /// Error occurred during profile operations
+    #[error("Profile error: {msg}")]
+    ProfileError {
+        /// Detailed error message describing what went wrong
+        msg: String,
+    },
+
+    /// Error occurred during storage operations
+    #[error("Storage error: {msg}")]
+    StorageError {
+        /// Detailed error message describing what went wrong
+        msg: String,
+    },
     /// Error occurred during serialization or deserialization
     #[error("Serialization error: {msg}")]
     SerializationError {
@@ -32,9 +54,47 @@ pub enum NuvioError {
         /// Detailed error message describing the error
         msg: String,
     },
+
+    /// Network error occurred
+    #[error("Network error: {msg}")]
+    NetworkError {
+        /// Detailed error message
+        msg: String,
+    },
+
+    /// Request timed out
+    #[error("Timeout: {msg}")]
+    Timeout {
+        /// Timeout details
+        msg: String,
+    },
+
+    /// Response size invalid
+    #[error("Response too large: {size} > {limit}")]
+    ResponseTooLarge {
+        /// Actual size
+        size: u64,
+        /// Size limit
+        limit: u64,
+    },
+
+    /// Invalid manifest format
+    #[error("Invalid manifest: {msg}")]
+    InvalidManifest {
+        /// Validation message
+        msg: String,
+    },
+
+    /// Addon not found
+    #[error("Addon not found: {msg}")]
+    AddonNotFound {
+        /// Error message
+        msg: String,
+    },
 }
 
 impl NuvioError {
+    /// Creates a new SerializationError with the given message
     /// Creates a new SerializationError with the given message
     pub fn serialization(msg: impl Into<String>) -> Self {
         Self::SerializationError { msg: msg.into() }
@@ -48,6 +108,46 @@ impl NuvioError {
     /// Creates a new Unknown error with the given message
     pub fn unknown(msg: impl Into<String>) -> Self {
         Self::Unknown { msg: msg.into() }
+    }
+
+    /// Creates a new SecurityError with the given message
+    pub fn security(msg: impl Into<String>) -> Self {
+        Self::SecurityError { msg: msg.into() }
+    }
+
+    /// Creates a new ProfileError with the given message
+    pub fn profile(msg: impl Into<String>) -> Self {
+        Self::ProfileError { msg: msg.into() }
+    }
+
+    /// Creates a new StorageError with the given message
+    pub fn storage(msg: impl Into<String>) -> Self {
+        Self::StorageError { msg: msg.into() }
+    }
+
+    /// Creates a new NetworkError
+    pub fn network_error(msg: impl Into<String>) -> Self {
+        Self::NetworkError { msg: msg.into() }
+    }
+
+    /// Creates a new Timeout error
+    pub fn timeout(msg: impl Into<String>) -> Self {
+        Self::Timeout { msg: msg.into() }
+    }
+
+    /// Creates a new ResponseTooLarge error
+    pub fn response_too_large(size: u64, limit: u64) -> Self {
+        Self::ResponseTooLarge { size, limit }
+    }
+
+    /// Creates a new InvalidManifest error
+    pub fn invalid_manifest(msg: impl Into<String>) -> Self {
+        Self::InvalidManifest { msg: msg.into() }
+    }
+
+    /// Creates a new AddonNotFound error
+    pub fn addon_not_found(msg: impl Into<String>) -> Self {
+        Self::AddonNotFound { msg: msg.into() }
     }
 }
 
@@ -135,7 +235,7 @@ mod tests {
     fn test_from_serde_json_error() {
         // Test conversion from serde_json::Error
         let json = "{invalid json}";
-        let result: Result<serde_json::Value, _> = serde_json::from_str(json);
+        let result: std::result::Result<serde_json::Value, serde_json::Error> = serde_json::from_str(json);
 
         match result {
             Err(serde_error) => {

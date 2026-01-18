@@ -1,0 +1,12 @@
+{
+  "id": "analytics-dashboard",
+  "category": "Analytics",
+  "title": "Personal Analytics Dashboard",
+  "description": "Comprehensive viewing statistics including watch time, genre preferences, viewing patterns, top actors/directors, and yearly summaries with shareable infographics.",
+  "status": "backlog",
+  "priority": 3,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.759Z",
+  "updatedAt": "2026-01-18T03:19:59.759Z"
+}

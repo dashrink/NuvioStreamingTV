@@ -1,0 +1,12 @@
+{
+  "id": "calendar-integration",
+  "category": "Integration",
+  "title": "Release Calendar Integration",
+  "description": "Calendar view of upcoming releases, new episodes, and season premieres with calendar export and reminder notifications integrated with Trakt calendar.",
+  "status": "backlog",
+  "priority": 2,
+  "complexity": "moderate",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.764Z",
+  "updatedAt": "2026-01-18T03:19:59.764Z"
+}

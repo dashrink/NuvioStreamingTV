@@ -1,5 +1,7 @@
 package com.nuvio.app
 import com.reactnative.googlecast.api.RNGCCastContext
+import com.nuvio.app.tv.BuildConfig
+import com.nuvio.app.tv.R
 
 import android.os.Build
 import android.os.Bundle

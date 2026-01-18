@@ -1,4 +1,5 @@
 package com.nuvio.app
+import com.nuvio.app.tv.BuildConfig
 
 import android.app.Application
 import android.content.res.Configuration

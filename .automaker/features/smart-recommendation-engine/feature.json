@@ -1,0 +1,14 @@
+{
+  "id": "smart-recommendation-engine",
+  "category": "Core",
+  "title": "Smart Recommendation Engine",
+  "description": "AI-powered recommendation system that combines TMDB similar content, Trakt user patterns, and watch history to generate personalized suggestions. Uses collaborative filtering and content-based algorithms.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "complex",
+  "dependencies": [
+    "search-aggregation-engine"
+  ],
+  "createdAt": "2026-01-18T03:19:59.751Z",
+  "updatedAt": "2026-01-18T03:19:59.751Z"
+}

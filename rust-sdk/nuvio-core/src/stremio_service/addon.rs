@@ -855,7 +855,7 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start a mock server
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Create a valid manifest response
         let manifest_json = r#"{
@@ -925,7 +925,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up the mock to respond with invalid JSON
         Mock::given(method("GET"))
@@ -950,7 +950,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up the mock to respond with 404
         Mock::given(method("GET"))
@@ -976,7 +976,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up the mock to respond with manifest missing name
         let invalid_manifest = r#"{
@@ -1059,7 +1059,7 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start a mock server
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up mock to respond successfully to HEAD request
         Mock::given(method("HEAD"))
@@ -1095,7 +1095,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up mock to respond with 500 error
         Mock::given(method("HEAD"))
@@ -1128,7 +1128,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up mock to respond with 404 error
         Mock::given(method("HEAD"))
@@ -1167,7 +1167,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         let mut addon = Addon::new(
             "com.test.addon".to_string(),
@@ -1216,7 +1216,7 @@ mod tests {
         use wiremock::matchers::{method, path};
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Set up mock with a long delay (longer than health check timeout)
         Mock::given(method("HEAD"))
@@ -1246,8 +1246,8 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Create two mock servers
-        let mock_server1 = MockServer::start().await;
-        let mock_server2 = MockServer::start().await;
+        let mock_server1: MockServer = MockServer::start().await;
+        let mock_server2: MockServer = MockServer::start().await;
 
         // First server responds successfully
         Mock::given(method("HEAD"))

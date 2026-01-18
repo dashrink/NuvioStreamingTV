@@ -1,0 +1,570 @@
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar UP-TO-DATE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-launcher-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-module-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-module-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-updates-gradle-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:processResources UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:classes UP-TO-DATE
+> Task :expo-gradle-plugin:expo-autolinking-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-dev-launcher-gradle-plugin:classes UP-TO-DATE
+> Task :expo-module-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-updates-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :expo-dev-launcher-gradle-plugin:jar UP-TO-DATE
+> Task :expo-updates-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-updates-gradle-plugin:classes UP-TO-DATE
+> Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+> Task :expo-module-gradle-plugin:classes UP-TO-DATE
+> Task :expo-updates-gradle-plugin:jar UP-TO-DATE
+> Task :expo-module-gradle-plugin:jar UP-TO-DATE
+
+> Configure project :app
+ ℹ️  [33mApplying gradle plugin[0m '[32mexpo-dev-launcher-gradle-plugin[0m'
+ ℹ️  [33mApplying gradle plugin[0m '[32mexpo-updates-gradle-plugin[0m'
+
+> Configure project :
+[32m[ExpoRootProject][0m Using the following versions:
+  - buildTools:  [32m36.0.0[0m
+  - minSdk:      [32m26[0m
+  - compileSdk:  [32m36[0m
+  - targetSdk:   [32m36[0m
+  - ndk:         [32m27.1.12297006[0m
+  - kotlin:      [32m2.1.20[0m
+  - ksp:         [32m2.1.20-2.0.1[0m
+
+> Configure project :expo
+
+Using expo modules
+  - [32mexpo-constants[0m (18.0.12)
+  - [32mexpo-dev-client[0m (6.0.20)
+  - [32mexpo-dev-launcher[0m (6.0.20)
+  - [32mexpo-dev-menu[0m (7.0.18)
+  - [32mexpo-dev-menu-interface[0m (2.0.0)
+  - [32mexpo-eas-client[0m (1.0.8)
+  - [32mexpo-json-utils[0m (0.15.0)
+  - [32mexpo-libvlc-player[0m (2.3.1)
+  - [32mexpo-manifests[0m (1.0.10)
+  - [32mexpo-modules-core[0m (3.0.29)
+  - [32mexpo-random[0m (14.0.1)
+  - [32mexpo-structured-headers[0m (5.0.0)
+  - [32mexpo-updates[0m (29.0.15)
+  - [32mexpo-updates-interface[0m (2.0.0)
+  - [32mreact-native-image-colors[0m (2.0.0)
+  - [33m[📦][0m [32mexpo-application[0m (7.0.8)
+  - [33m[📦][0m [32mexpo-asset[0m (12.0.11)
+  - [33m[📦][0m [32mexpo-blur[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-brightness[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-crypto[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-device[0m (8.0.10)
+  - [33m[📦][0m [32mexpo-document-picker[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-file-system[0m (19.0.21)
+  - [33m[📦][0m [32mexpo-font[0m (14.0.10)
+  - [33m[📦][0m [32mexpo-haptics[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-intent-launcher[0m (13.0.8)
+  - [33m[📦][0m [32mexpo-keep-awake[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-linear-gradient[0m (15.0.8)
+  - [33m[📦][0m [32mexpo-linking[0m (8.0.10)
+  - [33m[📦][0m [32mexpo-localization[0m (17.0.8)
+  - [33m[📦][0m [32mexpo-notifications[0m (0.32.15)
+  - [33m[📦][0m [32mexpo-screen-orientation[0m (9.0.8)
+  - [33m[📦][0m [32mexpo-sharing[0m (14.0.8)
+  - [33m[📦][0m [32mexpo-system-ui[0m (6.0.9)
+  - [33m[📦][0m [32mexpo-web-browser[0m (15.0.10)
+
+
+> Configure project :react-native-mmkv
+[NitroModules] 🔥 NitroMmkv is boosted by nitro!
+
+> Configure project :react-native-nitro-modules
+[NitroModules] 🔥 Your app is boosted by nitro modules!
+
+> Configure project :react-native-video
+Kotlin version is correct: 2.1.20
+AndroidX version is correct: 1.9.3
+useExoplayerIMA: false
+useExoplayerSmoothStreaming: true
+useExoplayerDash: true
+useExoplayerHls: true
+useExoplayerRtsp: false
+buildFromSource: false
+
+> Task :expo-constants:clean
+> Task :expo-json-utils:clean
+> Task :expo-libvlc-player:clean
+> Task :expo-dev-menu-interface:clean
+> Task :d11_react-native-fast-image:clean
+> Task :expo:clean
+> Task :adrianso_react-native-device-brightness:clean
+> Task :expo-eas-client:clean
+> Task :expo-dev-client:clean
+> Task :expo-dev-menu:clean
+> Task :expo-manifests:clean
+> Task :react-native-community_blur:clean
+> Task :expo-updates-interface:clean
+> Task :expo-random:clean
+> Task :expo-structured-headers:clean
+> Task :react-native-community_netinfo:clean
+> Task :react-native-community_slider:clean
+> Task :expo-dev-launcher:clean
+> Task :react-native-immersive-mode:clean
+> Task :react-native-bottom-tabs:clean
+> Task :lottie-react-native:clean
+> Task :react-native-get-random-values:clean
+> Task :react-native-google-cast:clean
+> Task :react-native-image-colors:clean
+> Task :expo-updates:clean
+> Task :react-native-picker_picker:clean
+> Task :react-native-vector-icons:clean
+> Task :react-native-safe-area-context:clean
+> Task :react-native-video:clean
+> Task :adrianso_react-native-device-brightness:preBuild UP-TO-DATE
+> Task :expo-dev-client:preBuild UP-TO-DATE
+> Task :expo-dev-menu:preBuild UP-TO-DATE
+> Task :expo-dev-launcher:preBuild UP-TO-DATE
+> Task :expo-eas-client:preBuild UP-TO-DATE
+> Task :expo-json-utils:preBuild UP-TO-DATE
+> Task :expo-dev-menu-interface:preBuild UP-TO-DATE
+> Task :expo-libvlc-player:preBuild UP-TO-DATE
+> Task :expo-manifests:preBuild UP-TO-DATE
+> Task :expo-random:preBuild UP-TO-DATE
+> Task :react-native-svg:clean
+> Task :sentry_react-native:clean
+> Task :expo-structured-headers:preBuild UP-TO-DATE
+> Task :expo-updates:preBuild UP-TO-DATE
+> Task :expo-updates-interface:preBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preBuild UP-TO-DATE
+> Task :react-native-image-colors:preBuild UP-TO-DATE
+> Task :react-native-google-cast:preBuild UP-TO-DATE
+> Task :react-native-immersive-mode:preBuild UP-TO-DATE
+> Task :react-native-video:preBuild UP-TO-DATE
+> Task :expo-dev-client:preDebugBuild UP-TO-DATE
+> Task :expo-dev-launcher:preDebugBuild UP-TO-DATE
+> Task :adrianso_react-native-device-brightness:preDebugBuild UP-TO-DATE
+> Task :expo-dev-menu:preDebugBuild UP-TO-DATE
+> Task :expo-dev-menu-interface:preDebugBuild UP-TO-DATE
+> Task :expo-eas-client:preDebugBuild UP-TO-DATE
+
+> Task :react-native-gesture-handler:externalNativeBuildCleanDebug
+Clean gesturehandler-armeabi-v7a
+Clean gesturehandler-arm64-v8a
+Clean gesturehandler-x86
+Clean gesturehandler-x86_64
+
+> Task :react-native-gesture-handler:externalNativeBuildCleanRelease
+> Task :expo-libvlc-player:preDebugBuild UP-TO-DATE
+> Task :react-native-reanimated:cleanCmakeCache
+> Task :expo-manifests:preDebugBuild UP-TO-DATE
+> Task :expo-random:preDebugBuild UP-TO-DATE
+> Task :expo-structured-headers:preDebugBuild UP-TO-DATE
+> Task :react-native-worklets:cleanCmakeCache
+> Task :expo-updates:preDebugBuild UP-TO-DATE
+
+> Task :expo-modules-core:externalNativeBuildCleanDebug
+Clean fabric-armeabi-v7a, expo-modules-core-armeabi-v7a
+Clean fabric-arm64-v8a, expo-modules-core-arm64-v8a
+Clean fabric-x86, expo-modules-core-x86
+Clean fabric-x86_64, expo-modules-core-x86_64
+
+> Task :expo-updates-interface:preDebugBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preDebugBuild UP-TO-DATE
+> Task :expo-json-utils:preDebugBuild UP-TO-DATE
+> Task :react-native-google-cast:preDebugBuild UP-TO-DATE
+> Task :react-native-image-colors:preDebugBuild UP-TO-DATE
+> Task :expo-modules-core:externalNativeBuildCleanRelease
+
+> Task :react-native-nitro-modules:externalNativeBuildCleanDebug
+Clean NitroModules-armeabi-v7a
+Clean NitroModules-arm64-v8a
+Clean NitroModules-x86
+Clean NitroModules-x86_64
+
+> Task :react-native-nitro-modules:externalNativeBuildCleanRelease
+> Task :react-native-reanimated:externalNativeBuildCleanDebug
+
+> Task :react-native-mmkv:externalNativeBuildCleanDebug
+Clean NitroMmkv-armeabi-v7a
+Clean NitroMmkv-arm64-v8a
+Clean NitroMmkv-x86
+Clean NitroMmkv-x86_64
+
+> Task :react-native-screens:externalNativeBuildCleanDebug
+Clean rnscreens-armeabi-v7a
+Clean rnscreens-arm64-v8a
+Clean rnscreens-x86
+Clean rnscreens-x86_64
+
+> Task :react-native-reanimated:externalNativeBuildCleanRelease
+> Task :react-native-mmkv:externalNativeBuildCleanRelease
+> Task :react-native-worklets:externalNativeBuildCleanDebug
+> Task :react-native-immersive-mode:preDebugBuild UP-TO-DATE
+> Task :react-native-video:preDebugBuild UP-TO-DATE
+> Task :expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-constants:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-worklets:externalNativeBuildCleanRelease
+> Task :expo-dev-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-menu:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-launcher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-json-utils:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-dev-menu-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-manifests:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:externalNativeBuildCleanRelease
+> Task :react-native-nitro-modules:clean
+> Task :expo-eas-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-updates-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-random:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-structured-headers:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-mmkv:clean
+> Task :expo-updates:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :lottie-react-native:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-bottom-tabs:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-mmkv:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-nitro-modules:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-libvlc-player:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-worklets:clean
+> Task :react-native-image-colors:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-video:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-gesture-handler:clean
+> Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-screens:clean
+> Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :expo-modules-core:clean
+> Task :expo-modules-core:preBuild UP-TO-DATE
+> Task :expo-modules-core:preDebugBuild UP-TO-DATE
+> Task :expo-modules-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-reanimated:clean
+> Task :react-native-worklets:assertMinimalReactNativeVersionTask
+> Task :react-native-worklets:assertNewArchitectureEnabledTask SKIPPED
+> Task :react-native-reanimated:assertMinimalReactNativeVersionTask
+> Task :react-native-reanimated:assertNewArchitectureEnabledTask SKIPPED
+> Task :react-native-reanimated:assertWorkletsVersionTask
+
+> Task :app:externalNativeBuildCleanDebug FAILED
+Clean react_codegen_RNCSlider-armeabi-v7a, react_codegen_RNCTabView-armeabi-v7a, react_codegen_RNFastImageSpec-armeabi-v7a, react_codegen_RNVectorIconsSpec-armeabi-v7a, react_codegen_safeareacontext-armeabi-v7a, react_codegen_rngesturehandler_codegen-armeabi-v7a, appmodules-armeabi-v7a, react_codegen_RNGetRandomValuesSpec-armeabi-v7a, react_codegen_rnsvg-armeabi-v7a, react_codegen_rnworklets-armeabi-v7a, react_codegen_rnreanimated-armeabi-v7a, react_codegen_rnblurview-armeabi-v7a, react_codegen_rnscreens-armeabi-v7a, react_codegen_NitroModulesSpec-armeabi-v7a, react_codegen_lottiereactnative-armeabi-v7a, react_codegen_RNSentrySpec-armeabi-v7a, react_codegen_rnpicker-armeabi-v7a
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: -- GLOB mismatch!
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:10 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@d11/react-native-fast-image/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:11 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/blur/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:15 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:17 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:18 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:19 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:20 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-get-random-values/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:24 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-nitro-modules/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:25 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:29 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:31 (add_subdirectory):
+C/C++:   add_subdirectory given source
+C/C++:   "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-worklets/android/build/generated/source/codegen/jni/"
+C/C++:   which is not an existing directory.
+C/C++: Call Stack (most recent call first):
+C/C++:   /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:97 (target_link_libraries):
+C/C++:   Cannot specify link libraries for target "react_codegen_RNFastImageSpec"
+C/C++:   which is not built by this project.
+C/C++: Call Stack (most recent call first):
+C/C++:   CMakeLists.txt:31 (include)
+C/C++: ninja: error: rebuilding 'build.ninja': subcommand failed
+
+[Incubating] Problems report is available at: file:///home/dashrink/Desktop/NuvioStreamingTV/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:externalNativeBuildCleanDebug'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `/home/dashrink/Desktop/NuvioStreamingTV/android/app/.cxx/Debug/3i60576u/armeabi-v7a'
+  [0/2] Re-checking globbed directories...
+  [1/2] Re-running CMake...
+  -- Configuring incomplete, errors occurred!
+  See also "/home/dashrink/Desktop/NuvioStreamingTV/android/app/.cxx/Debug/3i60576u/armeabi-v7a/CMakeFiles/CMakeOutput.log".
+  See also "/home/dashrink/Desktop/NuvioStreamingTV/android/app/.cxx/Debug/3i60576u/armeabi-v7a/CMakeFiles/CMakeError.log".
+  FAILED: build.ninja 
+  /home/dashrink/android-sdk/cmake/3.22.1/bin/cmake --regenerate-during-build -S/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup -B/home/dashrink/Desktop/NuvioStreamingTV/android/app/.cxx/Debug/3i60576u/armeabi-v7a
+  
+  C++ build system [clean] failed while executing:
+      /home/dashrink/android-sdk/cmake/3.22.1/bin/ninja \
+        -C \
+        /home/dashrink/Desktop/NuvioStreamingTV/android/app/.cxx/Debug/3i60576u/armeabi-v7a \
+        clean
+    from /home/dashrink/Desktop/NuvioStreamingTV/android/app
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  -- GLOB mismatch!
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:10 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@d11/react-native-fast-image/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:11 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@react-native-community/blur/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:15 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/@sentry/react-native/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:17 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/lottie-react-native/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:18 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-bottom-tabs/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:19 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:20 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-get-random-values/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:24 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-nitro-modules/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:25 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:29 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake:31 (add_subdirectory):
+    add_subdirectory given source
+    "/home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native-worklets/android/build/generated/source/codegen/jni/"
+    which is not an existing directory.
+  Call Stack (most recent call first):
+    /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:94 (include)
+    CMakeLists.txt:31 (include)
+  
+  
+  CMake Error at /home/dashrink/Desktop/NuvioStreamingTV/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:97 (target_link_libraries):
+    Cannot specify link libraries for target "react_codegen_RNFastImageSpec"
+    which is not built by this project.
+  Call Stack (most recent call first):
+    CMakeLists.txt:31 (include)
+  
+  
+  ninja: error: rebuilding 'build.ninja': subcommand failed
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 12s
+90 actionable tasks: 58 executed, 32 up-to-date

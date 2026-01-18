@@ -39,7 +39,7 @@
 //! println!("Added addon: {}", addon.name);
 //!
 //! // Fetch catalog from addon
-//! let catalog_items = service.get_catalog(&addon.id, "movie", "top", 1).await?;
+//! let catalog_items = service.get_catalog(&addon.id, "movie", "top", 1, None).await?;
 //! println!("Found {} catalog items", catalog_items.len());
 //!
 //! // Resolve streams for a movie (IMDb ID)
@@ -100,8 +100,8 @@ pub mod validation;
 // These are internal Stremio protocol types, not directly exposed via FFI
 // The FFI layer will convert between these and Nuvio's main types
 pub use types::{
-    Addon, Catalog, CatalogExtra, Manifest, Meta, ResourceObject, SourceObject, StremioStream,
-    Subtitle,
+    Addon, StremioCatalog, CatalogExtra, Manifest, StremioMeta, ResourceObject, SourceObject,
+    StremioStream, Subtitle,
 };
 
 /// Configuration for the Stremio service
@@ -133,7 +133,10 @@ pub use types::{
 ///     ..Default::default()
 /// };
 /// ```
-#[derive(Debug, Clone)]
+///     ..Default::default()
+/// };
+/// ```
+#[derive(Debug, Clone, uniffi::Record)]
 pub struct ServiceConfig {
     /// Default timeout for addon requests in seconds
     ///
@@ -145,7 +148,7 @@ pub struct ServiceConfig {
     ///
     /// Controls how many addons can be queried in parallel. Higher values
     /// improve performance but increase resource usage.
-    pub max_concurrent_requests: usize,
+    pub max_concurrent_requests: u32,
 
     /// Maximum response size in bytes
     ///
@@ -207,12 +210,13 @@ pub struct ServiceState {
 /// // Service can be cloned and shared across threads
 /// let service_clone = service.clone();
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, uniffi::Object)]
 pub struct StremioService {
     /// Shared state protected by RwLock for thread-safe access
     state: Arc<RwLock<ServiceState>>,
 }
 
+#[uniffi::export]
 impl StremioService {
     /// Creates a new StremioService with default configuration
     ///
@@ -223,10 +227,11 @@ impl StremioService {
     ///
     /// let service = StremioService::new();
     /// ```
-    pub fn new() -> Self {
-        Self {
+    #[uniffi::constructor]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
             state: Arc::new(RwLock::new(ServiceState::default())),
-        }
+        })
     }
 
     /// Creates a new StremioService with custom configuration
@@ -244,13 +249,14 @@ impl StremioService {
     ///
     /// let service = StremioService::with_config(config);
     /// ```
-    pub fn with_config(config: ServiceConfig) -> Self {
-        Self {
+    #[uniffi::constructor]
+    pub fn with_config(config: ServiceConfig) -> Arc<Self> {
+        Arc::new(Self {
             state: Arc::new(RwLock::new(ServiceState {
                 addons: Vec::new(),
                 config,
             })),
-        }
+        })
     }
 
     /// Gets the current number of configured addons
@@ -263,12 +269,12 @@ impl StremioService {
     /// let service = StremioService::new();
     /// assert_eq!(service.addon_count(), 0);
     /// ```
-    pub fn addon_count(&self) -> usize {
+    pub fn addon_count(&self) -> u32 {
         self.state
             .read()
             .expect("Failed to acquire read lock")
             .addons
-            .len()
+            .len() as u32
     }
 
     /// Gets a clone of all configured addons
@@ -388,6 +394,7 @@ impl StremioService {
     /// * `content_type` - Content type (e.g., "movie", "series")
     /// * `catalog_id` - Catalog identifier (e.g., "top", "trending")
     /// * `page` - Page number (1-indexed) for pagination
+    /// * `search` - Optional search query
     ///
     /// # Returns
     ///
@@ -409,7 +416,7 @@ impl StremioService {
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let service = StremioService::new();
     /// // Assume addon is already added
-    /// let metas = service.get_catalog("com.example.addon", "movie", "top", 1).await?;
+    /// let metas = service.get_catalog("com.example.addon", "movie", "top", 1, None).await?;
     /// println!("Found {} items", metas.len());
     /// # Ok(())
     /// # }
@@ -420,7 +427,8 @@ impl StremioService {
         content_type: &str,
         catalog_id: &str,
         page: u32,
-    ) -> Result<Vec<Meta>, crate::error::NuvioError> {
+        search: Option<String>,
+    ) -> Result<Vec<StremioMeta>, crate::error::NuvioError> {
         use crate::stremio_service::catalog::{fetch_catalog, CatalogParams};
         use crate::stremio_service::types::Manifest;
 
@@ -446,8 +454,12 @@ impl StremioService {
         manifest.url = Some(base_url.to_string());
 
         // Create catalog params
-        let params =
+        let mut params =
             CatalogParams::for_page(content_type.to_string(), catalog_id.to_string(), page);
+
+        if let Some(s) = search {
+            params = params.with_search(s);
+        }
 
         // Create fetcher
         let service_config = self
@@ -563,7 +575,7 @@ impl StremioService {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn aggregate_meta(&self, content_type: &str, content_id: &str) -> Option<Meta> {
+    pub async fn aggregate_meta(&self, content_type: &str, content_id: &str) -> Option<StremioMeta> {
         use crate::stremio_service::meta::aggregate_meta;
 
         // Get all addons
@@ -597,7 +609,9 @@ impl StremioService {
 
 impl Default for StremioService {
     fn default() -> Self {
-        Self::new()
+        Self {
+            state: Arc::new(RwLock::new(ServiceState::default())),
+        }
     }
 }
 
@@ -791,7 +805,7 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start mock server
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Mock manifest endpoint
         let manifest_json = r#"{
@@ -828,7 +842,7 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start mock server
-        let mock_server = MockServer::start().await;
+        let mock_server: MockServer = MockServer::start().await;
 
         // Mock catalog endpoint
         let catalog_json = r#"{
@@ -865,7 +879,7 @@ mod tests {
 
         // Test get_catalog method
         let result = service
-            .get_catalog("com.test.addon", "movie", "top", 1)
+            .get_catalog("com.test.addon", "movie", "top", 1, None)
             .await;
 
         assert!(result.is_ok(), "get_catalog() should succeed");
@@ -876,11 +890,60 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_api_get_catalog_with_search() {
+        use wiremock::matchers::{method, path, query_param};
+        use wiremock::{Mock, MockServer, ResponseTemplate};
+
+        // Start mock server
+        let mock_server: MockServer = MockServer::start().await;
+
+        // Mock catalog endpoint with search. 
+        // Note: Our implementation appends search to the path as an extra like /catalog/movie/top/search=Test.json
+        // wiremock path matching needs to be precise.
+        let catalog_json = r#"{
+            "metas": [
+                {
+                    "id": "tt1234567",
+                    "content_type": "movie",
+                    "name": "Test Search Result"
+                }
+            ],
+            "hasMore": false
+        }"#;
+
+        Mock::given(method("GET"))
+            .and(path(format!("/catalog/movie/top/search={}.json", urlencoding::encode("Test Movie"))))
+            .respond_with(ResponseTemplate::new(200).set_body_string(catalog_json))
+            .mount(&mock_server)
+            .await;
+
+        // Create service and add addon
+        let service = StremioService::new();
+        let addon = Addon::new(
+            "com.test.addon".to_string(),
+            format!("{}/manifest.json", mock_server.uri()),
+            "Test Addon".to_string(),
+            "1.0.0".to_string(),
+        );
+        service.add_addon(addon);
+
+        // Test get_catalog method with search
+        let result = service
+            .get_catalog("com.test.addon", "movie", "top", 1, Some("Test Movie".to_string()))
+            .await;
+
+        assert!(result.is_ok(), "get_catalog() with search should succeed");
+        let metas = result.unwrap();
+        assert_eq!(metas.len(), 1);
+        assert_eq!(metas[0].name, "Test Search Result");
+    }
+
+    #[tokio::test]
     async fn test_api_get_catalog_addon_not_found() {
         let service = StremioService::new();
 
         let result = service
-            .get_catalog("nonexistent.addon", "movie", "top", 1)
+            .get_catalog("nonexistent.addon", "movie", "top", 1, None)
             .await;
 
         assert!(
@@ -895,8 +958,8 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start two mock servers for two addons
-        let mock_server1 = MockServer::start().await;
-        let mock_server2 = MockServer::start().await;
+        let mock_server1: MockServer = MockServer::start().await;
+        let mock_server2: MockServer = MockServer::start().await;
 
         // Mock stream endpoint for addon 1
         Mock::given(method("GET"))
@@ -971,8 +1034,8 @@ mod tests {
         use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start two mock servers for two addons
-        let mock_server1 = MockServer::start().await;
-        let mock_server2 = MockServer::start().await;
+        let mock_server1: MockServer = MockServer::start().await;
+        let mock_server2: MockServer = MockServer::start().await;
 
         // Mock meta endpoint for addon 1 (higher priority)
         Mock::given(method("GET"))

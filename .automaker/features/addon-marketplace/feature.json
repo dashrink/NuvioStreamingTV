@@ -1,0 +1,12 @@
+{
+  "id": "addon-marketplace",
+  "category": "Core",
+  "title": "Addon Marketplace & Discovery",
+  "description": "In-app marketplace for discovering, installing, and managing Stremio addons with ratings, reviews, categories, and featured addon collections.",
+  "status": "backlog",
+  "priority": 1,
+  "complexity": "complex",
+  "dependencies": [],
+  "createdAt": "2026-01-18T03:19:59.759Z",
+  "updatedAt": "2026-01-18T03:19:59.759Z"
+}
