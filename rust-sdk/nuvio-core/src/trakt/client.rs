@@ -1,132 +1,296 @@
-use crate::trakt::auth::AuthManager;
-use crate::trakt::error::TraktError;
-use reqwest::{Client, Method, StatusCode};
-use serde::{de::DeserializeOwned, Serialize};
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use tokio::time::{sleep, Duration};
-use tracing::{warn, error};
+//! Trakt.tv API client with rate limiting
+//!
+//! This module provides a low-level HTTP client for the Trakt.tv API
+//! with built-in rate limiting using the governor crate.
 
+use governor::{DefaultDirectRateLimiter, Quota, RateLimiter};
+use std::num::NonZeroU32;
+use std::sync::Arc;
+
+use crate::trakt::models::TraktUserSettings;
+
+/// API client for Trakt.tv with rate limiting
+#[derive(uniffi::Object)]
 pub struct ApiClient {
-    auth_manager: Arc<AuthManager>,
-    client_id: String,
-    http_client: Client,
-    last_call: Arc<Mutex<i64>>,
-    min_interval_ms: i64,
+    /// Rate limiter for GET requests (read operations)
+    read_rate_limiter: Arc<DefaultDirectRateLimiter>,
+    /// Rate limiter for POST/PUT/DELETE requests (write operations)
+    write_rate_limiter: Arc<DefaultDirectRateLimiter>,
 }
 
+// Internal implementation (not exported via UniFFI)
 impl ApiClient {
-    pub fn new(
-        auth_manager: Arc<AuthManager>,
-        client_id: String,
-    ) -> Self {
+    /// Create a new API client with standard rate limits
+    ///
+    /// Standard limits:
+    /// - Read (GET): 1,000 requests per 5 minutes (200 req/min)
+    /// - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+    pub fn new() -> Self {
+        Self::new_with_vip_status(false)
+    }
+
+    /// Create a new API client with optional VIP rate limits
+    ///
+    /// VIP limits:
+    /// - Read (GET): 10,000 requests per 5 minutes (2,000 req/min)
+    /// - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+    pub fn new_with_vip_status(is_vip: bool) -> Self {
+        // Calculate read rate limit based on VIP status
+        let requests_per_minute = if is_vip {
+            // VIP: 10,000 req per 5 min = 2,000 req/min
+            NonZeroU32::new(2000).unwrap()
+        } else {
+            // Standard: 1,000 req per 5 min = 200 req/min
+            NonZeroU32::new(200).unwrap()
+        };
+
+        let read_quota = Quota::per_minute(requests_per_minute);
+        let read_limiter = RateLimiter::direct(read_quota);
+
+        // Write rate limit is same for all users: 1 req/sec = 60 req/min
+        let write_quota = Quota::per_minute(NonZeroU32::new(60).unwrap());
+        let write_limiter = RateLimiter::direct(write_quota);
+
         Self {
-            auth_manager,
-            client_id,
-            http_client: Client::new(),
-            last_call: Arc::new(Mutex::new(0)),
-            min_interval_ms: 500,
+            read_rate_limiter: Arc::new(read_limiter),
+            write_rate_limiter: Arc::new(write_limiter),
         }
     }
 
-    pub async fn request<T, B>(
-        &self,
-        method: Method,
-        endpoint: &str,
-        body: Option<B>,
-    ) -> Result<T, TraktError>
-    where
-        T: DeserializeOwned,
-        B: Serialize,
-    {
-        self.request_with_retry(method, endpoint, body, 0).await
+    /// Wait for rate limiter permission for a read operation
+    pub async fn wait_for_read_permission(&self) {
+        self.read_rate_limiter.until_ready().await;
     }
 
-    async fn request_with_retry<T, B>(
-        &self,
-        method: Method,
-        endpoint: &str,
-        body: Option<B>,
-        retry_count: u32,
-    ) -> Result<T, TraktError>
-    where
-        T: DeserializeOwned,
-        B: Serialize,
-    {
-        // Rate limiting logic
-        {
-            let mut last_call = self.last_call.lock().await;
-            let now = chrono::Utc::now().timestamp_millis();
-            let elapsed = now - *last_call;
-            
-            if elapsed < self.min_interval_ms {
-                let delay = self.min_interval_ms - elapsed;
-                sleep(Duration::from_millis(delay as u64)).await;
-            }
-            *last_call = chrono::Utc::now().timestamp_millis();
-        }
-
-        let access_token = self.auth_manager.get_access_token().await?
-            .ok_or_else(|| TraktError::AuthError("Not authenticated".to_string()))?;
-
-        let url = format!("https://api.trakt.tv{}", endpoint);
-        let mut builder = self.http_client.request(method.clone(), &url)
-            .header("Content-Type", "application/json")
-            .header("trakt-api-version", "2")
-            .header("trakt-api-key", &self.client_id)
-            .header("Authorization", format!("Bearer {}", access_token));
-
-        if let Some(b) = body {
-            builder = builder.json(&b);
-        }
-
-        let response = builder.send().await?;
-        let status = response.status();
-
-        if status.is_success() {
-            if status == StatusCode::NO_CONTENT {
-                let data = serde_json::from_str("null")?;
-                return Ok(data);
-            }
-            let data = response.json::<T>().await?;
-            return Ok(data);
-        }
-
-        if status == StatusCode::TOO_MANY_REQUESTS {
-            let max_retries = 3;
-            if retry_count < max_retries {
-                let retry_after = response.headers()
-                    .get("Retry-After")
-                    .and_then(|h| h.to_str().ok())
-                    .and_then(|s| s.parse::<u64>().ok())
-                    .unwrap_or_else(|| 2u64.pow(retry_count) as u64);
-                
-                warn!("Rate limited (429), retrying in {}s (attempt {}/{})", retry_after, retry_count + 1, max_retries);
-                sleep(Duration::from_secs(retry_after)).await;
-                return Err(TraktError::RateLimited(retry_after));
-            }
-        }
-
-        let error_text = response.text().await?;
-        error!("API Error {} for {}: {}", status, endpoint, error_text);
-        
-        match status {
-            StatusCode::NOT_FOUND => Err(TraktError::ApiError("Content not found".to_string())),
-            StatusCode::CONFLICT => Err(TraktError::ApiError("Conflict (already exists)".to_string())),
-            _ => Err(TraktError::ApiError(format!("Request failed with status {}: {}", status, error_text))),
-        }
+    /// Wait for rate limiter permission for a write operation
+    pub async fn wait_for_write_permission(&self) {
+        self.write_rate_limiter.until_ready().await;
     }
 
-    pub async fn search_by_id(
-        &self,
-        id_type: &str,
-        id: &str,
-        item_type: Option<&str>,
-    ) -> Result<Vec<crate::trakt::models::TraktSearchItem>, TraktError> {
-        let mut endpoint = format!("/search/{}?id_type={}", id_type, id);
-        if let Some(t) = item_type {
-            endpoint.push_str(&format!("&type={}", t));
-        }
-        self.request(Method::GET, &endpoint, None::<()>).await
+    /// Get a clone of the read rate limiter (for sharing across instances)
+    pub fn read_limiter(&self) -> Arc<DefaultDirectRateLimiter> {
+        Arc::clone(&self.read_rate_limiter)
+    }
+
+    /// Get a clone of the write rate limiter (for sharing across instances)
+    pub fn write_limiter(&self) -> Arc<DefaultDirectRateLimiter> {
+        Arc::clone(&self.write_rate_limiter)
+    }
+
+    /// Detect VIP status from user settings
+    ///
+    /// This method parses the TraktUserSettings response from GET /users/settings
+    /// to determine if the user has VIP status. VIP users get 10x higher rate limits.
+    ///
+    /// VIP status is detected if either:
+    /// - user.vip is true (standard VIP)
+    /// - user.vip_ep is true (executive producer VIP)
+    pub fn detect_vip_status(settings: &TraktUserSettings) -> bool {
+        settings.user.vip.unwrap_or(false) || settings.user.vip_ep.unwrap_or(false)
+    }
+}
+
+impl Default for ApiClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{Duration, Instant};
+
+    #[tokio::test]
+    async fn test_read_rate_limiter_standard() {
+        let client = ApiClient::new();
+
+        // First request should be immediate
+        let start = Instant::now();
+        client.wait_for_read_permission().await;
+        let elapsed = start.elapsed();
+
+        assert!(
+            elapsed < Duration::from_millis(10),
+            "First request should be immediate"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_write_rate_limiter() {
+        let client = ApiClient::new();
+
+        // First request should be immediate
+        let start = Instant::now();
+        client.wait_for_write_permission().await;
+        let elapsed = start.elapsed();
+
+        assert!(
+            elapsed < Duration::from_millis(10),
+            "First request should be immediate"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_vip_vs_standard_rate_limits() {
+        let standard_client = ApiClient::new_with_vip_status(false);
+        let vip_client = ApiClient::new_with_vip_status(true);
+
+        // Both should work, just with different limits
+        standard_client.wait_for_read_permission().await;
+        vip_client.wait_for_read_permission().await;
+    }
+
+    #[tokio::test]
+    async fn test_rate_limiter_sharing() {
+        let client = ApiClient::new();
+
+        // Clone the rate limiters
+        let read_limiter = client.read_limiter();
+        let write_limiter = client.write_limiter();
+
+        // Use them independently
+        read_limiter.until_ready().await;
+        write_limiter.until_ready().await;
+    }
+
+    #[test]
+    fn test_vip_detection_standard_user() {
+        use crate::trakt::models::{
+            TraktUserSettings, TraktUserSettingsAccount, TraktUserSettingsUser,
+        };
+
+        let settings = TraktUserSettings {
+            user: TraktUserSettingsUser {
+                username: "standard_user".to_string(),
+                private: Some(false),
+                name: Some("Standard User".to_string()),
+                vip: Some(false),
+                vip_ep: Some(false),
+            },
+            account: TraktUserSettingsAccount {
+                timezone: Some("America/Los_Angeles".to_string()),
+                date_format: None,
+                time_24hr: None,
+                cover_image: None,
+            },
+        };
+
+        assert!(
+            !ApiClient::detect_vip_status(&settings),
+            "Standard user should not be detected as VIP"
+        );
+    }
+
+    #[test]
+    fn test_vip_detection_vip_user() {
+        use crate::trakt::models::{
+            TraktUserSettings, TraktUserSettingsAccount, TraktUserSettingsUser,
+        };
+
+        let settings = TraktUserSettings {
+            user: TraktUserSettingsUser {
+                username: "vip_user".to_string(),
+                private: Some(false),
+                name: Some("VIP User".to_string()),
+                vip: Some(true),
+                vip_ep: Some(false),
+            },
+            account: TraktUserSettingsAccount {
+                timezone: Some("America/Los_Angeles".to_string()),
+                date_format: None,
+                time_24hr: None,
+                cover_image: None,
+            },
+        };
+
+        assert!(
+            ApiClient::detect_vip_status(&settings),
+            "VIP user should be detected as VIP"
+        );
+    }
+
+    #[test]
+    fn test_vip_detection_vip_ep_user() {
+        use crate::trakt::models::{
+            TraktUserSettings, TraktUserSettingsAccount, TraktUserSettingsUser,
+        };
+
+        let settings = TraktUserSettings {
+            user: TraktUserSettingsUser {
+                username: "vip_ep_user".to_string(),
+                private: Some(false),
+                name: Some("VIP EP User".to_string()),
+                vip: Some(false),
+                vip_ep: Some(true),
+            },
+            account: TraktUserSettingsAccount {
+                timezone: Some("America/Los_Angeles".to_string()),
+                date_format: None,
+                time_24hr: None,
+                cover_image: None,
+            },
+        };
+
+        assert!(
+            ApiClient::detect_vip_status(&settings),
+            "VIP EP user should be detected as VIP"
+        );
+    }
+
+    #[test]
+    fn test_vip_detection_both_flags_set() {
+        use crate::trakt::models::{
+            TraktUserSettings, TraktUserSettingsAccount, TraktUserSettingsUser,
+        };
+
+        let settings = TraktUserSettings {
+            user: TraktUserSettingsUser {
+                username: "super_vip_user".to_string(),
+                private: Some(false),
+                name: Some("Super VIP User".to_string()),
+                vip: Some(true),
+                vip_ep: Some(true),
+            },
+            account: TraktUserSettingsAccount {
+                timezone: Some("America/Los_Angeles".to_string()),
+                date_format: None,
+                time_24hr: None,
+                cover_image: None,
+            },
+        };
+
+        assert!(
+            ApiClient::detect_vip_status(&settings),
+            "User with both VIP flags should be detected as VIP"
+        );
+    }
+
+    #[test]
+    fn test_vip_detection_none_values() {
+        use crate::trakt::models::{
+            TraktUserSettings, TraktUserSettingsAccount, TraktUserSettingsUser,
+        };
+
+        let settings = TraktUserSettings {
+            user: TraktUserSettingsUser {
+                username: "unknown_user".to_string(),
+                private: None,
+                name: None,
+                vip: None,
+                vip_ep: None,
+            },
+            account: TraktUserSettingsAccount {
+                timezone: None,
+                date_format: None,
+                time_24hr: None,
+                cover_image: None,
+            },
+        };
+
+        assert!(
+            !ApiClient::detect_vip_status(&settings),
+            "User with None VIP values should default to non-VIP"
+        );
     }
 }

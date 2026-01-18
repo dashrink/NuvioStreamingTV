@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher icon background color -->
+    <color name="ic_launcher_background">#1A237E</color>
+
+    <!-- Primary brand colors (placeholders for future theming) -->
+    <color name="primary">#3949AB</color>
+    <color name="primary_dark">#1A237E</color>
+    <color name="accent">#FF6F00</color>
+</resources>

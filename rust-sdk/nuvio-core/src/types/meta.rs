@@ -125,7 +125,10 @@ mod tests {
         let original = Meta::with_details(
             "456".to_string(),
             "Inception".to_string(),
-            Some("A thief who steals corporate secrets through dream-sharing technology.".to_string()),
+            Some(
+                "A thief who steals corporate secrets through dream-sharing technology."
+                    .to_string(),
+            ),
             Some("https://example.com/inception-poster.jpg".to_string()),
             Some("https://example.com/inception-bg.jpg".to_string()),
             Some("tt1375666".to_string()),

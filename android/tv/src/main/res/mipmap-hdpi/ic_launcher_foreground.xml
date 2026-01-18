@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Placeholder launcher icon foreground for Nuvio TV
+
+    This is a simple placeholder icon that should be replaced with the actual
+    branded app icon artwork. The current design is a simple "N" lettermark
+    in a circle to serve as a temporary launcher icon.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Circle background -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0"/>
+
+    <!-- "N" lettermark -->
+    <path
+        android:fillColor="#3949AB"
+        android:pathData="M42,40 L46,40 L46,64 L54,52 L54,68 L50,68 L50,44 L42,56 Z"/>
+</vector>

@@ -222,7 +222,10 @@ mod tests {
     #[test]
     fn test_stream_debug() {
         // Verify Debug trait works correctly
-        let stream = Stream::new("debug-test".to_string(), "https://test.com/video".to_string());
+        let stream = Stream::new(
+            "debug-test".to_string(),
+            "https://test.com/video".to_string(),
+        );
         let debug_string = format!("{:?}", stream);
         assert!(debug_string.contains("debug-test"));
         assert!(debug_string.contains("https://test.com/video"));

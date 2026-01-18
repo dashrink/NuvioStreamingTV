@@ -35,20 +35,8 @@ pub mod types;
 // Error types module
 pub mod error;
 
-// Profile management module
-pub mod profile;
-
-// Stremio service module
-pub mod stremio_service;
-
-// TMDB module
-pub mod tmdb;
-
-// Trakt module
+// Trakt.tv API integration module
 pub mod trakt;
-
-// HTTP module
-pub mod http;
 
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
@@ -61,8 +49,7 @@ pub fn init_tracing() {
     // Try to initialize the subscriber, but don't panic if it's already initialized
     let _ = fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info"))
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .try_init();
 }
@@ -70,7 +57,7 @@ pub fn init_tracing() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tracing::{debug, info, warn, error};
+    use tracing::{debug, error, info, warn};
 
     #[test]
     fn test_crate_compiles() {

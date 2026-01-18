@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "029-rust-sdk-foundation-core-types-ffi-layer-setup",
+  "spec": "033-rust-sdk-trakt-integration-service",
   "state": "building",
   "subtasks": {
-    "completed": 17,
-    "total": 18,
+    "completed": 25,
+    "total": 26,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Documentation & QA",
+    "current": "Integration Testing",
     "id": null,
-    "total": 3
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 1,
-    "started_at": "2026-01-13T10:54:25.484919"
+    "number": 11,
+    "started_at": "2026-01-18T13:06:32.637387"
   },
-  "last_update": "2026-01-13T10:54:25.612809"
+  "last_update": "2026-01-18T13:51:19.515978"
 }

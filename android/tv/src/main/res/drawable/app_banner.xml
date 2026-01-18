@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Nuvio Streaming TV App Banner
+  ~ Required for Android TV launcher display
+  ~ Recommended size: 320x180 dp
+  ~
+  ~ This is a placeholder banner drawable. Replace with final branded artwork
+  ~ when design assets are available.
+  -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:endColor="#1A237E"
+                android:startColor="#3949AB"
+                android:type="linear" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Content overlay (placeholder for logo/text) -->
+    <item
+        android:bottom="60dp"
+        android:left="24dp"
+        android:right="24dp"
+        android:top="60dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Accent bar at bottom -->
+    <item
+        android:bottom="0dp"
+        android:height="8dp"
+        android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF6F00" />
+        </shape>
+    </item>
+</layer-list>

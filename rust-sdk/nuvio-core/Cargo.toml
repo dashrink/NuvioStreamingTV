@@ -7,38 +7,21 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]  # CRITICAL: cdylib required for FFI
 
 [dependencies]
-uniffi = { workspace = true, features = ["cli"] }
+uniffi = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 thiserror = { workspace = true }
-argon2 = { workspace = true }
-rand = { workspace = true }
+governor = { workspace = true }
+oauth2 = { workspace = true }
+reqwest = { workspace = true }
 chrono = { workspace = true }
-anyhow = { workspace = true }
-uuid = { workspace = true }
-# Helper crates for Stremio service
-urlencoding = "2.1"
-reqwest = { version = "0.12", features = ["json", "rustls-tls-native-roots", "cookies", "stream"], default-features = false }
-futures = "0.3"
-tokio = { version = "1.36", features = ["rt", "rt-multi-thread", "time", "macros", "sync"] }
-# TMDB & Trakt dependencies
-url = "2.5"
-oauth2 = "4.4"
-parking_lot = "0.12"
-async-trait = "0.1"
-tokio-rustls = "0.26"
-reqwest-middleware = "0.3"
-reqwest-retry = "0.5"
-rustls = { version = "0.23", features = ["ring", "std", "logging", "tls12"] }
-rustls-native-certs = "0.8"
-rustls-pemfile = "2.0"
-http = "1.1"
+parking_lot = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+wiremock = "0.6"
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }
-
-[dev-dependencies]
-tempfile = "3.10"
-wiremock = "0.6.5"

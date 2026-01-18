@@ -35,5 +35,7 @@ rootProject.name = 'Nuvio TV'
 
 expoAutolinking.useExpoVersionCatalog()
 
-include ':app'
+include ':app-mobile'
+include ':tv'
+include ':shared'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)

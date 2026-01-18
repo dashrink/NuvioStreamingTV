@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application name displayed in the Android TV launcher -->
+    <string name="app_name">Nuvio TV</string>
+
+    <!-- Browse fragment title -->
+    <string name="browse_title">Nuvio Streaming</string>
+
+    <!-- Content category headers (placeholders for future implementation) -->
+    <string name="category_movies">Movies</string>
+    <string name="category_tv_shows">TV Shows</string>
+    <string name="category_live">Live</string>
+    <string name="category_my_list">My List</string>
+
+    <!-- Error messages -->
+    <string name="error_sdk_initialization">Failed to initialize streaming service</string>
+    <string name="error_network">Network connection error</string>
+    <string name="error_playback">Playback error</string>
+
+    <!-- Action labels -->
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_search">Search</string>
+</resources>

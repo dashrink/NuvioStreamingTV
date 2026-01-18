@@ -117,8 +117,16 @@ mod tests {
 
     #[test]
     fn test_catalog_with_items() {
-        let items = vec!["movie-1".to_string(), "movie-2".to_string(), "movie-3".to_string()];
-        let catalog = Catalog::with_items("action-movies".to_string(), "Action Movies".to_string(), items.clone());
+        let items = vec![
+            "movie-1".to_string(),
+            "movie-2".to_string(),
+            "movie-3".to_string(),
+        ];
+        let catalog = Catalog::with_items(
+            "action-movies".to_string(),
+            "Action Movies".to_string(),
+            items.clone(),
+        );
 
         assert_eq!(catalog.id, "action-movies");
         assert_eq!(catalog.name, "Action Movies");
@@ -140,9 +148,15 @@ mod tests {
 
         assert_eq!(catalog.id, "trending");
         assert_eq!(catalog.name, "Trending Now");
-        assert_eq!(catalog.description, Some("The hottest content right now".to_string()));
+        assert_eq!(
+            catalog.description,
+            Some("The hottest content right now".to_string())
+        );
         assert_eq!(catalog.item_ids, items);
-        assert_eq!(catalog.cover_url, Some("https://example.com/trending-cover.jpg".to_string()));
+        assert_eq!(
+            catalog.cover_url,
+            Some("https://example.com/trending-cover.jpg".to_string())
+        );
         assert_eq!(catalog.sort_order, Some(1));
     }
 
@@ -168,7 +182,8 @@ mod tests {
         let json = serde_json::to_string(&original).expect("Failed to serialize Catalog");
 
         // Deserialize back
-        let deserialized: Catalog = serde_json::from_str(&json).expect("Failed to deserialize Catalog");
+        let deserialized: Catalog =
+            serde_json::from_str(&json).expect("Failed to deserialize Catalog");
 
         // Verify no data loss
         assert_eq!(original, deserialized);
@@ -187,7 +202,8 @@ mod tests {
         let json = serde_json::to_string(&original).expect("Failed to serialize Catalog");
 
         // Deserialize back
-        let deserialized: Catalog = serde_json::from_str(&json).expect("Failed to deserialize Catalog");
+        let deserialized: Catalog =
+            serde_json::from_str(&json).expect("Failed to deserialize Catalog");
 
         // Verify no data loss
         assert_eq!(original, deserialized);
@@ -242,7 +258,8 @@ mod tests {
     #[test]
     fn test_catalog_empty_items() {
         // Test catalog with empty item list
-        let catalog = Catalog::with_items("empty".to_string(), "Empty Catalog".to_string(), Vec::new());
+        let catalog =
+            Catalog::with_items("empty".to_string(), "Empty Catalog".to_string(), Vec::new());
         assert_eq!(catalog.item_ids.len(), 0);
         assert!(catalog.item_ids.is_empty());
     }
