@@ -1,0 +1,22 @@
+# UniFFI Configuration for Nuvio Core SDK
+#
+# This configuration file specifies how UniFFI generates Kotlin and Swift bindings
+# for the Rust HTTP networking layer. It uses the proc macro approach with
+# #[uniffi::export] annotations (no .udl file needed).
+#
+# References:
+# - UniFFI Book: https://mozilla.github.io/uniffi-rs/
+# - Proc Macro Guide: https://mozilla.github.io/uniffi-rs/proc_macro/index.html
+
+[bindings.kotlin]
+package_name = "com.nuvio.sdk.core"
+# Output directory for generated Kotlin bindings (relative to rust-sdk/)
+cdylib_name = "nuvio_core"
+
+[bindings.swift]
+module_name = "NuvioCore"
+# Output directory for generated Swift bindings (relative to rust-sdk/)
+cdylib_name = "nuvio_core"
+ffi_module_name = "nuvio_coreFFI"
+ffi_module_filename = "nuvio_coreFFI"
+generate_module_map = true
