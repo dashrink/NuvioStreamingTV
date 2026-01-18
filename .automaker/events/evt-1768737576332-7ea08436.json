@@ -1,0 +1,10 @@
+{
+  "id": "evt-1768737576332-7ea08436",
+  "trigger": "feature_error",
+  "timestamp": "2026-01-18T11:59:36.332Z",
+  "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV",
+  "projectName": "NuvioStreamingTV",
+  "featureId": "feature-1768737537007-vnatn9r6f",
+  "error": "Claude Code process exited with code 1",
+  "errorType": "execution"
+}

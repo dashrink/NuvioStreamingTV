@@ -1,0 +1,26 @@
+{
+  "category": "refactor",
+  "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust to support the AI Chat feature natively on all platforms.",
+  "title": "Rust SDK: AI Assistant Service",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "feature/main-1768737288664-qmhb",
+  "id": "feature-1768736040645-0s02yt66e",
+  "descriptionHistory": [
+    {
+      "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust to support the AI Chat feature natively on all platforms.",
+      "timestamp": "2026-01-18T11:34:00.646Z",
+      "source": "initial"
+    }
+  ],
+  "skipTests": false,
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "auto",
+  "dependencies": []
+}

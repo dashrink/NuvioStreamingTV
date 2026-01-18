@@ -1,0 +1,28 @@
+{
+  "category": "refactor",
+  "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
+  "title": "Rust SDK: Real-time Sync Client",
+  "priority": 1,
+  "status": "backlog",
+  "branchName": "main",
+  "id": "feature-1768736040647-wjrt00zny",
+  "descriptionHistory": [
+    {
+      "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
+      "timestamp": "2026-01-18T11:34:00.648Z",
+      "source": "initial"
+    }
+  ],
+  "skipTests": false,
+  "model": "github-copilot/gemini-3-pro-preview",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [],
+  "startedAt": "2026-01-18T11:47:27.206Z",
+  "updatedAt": "2026-01-18T11:47:29.769Z"
+}

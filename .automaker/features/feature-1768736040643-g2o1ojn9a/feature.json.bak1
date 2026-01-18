@@ -1,0 +1,28 @@
+{
+  "category": "refactor",
+  "description": "Implement the unified search engine in Rust, aggregating and deduplicating results from TMDB, Stremio, and Trakt. This replaces the JS-side aggregation logic.",
+  "title": "Rust SDK: Unified Search Aggregation",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "feature/main-1768736141133-ingt",
+  "id": "feature-1768736040643-g2o1ojn9a",
+  "descriptionHistory": [
+    {
+      "description": "Implement the unified search engine in Rust, aggregating and deduplicating results from TMDB, Stremio, and Trakt. This replaces the JS-side aggregation logic.",
+      "timestamp": "2026-01-18T11:34:00.643Z",
+      "source": "initial"
+    }
+  ],
+  "model": "github-copilot/claude-opus-4.5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [],
+  "startedAt": "2026-01-18T11:36:53.545Z",
+  "updatedAt": "2026-01-18T11:36:53.828Z"
+}

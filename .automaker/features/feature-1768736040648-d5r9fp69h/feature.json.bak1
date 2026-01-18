@@ -1,0 +1,16 @@
+{
+  "category": "refactor",
+  "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within the Rust core.",
+  "title": "Rust SDK: Local Media Scanner",
+  "priority": 2,
+  "status": "backlog",
+  "branchName": "main",
+  "id": "feature-1768736040648-d5r9fp69h",
+  "descriptionHistory": [
+    {
+      "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within the Rust core.",
+      "timestamp": "2026-01-18T11:34:00.649Z",
+      "source": "initial"
+    }
+  ]
+}

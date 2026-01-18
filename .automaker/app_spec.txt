@@ -160,6 +160,10 @@
         <location>rust-sdk/nuvio-core/src/error.rs</location>
       </file_locations>
     </feature>
+    <feature>
+      <name>Real-time Chat for Watch Party</name>
+      <description>Text and voice chat integration for watch party sessions with emoji reactions, GIF support, and message history.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

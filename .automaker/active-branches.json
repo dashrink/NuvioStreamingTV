@@ -1,0 +1,32 @@
+{
+  "branches": [
+    {
+      "name": "feature/main-1768736141133-ingt",
+      "createdAt": "2026-01-18T11:35:41.728Z"
+    },
+    {
+      "name": "main",
+      "createdAt": "2026-01-18T11:38:40.319Z"
+    },
+    {
+      "name": "feature/main-1768736907644-rhnc",
+      "createdAt": "2026-01-18T11:48:28.209Z"
+    },
+    {
+      "name": "feature/main-1768737288664-qmhb",
+      "createdAt": "2026-01-18T11:54:49.233Z"
+    },
+    {
+      "name": "feature/main-1768737454209-02ox",
+      "createdAt": "2026-01-18T11:57:34.772Z"
+    },
+    {
+      "name": "feature/main-1768737498638-wauv",
+      "createdAt": "2026-01-18T11:58:19.193Z"
+    },
+    {
+      "name": "feature/main-1768737525994-h2p9",
+      "createdAt": "2026-01-18T11:58:46.551Z"
+    }
+  ]
+}

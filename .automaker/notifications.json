@@ -20,6 +20,17 @@
       "read": false,
       "dismissed": true,
       "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
+    },
+    {
+      "id": "65a12618-e6bd-4c73-9381-bd88caf5bfac",
+      "type": "feature_verified",
+      "title": "Feature Verified",
+      "message": "\"watch-together-chat\" has been verified and is complete.",
+      "createdAt": "2026-01-18T11:51:05.374Z",
+      "read": false,
+      "dismissed": true,
+      "featureId": "watch-together-chat",
+      "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
     }
   ]
 }

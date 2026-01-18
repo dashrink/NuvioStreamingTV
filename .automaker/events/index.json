@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "id": "evt-1768737576332-7ea08436",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T11:59:36.332Z",
+      "featureId": "feature-1768737537007-vnatn9r6f"
+    },
+    {
+      "id": "evt-1768737537186-d4d053f7",
+      "trigger": "feature_created",
+      "timestamp": "2026-01-18T11:58:57.186Z",
+      "featureId": "feature-1768737537007-vnatn9r6f"
+    },
+    {
+      "id": "evt-1768737091882-1bcc4644",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-18T11:51:31.882Z",
+      "featureId": "watch-together-chat"
+    },
+    {
+      "id": "evt-1768736849773-86978d8c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T11:47:29.773Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768736325031-5d4edf7f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T11:38:45.031Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768736215706-712b81d7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T11:36:55.706Z",
+      "featureId": "feature-1768736040643-g2o1ojn9a"
+    },
+    {
+      "id": "evt-1768736206752-9ed398cf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T11:36:46.752Z",
+      "featureId": "feature-1768736040643-g2o1ojn9a"
+    }
+  ]
+}
