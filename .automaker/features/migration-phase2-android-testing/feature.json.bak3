@@ -1,0 +1,31 @@
+{
+  "category": "testing",
+  "description": "Comprehensive testing and bug fixes for Android implementation. Write unit tests for ViewModels and repositories, UI tests for Compose screens, integration tests for Rust SDK bindings, end-to-end tests for critical flows (playback, search, sync). Test on multiple devices (phones, tablets, Android TV boxes). Fix bugs and performance issues.",
+  "title": "Phase 2.11: Android Testing & Bug Fixes",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase2-android-testing",
+  "descriptionHistory": [
+    {
+      "description": "Comprehensive testing and bug fixes for Android implementation. Write unit tests for ViewModels and repositories, UI tests for Compose screens, integration tests for Rust SDK bindings, end-to-end tests for critical flows (playback, search, sync). Test on multiple devices (phones, tablets, Android TV boxes). Fix bugs and performance issues.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase2-android-sdk-integration",
+    "migration-phase2-android-exoplayer",
+    "migration-phase2-android-media-features"
+  ],
+  "startedAt": "2026-01-18T16:31:31.651Z"
+}

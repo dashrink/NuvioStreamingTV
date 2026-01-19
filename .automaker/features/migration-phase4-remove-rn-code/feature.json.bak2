@@ -1,0 +1,31 @@
+{
+  "category": "refactor",
+  "description": "Remove all React Native TypeScript code and components. Delete src/ directory containing all 399 TypeScript files (components, screens, services, hooks, contexts, navigation, utils, types). Remove package.json React Native dependencies. Archive critical business logic documentation before deletion for reference. Verify Rust SDK has equivalent functionality.",
+  "title": "Phase 4.1: Remove React Native TypeScript Code",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "",
+  "id": "migration-phase4-remove-rn-code",
+  "descriptionHistory": [
+    {
+      "description": "Remove all React Native TypeScript code and components. Delete src/ directory containing all 399 TypeScript files (components, screens, services, hooks, contexts, navigation, utils, types). Remove package.json React Native dependencies. Archive critical business logic documentation before deletion for reference. Verify Rust SDK has equivalent functionality.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-claude-sonnet-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase2-android-testing",
+    "migration-phase3-ios-testing"
+  ],
+  "startedAt": "2026-01-18T17:22:38.782Z",
+  "updatedAt": "2026-01-18T17:22:39.152Z"
+}

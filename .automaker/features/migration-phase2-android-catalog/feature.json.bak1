@@ -1,0 +1,30 @@
+{
+  "category": "feature",
+  "description": "Build catalog browsing screens with filters in Jetpack Compose. Implement grid layouts (6-column TV, 2-3 column mobile), filtering by genre/year/rating, sorting options, infinite scroll/pagination, Stremio addon source selection. Integrate Rust SDK catalog service. Support spatial navigation (TV) and touch scrolling (mobile).",
+  "title": "Phase 2.3: Android Catalog Browsing Screens",
+  "priority": 1,
+  "status": "verified",
+  "branchName": "main",
+  "id": "migration-phase2-android-catalog",
+  "descriptionHistory": [
+    {
+      "description": "Build catalog browsing screens with filters in Jetpack Compose. Implement grid layouts (6-column TV, 2-3 column mobile), filtering by genre/year/rating, sorting options, infinite scroll/pagination, Stremio addon source selection. Integrate Rust SDK catalog service. Support spatial navigation (TV) and touch scrolling (mobile).",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase2-android-architecture"
+  ],
+  "startedAt": "2026-01-18T16:09:23.426Z",
+  "updatedAt": "2026-01-18T16:18:58.497Z"
+}

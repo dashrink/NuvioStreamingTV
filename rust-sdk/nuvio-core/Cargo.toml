@@ -16,18 +16,31 @@ thiserror = { workspace = true }
 governor = { workspace = true }
 oauth2 = { workspace = true }
 reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
+<<<<<<< HEAD
 flate2 = "1.0"
 # Cache dependencies
 moka = { version = "0.12", features = ["future"] }
 sled = "0.34"
 tokio = { workspace = true }
+=======
+tokio = { workspace = true }
+rustls = { workspace = true }
+webpki-roots = { workspace = true }
+http = { workspace = true }
+async-trait = { workspace = true }
+>>>>>>> feature/main-1768751034241-zo2o
 
 [dev-dependencies]
 tokio-test = "0.4"
 wiremock = "0.6"
+<<<<<<< HEAD
 tempfile = "3.8"
+=======
+reqwest-middleware = { workspace = true }
+>>>>>>> feature/main-1768751034241-zo2o
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

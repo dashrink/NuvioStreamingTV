@@ -140,9 +140,100 @@ class RustCatalogRepository @Inject constructor(
             description = stremioMeta.description,
             posterUrl = stremioMeta.poster,
             backgroundUrl = stremioMeta.background,
+            logoUrl = stremioMeta.logo,
             imdbId = stremioMeta.imdbId,
             tmdbId = null, // TODO: Extract from behaviorHints or similar if needed
-            type = stremioMeta.contentType
+            type = stremioMeta.contentType,
+            year = stremioMeta.year,
+            genres = stremioMeta.genres,
+            rating = stremioMeta.imdbRating?.toDoubleOrNull(),
+            releaseInfo = stremioMeta.releaseInfo,
+            runtime = stremioMeta.runtime,
+            cast = stremioMeta.cast,
+            director = stremioMeta.director,
+            writer = stremioMeta.writer,
+            certification = stremioMeta.certification,
+            country = stremioMeta.country,
+            released = stremioMeta.released
+        )
+    }
+
+    override suspend fun browseCatalog(
+        contentType: String,
+        catalogId: String,
+        page: Int,
+        genre: String?,
+        year: Int?,
+        sort: String?
+    ): Result<CatalogPage> = runCatching {
+        ensureCinemeta()
+
+        // Build catalog ID with genre if specified
+        val fullCatalogId = if (genre != null) {
+            "genre.$genre"
+        } else {
+            catalogId
+        }
+
+        // Get catalog from service (page is 1-indexed)
+        val metas = service.getCatalog(
+            cinemetaId,
+            contentType,
+            fullCatalogId,
+            page.toUInt(),
+            null
+        )
+
+        // Cache the metas
+        cacheMetas(metas)
+
+        // Filter by year if specified
+        val filteredMetas = if (year != null) {
+            metas.filter { it.year == year.toString() }
+        } else {
+            metas
+        }
+
+        // Map to Meta objects
+        val items = filteredMetas.map { mapToMeta(it) }
+
+        // Stremio typically returns 20 items per page
+        // If we got fewer than 20, there are no more pages
+        val hasMore = metas.size >= 20
+
+        CatalogPage(
+            items = items,
+            hasMore = hasMore,
+            page = page
+        )
+    }
+
+    override suspend fun getGenres(contentType: String): Result<List<String>> = runCatching {
+        // Common genres for movies and series
+        // These align with Cinemeta's genre catalogs
+        listOf(
+            "action",
+            "adventure",
+            "animation",
+            "biography",
+            "comedy",
+            "crime",
+            "documentary",
+            "drama",
+            "family",
+            "fantasy",
+            "film-noir",
+            "history",
+            "horror",
+            "music",
+            "musical",
+            "mystery",
+            "romance",
+            "sci-fi",
+            "sport",
+            "thriller",
+            "war",
+            "western"
         )
     }
 }

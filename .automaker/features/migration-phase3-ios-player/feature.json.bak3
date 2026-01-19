@@ -1,0 +1,29 @@
+{
+  "category": "feature",
+  "description": "Build video player with AVPlayer (iOS + tvOS variants). Implement custom SwiftUI player controls overlay, subtitle selection menu, audio track picker, quality selector, playback speed controls, skip intro/credits buttons. tvOS version: Siri Remote support with swipe gestures. iOS version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Create AVPlayer wrapper with state management.",
+  "title": "Phase 3.6: iOS/tvOS Video Player with AVPlayer",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase3-ios-player",
+  "descriptionHistory": [
+    {
+      "description": "Build video player with AVPlayer (iOS + tvOS variants). Implement custom SwiftUI player controls overlay, subtitle selection menu, audio track picker, quality selector, playback speed controls, skip intro/credits buttons. tvOS version: Siri Remote support with swipe gestures. iOS version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Create AVPlayer wrapper with state management.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-gemini-3-pro",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-sdk-integration"
+  ],
+  "startedAt": "2026-01-18T17:02:19.788Z"
+}

@@ -1,0 +1,34 @@
+{
+  "category": "refactor",
+  "description": "Rebuild and test UniFFI bindings for all new Rust SDK modules. Generate updated Kotlin and Swift bindings for storage, cache, notifications, backup, and plugin systems. Update binding integration in Android and iOS projects. Ensure type-safety and async API support.",
+  "title": "Phase 1.7: Rebuild UniFFI Bindings for Kotlin & Swift",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase1-rust-bindings",
+  "descriptionHistory": [
+    {
+      "description": "Rebuild and test UniFFI bindings for all new Rust SDK modules. Generate updated Kotlin and Swift bindings for storage, cache, notifications, backup, and plugin systems. Update binding integration in Android and iOS projects. Ensure type-safety and async API support.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase1-rust-storage",
+    "migration-phase1-rust-cache",
+    "migration-phase1-rust-catalog",
+    "migration-phase1-rust-notifications",
+    "migration-phase1-rust-backup",
+    "migration-phase1-rust-plugins"
+  ],
+  "startedAt": "2026-01-18T16:09:22.141Z"
+}

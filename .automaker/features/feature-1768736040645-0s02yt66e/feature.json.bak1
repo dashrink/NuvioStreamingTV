@@ -1,9 +1,9 @@
 {
   "category": "refactor",
-  "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust to support the AI Chat feature natively on all platforms.",
+  "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust (Nuvio-core). Exposes streaming-capable async API for native platform consumption via Kotlin/Swift bindings.",
   "title": "Rust SDK: AI Assistant Service",
   "priority": 2,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "feature/main-1768737288664-qmhb",
   "id": "feature-1768736040645-0s02yt66e",
   "descriptionHistory": [
@@ -11,6 +11,11 @@
       "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust to support the AI Chat feature natively on all platforms.",
       "timestamp": "2026-01-18T11:34:00.646Z",
       "source": "initial"
+    },
+    {
+      "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust (Nuvio-core). Exposes streaming-capable async API for native platform consumption via Kotlin/Swift bindings.",
+      "timestamp": "2026-01-18T15:41:33.405Z",
+      "source": "edit"
     }
   ],
   "skipTests": false,
@@ -22,5 +27,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "workMode": "auto",
-  "dependencies": []
+  "dependencies": [],
+  "startedAt": "2026-01-18T17:55:00.525Z",
+  "updatedAt": "2026-01-18T17:57:10.929Z"
 }

@@ -41,6 +41,7 @@ class PlayerActivity : ComponentActivity() {
                         url = url,
                         title = title,
                         exoPlayerHolder = viewModel.exoPlayerHolder,
+                        viewModel = viewModel,
                         showSkipButton = viewModel.showSkipButton.value,
                         onSkipIntro = viewModel::skipIntro,
                         onBackPressed = { finish() }

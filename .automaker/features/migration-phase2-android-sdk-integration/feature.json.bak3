@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Integrate Rust SDK Kotlin bindings throughout entire Android app. Replace all TypeScript service calls with Rust SDK equivalents. Set up dependency injection for Rust SDK modules (storage, cache, catalog, Trakt, TMDB, notifications, backup, plugins). Implement async/await patterns with Kotlin coroutines. Test all integrations.",
+  "title": "Phase 2.8: Android Rust SDK Integration",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase2-android-sdk-integration",
+  "descriptionHistory": [
+    {
+      "description": "Integrate Rust SDK Kotlin bindings throughout entire Android app. Replace all TypeScript service calls with Rust SDK equivalents. Set up dependency injection for Rust SDK modules (storage, cache, catalog, Trakt, TMDB, notifications, backup, plugins). Implement async/await patterns with Kotlin coroutines. Test all integrations.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase1-rust-bindings",
+    "migration-phase2-android-architecture"
+  ],
+  "startedAt": "2026-01-18T16:26:28.627Z"
+}

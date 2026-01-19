@@ -84,4 +84,29 @@ class MockCatalogRepository @Inject constructor() : CatalogRepository {
         delay(500)
         return Result.success(mockMetas.filter { it.name.contains(query, ignoreCase = true) })
     }
+
+    override suspend fun browseCatalog(
+        contentType: String,
+        catalogId: String,
+        page: Int,
+        genre: String?,
+        year: Int?,
+        sort: String?
+    ): Result<CatalogPage> {
+        delay(500)
+        return Result.success(
+            CatalogPage(
+                items = mockMetas,
+                hasMore = page < 3, // Simulate pagination
+                page = page
+            )
+        )
+    }
+
+    override suspend fun getGenres(contentType: String): Result<List<String>> {
+        delay(100)
+        return Result.success(
+            listOf("action", "sci-fi", "drama", "comedy", "thriller")
+        )
+    }
 }

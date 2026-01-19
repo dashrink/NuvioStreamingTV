@@ -1,9 +1,9 @@
 {
   "category": "refactor",
-  "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust, including search, download, and parsing.",
+  "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust (Nuvio-core), including search, download, parsing (SRT/VTT/ASS), and subtitle synchronization. Exposes parsed subtitle data for native player rendering.",
   "title": "Rust SDK: Subtitle Service Integration",
   "priority": 2,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "feature/main-1768737498638-wauv",
   "id": "feature-1768736040649-4pg308p4j",
   "descriptionHistory": [
@@ -11,6 +11,11 @@
       "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust, including search, download, and parsing.",
       "timestamp": "2026-01-18T11:34:00.649Z",
       "source": "initial"
+    },
+    {
+      "description": "Implement the OpenSubtitles and generic subtitle provider client logic in Rust (Nuvio-core), including search, download, parsing (SRT/VTT/ASS), and subtitle synchronization. Exposes parsed subtitle data for native player rendering.",
+      "timestamp": "2026-01-18T15:41:33.409Z",
+      "source": "edit"
     }
   ],
   "skipTests": false,
@@ -22,5 +27,7 @@
   "planningMode": "full",
   "requirePlanApproval": false,
   "workMode": "auto",
-  "dependencies": []
+  "dependencies": [],
+  "startedAt": "2026-01-18T22:02:53.937Z",
+  "updatedAt": "2026-01-18T22:02:54.461Z"
 }

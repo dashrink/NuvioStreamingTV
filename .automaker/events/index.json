@@ -2,100 +2,6004 @@
   "version": 1,
   "events": [
     {
-      "id": "evt-1768752504897-56729164",
+      "id": "evt-1768773774464-0f6f0228",
       "trigger": "feature_success",
-      "timestamp": "2026-01-18T16:08:24.897Z",
-      "featureId": "migration-phase1-rust-catalog"
+      "timestamp": "2026-01-18T22:02:54.464Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
     },
     {
-      "id": "evt-1768752358169-82d2c200",
+      "id": "evt-1768773772477-ecac64fd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:52.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773769398-c74f8c31",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:49.398Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773766533-c97be6c3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:46.533Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773763518-bef4587d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:43.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773760488-c1b98dd8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:40.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773757518-63ccf6c8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:37.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773754479-5e2743a0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:34.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773751584-61ba4dc2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:31.584Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773748466-96c16224",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:28.466Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773745539-a54c0736",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:25.539Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773742476-782341e5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:22.476Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773739513-188fd974",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:19.513Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773736554-a0c8916e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:16.554Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773733442-d5c86fa3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:13.442Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773730393-40f58171",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:10.393Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773727434-354f2f77",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:07.434Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773724547-179af8f5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:04.547Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773720258-808a195e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:02:00.258Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773712569-4137641c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:52.569Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773709534-0305c2e9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:49.534Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773706534-1e049fc2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:46.534Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773703498-bfb3f4a2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:43.498Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773700893-ad4e7b2d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:40.893Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773697418-d27fb1f4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:37.418Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773694556-4f06a924",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:34.556Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773691479-5d97140c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:31.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773688480-155a4255",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:28.480Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773685436-b076a074",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:25.436Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773682581-08426a20",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:22.581Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773679475-956754c0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:19.475Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773676530-1e079a47",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:16.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773673497-25289ee0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:13.497Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773670489-5ca11c29",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:10.489Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773667510-4a6eacf4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:07.510Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773664548-df69a08d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:04.548Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773661479-3e1930d7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:01:01.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773658493-82b92510",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:58.494Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773655433-6ed39468",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:55.433Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773652580-ba2f3ef8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:52.580Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773649468-7bf9b016",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:49.468Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773646531-f5278928",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:46.531Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773643536-1663dae0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:43.536Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773640900-c8e5c8a0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:40.900Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773637517-4256dc2f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:37.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773634522-c885ba80",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:34.522Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773631475-676af217",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:31.475Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773628511-27274e28",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:28.511Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773625433-882d92bd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:25.433Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773622559-1c74f42e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:22.559Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773619491-133379b3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:19.491Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773616831-5ff4bb5c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:16.831Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773613484-398210d5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:13.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773610579-efa86aee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:10.579Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773607419-e4a25b18",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:07.419Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773604540-7f130b61",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:04.540Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773601883-26641bcf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T22:00:01.883Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773598497-4cb77651",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:58.497Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773595431-6265af7f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:55.431Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773592653-d73d2a51",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:52.653Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773589470-f224afd9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:49.471Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773586526-77c1a30c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:46.526Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773583823-0ea07856",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:43.823Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773580348-e68637eb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:40.348Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773577513-18d83883",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:37.513Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773574552-0a00f1a1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:34.552Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773571499-07398062",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:31.499Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773568474-9de48908",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:28.474Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773565523-068ea05d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:25.523Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773562559-fdffa785",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:22.559Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773559400-b4c27fa5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:19.400Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773556500-a0e6cd4c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:16.500Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773553465-fe2d5fe1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:13.465Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773550354-cb0f43cf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:10.354Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773547750-7f9f4e04",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:07.750Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773544633-482dd84a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:04.633Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773541563-12a5eaa7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:59:01.563Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773538461-ee3dd417",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:58.461Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773535428-5bafbe02",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:55.428Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773532564-b8a828a7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:52.564Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773529490-c80afb4b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:49.490Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773526615-f9ecf164",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:46.615Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773523479-b6dae6d5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:43.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773520579-c010fb89",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:40.579Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773517515-be5516b0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:37.515Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773514641-f45007df",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:34.641Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773511558-2bdb7ceb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:31.558Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773508539-9e83c385",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:28.539Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773505517-29fc1dfe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:25.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773502561-a2500456",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:22.561Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773499579-3ff7662a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:19.579Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773496517-867a62cc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:16.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773493385-71dba3d3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:13.385Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773490373-47db47d4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:10.374Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773487495-49fcde40",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:07.495Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773484534-11259eaf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:04.534Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773481460-f556434d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:58:01.460Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773478490-45330ebe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:58.490Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773475421-e4ae8a5b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:55.421Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773472859-06483571",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:52.859Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773469582-a9bc917b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:49.582Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773466512-8a671e02",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:46.512Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773463806-e588dde7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:43.806Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773460564-7f826d8a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:40.564Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773457493-9120c4e3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:37.493Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773454543-d967c426",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:34.543Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773451556-1a0acdde",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:31.556Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773448527-cbbfa3e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:28.527Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773445411-6f0c8658",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:25.411Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773442457-dd6f7271",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:22.457Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773439480-8a866b30",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:19.481Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773436919-e1918832",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:16.919Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773433428-047e0a39",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:13.428Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773430563-6703ba00",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:10.563Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773427594-c1e64a5c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:07.594Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773424626-8acf0994",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:04.626Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773421551-7f39d26c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:57:01.551Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773418471-aa544628",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:58.471Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773415518-1fc76908",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:55.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773412543-6db83e71",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:52.543Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773409571-f274d124",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:49.571Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773406506-92f276aa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:46.506Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773403792-a502954b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:43.792Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773400413-9e44739a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:40.413Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773397488-b3ad28c9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:37.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773394535-34ee3039",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:34.535Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773391454-2cfec5a0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:31.454Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773388462-c5e6c2db",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:28.462Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773385517-2787481a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:25.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773382650-81fbac60",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:22.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773379581-da736630",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:19.581Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773376504-31fa833b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:16.504Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773373454-a94f1c6b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:13.454Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773370558-f8b941c7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:10.558Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773367498-8a9e4cb4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:07.498Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773364515-77305783",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:04.515Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773361483-d1d30661",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:56:01.483Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773358552-e86e4a31",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:58.552Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773355513-38c288d0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:55.513Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773352537-4fd977c9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:52.537Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773349565-2492bc59",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:49.565Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773346502-2a9283bf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:46.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773343480-77daf086",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:43.480Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773340486-78b75f48",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:40.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773337482-15e9f0df",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:37.482Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773334617-a94dbd66",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:34.617Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773331449-0f877eb6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:31.449Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773328815-2f6fd169",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:28.815Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773325502-248017db",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:25.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773322543-034db1f3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:22.543Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773319484-c7175761",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:19.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773316615-b08f48c8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:16.615Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773313554-99c168d1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:13.554Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773310459-bec4f9d3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:10.459Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773307580-1d4b4c36",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:07.580Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773304518-766d8db7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:04.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773301549-4020b314",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:55:01.549Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773298549-5435f780",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:58.549Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773295502-9ceb55fe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:55.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773292538-ec0eb395",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:52.538Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773289447-d3099c4b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:49.447Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773286591-845e5610",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:46.591Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773283427-b25f5ee3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:43.427Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773280868-8af03595",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:40.868Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773277487-1660897b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:37.487Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773274519-75ee090f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:34.519Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773271463-639194a9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:31.463Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773268486-06c76825",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:28.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773265405-bb9798b4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:25.405Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773262524-cd577ef1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:22.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773259572-bae43cbe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:19.572Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773256803-92c7dc15",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:16.803Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773253424-0cb856aa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:13.424Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773250413-2c5e7276",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:10.413Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773247488-1d9278f1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:07.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773244916-26ae431b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:04.916Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773241479-4eaa8185",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:54:01.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773238463-e580d943",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:58.463Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773235393-77b56ad5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:55.393Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773232530-90c3d226",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:52.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773229482-5fb43dbd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:49.482Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773226586-67f4131c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:46.586Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773223495-13a71e44",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:43.495Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773220553-a9d0b108",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:40.553Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773217485-bdb0f652",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:37.485Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773214512-ebd388f7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:34.512Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773211963-99f8e752",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:31.963Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773208510-39adef3b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:28.510Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773205501-108de01b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:25.501Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773202523-6205eaf3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:22.523Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773199461-57022693",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:19.461Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773196585-ca7f5da5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:16.585Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773193430-206c2148",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:13.431Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773190455-1ae42ecd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:10.455Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773187482-ce31246e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:07.482Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773184508-22efcb6d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:04.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773181533-4eb216d7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:53:01.533Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773178491-0b8095bf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:58.491Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773175508-17339eb7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:55.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773172484-83fbcb59",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:52.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773169448-33dddcdc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:49.448Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773166592-a9ab8258",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:46.592Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773163425-b6a997f3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:43.425Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773160550-12de1f5b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:40.550Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773157477-f6d93c6b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:37.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773154509-328b5cd4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:34.509Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773151531-25f1bed2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:31.531Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773148488-f069c933",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:28.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773145396-b46abc99",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:25.396Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773142532-93535c1c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:22.532Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773139560-d98537c9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:19.560Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773136516-03be2f50",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:16.516Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773133476-c83a4e5f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:13.476Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773130464-11c9abca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:10.464Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773127468-ecf0d195",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:07.468Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773124915-6c482495",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:04.915Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773121537-e828b926",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:52:01.537Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773118495-b0528fc7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:58.495Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773115394-8d8d9ed2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:55.394Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773112519-e4045835",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:52.519Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773109557-7992819f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:49.557Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773106508-8b8d4514",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:46.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773103436-fb5e9946",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:43.436Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773100443-f56a0985",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:40.443Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773097473-7cab1208",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:37.473Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773094532-556150f1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:34.532Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773091422-06d28d7d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:31.422Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773088466-62a92de4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:28.466Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773085390-af9f666c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:25.390Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773082515-ce4377e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:22.515Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773079496-89008cff",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:19.496Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773076484-da49eb84",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:16.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773073462-d49ca8fa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:13.462Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773070545-76ad4f34",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:10.545Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773067880-cf4708e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:07.880Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773064511-806a1a84",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:04.511Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773061949-1227309e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:51:01.949Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773058502-b10810be",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:58.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773055491-df5f9d1e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:55.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773052831-d7315548",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:52.831Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773049453-64433860",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:49.453Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773046481-13976d9b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:46.481Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773043420-84564be2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:43.420Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773040740-10214413",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:40.740Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773037476-93eddffc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:37.476Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773034596-56b88fa9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:34.596Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773031535-a064a781",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:31.535Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773028460-99ed5b20",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:28.460Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773025391-7cd19f2f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:25.391Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773022929-42093825",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:22.929Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773019544-772b8b3b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:19.544Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773016575-be6cf8ff",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:16.575Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773013483-95651afd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:13.483Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773010450-155aafc4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:10.450Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773007473-8a8d6a25",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:07.473Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773004905-91885abb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:04.905Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768773001426-2c283122",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:50:01.426Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772998516-831c31a3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:58.516Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772995490-c7a9c3c3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:55.490Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772992525-945cf2e5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:52.525Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772989542-cafcf4ed",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:49.542Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772986477-2b4b8e8a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:46.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772983373-9cbf6a4b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:43.373Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772980540-43aeee48",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:40.540Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772977473-6586a64c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:37.473Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772974609-3f2ce63c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:34.609Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772971802-911b3382",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:31.802Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772968800-33301bff",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:28.800Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772965885-7cecef87",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:25.885Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772962509-e1fde33f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:22.509Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772959457-ec38ef32",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:19.457Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772956477-024c8a8e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:16.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772953511-581657d1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:13.511Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772950444-4610b526",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:10.444Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772947862-facc9c9b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:07.862Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772944591-2ac8214e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:04.591Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772941516-861a974d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:49:01.516Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772938452-6a6ec03d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:58.452Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772935490-09ef9782",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:55.490Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772932520-a3763375",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:52.520Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772929552-b51e5174",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:49.552Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772926570-a5f0d737",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:46.570Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772923403-d14a439a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:43.403Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772920478-d11c2d7e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:40.478Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772917570-9d54c48c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:37.570Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772914588-c690ee60",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:34.588Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772911519-83487a75",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:31.519Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772908598-6de61494",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:28.598Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772905488-0e008cb3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:25.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772903020-e5f2543d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:23.020Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772898273-08a62145",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:18.273Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772890528-3ec8d075",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:10.528Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772887573-ed54c110",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:07.573Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772884494-625ea860",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:04.494Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772881937-ae6e0d7c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:48:01.937Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772878482-19ed7832",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:58.482Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772875489-56df1b45",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:55.489Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772872514-5f8b2a22",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:52.514Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772869503-a2851650",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:49.503Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772866473-799c0b2b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:46.473Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772863422-be7d6e90",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:43.422Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772860431-21907000",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:40.431Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772857450-a0b72288",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:37.450Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772854486-ece0b387",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:34.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772851524-22db1465",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:31.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772848456-d62c85d5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:28.456Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772845575-c7ba9308",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:25.575Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772842505-ea9ee123",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:22.505Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772839483-13294132",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:19.483Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772836875-81985a97",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:16.875Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772833705-df6f7f28",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:13.705Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772830523-eabda088",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:10.523Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772827392-cb44a25d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:07.392Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772824492-449528fe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:04.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772821525-4d241758",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:47:01.525Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772818815-040e9822",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:58.815Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772815574-63dd5a7d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:55.574Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772812501-854b934d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:52.501Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772809892-f63c553c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:49.892Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772806879-bac77087",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:46.879Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772803477-ef01fac8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:43.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772800423-af9d2a3b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:40.423Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772797489-9cd7265e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:37.489Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772794592-12dabddc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:34.592Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772791520-793114fb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:31.520Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772788378-ac3b1b0e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:28.378Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772785368-51b44797",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:25.368Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772782505-9ddd9e92",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:22.505Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772779551-aeefecf2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:19.551Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772776471-16ed17ce",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:16.471Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772773882-5a3fb67f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:13.882Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772770457-da00f73e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:10.457Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772767570-7fb06859",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:07.570Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772764478-f19e6cda",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:04.478Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772761439-6f9ab831",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:46:01.439Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772758470-0df1aa0b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:58.470Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772755484-64903145",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:55.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772752512-de1e4a44",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:52.512Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772749572-a6accc98",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:49.572Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772746869-08b2834f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:46.869Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772743470-b6b943bc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:43.470Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772740529-1bd6951f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:40.529Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772737563-fdeb7dfc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:37.563Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772734578-95937b96",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:34.578Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772731518-a6f0d541",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:31.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772728499-6a637550",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:28.499Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772725571-a801b700",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:25.571Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772722510-7135d0c9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:22.510Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772719541-e7a7abc3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:19.541Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772716876-ea749397",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:16.876Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772713492-74a50ff7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:13.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772710824-52b4a335",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:10.824Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772707548-217c92fd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:07.548Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772704486-0eaae53d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:04.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772701610-ab63ec8d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:45:01.610Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772698445-6a4fb620",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:58.445Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772695370-0ae2e331",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:55.370Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772692477-21042aa3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:52.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772689534-52e0f910",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:49.534Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772686569-c4c2257b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:46.569Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772683551-7863531a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:43.551Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772680504-e926d951",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:40.504Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772677441-72e033ec",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:37.441Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772674481-ddd66d69",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:34.481Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772671505-d2957b03",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:31.506Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772668455-fe255200",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:28.455Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772665468-abae4d1f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:25.469Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772662597-644645cd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:22.597Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772659624-b3804bb7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:19.624Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772656494-0c761fec",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:16.494Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772653502-087b3d04",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:13.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772650425-9161b447",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:10.425Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772647439-cb53619a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:07.439Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772644567-dc2f03e8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:04.567Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772641507-85c94392",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:44:01.507Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772638455-88d0a282",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:58.455Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772635408-4853a773",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:55.408Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772633507-94b8b999",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:53.507Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772629470-ed496ada",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:49.470Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772626863-7eb5162f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:46.863Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772623535-5d1d0a1f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:43.535Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772620416-93f469da",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:40.416Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772617546-3e866d24",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:37.546Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772614578-e1cd6380",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:34.578Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772611410-f89869bb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:31.410Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772608463-c9edda81",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:28.463Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772605778-9085b385",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:25.778Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772602492-bd5ca18c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:22.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772599531-0aa7cefa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:19.531Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772596548-34cf2299",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:16.548Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772593509-7b92bd6a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:13.509Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772590402-a5224bfa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:10.402Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772587544-68e7b5b6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:07.544Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772584471-29b308bd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:04.471Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772581593-a6fd9aab",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:43:01.593Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772578492-930f4b63",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:58.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772575561-03192f2a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:55.561Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772572382-6e2f2b53",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:52.382Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772569928-690eaab1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:49.928Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772566554-4c0b9de4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:46.554Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772563530-f205b075",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:43.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772560508-6e970107",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:40.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772557543-2e817a5b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:37.543Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772554363-05c466d3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:34.363Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772551590-2758869b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:31.590Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772548434-0dc59d25",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:28.434Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772545557-81299599",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:25.557Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772542899-09d62f90",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:22.899Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772539928-5bf4b97e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:19.928Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772536539-c43033e5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:16.539Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772533505-3481c1e0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:13.505Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772530401-e81283c1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:10.401Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772527538-582ef19b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:07.538Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772524427-ecbf3625",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:04.427Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772521492-2ffdc913",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:42:01.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772518501-d4490b1b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:58.501Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772515454-67830e0d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:55.455Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772512478-58aa9b94",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:52.478Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772509514-90118c73",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:49.514Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772506953-279c202b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:46.953Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772503469-bef5d671",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:43.469Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772500371-fdfd2b7a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:40.371Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772497530-7413f893",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:37.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772494466-67d25f95",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:34.466Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772491583-69c4c992",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:31.583Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772488486-5c0a1ab5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:28.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772485542-30701fd7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:25.542Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772482479-76d3b3e0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:22.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772479605-d4201789",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:19.605Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772476463-e1d5222f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:16.463Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772473521-9a780325",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:13.521Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772470488-97bae100",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:10.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772467520-e930f05f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:07.520Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772464550-21388089",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:04.550Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772461482-776f71c4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:41:01.482Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772458506-79b932fd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:58.506Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772455548-2cf98a29",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:55.548Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772452526-537ce0d7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:52.526Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772449504-5ae2e211",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:49.504Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772446433-d8020cda",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:46.433Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772443525-85684823",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:43.525Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772440486-964fbb16",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:40.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772437524-af745df0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:37.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772434485-9ce706d4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:34.485Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772431585-98317994",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:31.585Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772428416-25748898",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:28.416Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772425432-a49f2e2b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:25.432Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772422471-d7a5b274",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:22.471Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772419520-b9b62254",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:19.520Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772416534-bf0e0250",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:16.534Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772413431-a31088b9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:13.431Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772410390-4cdefaf3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:10.390Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772407524-80529066",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:07.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772404848-27a15db4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:04.848Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772401582-ad135fd3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:40:01.582Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772398480-e2cddf5d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:58.480Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772395439-1c7ccde3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:55.439Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772392465-1220cdae",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:52.465Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772389515-7854e133",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:49.515Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772386529-c8db812d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:46.529Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772383519-935ffb1f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:43.519Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772380478-4357f0a8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:40.478Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772377477-0c3040a5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:37.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772375062-b0ba94a5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:35.062Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772371486-2c709724",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:31.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772368810-82ce8d73",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:28.810Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772365535-f5a0de54",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:25.535Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772362413-9cd1e57d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:22.413Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772359487-75de45f8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:19.487Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772356486-50a6789f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:16.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772353499-84bab28f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:13.499Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772350486-6ed906ba",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:10.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772347924-4d0633eb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:07.924Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772344960-09d7a944",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:04.960Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772341566-fff1d027",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:39:01.566Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772338866-0ff99208",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:58.866Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772335429-fbe431ec",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:55.429Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772332564-ecac7ae2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:52.564Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772329586-066d3bf9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:49.586Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772326522-9d190d15",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:46.522Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772323527-6e445610",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:43.527Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772320510-badf095e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:40.510Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772317502-46f88da9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:37.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772314539-236401bc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:34.539Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772311562-f4f222ca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:31.562Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772308537-84b65914",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:28.537Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772305436-8addd0e0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:25.436Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772302458-8146444b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:22.458Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772299593-109e1ce6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:19.593Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772296518-5782f1ca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:16.518Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772293492-4e6afa07",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:13.492Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772290375-43dc8108",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:10.375Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772287506-40904442",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:07.506Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772284528-9300527a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:04.528Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772281482-ff5a4616",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:38:01.483Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772278526-bfb1f62e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:58.526Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772275426-58b7aee1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:55.426Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772272554-f7984720",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:52.554Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772269484-2d1fbe61",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:49.484Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772266933-afe3a4b1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:46.933Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772263488-d7dfe123",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:43.488Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772260472-6cd1ea37",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:40.472Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772257598-a5332502",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:37.598Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772254525-957c786a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:34.525Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772251564-ed8c3518",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:31.564Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772248547-4f03bb62",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:28.547Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772245520-e8b3c2b5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:25.520Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772242552-d8adfaa2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:22.552Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772239583-1c5abe53",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:19.583Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772236623-16d39da7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:16.623Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772233459-119aa297",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:13.459Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772230332-1452ecb5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:10.332Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772227486-0976d8e9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:07.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772224491-460d7cc1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:04.491Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772221559-f8b14110",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:37:01.559Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772218444-ce2cc540",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:58.444Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772215416-ffdc8a9c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:55.416Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772212548-fef7daac",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:52.548Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772209478-f66a3277",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:49.478Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772206915-d4fb0948",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:46.915Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772203524-964c3185",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:43.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772200310-a9f3a1cb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:40.310Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772197497-4fae2154",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:37.497Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772194516-eb0c4a2f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:34.516Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772191547-ae59c536",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:31.547Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772188448-90373ceb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:28.448Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772185486-8e11c362",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:25.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772182546-ffc9e46a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:22.546Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772179574-719d7cf7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:19.574Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772176508-f706c784",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:16.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772173529-ce071e0d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:13.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772170563-05377676",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:10.563Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772167490-793c6a4b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:07.490Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772164498-d5f12715",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:04.498Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772161450-80c839fa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:36:01.450Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772158415-09898fec",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:58.415Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772155409-03d1905e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:55.409Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772152847-a8d8b0d4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:52.847Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772149469-1f57d52f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:49.469Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772146406-8eb05ead",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:46.406Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772143863-181ba8d5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:43.863Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772140470-1a40e796",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:40.470Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772137901-58630755",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:37.901Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772134477-abb11a5e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:34.477Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772131866-1b15d7f7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:31.866Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772128511-61a943fa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:28.511Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772125418-7e2ff09b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:25.418Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772122543-d1d42aeb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:22.543Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772119569-4405ac84",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:19.569Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772116908-8bcd4332",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:16.908Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772113472-107c8e05",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:13.472Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772110312-2ebeddaa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:10.312Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772107881-58ed7bed",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:07.881Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772104513-32cf95df",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:04.513Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772101544-0d1f1dc7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:35:01.544Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772098793-ed52c528",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:58.793Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772095506-a71f84e3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:55.506Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772092435-507eb311",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:52.435Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772089494-e1ef8560",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:49.494Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772086497-51ecd52e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:46.497Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772083479-b2f35301",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:43.479Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772080467-5dc084eb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:40.467Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772077485-a6c2519e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:37.485Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772074922-8674d024",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:34.922Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772071836-48fac306",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:31.836Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772068461-1d3c5c66",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:28.461Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772065907-0e301c76",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:25.907Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772062523-76a84c4f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:22.523Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772059559-cd03f820",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:19.559Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772056528-96fbfef1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:16.528Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772053531-5b84c88d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:13.531Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772050541-fb71ad18",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:10.541Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772047580-f7c4957e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:07.580Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772044507-de224f7c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:04.507Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772041439-d22bf6d1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:34:01.439Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772038463-488907be",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:58.463Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772035496-09f17913",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:55.496Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772032528-5e9787ba",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:52.528Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772029530-6fc2876e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:49.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772026472-5d479ca9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:46.472Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772023536-1ce9cd59",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:43.536Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772020449-51209963",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:40.449Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772017882-0f5cd2f7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:37.882Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772014494-059230ee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:34.494Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772011525-9aa53b75",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:31.525Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772008517-d6e8b15d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:28.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772005490-0f039932",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:25.491Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768772002627-ba4e26fe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:22.627Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771999568-7372c4ab",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:19.568Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771996481-d70e1cdc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:16.481Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771993508-ebc91c94",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:13.508Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771990545-14314ed9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:10.545Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771987574-11282865",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:07.574Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771984468-7e2df64f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:04.468Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771981538-9154ecff",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:33:01.538Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771978971-215322d3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:58.971Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771975480-2c205757",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:55.480Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771972523-70c9cb20",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:52.523Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771969496-6b33d0db",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:49.496Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771966572-49fe2266",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:46.572Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771963462-e24f138f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:43.462Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771960530-087bb64e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:40.530Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771957571-6ca2a275",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:37.571Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771954496-b181c4ee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:34.496Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771951881-a064a69a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:31.881Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771948439-788ff21f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:28.439Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771945483-248ed205",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:25.483Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771943496-fac1eb85",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:23.496Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771939517-32ffe74d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:19.517Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771936792-78192545",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:16.792Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771933502-28dab692",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:13.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771930465-040ea342",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:10.465Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771927461-5c403fc3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:07.461Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771924491-46e39994",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:04.491Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771921933-4c240cfe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:32:01.933Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771918524-cd899da0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:58.524Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771915472-d8bf417d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:55.472Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771912503-e1431aa9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:52.503Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771909486-2d4f0e26",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:49.486Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771906561-f22d4f35",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:46.561Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771903504-1de8dc0e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:43.504Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771900419-56d34fa3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:40.419Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771897868-49d8db4f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:37.868Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771894455-2ac3be61",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:34.455Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771891528-93789289",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:31.528Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771888801-80040f80",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:28.801Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771885469-a6f16f6d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:25.469Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771882907-40467930",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:22.907Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771879537-d6ab3b62",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:19.537Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771876567-5ec5bad2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:16.567Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771873550-42118741",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:13.550Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771870415-9816c167",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:10.415Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771867556-66f58acc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:07.556Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771864790-92be5e20",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:04.790Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771863542-59b46ef1",
       "trigger": "feature_success",
-      "timestamp": "2026-01-18T16:05:58.169Z",
-      "featureId": "migration-phase1-rust-cache"
-    },
-    {
-      "id": "evt-1768752316540-c247e2dc",
-      "trigger": "feature_success",
-      "timestamp": "2026-01-18T16:05:16.540Z",
-      "featureId": "migration-phase1-rust-notifications"
-    },
-    {
-      "id": "evt-1768752307805-8f4ba0a7",
-      "trigger": "feature_success",
-      "timestamp": "2026-01-18T16:05:07.805Z",
-      "featureId": "migration-phase1-rust-backup"
-    },
-    {
-      "id": "evt-1768751634755-de225aa4",
-      "trigger": "feature_success",
-      "timestamp": "2026-01-18T15:53:54.755Z",
-      "featureId": "migration-phase1-rust-storage"
-    },
-    {
-      "id": "evt-1768751456806-f250ac24",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T15:50:56.806Z",
-      "featureId": "migration-phase1-rust-storage"
-    },
-    {
-      "id": "evt-1768751430120-aa2136a2",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T15:50:30.120Z",
-      "featureId": "migration-phase1-rust-storage"
-    },
-    {
-      "id": "evt-1768751421580-733b6e7a",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T15:50:21.580Z",
-      "featureId": "migration-phase1-rust-storage"
-    },
-    {
-      "id": "evt-1768751411676-d69d91ef",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T15:50:11.676Z",
-      "featureId": "migration-phase1-rust-storage"
-    },
-    {
-      "id": "evt-1768737576332-7ea08436",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T11:59:36.332Z",
-      "featureId": "feature-1768737537007-vnatn9r6f"
-    },
-    {
-      "id": "evt-1768737537186-d4d053f7",
-      "trigger": "feature_created",
-      "timestamp": "2026-01-18T11:58:57.186Z",
-      "featureId": "feature-1768737537007-vnatn9r6f"
-    },
-    {
-      "id": "evt-1768737091882-1bcc4644",
-      "trigger": "feature_success",
-      "timestamp": "2026-01-18T11:51:31.882Z",
-      "featureId": "watch-together-chat"
-    },
-    {
-      "id": "evt-1768736849773-86978d8c",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T11:47:29.773Z",
+      "timestamp": "2026-01-18T21:31:03.542Z",
       "featureId": "feature-1768736040647-wjrt00zny"
     },
     {
-      "id": "evt-1768736325031-5d4edf7f",
+      "id": "evt-1768771861637-d667ce09",
       "trigger": "feature_error",
-      "timestamp": "2026-01-18T11:38:45.031Z",
+      "timestamp": "2026-01-18T21:31:01.637Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771861557-dbe48698",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:31:01.557Z",
       "featureId": "feature-1768736040647-wjrt00zny"
     },
     {
-      "id": "evt-1768736215706-712b81d7",
+      "id": "evt-1768771858632-8453224e",
       "trigger": "feature_error",
-      "timestamp": "2026-01-18T11:36:55.706Z",
-      "featureId": "feature-1768736040643-g2o1ojn9a"
+      "timestamp": "2026-01-18T21:30:58.632Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
     },
     {
-      "id": "evt-1768736206752-9ed398cf",
+      "id": "evt-1768771858500-90ffdc42",
       "trigger": "feature_error",
-      "timestamp": "2026-01-18T11:36:46.752Z",
-      "featureId": "feature-1768736040643-g2o1ojn9a"
+      "timestamp": "2026-01-18T21:30:58.500Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771855505-d1a06b79",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:55.505Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771855408-f66563a2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:55.408Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771852642-f34ac507",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:52.642Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771852412-89cf966c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:52.412Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771850152-2f7c1708",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:50.152Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771849553-6b12c34c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:49.553Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771846640-9df28b2b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:46.640Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771846512-3c82aaf9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:46.512Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771843638-eb6a6af1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:43.638Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771843513-1bd87818",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:43.513Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771840582-41858666",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:40.582Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771840540-8399c0ba",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:40.540Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771837625-6ffab4e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:37.625Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771837458-6eb57775",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:37.458Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771834737-5567f547",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:34.737Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771834470-ca2e6eb1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:34.470Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771831703-edb9f146",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:31.703Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771831474-b24775d9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:31.474Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771828814-0f962646",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:28.814Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771828547-a5d5e3f8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:28.547Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771825762-3d7ff6e2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:25.762Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771825522-47b5e51b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:25.522Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771822714-647204bb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:22.714Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771822559-c3fe2e24",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:22.559Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771819578-b7437897",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:19.578Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771819543-7697882c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:19.543Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771816764-0f6ea8af",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:16.764Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771816444-702857cd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:16.444Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771814102-0251cf90",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:14.102Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771813536-4112c086",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:13.536Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771810671-1052e346",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:10.671Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771810465-f6703e70",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:10.465Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771807643-c87dae80",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:07.643Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771807525-2c585dbd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:07.525Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771804789-d12dd4fb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:04.789Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771804474-16ea491e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:04.474Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771801680-97a571a9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:01.680Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771801499-c98e284b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:30:01.499Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771798680-467a4246",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:58.680Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771798486-7cb05c44",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:58.486Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771795656-2071eb71",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:55.656Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771795465-b2dcb699",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:55.465Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771792661-52a95fa1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:52.661Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771792522-694663d9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:52.522Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771789788-ce291e7a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:49.788Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771789521-e5be25d0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:49.521Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771786748-1bc549d9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:46.748Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771786467-960f2e6a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:46.467Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771783644-eda34ac5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:43.644Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771783479-04066407",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:43.479Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771780816-ff178546",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:40.816Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771780485-935e9dfd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:40.485Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771778049-3754ccfb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:38.049Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771777479-dfaf6d8e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:37.479Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771774642-e30a0187",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:34.642Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771774507-ed2b617a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:34.507Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771771545-a8124cc4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:31.545Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771771517-2509259e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:31.518Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771768633-d72d64f7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:28.633Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771765556-d8d45e40",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:25.556Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771762600-188ece6a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:22.600Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771762511-17d5881d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:22.511Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771759701-e88a5dd2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:19.701Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771759517-29ec8b00",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:19.517Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771756655-4ad7e7bd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:16.655Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771756528-f5c91801",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:16.528Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771753693-659e0d3c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:13.693Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771753485-e6e59690",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:13.485Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771750688-2adacff6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:10.688Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771750519-55cc5382",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:10.519Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771747735-61d263ef",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:07.735Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771747504-5fff24c6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:07.504Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771744642-957d0942",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:04.642Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771744569-809d4f9f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:04.569Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771741631-cbaffff8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:01.631Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771741537-3dbb8b7d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:29:01.537Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771738663-4b597752",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:58.663Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771738500-fba927cb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:58.500Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771735595-6c0011a5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:55.596Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771735560-91279d3b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:55.560Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771732636-26be07c8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:52.636Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771732486-f25a2b0f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:52.486Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771729681-3ec48cc4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:49.681Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771729529-99c11abc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:49.529Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771726850-1b5fadcb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:46.850Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771726756-50e16f57",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:46.756Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771723681-465a8364",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:43.681Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771723522-4cb5f97e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:43.522Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771720717-f88e022e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:40.717Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771720419-fb4d0688",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:40.419Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771717618-7194e071",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:37.618Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771717465-be173c31",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:37.465Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771714781-e5ea9f1b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:34.781Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771714481-66bb1acc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:34.481Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771711654-7a2a08c1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:31.654Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771711513-12cd9be8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:31.513Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771708720-ddb7179a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:28.720Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771708535-f8398f3a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:28.535Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771705617-ecb22716",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:25.617Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771705480-4a390c78",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:25.480Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771702650-8918c094",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:22.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771702503-ce396c37",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:22.503Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771699675-e7a14a2b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:19.675Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771699534-166fe539",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:19.535Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771697120-8a62d0d7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:17.120Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771696525-0adef22f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:16.525Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771693627-5ba946a9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:13.627Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771693474-552289ca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:13.474Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771690539-f0286bcb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:10.539Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771690407-e148e3dc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:10.407Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771687632-e9eb5d28",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:07.632Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771687584-350de61c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:07.584Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771684690-c41ac391",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:04.690Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771684523-30611dae",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:04.523Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771681647-0971813f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:01.647Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771681490-f4fa22f5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:28:01.490Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771679037-bde623ba",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:59.037Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771678518-34beed5a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:58.518Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771676067-02ded068",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:56.067Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771675479-3b20f569",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:55.479Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771672656-43ba9cf4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:52.656Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771672509-63071d72",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:52.509Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771669706-2efc38da",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:49.706Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771669552-715cf2ec",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:49.552Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771666676-f2670239",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:46.676Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771666583-fe2366ae",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:46.583Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771663648-bc2a1edc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:43.648Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771663608-9f3990e4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:43.608Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771660659-8024c79b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:40.659Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771660516-81a40f5a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:40.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771657650-96fafd00",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:37.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771657516-2042d971",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:37.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771654756-022571c0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:34.756Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771654545-1721f21c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:34.545Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771651613-95aa73ed",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:31.613Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771651478-0e4e2602",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:31.478Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771648709-5b19ba78",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:28.709Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771648462-88b66aa3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:28.462Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771645633-67de3627",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:25.633Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771645460-47abc1ca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:25.460Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771642713-aea49591",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:22.713Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771642525-6e9685e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:22.526Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771639713-524e7571",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:19.713Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771639504-c34aa71d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:19.504Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771636736-1a499423",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:16.736Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771636503-b599cafc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:16.503Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771633609-24dd82c0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:13.609Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771633528-ebb90ee6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:13.528Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771630789-c46d1598",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:10.789Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771630533-e544e4bc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:10.533Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771627642-d551e4e2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:07.642Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771627517-a18d9108",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:07.517Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771624653-6cf84916",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:04.653Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771624525-15efbd7d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:04.525Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771621660-ed4072a3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:01.660Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771621462-081947a3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:27:01.462Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771618708-32048456",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:58.708Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771618490-cfe8d9f8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:58.490Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771615736-8303b58c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:55.736Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771615435-88d47b8c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:55.435Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771612650-2b331e2c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:52.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771612507-e16e07cf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:52.507Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771609803-2abb91d3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:49.803Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771609537-c6c067f4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:49.537Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771606724-3ae95fdc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:46.724Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771606542-a0bdd142",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:46.542Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771603557-6395aebc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:43.557Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771603476-24ce5bd5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:43.476Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771600845-c4ad917e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:40.845Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771600695-64466898",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:40.695Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771597659-08e9d980",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:37.659Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771597491-8a1f9191",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:37.491Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771594634-3bf5b6dc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:34.634Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771594495-d9686740",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:34.495Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771591586-39622c1e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:31.586Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771591512-d6e0ece1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:31.512Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771588701-80725878",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:28.701Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771588476-14158abf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:28.476Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771585636-d04b18a4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:25.636Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771585629-8a0ffb08",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:25.629Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771582676-3a7dcab5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:22.676Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771582528-e9e874bf",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:22.528Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771579581-3df76952",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:19.581Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771579503-465e2be3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:19.503Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771576719-f984d571",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:16.719Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771576485-fddfa474",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:16.485Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771573701-2872fa2e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:13.701Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771573526-0bb85fe7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:13.526Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771570665-eb07cab7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:10.665Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771570546-cd4b3ea6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:10.547Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771567859-6237444a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:07.859Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771567721-7f770d9a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:07.721Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771564754-71685d51",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:04.754Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771564525-f95e2423",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:04.525Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771561626-19021834",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:01.626Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771561498-bfd64a7a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:26:01.498Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771558753-984244a2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:58.753Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771558565-2cc2229a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:58.565Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771555625-023a403a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:55.625Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771555448-375b48e1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:55.448Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771553077-64767e21",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:53.077Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771552545-a74e5831",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:52.546Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771549803-1a932827",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:49.804Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771549471-0679c95f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:49.472Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771546803-721e1997",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:46.803Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771546729-60ab9b22",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:46.729Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771543722-34569023",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:43.722Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771543594-fd919a2e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:43.594Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771541099-2fc2e38a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:41.099Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771540579-911e98c2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:40.579Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771537636-f2c5aded",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:37.636Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771537507-6c2804f6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:37.507Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771534748-ce030063",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:34.748Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771534505-ca6c8d01",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:34.505Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771531736-a75eed99",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:31.736Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771531607-d5d18457",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:31.607Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771528640-ca3d08d1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:28.640Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771528516-925070a9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:28.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771525673-1db22498",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:25.673Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771525535-d53d0213",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:25.535Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771522710-1d4a7682",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:22.710Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771522529-c638b3b4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:22.529Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771519800-ff39c0b6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:19.800Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771519509-d747a494",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:19.509Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771516739-cacb8c8f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:16.739Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771516482-bad9eda3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:16.482Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771513880-7b5b9466",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:13.880Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771513537-38e04d98",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:13.537Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771510669-a9e058f5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:10.669Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771510415-bedd69f4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:10.415Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771507701-97e96164",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:07.701Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771507481-f084ec83",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:07.481Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771504733-2dbe91a3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:04.733Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771504519-b410f5ca",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:04.519Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771502084-566d3fcb",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:02.084Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771501481-282f2df8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:25:01.481Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771498656-1e898206",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:58.657Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771498502-c8614144",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:58.502Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771495640-32c55db3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:55.640Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771495554-75635ba1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:55.554Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771492751-af478e2c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:52.751Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771492523-144960ee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:52.524Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771489625-88d9d002",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:49.625Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771489489-301a6483",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:49.489Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771486711-5892a4b9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:46.711Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771486528-d38b8335",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:46.528Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771483663-44cb4594",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:43.663Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771483525-ea4341ee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:43.525Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771480689-e3458045",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:40.689Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771480495-bb7f4ef4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:40.495Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771477801-444a27d5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:37.801Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771477594-19e9020d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:37.594Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771474837-3d50d18d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:34.837Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771474539-a9a6e283",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:34.539Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771471680-80a36805",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:31.680Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771471496-e589c3a7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:31.496Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771468689-1ab73931",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:28.689Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771468484-4ba74d1f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:28.484Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771466137-5f4fee3d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:26.137Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771465554-ab721df1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:25.554Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771462746-de2f82ff",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:22.746Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771462469-f70c85cd",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:22.469Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771459616-3c521f31",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:19.616Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771459584-b8dc0366",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:19.584Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771457216-93bce76f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:17.216Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771456481-923607a7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:16.481Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771453751-6554b4c7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:13.751Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771453530-2d030993",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:13.530Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771450509-01168c55",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:10.509Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771450369-95997bb3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:10.369Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771447697-6172d469",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:07.697Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771447536-4aaab31f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:07.536Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771444825-5f1335e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:04.825Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771444561-6ec8526a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:04.561Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771441606-b7efbe4f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:01.606Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771441499-fc18f5fe",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:24:01.499Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771438827-4868e212",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:58.827Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771438696-ed5cbd6a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:58.696Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771435919-69487293",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:55.919Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771435665-24f4d463",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:55.665Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771432694-0caaddde",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:52.694Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771432516-3e94eead",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:52.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771429571-5015641d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:49.571Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771429527-3aea1fd9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:49.527Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771426688-bfe211f8",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:46.688Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771426517-005ee310",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:46.517Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771423650-f2ca338b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:43.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771420628-1b9140d4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:40.628Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771420493-aef4512c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:40.493Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771417720-24e0c06e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:37.720Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771417538-b77fa746",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:37.538Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771414742-f882dc65",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:34.742Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771414446-128aaf4c",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:34.446Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771412064-50e66a54",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:32.064Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771411521-6f493590",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:31.521Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771408780-d850b8d2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:28.780Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771408520-94d08b12",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:28.520Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771405502-7263ec50",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:25.502Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771405477-25ceabf6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:25.477Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771402642-e22890c5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:22.642Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771402484-3282fe20",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:22.484Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771399650-aba554a4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:19.650Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771399534-c19c19dc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:19.534Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771396628-fe936e15",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:16.628Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771396576-0e9e652f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:16.576Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771393605-dbaa03b7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:13.605Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771393523-4e8541a4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:13.523Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771390761-5e201b24",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:10.761Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771390452-366299e6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:10.452Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771387623-d59b1302",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:07.623Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771387486-b7bec07f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:07.486Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771384818-5585505d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:04.818Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771384521-31d3bfc6",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:04.521Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771381744-e4b1b605",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:01.744Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771381548-1040a6e7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:23:01.548Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771378732-49e760ae",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:58.732Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771378459-d2a1dea7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:58.459Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771375847-3411f8e7",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:55.847Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771375704-3253cb8d",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:55.704Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771372648-1fdbff5b",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:52.648Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771372511-a9963d49",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:52.511Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771369676-ccad0ba1",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:49.676Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771366688-b69c6695",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:46.688Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771366515-4aa5267a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:46.515Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771363659-66f2ea0e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:43.659Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771363516-b80a9428",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:43.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771360672-63d9bdaa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:40.672Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771360523-d540dcd4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:40.523Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771358104-9f1d5ada",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:38.104Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771357523-71536c0f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:37.523Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771354827-7a6e2eb2",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:34.827Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771354503-2ccb7cd0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:34.503Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771351885-622dc34e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:31.885Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771351623-c558745e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:31.623Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771348668-1f4a0206",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:28.668Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771348489-6d0189b5",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:28.489Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771345589-79f7e592",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:25.589Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771345470-7ca5a9fc",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:25.470Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771342694-3aa3264e",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:22.694Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771342524-56133a0f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:22.524Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771339657-aa022dac",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:19.657Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771339533-5b021ee4",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:19.533Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771336792-c806a596",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:16.792Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771336516-1f754aab",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:16.516Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771333682-a01e1285",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:13.682Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771333564-d31543ee",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:13.564Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771330606-adfa8270",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:10.606Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771330493-bd91874f",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:10.493Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771327726-eb88bf04",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:07.726Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771327459-6eabacac",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:07.459Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771324747-3cb14aba",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:04.747Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771324489-9bae3a62",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:04.489Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771321835-cecee0aa",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:01.835Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771321526-d10dfae9",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:22:01.526Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771318924-22af8a9a",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:58.924Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771318695-5cad1217",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:58.695Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771315557-db6ecef0",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:55.557Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771315419-6e20f2e3",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:55.420Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771312693-4c350541",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:52.693Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
+    },
+    {
+      "id": "evt-1768771312497-30054f50",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:52.497Z",
+      "featureId": "feature-1768736040647-wjrt00zny"
+    },
+    {
+      "id": "evt-1768771309757-4bddea13",
+      "trigger": "feature_error",
+      "timestamp": "2026-01-18T21:21:49.757Z",
+      "featureId": "feature-1768736040649-4pg308p4j"
     }
   ]
 }

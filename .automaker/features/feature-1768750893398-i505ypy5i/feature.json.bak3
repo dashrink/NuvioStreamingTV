@@ -1,0 +1,27 @@
+{
+  "category": "refactor",
+  "description": "Establish the foundational Rust SDK (Nuvio-core) architecture including error handling, logging, configuration management, and UniFFI setup for generating Kotlin and Swift bindings. This is the base layer all other Rust SDK modules depend on.",
+  "title": "Rust SDK: Core Architecture & FFI Foundation",
+  "dependencies": [],
+  "priority": 0,
+  "status": "in_progress",
+  "branchName": "feature/main-1768751034241-zo2o",
+  "id": "feature-1768750893398-i505ypy5i",
+  "descriptionHistory": [
+    {
+      "description": "Establish the foundational Rust SDK (Nuvio-core) architecture including error handling, logging, configuration management, and UniFFI setup for generating Kotlin and Swift bindings. This is the base layer all other Rust SDK modules depend on.",
+      "timestamp": "2026-01-18T15:41:33.399Z",
+      "source": "initial"
+    }
+  ],
+  "skipTests": false,
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "auto",
+  "startedAt": "2026-01-18T17:55:02.056Z"
+}

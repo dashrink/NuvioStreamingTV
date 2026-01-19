@@ -1,0 +1,29 @@
+{
+  "category": "refactor",
+  "description": "Migrate plugin system from TypeScript to Rust SDK. Port pluginService.ts including local scraper plugin system, custom scraper repositories, stream resolution from plugins, and plugin manifest parsing. Ensure extensibility for future plugin types.",
+  "title": "Phase 1.6: Rust SDK Plugin System",
+  "priority": 2,
+  "status": "in_progress",
+  "branchName": "",
+  "id": "migration-phase1-rust-plugins",
+  "descriptionHistory": [
+    {
+      "description": "Migrate plugin system from TypeScript to Rust SDK. Port pluginService.ts including local scraper plugin system, custom scraper repositories, stream resolution from plugins, and plugin manifest parsing. Ensure extensibility for future plugin types.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase1-rust-catalog"
+  ],
+  "startedAt": "2026-01-18T17:29:26.089Z"
+}

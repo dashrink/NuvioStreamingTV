@@ -1,0 +1,30 @@
+{
+  "category": "feature",
+  "description": "Implement AirPlay, Picture-in-Picture, and background audio for iOS/tvOS. Add AirPlay integration for streaming to Apple TV/HomePod, Picture-in-Picture mode for iPad/iPhone (iOS 14+), background audio playback with AVAudioSession, Now Playing controls (Control Center/Lock Screen), integration with MPRemoteCommandCenter. Handle playback state restoration.",
+  "title": "Phase 3.9: iOS/tvOS Media Features (AirPlay/PiP/Background)",
+  "priority": 2,
+  "status": "verified",
+  "branchName": "",
+  "id": "migration-phase3-ios-media-features",
+  "descriptionHistory": [
+    {
+      "description": "Implement AirPlay, Picture-in-Picture, and background audio for iOS/tvOS. Add AirPlay integration for streaming to Apple TV/HomePod, Picture-in-Picture mode for iPad/iPhone (iOS 14+), background audio playback with AVAudioSession, Now Playing controls (Control Center/Lock Screen), integration with MPRemoteCommandCenter. Handle playback state restoration.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-player"
+  ],
+  "startedAt": "2026-01-18T17:15:29.179Z",
+  "updatedAt": "2026-01-18T17:17:40.481Z"
+}

@@ -1,0 +1,1 @@
+I'll start by exploring the codebase to understand the existing structure and then plan the implementation for the UniFFI bindings feature.

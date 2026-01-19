@@ -22,9 +22,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AudioFile
+import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Subtitles
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,13 +64,26 @@ fun MobileControls(
     showSkipButton: Boolean,
     onSkipIntro: () -> Unit,
     onBackPressed: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    controlsState: com.nuvio.app.tv.player.PlayerControlsState = com.nuvio.app.tv.player.PlayerControlsState(),
+    onAudioTrackSelected: (String) -> Unit = {},
+    onSubtitleTrackSelected: (String) -> Unit = {},
+    onSubtitleSettingsChanged: (com.nuvio.app.tv.player.SubtitleSettings) -> Unit = {},
+    onPlaybackSpeedChanged: (Float) -> Unit = {},
+    onQualitySelected: (com.nuvio.app.tv.player.QualityOption) -> Unit = {}
 ) {
     var isVisible by remember { mutableStateOf(true) }
     var isPlaying by remember { mutableStateOf(player.isPlaying) }
     var duration by remember { mutableLongStateOf(player.duration.coerceAtLeast(0L)) }
     var currentPosition by remember { mutableLongStateOf(player.currentPosition.coerceAtLeast(0L)) }
     var bufferedPosition by remember { mutableLongStateOf(player.bufferedPosition.coerceAtLeast(0L)) }
+
+    var showSettingsMenu by remember { mutableStateOf(false) }
+    var showAudioDialog by remember { mutableStateOf(false) }
+    var showSubtitleDialog by remember { mutableStateOf(false) }
+    var showSubtitleSettingsDialog by remember { mutableStateOf(false) }
+    var showSpeedDialog by remember { mutableStateOf(false) }
+    var showQualityDialog by remember { mutableStateOf(false) }
     
     // Auto-hide controls
     LaunchedEffect(isVisible, isPlaying) {
@@ -177,8 +197,65 @@ fun MobileControls(
                         modifier = Modifier.padding(end = 8.dp)
                     )
 
-                    IconButton(onClick = { /* Open Settings/Tracks */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White)
+                    Box {
+                        IconButton(onClick = { showSettingsMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Settings", tint = Color.White)
+                        }
+                        DropdownMenu(
+                            expanded = showSettingsMenu,
+                            onDismissRequest = { showSettingsMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Quality") },
+                                onClick = {
+                                    showSettingsMenu = false
+                                    showQualityDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.HighQuality, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Subtitles") },
+                                onClick = {
+                                    showSettingsMenu = false
+                                    showSubtitleDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Subtitles, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Audio Track") },
+                                onClick = {
+                                    showSettingsMenu = false
+                                    showAudioDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.AudioFile, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Playback Speed") },
+                                onClick = {
+                                    showSettingsMenu = false
+                                    showSpeedDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Speed, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Subtitle Settings") },
+                                onClick = {
+                                    showSettingsMenu = false
+                                    showSubtitleSettingsDialog = true
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Settings, contentDescription = null)
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -243,6 +320,49 @@ fun MobileControls(
                     )
                 }
             }
+        }
+
+        if (showAudioDialog) {
+            AudioTrackSelector(
+                tracks = controlsState.availableAudioTracks,
+                selectedTrackId = controlsState.selectedAudioTrackId,
+                onTrackSelected = onAudioTrackSelected,
+                onDismiss = { showAudioDialog = false }
+            )
+        }
+
+        if (showSubtitleDialog) {
+            SubtitleTrackSelector(
+                tracks = controlsState.availableSubtitles,
+                selectedTrackId = controlsState.selectedSubtitleTrackId,
+                onTrackSelected = onSubtitleTrackSelected,
+                onDismiss = { showSubtitleDialog = false }
+            )
+        }
+
+        if (showSubtitleSettingsDialog) {
+            SubtitleSettingsDialog(
+                currentSettings = controlsState.subtitleSettings,
+                onApply = onSubtitleSettingsChanged,
+                onDismiss = { showSubtitleSettingsDialog = false }
+            )
+        }
+
+        if (showSpeedDialog) {
+            PlaybackSpeedSelector(
+                currentSpeed = controlsState.playbackSpeed,
+                onSpeedSelected = onPlaybackSpeedChanged,
+                onDismiss = { showSpeedDialog = false }
+            )
+        }
+
+        if (showQualityDialog) {
+            QualitySelector(
+                qualities = controlsState.availableQualities,
+                selectedQuality = controlsState.selectedQuality,
+                onQualitySelected = onQualitySelected,
+                onDismiss = { showQualityDialog = false }
+            )
         }
     }
 }

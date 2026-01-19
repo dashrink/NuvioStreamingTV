@@ -1,0 +1,30 @@
+{
+  "category": "feature",
+  "description": "Build content details/metadata screens in SwiftUI. Display movie/show details with ScrollView layout, cast/crew horizontal lists, ratings display, trailer playback integration, Trakt comments section, similar content recommendations. Implement season/episode picker for TV shows. Add watchlist toggle, rating buttons, share sheet. Fetch metadata from Rust SDK (TMDB + Trakt). Adaptive layouts for iOS/iPad/tvOS.",
+  "title": "Phase 3.5: iOS/tvOS Content Details/Metadata Screens",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase3-ios-details",
+  "descriptionHistory": [
+    {
+      "description": "Build content details/metadata screens in SwiftUI. Display movie/show details with ScrollView layout, cast/crew horizontal lists, ratings display, trailer playback integration, Trakt comments section, similar content recommendations. Implement season/episode picker for TV shows. Add watchlist toggle, rating buttons, share sheet. Fetch metadata from Rust SDK (TMDB + Trakt). Adaptive layouts for iOS/iPad/tvOS.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase3-ios-sdk-integration"
+  ],
+  "startedAt": "2026-01-18T16:38:28.802Z",
+  "updatedAt": "2026-01-18T16:38:29.286Z"
+}

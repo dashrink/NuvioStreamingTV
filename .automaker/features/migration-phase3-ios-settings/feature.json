@@ -3,7 +3,7 @@
   "description": "Build all settings screens in SwiftUI (20+ settings pages). Implement Settings app-style UI with Form/List views. Include general settings, player preferences, subtitle/audio settings, quality/bandwidth controls, Trakt.tv OAuth flow, TMDB configuration, addon management, theme selector, parental controls with PIN, backup/restore UI, profile management. Use Rust SDK storage layer for persistence.",
   "title": "Phase 3.7: iOS/tvOS Settings Screens",
   "priority": 2,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "",
   "id": "migration-phase3-ios-settings",
   "descriptionHistory": [
@@ -13,7 +13,7 @@
       "source": "initial"
     }
   ],
-  "model": "claude-sonnet-4-5",
+  "model": "google/antigravity-gemini-3-pro",
   "thinkingLevel": "none",
   "skipTests": false,
   "reasoningEffort": "none",
@@ -21,6 +21,10 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
-  "dependencies": ["migration-phase3-ios-sdk-integration"]
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-sdk-integration"
+  ],
+  "startedAt": "2026-01-18T17:15:35.317Z",
+  "updatedAt": "2026-01-18T17:21:58.663Z"
 }

@@ -3,8 +3,8 @@
   "description": "Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.",
   "title": "Rust SDK: Real-time Sync Client",
   "priority": 1,
-  "status": "backlog",
-  "branchName": "feature/main-1768736907644-rhnc",
+  "status": "completed",
+  "branchName": null,
   "id": "feature-1768736040647-wjrt00zny",
   "descriptionHistory": [
     {
@@ -28,6 +28,6 @@
   "requirePlanApproval": false,
   "workMode": "auto",
   "dependencies": [],
-  "startedAt": "2026-01-18T11:47:27.206Z",
-  "updatedAt": "2026-01-18T11:47:29.769Z"
+  "startedAt": "2026-01-18T21:31:02.862Z",
+  "updatedAt": "2026-01-18T21:31:03.540Z"
 }

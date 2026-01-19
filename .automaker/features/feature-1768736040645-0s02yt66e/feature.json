@@ -3,8 +3,8 @@
   "description": "Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust (Nuvio-core). Exposes streaming-capable async API for native platform consumption via Kotlin/Swift bindings.",
   "title": "Rust SDK: AI Assistant Service",
   "priority": 2,
-  "status": "backlog",
-  "branchName": "feature/main-1768737288664-qmhb",
+  "status": "completed",
+  "branchName": null,
   "id": "feature-1768736040645-0s02yt66e",
   "descriptionHistory": [
     {
@@ -27,5 +27,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "workMode": "auto",
-  "dependencies": []
+  "dependencies": [],
+  "startedAt": "2026-01-18T17:55:00.525Z",
+  "updatedAt": "2026-01-18T17:57:10.929Z"
 }

@@ -3,7 +3,6 @@ package com.nuvio.app.tv.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.nuvio.app.tv.ui.components.PosterCard
-import com.nuvio.app.tv.data.repository.Meta
 
 @Composable
 fun HomeScreen(
@@ -61,30 +58,37 @@ fun HomeScreen(
                     }
                 }
 
-                // Scrolling Rows
-                items(uiState.catalogs) { catalog ->
-                    Column(modifier = Modifier.padding(top = 24.dp)) {
-                        Text(
-                            text = catalog.name,
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.padding(horizontal = 48.dp)
+                // Continue Watching Section
+                if (uiState.continueWatching.isNotEmpty()) {
+                    item {
+                        ContentRow(
+                            title = "Continue Watching",
+                            items = uiState.continueWatching,
+                            onItemClick = { onContentClick(it.id) }
                         )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 40.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(catalog.itemIds) { itemId ->
-                                uiState.metaCache[itemId]?.let { meta ->
-                                    PosterCard(
-                                        meta = meta,
-                                        onClick = { onContentClick(meta.id) }
-                                    )
-                                }
-                            }
-                        }
+                    }
+                }
+
+                // Watchlist Section
+                if (uiState.watchlist.isNotEmpty()) {
+                    item {
+                        ContentRow(
+                            title = "My Watchlist",
+                            items = uiState.watchlist,
+                            onItemClick = { onContentClick(it.id) }
+                        )
+                    }
+                }
+
+                // Category Rows from Catalogs
+                items(uiState.catalogs) { catalog ->
+                    val catalogItems = catalog.itemIds.mapNotNull { uiState.metaCache[it] }
+                    if (catalogItems.isNotEmpty()) {
+                        ContentRow(
+                            title = catalog.name,
+                            items = catalogItems,
+                            onItemClick = { onContentClick(it.id) }
+                        )
                     }
                 }
             }

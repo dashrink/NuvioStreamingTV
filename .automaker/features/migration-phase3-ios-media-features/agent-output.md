@@ -1,0 +1,1 @@
+I'll start by exploring the codebase to understand the existing structure and patterns before implementing these iOS media features.

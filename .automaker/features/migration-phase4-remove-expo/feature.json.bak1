@@ -1,0 +1,30 @@
+{
+  "category": "refactor",
+  "description": "Remove all Expo dependencies and configuration. Delete app.json, app.config.js, metro.config.js, babel.config.js. Remove Expo-related npm packages (expo, expo-*, @react-navigation/*, etc.). Clean up .gitignore entries for Expo. Delete node_modules and package-lock.json. Remove any Expo-specific scripts from package.json.",
+  "title": "Phase 4.2: Remove Expo Dependencies & Config",
+  "priority": 1,
+  "status": "verified",
+  "branchName": "",
+  "id": "migration-phase4-remove-expo",
+  "descriptionHistory": [
+    {
+      "description": "Remove all Expo dependencies and configuration. Delete app.json, app.config.js, metro.config.js, babel.config.js. Remove Expo-related npm packages (expo, expo-*, @react-navigation/*, etc.). Clean up .gitignore entries for Expo. Delete node_modules and package-lock.json. Remove any Expo-specific scripts from package.json.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase4-remove-rn-code"
+  ],
+  "startedAt": "2026-01-18T17:30:44.499Z",
+  "updatedAt": "2026-01-18T17:34:37.997Z"
+}

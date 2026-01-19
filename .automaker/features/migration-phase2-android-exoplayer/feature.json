@@ -3,8 +3,8 @@
   "description": "Implement ExoPlayer with subtitles, audio tracks, and quality controls. Add subtitle rendering with customizable styling/positioning, multi-audio track selection, adaptive bitrate streaming, quality selector (auto/manual), playback speed controls. Implement stream resolution from Rust SDK plugins. Support HLS, DASH, and direct video URLs.",
   "title": "Phase 2.9: Android ExoPlayer Full Features",
   "priority": 1,
-  "status": "backlog",
-  "branchName": "",
+  "status": "completed",
+  "branchName": "main",
   "id": "migration-phase2-android-exoplayer",
   "descriptionHistory": [
     {
@@ -22,5 +22,9 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "workMode": "custom",
-  "dependencies": ["migration-phase2-android-player"]
+  "dependencies": [
+    "migration-phase2-android-player"
+  ],
+  "startedAt": "2026-01-18T16:19:01.612Z",
+  "updatedAt": "2026-01-18T16:26:28.251Z"
 }

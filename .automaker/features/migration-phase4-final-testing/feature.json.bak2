@@ -1,0 +1,32 @@
+{
+  "category": "testing",
+  "description": "Final comprehensive testing of fully native Android and iOS apps. Perform end-to-end testing on all platforms (Android Mobile, Android TV, iPhone, iPad, Apple TV). Verify feature parity with original React Native app. Test critical user journeys: onboarding, content discovery, playback, Trakt sync, settings, offline mode. Performance testing and profiling. Beta testing with real users. Fix any critical bugs. Prepare release notes.",
+  "title": "Phase 4.6: Final Testing of Native Apps",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase4-final-testing",
+  "descriptionHistory": [
+    {
+      "description": "Final comprehensive testing of fully native Android and iOS apps. Perform end-to-end testing on all platforms (Android Mobile, Android TV, iPhone, iPad, Apple TV). Verify feature parity with original React Native app. Test critical user journeys: onboarding, content discovery, playback, Trakt sync, settings, offline mode. Performance testing and profiling. Beta testing with real users. Fix any critical bugs. Prepare release notes.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase4-android-build-cleanup",
+    "migration-phase4-ios-build-cleanup",
+    "migration-phase4-cicd-update"
+  ],
+  "startedAt": "2026-01-18T17:54:57.002Z",
+  "updatedAt": "2026-01-18T17:54:57.121Z"
+}

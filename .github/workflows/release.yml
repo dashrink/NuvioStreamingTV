@@ -6,32 +6,144 @@ on:
       - 'v*'
 
 jobs:
-  release:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-linux-android
+          cache: true
+
+      - name: Install Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+
+      - name: Build Rust SDK for Android
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-linux-android
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build Android Release APK
+        run: |
+          cd android
+          ./gradlew :app:assembleRelease
+
+      - name: Build Android Release AAB
+        run: |
+          cd android
+          ./gradlew :app:bundleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-apple-ios
+          cache: true
+
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+
+      - name: Build Rust SDK for iOS
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-apple-ios
+
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS Archive
+        run: |
+          cd ios
+          xcodebuild -workspace NuvioTV.xcworkspace -scheme NuvioTV \
+            -sdk appletvos -configuration Release \
+            -archivePath $PWD/build/NuvioTV.xcarchive \
+            clean archive
+
+      - name: Export IPA
+        run: |
+          cd ios
+          xcodebuild -exportArchive \
+            -archivePath $PWD/build/NuvioTV.xcarchive \
+            -exportPath $PWD/build \
+            -exportOptionsPlist exportOptions.plist
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-ipa
+          path: ios/build/*.ipa
+          retention-days: 30
+
+  create-release:
+    needs: [build-android, build-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Build app
-        run: |
-          npm run build
-          
+          name: android-apk
+          path: artifacts/android-apk
+
+      - name: Download Android AAB
+        uses: actions/download-artifact@v3
+        with:
+          name: android-aab
+          path: artifacts/android-aab
+
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v3
+        with:
+          name: ios-ipa
+          path: artifacts/ios-ipa
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            android/app/build/outputs/apk/release/*.apk
-          body_path: ALPHA_BUILD_2_ANNOUNCEMENT.md
+            artifacts/android-apk/*.apk
+            artifacts/android-aab/*.aab
+            artifacts/ios-ipa/*.ipa
           draft: true
           prerelease: true
           generate_release_notes: true 

@@ -4,7 +4,7 @@
   "title": "Rust SDK: Core Architecture & FFI Foundation",
   "dependencies": [],
   "priority": 0,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "feature/main-1768751034241-zo2o",
   "id": "feature-1768750893398-i505ypy5i",
   "descriptionHistory": [
@@ -22,5 +22,7 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "auto"
+  "workMode": "auto",
+  "startedAt": "2026-01-18T17:55:02.056Z",
+  "updatedAt": "2026-01-18T18:12:02.447Z"
 }

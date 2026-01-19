@@ -3,7 +3,7 @@
   "description": "Integrate Rust SDK Swift bindings into Xcode project. Link UniFFI-generated Swift bindings, compile Rust SDK for iOS/tvOS targets (aarch64-apple-ios, aarch64-apple-tvos, x86_64-apple-ios-sim). Set up dependency injection for Rust SDK modules. Implement async/await Swift wrappers around Rust SDK APIs. Test compilation and basic SDK calls.",
   "title": "Phase 3.2: iOS Rust SDK Swift Bindings Integration",
   "priority": 1,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "",
   "id": "migration-phase3-ios-sdk-integration",
   "descriptionHistory": [
@@ -13,7 +13,7 @@
       "source": "initial"
     }
   ],
-  "model": "claude-sonnet-4-5",
+  "model": "google/antigravity-claude-opus-4-5-thinking",
   "thinkingLevel": "none",
   "skipTests": false,
   "reasoningEffort": "none",
@@ -21,6 +21,11 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
-  "dependencies": ["migration-phase3-ios-project-setup", "migration-phase1-rust-bindings"]
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-project-setup",
+    "migration-phase1-rust-bindings"
+  ],
+  "startedAt": "2026-01-18T16:59:50.759Z",
+  "updatedAt": "2026-01-18T17:02:03.183Z"
 }

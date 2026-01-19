@@ -1,0 +1,10 @@
+{
+  "id": "evt-1768759958576-6c061de1",
+  "trigger": "feature_error",
+  "timestamp": "2026-01-18T18:12:38.576Z",
+  "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV",
+  "projectName": "NuvioStreamingTV",
+  "featureId": "feature-1768736040647-2m6xk9toh",
+  "error": "Error: Token refresh failed: 404",
+  "errorType": "execution"
+}

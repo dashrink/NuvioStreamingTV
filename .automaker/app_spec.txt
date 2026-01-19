@@ -184,6 +184,154 @@
       <name>Phase 1.3: Rust SDK Complete Catalog/Stremio Logic</name>
       <description>Complete catalog and Stremio service migration to Rust SDK. Finish migrating catalogService.ts (59KB) and stremioService.ts (72KB) business logic to nuvio-core. Ensure full addon protocol support, catalog browsing, filtering, and data source selection. Already partially implemented - complete remaining features.</description>
     </feature>
+    <feature>
+      <name>Phase 1.7: Rebuild UniFFI Bindings for Kotlin &amp; Swift</name>
+      <description>Rebuild and test UniFFI bindings for all new Rust SDK modules. Generate updated Kotlin and Swift bindings for storage, cache, notifications, backup, and plugin systems. Update binding integration in Android and iOS projects. Ensure type-safety and async API support.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.1: Android Compose Architecture &amp; Theme System</name>
+      <description>Create Jetpack Compose UI architecture and theme system for Android (Mobile + TV). Set up MVVM architecture with Hilt DI, ViewModel structure, repository pattern, and navigation component. Implement Material 3 theme system with TV-optimized focus management and mobile touch-first design patterns.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.3: Android Catalog Browsing Screens</name>
+      <description>Build catalog browsing screens with filters in Jetpack Compose. Implement grid layouts (6-column TV, 2-3 column mobile), filtering by genre/year/rating, sorting options, infinite scroll/pagination, Stremio addon source selection. Integrate Rust SDK catalog service. Support spatial navigation (TV) and touch scrolling (mobile).</description>
+    </feature>
+    <feature>
+      <name>Phase 2.4: Android Content Details/Metadata Screens</name>
+      <description>Build content details/metadata screens in Jetpack Compose. Display movie/show details, cast/crew, ratings, trailers, comments, similar content recommendations. Implement season/episode selection for TV shows. Add watchlist, rating, and share actions. Fetch enhanced metadata from Rust SDK (TMDB + Trakt). TV and mobile layout variants.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.2: Android Home Screen (TV + Mobile)</name>
+      <description>Build home screen with carousels in Jetpack Compose (TV + Mobile variants). Implement hero carousel with auto-advance, category rows, continue watching section, watchlist integration. TV version: 10-foot UI with D-pad navigation. Mobile version: touch-optimized with swipe gestures. Integrate Rust SDK for data fetching.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.9: Android ExoPlayer Full Features</name>
+      <description>Implement ExoPlayer with subtitles, audio tracks, and quality controls. Add subtitle rendering with customizable styling/positioning, multi-audio track selection, adaptive bitrate streaming, quality selector (auto/manual), playback speed controls. Implement stream resolution from Rust SDK plugins. Support HLS, DASH, and direct video URLs.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.5: Android Video Player with Controls</name>
+      <description>Build video player with full controls in Jetpack Compose (TV &amp; Mobile variants). Implement custom player controls overlay, subtitle selection UI, audio track picker, quality selector, playback speed control, skip intro/credits buttons. TV version: D-pad controls with auto-hide. Mobile version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Integrate ExoPlayer backend.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.8: Android Rust SDK Integration</name>
+      <description>Integrate Rust SDK Kotlin bindings throughout entire Android app. Replace all TypeScript service calls with Rust SDK equivalents. Set up dependency injection for Rust SDK modules (storage, cache, catalog, Trakt, TMDB, notifications, backup, plugins). Implement async/await patterns with Kotlin coroutines. Test all integrations.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.11: Android Testing &amp; Bug Fixes</name>
+      <description>Comprehensive testing and bug fixes for Android implementation. Write unit tests for ViewModels and repositories, UI tests for Compose screens, integration tests for Rust SDK bindings, end-to-end tests for critical flows (playback, search, sync). Test on multiple devices (phones, tablets, Android TV boxes). Fix bugs and performance issues.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.4: iOS/tvOS Catalog Browsing Screens</name>
+      <description>Build catalog browsing screens in SwiftUI. Implement grid layouts using LazyVGrid (tvOS: 6 columns, iPad: 4-5 columns, iPhone: 2-3 columns). Add filtering by genre/year/rating, sorting options, infinite scroll with pagination. Integrate Rust SDK catalog service for Stremio addon browsing. Support tvOS focus engine and iOS scroll views.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.5: iOS/tvOS Content Details/Metadata Screens</name>
+      <description>Build content details/metadata screens in SwiftUI. Display movie/show details with ScrollView layout, cast/crew horizontal lists, ratings display, trailer playback integration, Trakt comments section, similar content recommendations. Implement season/episode picker for TV shows. Add watchlist toggle, rating buttons, share sheet. Fetch metadata from Rust SDK (TMDB + Trakt). Adaptive layouts for iOS/iPad/tvOS.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.3: iOS/tvOS Home Screen with Carousels</name>
+      <description>Build home screen with carousels in SwiftUI (iOS + tvOS). Implement hero carousel with auto-advance using TabView/PageView, category rows with LazyHStack, continue watching section, watchlist integration. tvOS version: 10-foot UI with focus-based navigation. iOS version: compact layouts for iPhone/iPad with swipe gestures. Fetch data from Rust SDK.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.1: iOS/tvOS Xcode Project Setup with SwiftUI</name>
+      <description>Set up Xcode project structure for iOS/tvOS with SwiftUI. Create multi-target project (iOS app, tvOS app, shared framework). Configure Swift Package Manager or CocoaPods for dependencies. Set up MVVM architecture with Combine/async-await, dependency injection container, navigation system. Implement iOS 15+ and tvOS 15+ deployment targets.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.10: Android Media Features (Cast/PiP/Background)</name>
+      <description>Implement Casting, Picture-in-Picture, and background playback for Android. Add Google Cast integration (Chromecast), Picture-in-Picture mode for mobile (Android 8+), background audio playback, media session controls (lock screen/notification controls), Android Auto integration. Handle playback state persistence.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.10: iOS/tvOS Focus Engine &amp; Navigation</name>
+      <description>Implement tvOS focus engine and iOS navigation patterns. For tvOS: implement custom focus behavior with preferredFocusEnvironments, focus animations, focus guides, tab bar navigation with Siri Remote. For iOS: NavigationStack/NavigationSplitView for iPhone/iPad, tab bar navigation, modal presentations, deep linking support. Ensure proper focus restoration and navigation state management.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.2: iOS Rust SDK Swift Bindings Integration</name>
+      <description>Integrate Rust SDK Swift bindings into Xcode project. Link UniFFI-generated Swift bindings, compile Rust SDK for iOS/tvOS targets (aarch64-apple-ios, aarch64-apple-tvos, x86_64-apple-ios-sim). Set up dependency injection for Rust SDK modules. Implement async/await Swift wrappers around Rust SDK APIs. Test compilation and basic SDK calls.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.6: iOS/tvOS Video Player with AVPlayer</name>
+      <description>Build video player with AVPlayer (iOS + tvOS variants). Implement custom SwiftUI player controls overlay, subtitle selection menu, audio track picker, quality selector, playback speed controls, skip intro/credits buttons. tvOS version: Siri Remote support with swipe gestures. iOS version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Create AVPlayer wrapper with state management.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.8: iOS/tvOS Profile/Search/Watchlist Screens</name>
+      <description>Build profile management, search, and watchlist screens in SwiftUI. Implement user profile switching UI with PIN entry view, search screen with filters and keyboard input (tvOS: on-screen keyboard), watchlist management with swipe actions, library view with sorting/grouping options. Integrate Rust SDK for Trakt sync and local storage. Support iOS and tvOS layouts.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.11: iOS/tvOS Testing &amp; Bug Fixes</name>
+      <description>Comprehensive testing and bug fixes for iOS/tvOS implementation. Write unit tests for ViewModels and services using XCTest, UI tests for SwiftUI views, integration tests for Rust SDK Swift bindings, end-to-end tests for critical user flows (playback, search, sync). Test on multiple devices (iPhone, iPad, Apple TV). Profile performance and fix memory leaks. Address bugs and polish UI.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.9: iOS/tvOS Media Features (AirPlay/PiP/Background)</name>
+      <description>Implement AirPlay, Picture-in-Picture, and background audio for iOS/tvOS. Add AirPlay integration for streaming to Apple TV/HomePod, Picture-in-Picture mode for iPad/iPhone (iOS 14+), background audio playback with AVAudioSession, Now Playing controls (Control Center/Lock Screen), integration with MPRemoteCommandCenter. Handle playback state restoration.</description>
+    </feature>
+    <feature>
+      <name>Phase 3.7: iOS/tvOS Settings Screens</name>
+      <description>Build all settings screens in SwiftUI (20+ settings pages). Implement Settings app-style UI with Form/List views. Include general settings, player preferences, subtitle/audio settings, quality/bandwidth controls, Trakt.tv OAuth flow, TMDB configuration, addon management, theme selector, parental controls with PIN, backup/restore UI, profile management. Use Rust SDK storage layer for persistence.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.1: Remove React Native TypeScript Code</name>
+      <description>Remove all React Native TypeScript code and components. Delete src/ directory containing all 399 TypeScript files (components, screens, services, hooks, contexts, navigation, utils, types). Remove package.json React Native dependencies. Archive critical business logic documentation before deletion for reference. Verify Rust SDK has equivalent functionality.</description>
+    </feature>
+    <feature>
+      <name>Phase 1.6: Rust SDK Plugin System</name>
+      <description>Migrate plugin system from TypeScript to Rust SDK. Port pluginService.ts including local scraper plugin system, custom scraper repositories, stream resolution from plugins, and plugin manifest parsing. Ensure extensibility for future plugin types.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.2: Remove Expo Dependencies &amp; Config</name>
+      <description>Remove all Expo dependencies and configuration. Delete app.json, app.config.js, metro.config.js, babel.config.js. Remove Expo-related npm packages (expo, expo-*, @react-navigation/*, etc.). Clean up .gitignore entries for Expo. Delete node_modules and package-lock.json. Remove any Expo-specific scripts from package.json.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.6: Android Settings Screens</name>
+      <description>Build all settings screens in Jetpack Compose (20+ settings pages). Implement general settings, player settings, subtitle/audio preferences, quality/bandwidth settings, Trakt.tv auth, TMDB config, addon management, theme selector, parental controls, backup/restore UI, profile management. Use Rust SDK for data persistence via storage layer.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.4: Update iOS Build Config (Remove RN)</name>
+      <description>Update iOS Podfile and Xcode config to remove React Native. Remove React Native pods from Podfile, delete Hermes engine references. Remove AppDelegate.swift RN bridge code, clean up Info.plist to remove RN-specific keys. Update project.pbxproj to remove RN frameworks. Run pod install with clean Podfile. Test Xcode build with pure Swift/SwiftUI configuration.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.3: Update Android Build Config (Remove RN)</name>
+      <description>Update Android build.gradle to remove React Native dependencies. Remove react-native autolinking, Hermes engine config, Expo prebuild settings from android/build.gradle and android/app/build.gradle. Delete MainActivity.kt (React Native entry), clean up Android manifest to remove RN activities. Update dependencies to pure Kotlin/Compose only. Test Gradle build with clean configuration.</description>
+    </feature>
+    <feature>
+      <name>Phase 2.7: Android Profile/Search/Watchlist Screens</name>
+      <description>Build profile management, search, and watchlist screens in Jetpack Compose. Implement user profile switching with PIN protection, advanced search with filters and voice input (TV), watchlist management with quick actions, library view with sorting/grouping. Integrate Rust SDK for Trakt sync and local storage.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.5: Update CI/CD for Native Builds</name>
+      <description>Update CI/CD workflows for native-only builds. Modify .github/workflows (or CI config) to remove Node.js/npm setup, remove Expo EAS build commands, remove Metro bundler steps. Add Gradle build for Android (./gradlew assembleRelease), add Xcode build for iOS (xcodebuild). Configure artifact uploads for APK/AAB (Android) and IPA (iOS). Update deployment pipelines for Play Store and App Store.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: AI Assistant Service</name>
+      <description>Port the AI Service (OpenRouter integration, prompt engineering, context generation) from TypeScript to Rust (Nuvio-core). Exposes streaming-capable async API for native platform consumption via Kotlin/Swift bindings.</description>
+    </feature>
+    <feature>
+      <name>Phase 4.6: Final Testing of Native Apps</name>
+      <description>Final comprehensive testing of fully native Android and iOS apps. Perform end-to-end testing on all platforms (Android Mobile, Android TV, iPhone, iPad, Apple TV). Verify feature parity with original React Native app. Test critical user journeys: onboarding, content discovery, playback, Trakt sync, settings, offline mode. Performance testing and profiling. Beta testing with real users. Fix any critical bugs. Prepare release notes.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Core Architecture &amp; FFI Foundation</name>
+      <description>Establish the foundational Rust SDK (Nuvio-core) architecture including error handling, logging, configuration management, and UniFFI setup for generating Kotlin and Swift bindings. This is the base layer all other Rust SDK modules depend on.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Unified Search Aggregation</name>
+      <description>Implement the unified search engine in Rust (Nuvio-core), aggregating and deduplicating results from TMDB, Stremio, and Trakt. Exposes async API for Kotlin/Swift bindings. This replaces the JS-side aggregation logic.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Offline Download Manager</name>
+      <description>Implement a robust download manager in Rust (Nuvio-core), handling queue state, storage allocation, encryption, expiry logic, and platform-specific storage APIs coordination for offline content on Android and Apple devices.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Local Media Scanner</name>
+      <description>Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within Rust core. Coordinates with platform-specific file access APIs on Android (SAF) and Apple (FileManager).</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Real-time Sync Client</name>
+      <description>Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.</description>
+    </feature>
+    <feature>
+      <name>Rust SDK: Subtitle Service Integration</name>
+      <description>Implement the OpenSubtitles and generic subtitle provider client logic in Rust (Nuvio-core), including search, download, parsing (SRT/VTT/ASS), and subtitle synchronization. Exposes parsed subtitle data for native player rendering.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

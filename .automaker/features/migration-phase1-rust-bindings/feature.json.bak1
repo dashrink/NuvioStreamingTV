@@ -3,8 +3,8 @@
   "description": "Rebuild and test UniFFI bindings for all new Rust SDK modules. Generate updated Kotlin and Swift bindings for storage, cache, notifications, backup, and plugin systems. Update binding integration in Android and iOS projects. Ensure type-safety and async API support.",
   "title": "Phase 1.7: Rebuild UniFFI Bindings for Kotlin & Swift",
   "priority": 1,
-  "status": "backlog",
-  "branchName": "",
+  "status": "verified",
+  "branchName": "main",
   "id": "migration-phase1-rust-bindings",
   "descriptionHistory": [
     {
@@ -13,7 +13,7 @@
       "source": "initial"
     }
   ],
-  "model": "claude-sonnet-4-5",
+  "model": "google/antigravity-claude-opus-4-5-thinking",
   "thinkingLevel": "none",
   "skipTests": false,
   "reasoningEffort": "none",
@@ -21,6 +21,15 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
-  "dependencies": ["migration-phase1-rust-storage", "migration-phase1-rust-cache", "migration-phase1-rust-catalog", "migration-phase1-rust-notifications", "migration-phase1-rust-backup", "migration-phase1-rust-plugins"]
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase1-rust-storage",
+    "migration-phase1-rust-cache",
+    "migration-phase1-rust-catalog",
+    "migration-phase1-rust-notifications",
+    "migration-phase1-rust-backup",
+    "migration-phase1-rust-plugins"
+  ],
+  "startedAt": "2026-01-18T16:09:22.141Z",
+  "updatedAt": "2026-01-18T16:11:33.112Z"
 }

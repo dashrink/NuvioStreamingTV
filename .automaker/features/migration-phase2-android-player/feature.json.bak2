@@ -1,0 +1,30 @@
+{
+  "category": "feature",
+  "description": "Build video player with full controls in Jetpack Compose (TV & Mobile variants). Implement custom player controls overlay, subtitle selection UI, audio track picker, quality selector, playback speed control, skip intro/credits buttons. TV version: D-pad controls with auto-hide. Mobile version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Integrate ExoPlayer backend.",
+  "title": "Phase 2.5: Android Video Player with Controls",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase2-android-player",
+  "descriptionHistory": [
+    {
+      "description": "Build video player with full controls in Jetpack Compose (TV & Mobile variants). Implement custom player controls overlay, subtitle selection UI, audio track picker, quality selector, playback speed control, skip intro/credits buttons. TV version: D-pad controls with auto-hide. Mobile version: touch gestures (double-tap seek, pinch zoom, swipe brightness/volume). Integrate ExoPlayer backend.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "claude-sonnet-4-5",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "custom",
+  "dependencies": [
+    "migration-phase2-android-architecture"
+  ],
+  "startedAt": "2026-01-18T16:25:28.516Z",
+  "updatedAt": "2026-01-18T16:25:28.852Z"
+}

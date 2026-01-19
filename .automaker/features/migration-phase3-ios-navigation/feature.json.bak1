@@ -1,0 +1,30 @@
+{
+  "category": "feature",
+  "description": "Implement tvOS focus engine and iOS navigation patterns. For tvOS: implement custom focus behavior with preferredFocusEnvironments, focus animations, focus guides, tab bar navigation with Siri Remote. For iOS: NavigationStack/NavigationSplitView for iPhone/iPad, tab bar navigation, modal presentations, deep linking support. Ensure proper focus restoration and navigation state management.",
+  "title": "Phase 3.10: iOS/tvOS Focus Engine & Navigation",
+  "priority": 1,
+  "status": "verified",
+  "branchName": "main",
+  "id": "migration-phase3-ios-navigation",
+  "descriptionHistory": [
+    {
+      "description": "Implement tvOS focus engine and iOS navigation patterns. For tvOS: implement custom focus behavior with preferredFocusEnvironments, focus animations, focus guides, tab bar navigation with Siri Remote. For iOS: NavigationStack/NavigationSplitView for iPhone/iPad, tab bar navigation, modal presentations, deep linking support. Ensure proper focus restoration and navigation state management.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-gemini-3-pro",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-project-setup"
+  ],
+  "startedAt": "2026-01-18T16:51:50.339Z",
+  "updatedAt": "2026-01-18T16:56:36.325Z"
+}

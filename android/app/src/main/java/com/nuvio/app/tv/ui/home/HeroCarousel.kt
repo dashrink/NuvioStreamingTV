@@ -1,6 +1,9 @@
 package com.nuvio.app.tv.ui.home
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -11,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,18 +22,57 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.nuvio.app.tv.data.repository.Meta
 import com.nuvio.app.tv.ui.theme.HeroGradient
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @Composable
 fun HeroCarousel(
     items: List<Meta>,
     onPlayClick: (Meta) -> Unit,
     onInfoClick: (Meta) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    autoAdvanceDelayMs: Long = 5000L
 ) {
     var currentIndex by remember { mutableStateOf(0) }
+    var isPaused by remember { mutableStateOf(false) }
     val currentItem = items.getOrNull(currentIndex)
+    val scope = rememberCoroutineScope()
 
-    Box(modifier = modifier.fillMaxWidth().height(450.dp)) {
+    // Auto-advance functionality
+    LaunchedEffect(currentIndex, isPaused) {
+        if (!isPaused && items.size > 1) {
+            delay(autoAdvanceDelayMs)
+            currentIndex = (currentIndex + 1) % items.size
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(450.dp)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        isPaused = false
+                    },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        isPaused = true
+
+                        if (abs(dragAmount) > 50f) {
+                            scope.launch {
+                                if (dragAmount > 0 && currentIndex > 0) {
+                                    currentIndex -= 1
+                                } else if (dragAmount < 0 && currentIndex < items.size - 1) {
+                                    currentIndex += 1
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+    ) {
         // Background Image with Gradient Overlays
         currentItem?.backgroundUrl?.let { url ->
             AsyncImage(
@@ -107,6 +150,36 @@ fun HeroCarousel(
                     ) {
                         Text("More Info", color = Color.White)
                     }
+                }
+            }
+        }
+
+        // Carousel Indicators
+        if (items.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items.indices.forEach { index ->
+                    val size by animateDpAsState(
+                        targetValue = if (index == currentIndex) 12.dp else 8.dp,
+                        animationSpec = tween(300),
+                        label = "indicator_size"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(size)
+                            .background(
+                                color = if (index == currentIndex) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    Color.White.copy(alpha = 0.5f)
+                                },
+                                shape = MaterialTheme.shapes.small
+                            )
+                    )
                 }
             }
         }

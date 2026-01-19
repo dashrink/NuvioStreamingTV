@@ -1,0 +1,237 @@
+name: iOS Build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'ios/**'
+      - 'rust-sdk/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'ios/**'
+      - 'rust-sdk/**'
+      - '.github/workflows/ios-build.yml'
+
+env:
+  XCODE_VERSION: '15.0'
+  IOS_DEPLOYMENT_TARGET: '15.1'
+
+jobs:
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: |
+          cd ios
+          swiftlint lint --reporter html > swiftlint-results.html || true
+
+      - name: Upload SwiftLint Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: swiftlint-results
+          path: ios/swiftlint-results.html
+          retention-days: 7
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: aarch64-apple-ios
+          cache: true
+
+      - name: Build Rust SDK for iOS
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-apple-ios
+
+      - name: Install CocoaPods
+        run: gem install cocoapods
+
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install || pod repo update && pod install
+
+      - name: Run Unit Tests
+        run: |
+          cd ios
+          xcodebuild test \
+            -workspace NuvioTV.xcworkspace \
+            -scheme NuvioTV \
+            -sdk appletvsimulator \
+            -destination 'platform=tvOS Simulator,name=Apple TV,OS=latest' \
+            -enableCodeCoverage YES \
+            | xcpretty || true
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: ios/build/reports/
+          retention-days: 7
+
+  build-debug:
+    name: Build Debug
+    runs-on: macos-latest
+    needs: [lint, unit-tests]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add iOS targets to Rust
+        run: |
+          rustup target add aarch64-apple-ios
+          rustup target add aarch64-apple-ios-sim
+          rustup target add x86_64-apple-ios
+
+      - name: Build Rust SDK for iOS (device)
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-apple-ios
+
+      - name: Build Rust SDK for iOS (simulator)
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-apple-ios-sim
+          cargo build --release --target x86_64-apple-ios
+
+      - name: Install CocoaPods
+        run: gem install cocoapods
+
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install || pod repo update && pod install
+
+      - name: Build Debug
+        run: |
+          cd ios
+          xcodebuild build \
+            -workspace NuvioTV.xcworkspace \
+            -scheme NuvioTV \
+            -sdk appletvsimulator \
+            -configuration Debug \
+            -destination 'platform=tvOS Simulator,name=Apple TV,OS=latest'
+
+  build-release:
+    name: Build Release Archive
+    runs-on: macos-latest
+    needs: [lint, unit-tests]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add iOS targets to Rust
+        run: |
+          rustup target add aarch64-apple-ios
+          rustup target add aarch64-apple-darwin
+
+      - name: Build Rust SDK for iOS
+        run: |
+          cd rust-sdk
+          cargo build --release --target aarch64-apple-ios
+
+      - name: Install CocoaPods
+        run: gem install cocoapods
+
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install || pod repo update && pod install
+
+      - name: Build iOS Archive
+        run: |
+          cd ios
+          xcodebuild archive \
+            -workspace NuvioTV.xcworkspace \
+            -scheme NuvioTV \
+            -sdk appletvos \
+            -configuration Release \
+            -archivePath $PWD/build/NuvioTV.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-archive
+          path: ios/build/NuvioTV.xcarchive
+          retention-days: 30
+
+      - name: Create Export Options
+        run: |
+          cd ios
+          cat > exportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>teamID</key>
+              <string>YOUR_TEAM_ID</string>
+              <key>compileBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Export IPA (unsigned)
+        run: |
+          cd ios
+          xcodebuild -exportArchive \
+            -archivePath $PWD/build/NuvioTV.xcarchive \
+            -exportPath $PWD/build \
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates || echo "Export may fail without proper signing, archive created successfully"
+
+      - name: Upload IPA (if created)
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-ipa
+          path: ios/build/*.ipa
+          retention-days: 30

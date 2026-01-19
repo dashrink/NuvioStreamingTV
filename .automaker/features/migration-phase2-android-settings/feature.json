@@ -3,8 +3,8 @@
   "description": "Build all settings screens in Jetpack Compose (20+ settings pages). Implement general settings, player settings, subtitle/audio preferences, quality/bandwidth settings, Trakt.tv auth, TMDB config, addon management, theme selector, parental controls, backup/restore UI, profile management. Use Rust SDK for data persistence via storage layer.",
   "title": "Phase 2.6: Android Settings Screens",
   "priority": 2,
-  "status": "backlog",
-  "branchName": "",
+  "status": "completed",
+  "branchName": "main",
   "id": "migration-phase2-android-settings",
   "descriptionHistory": [
     {
@@ -13,7 +13,7 @@
       "source": "initial"
     }
   ],
-  "model": "claude-sonnet-4-5",
+  "model": "google/antigravity-gemini-3-pro",
   "thinkingLevel": "none",
   "skipTests": false,
   "reasoningEffort": "none",
@@ -21,6 +21,10 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
-  "dependencies": ["migration-phase2-android-architecture"]
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase2-android-architecture"
+  ],
+  "startedAt": "2026-01-18T17:32:22.197Z",
+  "updatedAt": "2026-01-18T17:35:51.340Z"
 }

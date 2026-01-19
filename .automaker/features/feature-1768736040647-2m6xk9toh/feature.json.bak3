@@ -1,0 +1,33 @@
+{
+  "category": "refactor",
+  "description": "Implement a robust download manager in Rust (Nuvio-core), handling queue state, storage allocation, encryption, expiry logic, and platform-specific storage APIs coordination for offline content on Android and Apple devices.",
+  "title": "Rust SDK: Offline Download Manager",
+  "priority": 2,
+  "status": "in_progress",
+  "branchName": "feature/main-1768737454209-02ox",
+  "id": "feature-1768736040647-2m6xk9toh",
+  "descriptionHistory": [
+    {
+      "description": "Implement a robust download manager in Rust, handling queue state, storage allocation, encryption, and expiry logic for offline content.",
+      "timestamp": "2026-01-18T11:34:00.647Z",
+      "source": "initial"
+    },
+    {
+      "description": "Implement a robust download manager in Rust (Nuvio-core), handling queue state, storage allocation, encryption, expiry logic, and platform-specific storage APIs coordination for offline content on Android and Apple devices.",
+      "timestamp": "2026-01-18T15:41:33.406Z",
+      "source": "edit"
+    }
+  ],
+  "skipTests": false,
+  "model": "github-copilot/claude-opus-4.5",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "full",
+  "requirePlanApproval": false,
+  "workMode": "auto",
+  "dependencies": [],
+  "startedAt": "2026-01-18T20:36:45.122Z",
+  "updatedAt": "2026-01-18T20:36:45.236Z"
+}

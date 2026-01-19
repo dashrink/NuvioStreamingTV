@@ -31,12 +31,6 @@
           <string>com.nuvio.app.tv</string>
         </array>
       </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>exp+nuvio-tv</string>
-        </array>
-      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>26</string>
@@ -61,10 +55,6 @@
     <string>Allow $(PRODUCT_NAME) to access your local network</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>This app does not require microphone access.</string>
-    <key>RCTNewArchEnabled</key>
-    <true/>
-    <key>RCTRootViewBackgroundColor</key>
-    <integer>4278322180</integer>
     <key>UIBackgroundModes</key>
     <array>
       <string>audio</string>

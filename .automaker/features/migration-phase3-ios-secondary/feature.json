@@ -3,7 +3,7 @@
   "description": "Build profile management, search, and watchlist screens in SwiftUI. Implement user profile switching UI with PIN entry view, search screen with filters and keyboard input (tvOS: on-screen keyboard), watchlist management with swipe actions, library view with sorting/grouping options. Integrate Rust SDK for Trakt sync and local storage. Support iOS and tvOS layouts.",
   "title": "Phase 3.8: iOS/tvOS Profile/Search/Watchlist Screens",
   "priority": 2,
-  "status": "backlog",
+  "status": "completed",
   "branchName": "",
   "id": "migration-phase3-ios-secondary",
   "descriptionHistory": [
@@ -13,7 +13,7 @@
       "source": "initial"
     }
   ],
-  "model": "claude-sonnet-4-5",
+  "model": "google/antigravity-gemini-3-pro",
   "thinkingLevel": "none",
   "skipTests": false,
   "reasoningEffort": "none",
@@ -21,6 +21,10 @@
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
-  "dependencies": ["migration-phase3-ios-sdk-integration"]
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-sdk-integration"
+  ],
+  "startedAt": "2026-01-18T17:04:35.863Z",
+  "updatedAt": "2026-01-18T17:11:46.160Z"
 }

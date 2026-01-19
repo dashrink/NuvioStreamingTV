@@ -1,28 +1,33 @@
 {
   "category": "refactor",
-  "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
+  "description": "Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.",
   "title": "Rust SDK: Real-time Sync Client",
   "priority": 1,
-  "status": "backlog",
-  "branchName": "main",
+  "status": "verified",
+  "branchName": "feature/main-1768736907644-rhnc",
   "id": "feature-1768736040647-wjrt00zny",
   "descriptionHistory": [
     {
       "description": "Implement the WebSocket client and synchronization state machine in Rust to handle cross-device continue watching and watch party states.",
       "timestamp": "2026-01-18T11:34:00.648Z",
       "source": "initial"
+    },
+    {
+      "description": "Implement the WebSocket client and synchronization state machine in Rust (Nuvio-core) to handle cross-device continue watching and watch party states. Provides callback-based API for native UI updates via Kotlin/Swift bindings.",
+      "timestamp": "2026-01-18T15:41:33.407Z",
+      "source": "edit"
     }
   ],
   "skipTests": false,
-  "model": "github-copilot/gemini-3-pro-preview",
+  "model": "github-copilot/claude-opus-4.5",
   "thinkingLevel": "none",
   "reasoningEffort": "none",
   "imagePaths": [],
   "textFilePaths": [],
   "planningMode": "skip",
   "requirePlanApproval": false,
-  "workMode": "custom",
+  "workMode": "auto",
   "dependencies": [],
-  "startedAt": "2026-01-18T11:47:27.206Z",
-  "updatedAt": "2026-01-18T11:47:29.769Z"
+  "startedAt": "2026-01-18T21:31:02.862Z",
+  "updatedAt": "2026-01-18T21:31:03.540Z"
 }

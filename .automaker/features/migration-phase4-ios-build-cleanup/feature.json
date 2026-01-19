@@ -3,8 +3,8 @@
   "description": "Update iOS Podfile and Xcode config to remove React Native. Remove React Native pods from Podfile, delete Hermes engine references. Remove AppDelegate.swift RN bridge code, clean up Info.plist to remove RN-specific keys. Update project.pbxproj to remove RN frameworks. Run pod install with clean Podfile. Test Xcode build with pure Swift/SwiftUI configuration.",
   "title": "Phase 4.4: Update iOS Build Config (Remove RN)",
   "priority": 1,
-  "status": "backlog",
-  "branchName": "",
+  "status": "completed",
+  "branchName": "main",
   "id": "migration-phase4-ios-build-cleanup",
   "descriptionHistory": [
     {
@@ -22,5 +22,9 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "workMode": "custom",
-  "dependencies": ["migration-phase4-remove-expo"]
+  "dependencies": [
+    "migration-phase4-remove-expo"
+  ],
+  "startedAt": "2026-01-18T17:36:08.349Z",
+  "updatedAt": "2026-01-18T17:43:02.981Z"
 }

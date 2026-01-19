@@ -1,0 +1,10 @@
+{
+  "id": "evt-1768766582177-f5a2d9a5",
+  "trigger": "feature_error",
+  "timestamp": "2026-01-18T20:03:02.177Z",
+  "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV",
+  "projectName": "NuvioStreamingTV",
+  "featureId": "feature-1768736040648-d5r9fp69h",
+  "error": "Error: All Antigravity endpoints failed",
+  "errorType": "execution"
+}

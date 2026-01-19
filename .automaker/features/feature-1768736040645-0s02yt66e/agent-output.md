@@ -1,0 +1,1 @@
+I'll help you port the AI Service from TypeScript to Rust. Let me start by exploring the codebase to understand the existing structure.

@@ -1,0 +1,29 @@
+{
+  "category": "feature",
+  "description": "Build home screen with carousels in SwiftUI (iOS + tvOS). Implement hero carousel with auto-advance using TabView/PageView, category rows with LazyHStack, continue watching section, watchlist integration. tvOS version: 10-foot UI with focus-based navigation. iOS version: compact layouts for iPhone/iPad with swipe gestures. Fetch data from Rust SDK.",
+  "title": "Phase 3.3: iOS/tvOS Home Screen with Carousels",
+  "priority": 1,
+  "status": "in_progress",
+  "branchName": "main",
+  "id": "migration-phase3-ios-home",
+  "descriptionHistory": [
+    {
+      "description": "Build home screen with carousels in SwiftUI (iOS + tvOS). Implement hero carousel with auto-advance using TabView/PageView, category rows with LazyHStack, continue watching section, watchlist integration. tvOS version: 10-foot UI with focus-based navigation. iOS version: compact layouts for iPhone/iPad with swipe gestures. Fetch data from Rust SDK.",
+      "timestamp": "2026-01-18T20:00:00.000Z",
+      "source": "initial"
+    }
+  ],
+  "model": "google/antigravity-gemini-3-pro",
+  "thinkingLevel": "none",
+  "skipTests": false,
+  "reasoningEffort": "none",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": [
+    "migration-phase3-ios-sdk-integration"
+  ],
+  "startedAt": "2026-01-18T16:47:04.281Z"
+}

@@ -17,33 +17,27 @@
     </intent>
   </queries>
   <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false">
-    <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.reactnative.googlecast.GoogleCastOptionsProvider"/>
-    <meta-data android:name="com.reactnative.googlecast.RECEIVER_APPLICATION_ID" android:value="CC1AD845"/>
-    <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
-    <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="@string/expo_runtime_version"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ERROR_RECOVERY_ONLY"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="30000"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://grim-reyna-tapframe-69970143.koyeb.app/api/manifest"/>
-    <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|locale|layoutDirection" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-        <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
-      </intent-filter>
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="nuvio-tv"/>
-        <data android:scheme="exp+nuvio-tv"/>
-      </intent-filter>
-      <intent-filter data-generated="true">
-        <action android:name="android.intent.action.MAIN"/>
-        <data/>
-        <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
+    <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.nuvio.app.tv.cast.GoogleCastOptionsProvider"/>
+    <meta-data android:name="com.google.android.gms.cast.framework.RECEIVER_APPLICATION_ID" android:value="CC1AD845"/>
+
+    <activity
+        android:name=".MainComposeActivity"
+        android:exported="true"
+        android:theme="@style/Theme.Nuvio.Compose"
+        android:screenOrientation="userLandscape">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+            <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+        </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="nuvio" android:host="home" />
+        </intent-filter>
     </activity>
+
     <activity
         android:name=".player.PlayerActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
@@ -53,18 +47,5 @@
         android:supportsPictureInPicture="true"
         android:theme="@style/AppTheme"
         android:screenOrientation="sensorLandscape" />
-
-    <activity
-        android:name=".MainComposeActivity"
-        android:exported="true"
-        android:theme="@style/Theme.Nuvio.Compose"
-        android:screenOrientation="userLandscape">
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="nuvio" android:host="home" />
-        </intent-filter>
-    </activity>
   </application>
 </manifest>

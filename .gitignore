@@ -4,12 +4,6 @@
 node_modules/
 !node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-
 # Native
 *.orig.*
 *.jks

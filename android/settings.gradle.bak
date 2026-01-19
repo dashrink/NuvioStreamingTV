@@ -1,0 +1,6 @@
+rootProject.name = 'Nuvio TV'
+
+include ':app'
+include ':app-mobile'
+include ':tv'
+include ':shared'
