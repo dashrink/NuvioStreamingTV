@@ -38,6 +38,9 @@ pub mod error;
 // Trakt.tv API integration module
 pub mod trakt;
 
+// Local media scanning module
+pub mod local_media;
+
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
 
