@@ -336,6 +336,12 @@
       <name>Remove unused React Native and Expo code</name>
       <description>Clean up unused code from react-native and expo</description>
     </feature>
+    <feature>
+      <name>Remove unused markdown files from project</name>
+      <description>Clean up unused or unnecessary .md files in the project.
+
+create a README.md file in the root of the project documents the project and explain how to run this app for Kotlin and Swift with the architecture as well.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

@@ -1,0 +1,84 @@
+{
+  "category": "Uncategorized",
+  "description": "Clean up unused or unnecessary .md files in the project.\n\ncreate a README.md file in the root of the project documents the project and explain how to run this app for Kotlin and Swift with the architecture as well.",
+  "title": "Remove unused markdown files from project",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": false,
+  "model": "opus",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "priority": 2,
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "dependencies": [],
+  "workMode": "current",
+  "titleGenerating": false,
+  "status": "completed",
+  "id": "feature-1768790970049-1h79ttzvm",
+  "descriptionHistory": [
+    {
+      "description": "Clean up unused or unnecessary .md files in the project.\n\ncreate a README.md file in the root of the project documents the project and explain how to run this app for Kotlin and Swift with the architecture as well.",
+      "timestamp": "2026-01-19T02:49:30.235Z",
+      "source": "initial"
+    }
+  ],
+  "branchName": "main",
+  "startedAt": "2026-01-19T02:49:30.525Z",
+  "updatedAt": "2026-01-19T02:57:47.535Z",
+  "planSpec": {
+    "status": "approved",
+    "version": 1,
+    "reviewedByUser": true,
+    "generatedAt": "2026-01-19T02:50:24.661Z",
+    "tasks": [
+      {
+        "id": "T001",
+        "description": "Delete unused .md files from project root",
+        "filePath": "(multiple files)",
+        "status": "pending"
+      },
+      {
+        "id": "T002",
+        "description": "Delete unused .md files from android directory",
+        "filePath": "android/*.md",
+        "status": "pending"
+      },
+      {
+        "id": "T003",
+        "description": "Delete unused .md files from ios directory",
+        "filePath": "ios/*.md",
+        "status": "pending"
+      },
+      {
+        "id": "T004",
+        "description": "Delete unused .md files from rust-sdk directory",
+        "filePath": "rust-sdk/*.md",
+        "status": "pending"
+      },
+      {
+        "id": "T005",
+        "description": "Delete nuvio-ios/README.md (will consolidate)",
+        "filePath": "nuvio-ios/README.md",
+        "status": "pending"
+      },
+      {
+        "id": "T006",
+        "description": "Delete ARCHIVED_TYPESCRIPT_DOCS directory",
+        "filePath": "ARCHIVED_TYPESCRIPT_DOCS/",
+        "status": "pending"
+      },
+      {
+        "id": "T007",
+        "description": "Create comprehensive README.md with Kotlin/Swift/Rust architecture",
+        "filePath": "README.md",
+        "status": "pending"
+      }
+    ],
+    "tasksTotal": 7,
+    "tasksCompleted": 7,
+    "approvedAt": "2026-01-19T02:50:48.588Z",
+    "currentTaskId": "T007"
+  }
+}
