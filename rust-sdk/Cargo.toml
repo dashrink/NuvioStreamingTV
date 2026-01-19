@@ -11,12 +11,12 @@ thiserror = "2.0"
 governor = "0.10.2"
 tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
 oauth2 = "4.4"
-reqwest = { version = "0.12", features = ["json", "cookies", "native-tls", "rustls-tls"] }
-reqwest-middleware = "0.4"
-reqwest-retry = "0.7"
+reqwest = { version = "0.11", features = ["json", "cookies", "rustls-tls"], default-features = false }
+reqwest-middleware = "0.2"
+reqwest-retry = "0.3"
 chrono = "0.4"
 parking_lot = "0.12"
-rustls = { version = "0.21", features = ["dangerous_configuration"] }
+rustls = "0.21"
 rustls-pemfile = "1.0"
 rustls-native-certs = "0.6"
 webpki-roots = "0.25"

@@ -53,9 +53,8 @@
 //! // The cookies are automatically sent with this request
 //! ```
 
-use std::sync::Arc;
-use reqwest::cookie::CookieStore as _;
-use url::Url;
+// Cookie management is handled automatically by reqwest
+// This module provides documentation about cookie behavior
 
 /// Get the cookie jar from the HTTP client
 ///

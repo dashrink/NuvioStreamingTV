@@ -1,0 +1,24 @@
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android21-clang"
+ar = "llvm-ar"
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.armv7-linux-androideabi]
+linker = "armv7a-linux-androideabi21-clang"
+ar = "llvm-ar"
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.x86_64-linux-android]
+linker = "x86_64-linux-android21-clang"
+ar = "llvm-ar"
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.i686-linux-android]
+linker = "i686-linux-android21-clang"
+ar = "llvm-ar"
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[env]
+CC_aarch64_linux_android = "aarch64-linux-android21-clang"
+CXX_aarch64_linux_android = "aarch64-linux-android21-clang++"
+AR_aarch64_linux_android = "llvm-ar"

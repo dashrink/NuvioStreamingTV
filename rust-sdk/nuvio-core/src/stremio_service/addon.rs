@@ -53,7 +53,7 @@ use std::time::Duration;
 pub fn parse_manifest(json: &str) -> Result<Manifest, NuvioError> {
     // Parse JSON into Manifest struct
     let manifest: Manifest = serde_json::from_str(json)
-        .map_err(|e| NuvioError::invalid_manifest(format!("JSON parse error: {}", e)))?;
+        .map_err(|e| NuvioError::validation(format!("JSON parse error: {}", e)))?;
 
     // Validate required fields
     validate_manifest(&manifest)?;
@@ -81,28 +81,28 @@ pub fn parse_manifest(json: &str) -> Result<Manifest, NuvioError> {
 fn validate_manifest(manifest: &Manifest) -> Result<(), NuvioError> {
     // Validate id field
     if manifest.id.trim().is_empty() {
-        return Err(NuvioError::invalid_manifest(
+        return Err(NuvioError::validation(
             "Manifest 'id' field is required and cannot be empty",
         ));
     }
 
     // Validate name field
     if manifest.name.trim().is_empty() {
-        return Err(NuvioError::invalid_manifest(
+        return Err(NuvioError::validation(
             "Manifest 'name' field is required and cannot be empty",
         ));
     }
 
     // Validate version field
     if manifest.version.trim().is_empty() {
-        return Err(NuvioError::invalid_manifest(
+        return Err(NuvioError::validation(
             "Manifest 'version' field is required and cannot be empty",
         ));
     }
 
     // Validate description field
     if manifest.description.trim().is_empty() {
-        return Err(NuvioError::invalid_manifest(
+        return Err(NuvioError::validation(
             "Manifest 'description' field is required and cannot be empty",
         ));
     }

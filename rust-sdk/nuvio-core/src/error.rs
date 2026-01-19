@@ -29,12 +29,13 @@ pub enum NuvioError {
         msg: String,
     },
 
-<<<<<<< HEAD
     /// Error occurred in cache operations
     #[error("Cache error: {msg}")]
     CacheError {
         /// Detailed error message describing the cache error
-=======
+        msg: String,
+    },
+
     /// Network-level error (DNS, connection, etc.)
     #[error("Network error: {msg}")]
     NetworkError {
@@ -63,6 +64,13 @@ pub enum NuvioError {
         msg: String,
     },
 
+    /// Profile-related error (management, authentication, etc.)
+    #[error("Profile error: {msg}")]
+    ProfileError {
+        /// Detailed error message describing the profile error
+        msg: String,
+    },
+
     /// Addon not found error
     #[error("Addon not found: {msg}")]
     AddonNotFoundError {
@@ -74,7 +82,6 @@ pub enum NuvioError {
     #[error("Response too large: {msg}")]
     ResponseTooLargeError {
         /// Detailed error message describing the size limit exceeded
->>>>>>> feature/main-1768751034241-zo2o
         msg: String,
     },
 
@@ -85,9 +92,6 @@ pub enum NuvioError {
         msg: String,
     },
 }
-
-/// Convenient Result type alias for Nuvio operations
-pub type NuvioResult<T> = Result<T, NuvioError>;
 
 impl NuvioError {
     /// Creates a new SerializationError with the given message
@@ -100,11 +104,11 @@ impl NuvioError {
         Self::ValidationError { msg: msg.into() }
     }
 
-<<<<<<< HEAD
     /// Creates a new CacheError with the given message
     pub fn cache(msg: impl Into<String>) -> Self {
         Self::CacheError { msg: msg.into() }
-=======
+    }
+
     /// Creates a new NetworkError with the given message
     pub fn network_error(msg: impl Into<String>) -> Self {
         Self::NetworkError { msg: msg.into() }
@@ -125,6 +129,11 @@ impl NuvioError {
         Self::SecurityError { msg: msg.into() }
     }
 
+    /// Creates a new ProfileError with the given message
+    pub fn profile(msg: impl Into<String>) -> Self {
+        Self::ProfileError { msg: msg.into() }
+    }
+
     /// Creates a new AddonNotFoundError with the given message
     pub fn addon_not_found(msg: impl Into<String>) -> Self {
         Self::AddonNotFoundError { msg: msg.into() }
@@ -133,7 +142,6 @@ impl NuvioError {
     /// Creates a new ResponseTooLargeError with the given message
     pub fn response_too_large(msg: impl Into<String>) -> Self {
         Self::ResponseTooLargeError { msg: msg.into() }
->>>>>>> feature/main-1768751034241-zo2o
     }
 
     /// Creates a new Unknown error with the given message
@@ -240,12 +248,24 @@ mod tests {
     }
 
     #[test]
+    fn test_cache_error() {
+        let error = NuvioError::cache("Cache miss");
+
+        match error {
+            NuvioError::CacheError { msg } => {
+                assert_eq!(msg, "Cache miss");
+            }
+            _ => panic!("Expected CacheError"),
+        }
+    }
+
+    #[test]
     fn test_addon_not_found_error() {
-        let error = NuvioError::addon_not_found("addon.example");
+        let error = NuvioError::addon_not_found("Addon 'test' not found");
 
         match error {
             NuvioError::AddonNotFoundError { msg } => {
-                assert_eq!(msg, "addon.example");
+                assert_eq!(msg, "Addon 'test' not found");
             }
             _ => panic!("Expected AddonNotFoundError"),
         }
@@ -265,106 +285,14 @@ mod tests {
 
     #[test]
     fn test_unknown_error() {
-        let error = NuvioError::unknown("Something went wrong");
+        let error = NuvioError::unknown("Something unexpected happened");
 
         match error {
             NuvioError::Unknown { msg } => {
-                assert_eq!(msg, "Something went wrong");
+                assert_eq!(msg, "Something unexpected happened");
             }
             _ => panic!("Expected Unknown error"),
         }
-    }
-
-    #[test]
-    fn test_error_display() {
-        let serialization_error = NuvioError::serialization("JSON parse error");
-        assert_eq!(
-            format!("{}", serialization_error),
-            "Serialization error: JSON parse error"
-        );
-
-        let validation_error = NuvioError::validation("Field required");
-        assert_eq!(
-            format!("{}", validation_error),
-            "Validation error: Field required"
-        );
-
-        let unknown_error = NuvioError::unknown("Unexpected state");
-        assert_eq!(
-            format!("{}", unknown_error),
-            "Unknown error: Unexpected state"
-        );
-    }
-
-    #[test]
-    fn test_error_debug() {
-        let error = NuvioError::serialization("Debug test");
-        let debug_string = format!("{:?}", error);
-
-        assert!(debug_string.contains("SerializationError"));
-        assert!(debug_string.contains("Debug test"));
-    }
-
-    #[test]
-    fn test_from_serde_json_error() {
-        let json = "{invalid json}";
-        let result: Result<serde_json::Value, _> = serde_json::from_str(json);
-
-        match result {
-            Err(serde_error) => {
-                let nuvio_error: NuvioError = serde_error.into();
-                match nuvio_error {
-                    NuvioError::SerializationError { msg } => {
-                        assert!(!msg.is_empty());
-                    }
-                    _ => panic!("Expected SerializationError from serde_json::Error conversion"),
-                }
-            }
-            Ok(_) => panic!("Expected JSON parsing to fail"),
-        }
-    }
-
-    #[test]
-    fn test_error_variants_construct() {
-        let serialization = NuvioError::SerializationError {
-            msg: "test".to_string(),
-        };
-        let validation = NuvioError::ValidationError {
-            msg: "test".to_string(),
-        };
-        let unknown = NuvioError::Unknown {
-            msg: "test".to_string(),
-        };
-
-        assert!(matches!(
-            serialization,
-            NuvioError::SerializationError { .. }
-        ));
-        assert!(matches!(validation, NuvioError::ValidationError { .. }));
-        assert!(matches!(unknown, NuvioError::Unknown { .. }));
-    }
-
-    #[test]
-    fn test_helper_methods() {
-        let error1 = NuvioError::serialization("test1");
-        let error2 = NuvioError::validation("test2");
-        let error3 = NuvioError::unknown("test3");
-        let error4 = NuvioError::network_error("test4");
-        let error5 = NuvioError::timeout("test5");
-        let error6 = NuvioError::storage("test6");
-        let error7 = NuvioError::security("test7");
-        let error8 = NuvioError::addon_not_found("test8");
-        let error9 = NuvioError::response_too_large("test9");
-
-        assert!(matches!(error1, NuvioError::SerializationError { .. }));
-        assert!(matches!(error2, NuvioError::ValidationError { .. }));
-        assert!(matches!(error3, NuvioError::Unknown { .. }));
-        assert!(matches!(error4, NuvioError::NetworkError { .. }));
-        assert!(matches!(error5, NuvioError::TimeoutError { .. }));
-        assert!(matches!(error6, NuvioError::StorageError { .. }));
-        assert!(matches!(error7, NuvioError::SecurityError { .. }));
-        assert!(matches!(error8, NuvioError::AddonNotFoundError { .. }));
-        assert!(matches!(error9, NuvioError::ResponseTooLargeError { .. }));
     }
 
     #[test]

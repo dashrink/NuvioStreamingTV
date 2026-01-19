@@ -16,7 +16,7 @@
     "ios:pods": "cd ios && pod install",
     "ios:clean": "cd ios && xcodebuild clean -workspace NuvioTV.xcworkspace -scheme NuvioTV",
     "rust:build": "cd rust-sdk && cargo build --release",
-    "rust:build:android": "cd rust-sdk && cargo build --release --target aarch64-linux-android",
+    "rust:build:android": "cd rust-sdk && ./build-android.sh",
     "rust:build:ios": "cd rust-sdk && cargo build --release --target aarch64-apple-ios",
     "rust:test": "cd rust-sdk && cargo test",
     "rust:bindings": "cd rust-sdk && ./generate-bindings.sh",

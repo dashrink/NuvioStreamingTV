@@ -198,20 +198,46 @@ impl From<reqwest::Error> for HttpError {
 /// Convert from reqwest_middleware::Error to HttpError
 ///
 /// This implementation handles errors from the middleware-wrapped HTTP client.
-/// Most reqwest_middleware errors wrap an underlying reqwest::Error, which we
-/// extract and convert using the existing From<reqwest::Error> implementation.
+/// reqwest_middleware 0.5 re-exports reqwest internally, so we convert via string
+/// to avoid type mismatches.
 impl From<reqwest_middleware::Error> for HttpError {
     fn from(err: reqwest_middleware::Error) -> Self {
-        match err {
-            // Middleware errors usually wrap a reqwest error
-            reqwest_middleware::Error::Reqwest(reqwest_err) => Self::from(reqwest_err),
-            // Middleware-specific errors (from retry logic, etc.)
-            reqwest_middleware::Error::Middleware(middleware_err) => {
-                Self::Unknown {
-                    msg: middleware_err.to_string(),
+        let err_string = err.to_string();
+
+        // Try to determine error type from string representation
+        if err_string.contains("timeout") || err_string.contains("Timeout") {
+            return Self::TimeoutError { msg: err_string };
+        }
+
+        if err_string.contains("dns") || err_string.contains("DNS") {
+            return Self::NetworkError { code: 1, msg: err_string };
+        }
+
+        if err_string.contains("refused") {
+            return Self::NetworkError { code: 2, msg: err_string };
+        }
+
+        if err_string.contains("reset") {
+            return Self::NetworkError { code: 3, msg: err_string };
+        }
+
+        // Check if it's an HTTP status error (pattern: "HTTP status client error (404)")
+        if err_string.contains("HTTP status") || err_string.contains("status code") {
+            // Try to extract status code from the string
+            for word in err_string.split_whitespace() {
+                if let Ok(status) = word.parse::<u16>() {
+                    if (400..=599).contains(&status) {
+                        return Self::HttpStatusError {
+                            status_code: status,
+                            msg: err_string,
+                        };
+                    }
                 }
             }
         }
+
+        // Default to Unknown
+        Self::Unknown { msg: err_string }
     }
 }
 

@@ -189,8 +189,7 @@ impl Fetcher {
         if let Some(content_length) = response.content_length() {
             if content_length > self.config.max_response_size {
                 return Err(NuvioError::response_too_large(
-                    content_length,
-                    self.config.max_response_size,
+                    format!("Response size {} exceeds maximum allowed size {}", content_length, self.config.max_response_size)
                 ));
             }
         }
@@ -204,8 +203,7 @@ impl Fetcher {
         // Check actual size
         if bytes.len() as u64 > self.config.max_response_size {
             return Err(NuvioError::response_too_large(
-                bytes.len() as u64,
-                self.config.max_response_size,
+                format!("Response size {} exceeds maximum allowed size {}", bytes.len(), self.config.max_response_size)
             ));
         }
 

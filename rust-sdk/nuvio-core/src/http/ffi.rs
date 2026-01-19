@@ -203,7 +203,7 @@ pub fn http_get(url: String) -> Result<HttpResponse, HttpError> {
             .await
             .map_err(|e| {
                 tracing::error!("FFI: http_get failed to read body: {}", e);
-                HttpError::from(e)
+                HttpError::unknown(e.to_string())
             })?;
 
         tracing::info!("FFI: http_get completed successfully");
@@ -290,7 +290,7 @@ pub fn http_post(url: String, body: String, content_type: String) -> Result<Http
             .await
             .map_err(|e| {
                 tracing::error!("FFI: http_post failed to read body: {}", e);
-                HttpError::from(e)
+                HttpError::unknown(e.to_string())
             })?;
 
         tracing::info!("FFI: http_post completed successfully");
@@ -359,7 +359,7 @@ pub fn http_put(url: String, body: String, content_type: String) -> Result<HttpR
             .await
             .map_err(|e| {
                 tracing::error!("FFI: http_put failed to read body: {}", e);
-                HttpError::from(e)
+                HttpError::unknown(e.to_string())
             })?;
 
         tracing::info!("FFI: http_put completed successfully");
@@ -424,7 +424,7 @@ pub fn http_delete(url: String) -> Result<HttpResponse, HttpError> {
             .await
             .map_err(|e| {
                 tracing::error!("FFI: http_delete failed to read body: {}", e);
-                HttpError::from(e)
+                HttpError::unknown(e.to_string())
             })?;
 
         tracing::info!("FFI: http_delete completed successfully");
@@ -515,7 +515,7 @@ pub fn http_request(method: String, request: HttpRequest) -> Result<HttpResponse
             .await
             .map_err(|e| {
                 tracing::error!("FFI: http_request failed to read body: {}", e);
-                HttpError::from(e)
+                HttpError::unknown(e.to_string())
             })?;
 
         tracing::info!("FFI: http_request completed successfully");

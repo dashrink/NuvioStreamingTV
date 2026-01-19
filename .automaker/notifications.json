@@ -501,7 +501,7 @@
       "message": "\"feature-1768789694848-5pmwq767w\" has been verified and is complete.",
       "createdAt": "2026-01-19T02:46:56.426Z",
       "read": false,
-      "dismissed": false,
+      "dismissed": true,
       "featureId": "feature-1768789694848-5pmwq767w",
       "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
     },
@@ -512,7 +512,7 @@
       "message": "\"feature-1768790970049-1h79ttzvm\" has been verified and is complete.",
       "createdAt": "2026-01-19T02:57:47.543Z",
       "read": false,
-      "dismissed": false,
+      "dismissed": true,
       "featureId": "feature-1768790970049-1h79ttzvm",
       "projectPath": "/home/dashrink/Desktop/NuvioStreamingTV"
     }

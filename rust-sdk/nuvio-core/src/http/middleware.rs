@@ -70,7 +70,7 @@ use async_trait::async_trait;
 use reqwest::{Request, Response};
 use reqwest_middleware::{Middleware, Next, Result};
 use std::time::Instant;
-use http::Extensions;
+use task_local_extensions::Extensions;
 
 /// Logging middleware that logs HTTP request and response information
 ///

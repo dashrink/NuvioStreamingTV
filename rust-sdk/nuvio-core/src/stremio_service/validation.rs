@@ -43,7 +43,10 @@ pub fn validate_response_size(data: &[u8], max_size: Option<u64>) -> Result<(), 
     let size = data.len() as u64;
 
     if size > limit {
-        return Err(NuvioError::response_too_large(size, limit));
+        return Err(NuvioError::response_too_large(format!(
+            "Response size {} bytes exceeds limit of {} bytes",
+            size, limit
+        )));
     }
 
     Ok(())
@@ -113,19 +116,19 @@ pub fn validate_and_parse_json<T: DeserializeOwned>(
 /// ```
 pub fn validate_manifest(manifest: &Manifest) -> Result<(), NuvioError> {
     if manifest.id.is_empty() {
-        return Err(NuvioError::invalid_manifest("Manifest id is required"));
+        return Err(NuvioError::validation("Manifest id is required"));
     }
 
     if manifest.name.is_empty() {
-        return Err(NuvioError::invalid_manifest("Manifest name is required"));
+        return Err(NuvioError::validation("Manifest name is required"));
     }
 
     if manifest.version.is_empty() {
-        return Err(NuvioError::invalid_manifest("Manifest version is required"));
+        return Err(NuvioError::validation("Manifest version is required"));
     }
 
     if manifest.description.is_empty() {
-        return Err(NuvioError::invalid_manifest(
+        return Err(NuvioError::validation(
             "Manifest description is required",
         ));
     }

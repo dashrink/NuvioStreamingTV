@@ -52,9 +52,7 @@
 //! - No dependency on system TLS libraries
 
 use rustls::{ClientConfig, RootCertStore};
-use rustls::pki_types::{CertificateDer, ServerName};
 use std::io::Cursor;
-use std::sync::Arc;
 
 /// TLS configuration builder for creating custom TLS configs with certificate pinning
 ///
@@ -188,35 +186,36 @@ impl TlsConfigBuilder {
         for pem_cert in &self.pinned_certificates {
             let mut cursor = Cursor::new(pem_cert);
             let certs = rustls_pemfile::certs(&mut cursor)
-                .collect::<Result<Vec<_>, _>>()
                 .map_err(|e| TlsConfigError::CertificateParseError(e.to_string()))?;
 
-            for cert in certs {
+            for cert_der in certs {
+                let cert = rustls::Certificate(cert_der);
                 root_store
-                    .add(cert)
+                    .add(&cert)
                     .map_err(|e| TlsConfigError::CertificateAddError(e.to_string()))?;
             }
         }
 
         // If using platform verifier, add system root certificates
         if self.use_platform_verifier {
-            let cert_result = rustls_native_certs::load_native_certs();
-            
-            if !cert_result.errors.is_empty() {
-                 tracing::warn!("Errors loading native certs: {:?}", cert_result.errors);
-            }
-
-            for cert in cert_result.certs {
-                // Ignore errors when adding platform certs
-                let _ = root_store.add(cert);
+            match rustls_native_certs::load_native_certs() {
+                Ok(certs) => {
+                    for cert in certs {
+                        // Convert rustls_native_certs::Certificate to rustls::Certificate
+                        let rustls_cert = rustls::Certificate(cert.0);
+                        // Ignore errors when adding platform certs
+                        let _ = root_store.add(&rustls_cert);
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("Error loading native certs: {:?}", e);
+                }
             }
         }
 
-        // Build TLS client configuration
-        let provider = rustls::crypto::ring::default_provider();
-        let config = ClientConfig::builder_with_provider(Arc::new(provider))
-            .with_safe_default_protocol_versions()
-            .map_err(|e| TlsConfigError::ConfigBuildError(format!("Failed to set defaults: {}", e)))?
+        // Build TLS client configuration with rustls 0.21 API
+        let config = ClientConfig::builder()
+            .with_safe_defaults()
             .with_root_certificates(root_store)
             .with_no_client_auth();
 
@@ -342,9 +341,6 @@ mod tests {
         // This test verifies that when certificate pinning is enabled, the client
         // ONLY accepts connections to servers presenting pinned certificates and
         // REJECTS connections to servers with non-pinned certificates (even if valid).
-
-        // Install the default crypto provider for rustls
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
         tracing::info!("Testing TLS certificate pinning - reject non-pinned certs...");
 

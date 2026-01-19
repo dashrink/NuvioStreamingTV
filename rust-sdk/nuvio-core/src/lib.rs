@@ -142,18 +142,16 @@ pub mod prelude;
 // Trakt.tv API integration module
 pub mod trakt;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 // HTTP client module
 pub mod http;
 
 // Cache management module
 pub mod cache;
 
-// Profile management module (if not already exported)
+// Profile management module
 pub mod profile;
 
-// Stremio service module (if not already exported)
+// Stremio service module
 pub mod stremio_service;
 
 // Backup and restore module
@@ -161,23 +159,12 @@ pub mod backup;
 
 // Notification management module
 pub mod notifications;
-=======
-// HTTP networking module
-pub mod http;
-
-// Profile management module
-pub mod profile;
-
-// Stremio addon service module
-pub mod stremio_service;
 
 // TMDB API integration module
 pub mod tmdb;
->>>>>>> feature/main-1768751034241-zo2o
-=======
+
 // Local media scanning module
 pub mod local_media;
->>>>>>> feature/main-1768737525994-h2p9
 
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();
