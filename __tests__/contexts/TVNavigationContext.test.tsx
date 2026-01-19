@@ -13,7 +13,7 @@
  */
 
 import React, { ReactNode } from 'react';
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   TVNavigationProvider,
   useTVNavigation,
@@ -22,6 +22,7 @@ import {
   ContextMenuItem,
   VoiceUnavailableReason,
 } from '../../src/contexts/TVNavigationContext';
+import { isTV, getTVTestConfig } from '../setup';
 
 // ============================================================================
 // Test Wrapper
@@ -108,7 +109,7 @@ describe('TVNavigationContext initial state', () => {
     expect(result.current.voiceSearch.isOpen).toBe(false);
     expect(result.current.voiceSearch.isListening).toBe(false);
     expect(result.current.voiceSearch.query).toBe('');
-    expect(result.current.voiceSearch.isAvailable).toBe(true); // Platform.isTV is mocked as true
+    expect(result.current.voiceSearch.isAvailable).toBe(true); // isTV() is mocked as true
     expect(result.current.voiceSearch.unavailableReason).toBeNull();
     expect(result.current.voiceSearch.error).toBeNull();
   });

@@ -1,14 +1,11 @@
 /**
- * Jest configuration for React Native TV Navigation testing
+ * Jest configuration for NuvioStreaming TV Web App testing
  *
- * This configuration is optimized for testing React Native components
- * with support for TV-specific features and hooks.
+ * This configuration is optimized for testing React web components
+ * with TypeScript support.
  */
 
 module.exports = {
-  // Use react-native preset instead of jest-expo to avoid winter issues
-  preset: 'react-native',
-
   // Setup files to run before the test framework is installed
   setupFiles: [
     '<rootDir>/__tests__/jest.setup.env.js',
@@ -16,19 +13,27 @@ module.exports = {
 
   // Setup files to run after Jest is initialized
   setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
+    '@testing-library/jest-dom',
     '<rootDir>/__tests__/setup.ts',
   ],
+
+  // Test environment - use jsdom for web-based testing
+  testEnvironment: 'jsdom',
 
   // Test environment options
   testEnvironmentOptions: {
     url: 'http://localhost',
   },
 
-  // Global setup - disable Expo winter in tests
+  // Global setup
   globals: {
     __DEV__: true,
-    'process.env.EXPO_USE_STATIC_RENDERING': 'false',
+  },
+
+  // Transform TypeScript and JavaScript files with ts-jest
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
 
   // Test file patterns
@@ -57,30 +62,6 @@ module.exports = {
     '\\.(css|less|scss|sass)$': '<rootDir>/__tests__/__mocks__/styleMock.js',
   },
 
-  // Transform ignore patterns - don't transform node_modules except specific packages
-  transformIgnorePatterns: [
-    'node_modules/(?!(' +
-      'react-native|' +
-      'react-native-.*|' +
-      '@react-native(-community)?|' +
-      'expo(nent)?|' +
-      '@expo(nent)?/.*|' +
-      'expo-modules-core|' +
-      '@expo-google-fonts/.*|' +
-      'react-navigation|' +
-      '@react-navigation/.*|' +
-      '@unimodules/.*|' +
-      'unimodules|' +
-      'sentry-expo|' +
-      'native-base|' +
-      'react-native-svg|' +
-      '@shopify/flash-list|' +
-      '@gorhom/bottom-sheet|' +
-      '@legendapp/list|' +
-      'posthog-react-native' +
-    ')/)',
-  ],
-
   // Collect coverage from these directories
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -101,9 +82,6 @@ module.exports = {
 
   // Coverage reporters
   coverageReporters: ['text', 'lcov', 'html'],
-
-  // Test environment
-  testEnvironment: 'node',
 
   // Clear mocks between tests
   clearMocks: true,

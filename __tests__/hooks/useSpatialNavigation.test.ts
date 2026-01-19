@@ -15,7 +15,7 @@
  */
 
 import * as React from 'react';
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   useSpatialNavigation,
   useFocusableRef,
@@ -29,7 +29,7 @@ import {
   type GridNavigationConfig,
 } from '../../src/hooks/useSpatialNavigation';
 import { TVNavigationProvider, useTVNavigation } from '../../src/contexts/TVNavigationContext';
-import { advanceTimersAndFlush } from '../setup';
+import { advanceTimersAndFlush, isTV as isTVConfig } from '../setup';
 
 // ============================================================================
 // Test Wrapper with TVNavigationProvider

@@ -10,7 +10,7 @@ module.exports = {
     project: './tsconfig.json',
   },
   env: {
-    'react-native/react-native': true,
+    browser: true,
     es2021: true,
     node: true,
   },
@@ -19,7 +19,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    'plugin:react-native/all',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:prettier/recommended', // Must be last to override other configs
@@ -28,7 +27,6 @@ module.exports = {
     '@typescript-eslint',
     'react',
     'react-hooks',
-    'react-native',
     'import',
     'prettier',
   ],
@@ -84,14 +82,6 @@ module.exports = {
     // React Hooks rules
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
-
-    // React Native specific rules
-    'react-native/no-unused-styles': 'warn',
-    'react-native/split-platform-components': 'warn',
-    'react-native/no-inline-styles': 'off', // Allow inline styles for flexibility
-    'react-native/no-color-literals': 'off', // Allow color literals for quick prototyping
-    'react-native/no-raw-text': 'off', // Allow raw text outside Text component for flexibility
-    'react-native/sort-styles': 'off', // Don't enforce style sorting
 
     // Import rules
     'import/order': [
@@ -149,7 +139,7 @@ module.exports = {
     },
     {
       // Relax some rules for configuration files
-      files: ['*.config.js', '*.config.ts', 'babel.config.js', 'metro.config.js'],
+      files: ['*.config.js', '*.config.ts', 'babel.config.js'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
         'import/no-commonjs': 'off',
@@ -158,10 +148,6 @@ module.exports = {
   ],
   ignorePatterns: [
     'node_modules/',
-    'android/',
-    'ios/',
-    '.expo/',
-    '.expo-shared/',
     'dist/',
     'build/',
     'coverage/',

@@ -2,6 +2,18 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1768790816433-f32916bd",
+      "trigger": "feature_success",
+      "timestamp": "2026-01-19T02:46:56.433Z",
+      "featureId": "feature-1768789694848-5pmwq767w"
+    },
+    {
+      "id": "evt-1768789695023-7ee0edfa",
+      "trigger": "feature_created",
+      "timestamp": "2026-01-19T02:28:15.023Z",
+      "featureId": "feature-1768789694848-5pmwq767w"
+    },
+    {
       "id": "evt-1768773774464-0f6f0228",
       "trigger": "feature_success",
       "timestamp": "2026-01-18T22:02:54.464Z",
@@ -5987,18 +5999,6 @@
       "id": "evt-1768771312693-4c350541",
       "trigger": "feature_error",
       "timestamp": "2026-01-18T21:21:52.693Z",
-      "featureId": "feature-1768736040649-4pg308p4j"
-    },
-    {
-      "id": "evt-1768771312497-30054f50",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T21:21:52.497Z",
-      "featureId": "feature-1768736040647-wjrt00zny"
-    },
-    {
-      "id": "evt-1768771309757-4bddea13",
-      "trigger": "feature_error",
-      "timestamp": "2026-01-18T21:21:49.757Z",
       "featureId": "feature-1768736040649-4pg308p4j"
     }
   ]

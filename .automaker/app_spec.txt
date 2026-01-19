@@ -332,6 +332,10 @@
       <name>Rust SDK: Subtitle Service Integration</name>
       <description>Implement the OpenSubtitles and generic subtitle provider client logic in Rust (Nuvio-core), including search, download, parsing (SRT/VTT/ASS), and subtitle synchronization. Exposes parsed subtitle data for native player rendering.</description>
     </feature>
+    <feature>
+      <name>Remove unused React Native and Expo code</name>
+      <description>Clean up unused code from react-native and expo</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

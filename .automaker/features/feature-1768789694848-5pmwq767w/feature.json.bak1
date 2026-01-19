@@ -1,0 +1,101 @@
+{
+  "category": "Uncategorized",
+  "description": "Clean up unused code from react-native and expo",
+  "title": "Remove unused React Native and Expo code",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": false,
+  "model": "opus",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "priority": 2,
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "dependencies": [],
+  "workMode": "current",
+  "titleGenerating": false,
+  "status": "in_progress",
+  "id": "feature-1768789694848-5pmwq767w",
+  "descriptionHistory": [
+    {
+      "description": "Clean up unused code from react-native and expo",
+      "timestamp": "2026-01-19T02:28:15.018Z",
+      "source": "initial"
+    }
+  ],
+  "startedAt": "2026-01-19T02:28:15.105Z",
+  "updatedAt": "2026-01-19T02:46:56.416Z",
+  "planSpec": {
+    "status": "approved",
+    "version": 1,
+    "reviewedByUser": true,
+    "generatedAt": "2026-01-19T02:30:01.845Z",
+    "tasks": [
+      {
+        "id": "T001",
+        "description": "Delete AndroidVideoPlayer.tsx component",
+        "filePath": "components/AndroidVideoPlayer.tsx",
+        "status": "pending"
+      },
+      {
+        "id": "T002",
+        "description": "Delete withAndroidProjectFixes.js Expo plugin",
+        "filePath": "plugins/withAndroidProjectFixes.js",
+        "status": "pending"
+      },
+      {
+        "id": "T003",
+        "description": "Delete withMpvBridge.js Expo plugin",
+        "filePath": "plugins/mpv-bridge/withMpvBridge.js",
+        "status": "pending"
+      },
+      {
+        "id": "T004",
+        "description": "Delete .expo-shared directory",
+        "filePath": ".expo-shared/",
+        "status": "pending"
+      },
+      {
+        "id": "T005",
+        "description": "Update .eslintrc.js to remove react-native plugin and rules",
+        "filePath": ".eslintrc.js",
+        "status": "pending"
+      },
+      {
+        "id": "T006",
+        "description": "Update jest.config.js to remove react-native preset and transforms",
+        "filePath": "jest.config.js",
+        "status": "pending"
+      },
+      {
+        "id": "T007",
+        "description": "Clean up __tests__/setup.ts to remove RN mocks",
+        "filePath": "__tests__/setup.ts",
+        "status": "pending"
+      },
+      {
+        "id": "T008",
+        "description": "Update test files to remove RN-specific imports and assertions",
+        "filePath": "__tests__/",
+        "status": "pending"
+      },
+      {
+        "id": "T009",
+        "description": "Verify no remaining react-native/expo references exist",
+        "filePath": "N/A",
+        "status": "pending"
+      },
+      {
+        "id": "T010",
+        "description": "Run verification to confirm codebase works without RN/Expo code",
+        "filePath": "N/A",
+        "status": "pending"
+      }
+    ],
+    "tasksTotal": 10,
+    "tasksCompleted": 10,
+    "approvedAt": "2026-01-19T02:30:18.310Z",
+    "currentTaskId": "T010"
+  }
+}

@@ -1,477 +1,289 @@
 /**
- * Jest Test Setup for TV Navigation Testing
+ * Jest Test Setup for TV Web App Testing
  *
- * This file configures the test environment with all necessary mocks
- * for testing React Native TV navigation components and hooks.
+ * This file configures the test environment with necessary mocks
+ * for testing web-based TV navigation components and hooks.
+ *
+ * Note: React Native mocks have been removed as part of the migration
+ * to a web-based TV platform. Tests should use web-standard APIs.
  */
 
 import { jest } from '@jest/globals';
 
 // ============================================================================
-// React Native Core Mocks
-// ============================================================================
-
-// Mock Platform to simulate TV environment
-jest.mock('react-native/Libraries/Utilities/Platform', () => ({
-  OS: 'ios',
-  isTV: true,
-  isTesting: true,
-  select: jest.fn((obj) => obj.ios || obj.default),
-  constants: {
-    reactNativeVersion: { major: 0, minor: 81, patch: 4 },
-  },
-}));
-
-// Mock TVEventHandler for TV remote event handling
-const mockTVEventHandler = {
-  enable: jest.fn(),
-  disable: jest.fn(),
-};
-
-// Create a comprehensive React Native mock
-jest.mock('react-native', () => {
-  // Create mock components
-  const mockComponent = (name: string) => {
-    const Component = (props: any) => props.children;
-    Component.displayName = name;
-    return Component;
-  };
-
-  return {
-    // Platform
-    Platform: {
-      OS: 'ios',
-      isTV: true,
-      isTesting: true,
-      select: jest.fn((obj: Record<string, unknown>) => obj.ios || obj.default),
-      constants: {
-        reactNativeVersion: { major: 0, minor: 81, patch: 4 },
-      },
-    },
-
-    // TV Event Handler
-    TVEventHandler: jest.fn().mockImplementation(() => mockTVEventHandler),
-
-    // Back Handler
-    BackHandler: {
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-      removeEventListener: jest.fn(),
-      exitApp: jest.fn(),
-    },
-
-    // Dimensions
-    Dimensions: {
-      get: jest.fn().mockReturnValue({
-        width: 1920,
-        height: 1080,
-        scale: 1,
-        fontScale: 1,
-      }),
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-      removeEventListener: jest.fn(),
-    },
-
-    // StyleSheet
-    StyleSheet: {
-      create: (styles: any) => styles,
-      flatten: (style: any) => style,
-      compose: (style1: any, style2: any) => [style1, style2],
-      hairlineWidth: 1,
-      absoluteFill: 0,
-      absoluteFillObject: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-      },
-    },
-
-    // Animated
-    Animated: {
-      View: mockComponent('Animated.View'),
-      Text: mockComponent('Animated.Text'),
-      ScrollView: mockComponent('Animated.ScrollView'),
-      Image: mockComponent('Animated.Image'),
-      Value: jest.fn(() => ({
-        setValue: jest.fn(),
-        interpolate: jest.fn(() => ({ setValue: jest.fn() })),
-      })),
-      timing: jest.fn(() => ({ start: jest.fn() })),
-      spring: jest.fn(() => ({ start: jest.fn() })),
-      sequence: jest.fn(() => ({ start: jest.fn() })),
-      parallel: jest.fn(() => ({ start: jest.fn() })),
-      loop: jest.fn(() => ({ start: jest.fn() })),
-      event: jest.fn(),
-      createAnimatedComponent: (component: any) => component,
-    },
-
-    // Components
-    View: mockComponent('View'),
-    Text: mockComponent('Text'),
-    TextInput: mockComponent('TextInput'),
-    ScrollView: mockComponent('ScrollView'),
-    TouchableOpacity: mockComponent('TouchableOpacity'),
-    TouchableHighlight: mockComponent('TouchableHighlight'),
-    TouchableWithoutFeedback: mockComponent('TouchableWithoutFeedback'),
-    Pressable: mockComponent('Pressable'),
-    FlatList: mockComponent('FlatList'),
-    SectionList: mockComponent('SectionList'),
-    Image: mockComponent('Image'),
-    Modal: mockComponent('Modal'),
-    ActivityIndicator: mockComponent('ActivityIndicator'),
-    SafeAreaView: mockComponent('SafeAreaView'),
-    KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),
-
-    // Native Modules
-    NativeModules: {
-      DeviceInfo: {
-        getConstants: () => ({
-          Dimensions: {
-            window: { width: 1920, height: 1080, scale: 1, fontScale: 1 },
-            screen: { width: 1920, height: 1080, scale: 1, fontScale: 1 },
-          },
-        }),
-      },
-      StatusBarManager: {
-        getHeight: jest.fn(),
-      },
-    },
-
-    // Utilities
-    findNodeHandle: jest.fn(() => 1),
-    AccessibilityInfo: {
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-      announceForAccessibility: jest.fn(),
-      isBoldTextEnabled: jest.fn(() => Promise.resolve(false)),
-      isGrayscaleEnabled: jest.fn(() => Promise.resolve(false)),
-      isInvertColorsEnabled: jest.fn(() => Promise.resolve(false)),
-      isReduceMotionEnabled: jest.fn(() => Promise.resolve(false)),
-      isReduceTransparencyEnabled: jest.fn(() => Promise.resolve(false)),
-      isScreenReaderEnabled: jest.fn(() => Promise.resolve(false)),
-      removeEventListener: jest.fn(),
-      setAccessibilityFocus: jest.fn(),
-    },
-    Alert: {
-      alert: jest.fn(),
-    },
-    Keyboard: {
-      addListener: jest.fn(() => ({ remove: jest.fn() })),
-      removeListener: jest.fn(),
-      dismiss: jest.fn(),
-    },
-    PixelRatio: {
-      get: jest.fn(() => 2),
-      getFontScale: jest.fn(() => 1),
-      getPixelSizeForLayoutSize: jest.fn((size: number) => size * 2),
-      roundToNearestPixel: jest.fn((size: number) => Math.round(size)),
-    },
-    Linking: {
-      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
-      canOpenURL: jest.fn(() => Promise.resolve(true)),
-      getInitialURL: jest.fn(() => Promise.resolve(null)),
-      openURL: jest.fn(() => Promise.resolve()),
-      removeEventListener: jest.fn(),
-    },
-  };
-});
-
-// ============================================================================
-// React Native Reanimated Mock
-// ============================================================================
-
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = jest.requireActual(
-    'react-native-reanimated/mock'
-  );
-
-  // Override specific functions that need custom behavior
-  Reanimated.useSharedValue = jest.fn((initial) => ({
-    value: initial,
-  }));
-
-  Reanimated.useAnimatedStyle = jest.fn((styleFactory) => {
-    // Return static style for tests
-    return {};
-  });
-
-  Reanimated.withSpring = jest.fn((value, _config, callback) => {
-    if (callback) {
-      callback(true);
-    }
-    return value;
-  });
-
-  Reanimated.withTiming = jest.fn((value, _config, callback) => {
-    if (callback) {
-      callback(true);
-    }
-    return value;
-  });
-
-  Reanimated.withSequence = jest.fn((...animations) => animations[animations.length - 1]);
-  Reanimated.withDelay = jest.fn((_, animation) => animation);
-  Reanimated.withRepeat = jest.fn((animation) => animation);
-
-  Reanimated.runOnJS = jest.fn((fn) => fn);
-  Reanimated.runOnUI = jest.fn((fn) => fn);
-
-  Reanimated.cancelAnimation = jest.fn();
-
-  Reanimated.interpolate = jest.fn((value) => value);
-  Reanimated.Extrapolate = { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' };
-
-  return Reanimated;
-});
-
-// ============================================================================
-// React Navigation Mock
-// ============================================================================
-
-const mockNavigation = {
-  navigate: jest.fn(),
-  goBack: jest.fn(),
-  setParams: jest.fn(),
-  getState: jest.fn(() => ({
-    routes: [{ name: 'TestScreen', params: {} }],
-    index: 0,
-  })),
-  addListener: jest.fn(() => jest.fn()),
-  removeListener: jest.fn(),
-  isFocused: jest.fn(() => true),
-  canGoBack: jest.fn(() => true),
-  dispatch: jest.fn(),
-  reset: jest.fn(),
-  setOptions: jest.fn(),
-};
-
-const mockRoute = {
-  key: 'test-key',
-  name: 'TestScreen',
-  params: {},
-};
-
-jest.mock('@react-navigation/native', () => {
-  const actual = jest.requireActual('@react-navigation/native');
-  return {
-    ...actual,
-    useNavigation: jest.fn(() => mockNavigation),
-    useRoute: jest.fn(() => mockRoute),
-    useFocusEffect: jest.fn((callback) => {
-      // Execute the callback immediately in tests
-      if (typeof callback === 'function') {
-        const cleanup = callback();
-        // Don't call cleanup automatically - let tests control this
-      }
-    }),
-    useIsFocused: jest.fn(() => true),
-    NavigationContainer: ({ children }: { children: React.ReactNode }) => children,
-  };
-});
-
-// ============================================================================
-// Expo Modules Mocks
-// ============================================================================
-
-jest.mock('expo-device', () => ({
-  deviceName: 'Test Device',
-  modelName: 'Test Model',
-  totalMemory: 4 * 1024 * 1024 * 1024, // 4GB
-  isDevice: true,
-  getDeviceTypeAsync: jest.fn(() => Promise.resolve(3)), // DeviceType.TV
-  DeviceType: {
-    UNKNOWN: 0,
-    PHONE: 1,
-    TABLET: 2,
-    TV: 3,
-    DESKTOP: 4,
-  },
-}));
-
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(() => Promise.resolve()),
-  notificationAsync: jest.fn(() => Promise.resolve()),
-  selectionAsync: jest.fn(() => Promise.resolve()),
-  ImpactFeedbackStyle: {
-    Light: 'light',
-    Medium: 'medium',
-    Heavy: 'heavy',
-  },
-  NotificationFeedbackType: {
-    Success: 'success',
-    Warning: 'warning',
-    Error: 'error',
-  },
-}));
-
-// ============================================================================
-// useDevicePerformance Mock
-// ============================================================================
-
-jest.mock('../src/hooks/useDevicePerformance', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({
-    performanceTier: 'high',
-    deviceMetrics: {
-      isTV: true,
-      platform: 'ios',
-    },
-    animationConfig: {
-      enableScaleAnimation: true,
-      focusScale: 1.05,
-      enableOpacityAnimation: true,
-      unfocusedOpacity: 0.9,
-      enableShadowAnimation: true,
-      enableParallax: true,
-      showFocusBorder: true,
-      focusBorderWidth: 2,
-      springDamping: 15,
-      springStiffness: 150,
-      reducedMotion: false,
-    },
-    isDetected: true,
-    setPerformanceTier: jest.fn(),
-    shouldReduceAnimations: false,
-    isLowEndDevice: false,
-  })),
-  useDevicePerformance: jest.fn(() => ({
-    performanceTier: 'high',
-    deviceMetrics: {
-      isTV: true,
-      platform: 'ios',
-    },
-    animationConfig: {
-      enableScaleAnimation: true,
-      focusScale: 1.05,
-      enableOpacityAnimation: true,
-      unfocusedOpacity: 0.9,
-      enableShadowAnimation: true,
-      enableParallax: true,
-      showFocusBorder: true,
-      focusBorderWidth: 2,
-      springDamping: 15,
-      springStiffness: 150,
-      reducedMotion: false,
-    },
-    isDetected: true,
-    setPerformanceTier: jest.fn(),
-    shouldReduceAnimations: false,
-    isLowEndDevice: false,
-  })),
-  PerformanceTier: {
-    HIGH: 'high',
-    MEDIUM: 'medium',
-    LOW: 'low',
-  },
-  getPerformanceTier: jest.fn(() => 'high'),
-  getAnimationConfig: jest.fn(() => ({
-    enableScaleAnimation: true,
-    focusScale: 1.05,
-    enableOpacityAnimation: true,
-    unfocusedOpacity: 0.9,
-    enableShadowAnimation: true,
-    enableParallax: true,
-    showFocusBorder: true,
-    focusBorderWidth: 2,
-    springDamping: 15,
-    springStiffness: 150,
-    reducedMotion: false,
-  })),
-  initializePerformanceDetection: jest.fn(() => Promise.resolve('high')),
-  subscribeToPerformanceChanges: jest.fn(() => jest.fn()),
-  setManualPerformanceTier: jest.fn(),
-  getFocusScale: jest.fn(() => 1.05),
-  getSpringConfig: jest.fn(() => ({ damping: 15, stiffness: 150 })),
-  shouldEnableScaleAnimation: jest.fn(() => true),
-  shouldEnableParallax: jest.fn(() => true),
-  shouldEnableShadowAnimation: jest.fn(() => true),
-}));
-
-// ============================================================================
-// MMKV Storage Mock
+// Web Storage Mock
 // ============================================================================
 
 const mockStorage = new Map<string, string>();
 
-jest.mock('react-native-mmkv', () => ({
-  MMKV: jest.fn().mockImplementation(() => ({
-    set: jest.fn((key: string, value: string) => mockStorage.set(key, value)),
-    getString: jest.fn((key: string) => mockStorage.get(key)),
-    getBoolean: jest.fn((key: string) => {
-      const val = mockStorage.get(key);
-      return val === 'true' ? true : val === 'false' ? false : undefined;
-    }),
-    getNumber: jest.fn((key: string) => {
-      const val = mockStorage.get(key);
-      return val !== undefined ? parseFloat(val) : undefined;
-    }),
-    delete: jest.fn((key: string) => mockStorage.delete(key)),
-    contains: jest.fn((key: string) => mockStorage.has(key)),
-    clearAll: jest.fn(() => mockStorage.clear()),
-    getAllKeys: jest.fn(() => Array.from(mockStorage.keys())),
-  })),
-}));
+/**
+ * Mock localStorage for web-based storage testing
+ */
+const localStorageMock = {
+  getItem: jest.fn((key: string) => mockStorage.get(key) ?? null),
+  setItem: jest.fn((key: string, value: string) => mockStorage.set(key, value)),
+  removeItem: jest.fn((key: string) => mockStorage.delete(key)),
+  clear: jest.fn(() => mockStorage.clear()),
+  get length() {
+    return mockStorage.size;
+  },
+  key: jest.fn((index: number) => {
+    const keys = Array.from(mockStorage.keys());
+    return keys[index] ?? null;
+  }),
+};
+
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
+
+Object.defineProperty(global, 'sessionStorage', {
+  value: localStorageMock,
+  writable: true,
+});
+
+// ============================================================================
+// TV Platform Detection Utilities
+// ============================================================================
+
+/**
+ * Configuration for simulating TV environment in tests
+ */
+export interface TVTestConfig {
+  isTV: boolean;
+  platform: 'web' | 'smarttv' | 'androidtv' | 'tvos';
+  screenWidth: number;
+  screenHeight: number;
+}
+
+const defaultTVConfig: TVTestConfig = {
+  isTV: true,
+  platform: 'web',
+  screenWidth: 1920,
+  screenHeight: 1080,
+};
+
+let currentTVConfig: TVTestConfig = { ...defaultTVConfig };
+
+/**
+ * Set TV test configuration
+ */
+export const setTVTestConfig = (config: Partial<TVTestConfig>): void => {
+  currentTVConfig = { ...currentTVConfig, ...config };
+};
+
+/**
+ * Reset TV test configuration to defaults
+ */
+export const resetTVTestConfig = (): void => {
+  currentTVConfig = { ...defaultTVConfig };
+};
+
+/**
+ * Get current TV test configuration
+ */
+export const getTVTestConfig = (): TVTestConfig => ({ ...currentTVConfig });
+
+/**
+ * Check if running in TV mode
+ */
+export const isTV = (): boolean => currentTVConfig.isTV;
+
+// ============================================================================
+// Keyboard Event Simulation (for TV Remote)
+// ============================================================================
+
+export type TVRemoteKey =
+  | 'ArrowUp'
+  | 'ArrowDown'
+  | 'ArrowLeft'
+  | 'ArrowRight'
+  | 'Enter'
+  | 'Escape'
+  | 'Backspace'
+  | 'MediaPlayPause'
+  | 'MediaPlay'
+  | 'MediaPause';
+
+/**
+ * Simulate a TV remote key press using standard keyboard events
+ */
+export const simulateTVRemoteKey = (key: TVRemoteKey, element?: Element): void => {
+  const target = element ?? document.activeElement ?? document.body;
+  const keydownEvent = new KeyboardEvent('keydown', {
+    key,
+    code: key,
+    bubbles: true,
+    cancelable: true,
+  });
+  target.dispatchEvent(keydownEvent);
+};
+
+/**
+ * Simulate TV remote navigation (arrow keys)
+ */
+export const simulateTVNavigation = (
+  direction: 'up' | 'down' | 'left' | 'right',
+  element?: Element
+): void => {
+  const keyMap: Record<string, TVRemoteKey> = {
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+  };
+  simulateTVRemoteKey(keyMap[direction], element);
+};
+
+/**
+ * Simulate TV remote select (Enter key)
+ */
+export const simulateTVSelect = (element?: Element): void => {
+  simulateTVRemoteKey('Enter', element);
+};
+
+/**
+ * Simulate TV remote back (Escape key)
+ */
+export const simulateTVBack = (element?: Element): void => {
+  simulateTVRemoteKey('Escape', element);
+};
+
+// ============================================================================
+// Focus Management Utilities
+// ============================================================================
+
+/**
+ * Get the currently focused element
+ */
+export const getFocusedElement = (): Element | null => document.activeElement;
+
+/**
+ * Focus an element by selector
+ */
+export const focusElement = (selector: string): boolean => {
+  const element = document.querySelector(selector) as HTMLElement | null;
+  if (element && typeof element.focus === 'function') {
+    element.focus();
+    return document.activeElement === element;
+  }
+  return false;
+};
+
+/**
+ * Check if an element is focusable
+ */
+export const isFocusable = (element: Element): boolean => {
+  const focusableSelector = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+    '[contenteditable="true"]',
+  ].join(',');
+  return element.matches(focusableSelector);
+};
 
 // ============================================================================
 // Timer Utilities
 // ============================================================================
 
-// Timer utilities - don't use fake timers globally
-// Tests that need them can enable them individually
-afterEach(() => {
-  jest.clearAllMocks();
-  mockStorage.clear();
-});
-
-// ============================================================================
-// Global Test Utilities
-// ============================================================================
-
-// Helper to advance timers and flush promises
-export const advanceTimersAndFlush = async (ms: number = 0) => {
+/**
+ * Helper to advance timers and flush promises
+ */
+export const advanceTimersAndFlush = async (ms: number = 0): Promise<void> => {
   jest.advanceTimersByTime(ms);
   await Promise.resolve();
 };
 
-// Helper to simulate TV remote events
-export const simulateTVEvent = (eventType: string) => {
-  const callbacks = (mockTVEventHandler.enable as jest.Mock).mock.calls;
-  if (callbacks.length > 0) {
-    const lastCallback = callbacks[callbacks.length - 1][1];
-    if (typeof lastCallback === 'function') {
-      lastCallback({ eventType });
-    }
-  }
+/**
+ * Helper to run all pending timers and flush promises
+ */
+export const runAllTimersAndFlush = async (): Promise<void> => {
+  jest.runAllTimers();
+  await Promise.resolve();
 };
 
-// Helper to check if TVEventHandler was properly enabled/disabled
-export const getTVEventHandlerMock = () => mockTVEventHandler;
-
-// Helper to get navigation mock
-export const getNavigationMock = () => mockNavigation;
-
-// Helper to reset navigation mock
-export const resetNavigationMock = () => {
-  Object.values(mockNavigation).forEach((fn) => {
-    if (typeof fn === 'function' && 'mockClear' in fn) {
-      (fn as jest.Mock).mockClear();
-    }
-  });
+/**
+ * Helper to run only pending timers and flush promises
+ */
+export const runOnlyPendingTimersAndFlush = async (): Promise<void> => {
+  jest.runOnlyPendingTimers();
+  await Promise.resolve();
 };
 
 // ============================================================================
-// Console Warnings Suppression
+// Animation Frame Mocks
 // ============================================================================
 
-// Suppress specific React Native warnings in tests
+global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
+  return setTimeout(() => callback(Date.now()), 16) as unknown as number;
+};
+
+global.cancelAnimationFrame = (id: number): void => {
+  clearTimeout(id);
+};
+
+// ============================================================================
+// Additional Browser API Mocks
+// ============================================================================
+
+// Mock matchMedia for responsive testing
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+})) as unknown as typeof ResizeObserver;
+
+// Mock IntersectionObserver
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+  root: null,
+  rootMargin: '',
+  thresholds: [],
+})) as unknown as typeof IntersectionObserver;
+
+// Mock setImmediate if not available (Node.js polyfill)
+if (typeof setImmediate === 'undefined') {
+  (global as unknown as { setImmediate: typeof setTimeout }).setImmediate = ((
+    fn: (...args: unknown[]) => void,
+    ...args: unknown[]
+  ) => setTimeout(() => fn(...args), 0)) as typeof setImmediate;
+}
+
+// ============================================================================
+// Console Output Management
+// ============================================================================
+
+// Suppress specific warnings that are not relevant to tests
 const originalConsoleWarn = console.warn;
-console.warn = (...args: unknown[]) => {
+console.warn = (...args: unknown[]): void => {
   const message = args[0];
   if (
     typeof message === 'string' &&
-    (message.includes('Animated: `useNativeDriver`') ||
-      message.includes('componentWillReceiveProps') ||
-      message.includes('componentWillMount'))
+    (message.includes('componentWillReceiveProps') ||
+      message.includes('componentWillMount') ||
+      message.includes('componentWillUpdate'))
   ) {
     return;
   }
@@ -479,7 +291,7 @@ console.warn = (...args: unknown[]) => {
 };
 
 const originalConsoleError = console.error;
-console.error = (...args: unknown[]) => {
+console.error = (...args: unknown[]): void => {
   const message = args[0];
   if (
     typeof message === 'string' &&
@@ -493,25 +305,17 @@ console.error = (...args: unknown[]) => {
 };
 
 // ============================================================================
-// requestAnimationFrame Mock
+// Test Lifecycle Hooks
 // ============================================================================
 
-global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
-  return setTimeout(() => callback(Date.now()), 16) as unknown as number;
-};
-
-global.cancelAnimationFrame = (id: number): void => {
-  clearTimeout(id);
-};
+afterEach(() => {
+  jest.clearAllMocks();
+  mockStorage.clear();
+  resetTVTestConfig();
+});
 
 // ============================================================================
-// Additional Global Mocks
+// Exports
 // ============================================================================
 
-// Mock setImmediate if not available
-if (typeof setImmediate === 'undefined') {
-  (global as unknown as { setImmediate: typeof setTimeout }).setImmediate = (fn: () => void) =>
-    setTimeout(fn, 0) as unknown as NodeJS.Immediate;
-}
-
-export { mockNavigation, mockRoute, mockTVEventHandler };
+export { localStorageMock, mockStorage };
