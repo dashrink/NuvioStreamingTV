@@ -16,12 +16,19 @@ thiserror = { workspace = true }
 governor = { workspace = true }
 oauth2 = { workspace = true }
 reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
+tokio = { workspace = true }
+rustls = { workspace = true }
+webpki-roots = { workspace = true }
+http = { workspace = true }
+async-trait = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
 wiremock = "0.6"
+reqwest-middleware = { workspace = true }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }
