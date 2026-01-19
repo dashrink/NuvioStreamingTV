@@ -143,6 +143,7 @@ pub mod prelude;
 pub mod trakt;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // HTTP client module
 pub mod http;
 
@@ -173,6 +174,10 @@ pub mod stremio_service;
 // TMDB API integration module
 pub mod tmdb;
 >>>>>>> feature/main-1768751034241-zo2o
+=======
+// Local media scanning module
+pub mod local_media;
+>>>>>>> feature/main-1768737525994-h2p9
 
 // UniFFI setup - this macro generates the FFI scaffolding
 uniffi::setup_scaffolding!();

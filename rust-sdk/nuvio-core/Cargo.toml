@@ -20,6 +20,7 @@ reqwest-middleware = { workspace = true }
 chrono = { workspace = true }
 parking_lot = { workspace = true }
 <<<<<<< HEAD
+<<<<<<< HEAD
 flate2 = "1.0"
 # Cache dependencies
 moka = { version = "0.12", features = ["future"] }
@@ -35,6 +36,14 @@ async-trait = { workspace = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+=======
+walkdir = "2.5.0"
+infer = "0.19.0"
+
+[dev-dependencies]
+tempfile = "3.24.0"
+tokio = { workspace = true }
+>>>>>>> feature/main-1768737525994-h2p9
 wiremock = "0.6"
 <<<<<<< HEAD
 tempfile = "3.8"
