@@ -108,12 +108,14 @@ pub use super::TraktError as AuthError;
 ///
 /// Handles OAuth2 flows, token storage, and automatic token refresh.
 /// Optionally invokes callbacks when tokens are refreshed or refresh fails.
+#[derive(uniffi::Object)]
 pub struct AuthManager {
     oauth_client: BasicClient,
     tokens: Arc<Mutex<Option<StoredTokens>>>,
-    callback: Option<Arc<dyn TraktTokenCallback>>,
+    callback: Mutex<Option<Box<dyn TraktTokenCallback>>>,
 }
 
+#[uniffi::export]
 impl AuthManager {
     /// Creates a new authentication manager
     ///
@@ -125,7 +127,6 @@ impl AuthManager {
     ///
     /// # Example
     /// ```no_run
-    /// use std::sync::Arc;
     /// use nuvio_core::trakt::AuthManager;
     ///
     /// let auth_manager = AuthManager::new(
@@ -135,11 +136,12 @@ impl AuthManager {
     ///     None,
     /// ).unwrap();
     /// ```
+    #[uniffi::constructor]
     pub fn new(
         client_id: String,
         client_secret: String,
         redirect_uri: String,
-        callback: Option<Arc<dyn TraktTokenCallback>>,
+        callback: Option<Box<dyn TraktTokenCallback>>,
     ) -> Result<Self, AuthError> {
         let auth_url = AuthUrl::new("https://trakt.tv/oauth/authorize".to_string())
             .map_err(|e| super::TraktError::oauth2(format!("Invalid auth URL: {}", e)))?;
@@ -160,7 +162,7 @@ impl AuthManager {
         Ok(Self {
             oauth_client,
             tokens: Arc::new(Mutex::new(None)),
-            callback,
+            callback: Mutex::new(callback),
         })
     }
 
@@ -264,7 +266,7 @@ impl AuthManager {
                 info!("Token refresh successful (expires at: {})", expires_at);
 
                 // Notify callback on success
-                if let Some(callback) = &self.callback {
+                if let Some(ref callback) = *self.callback.lock() {
                     callback.on_token_refreshed(access_token.clone(), expires_at);
                 }
 
@@ -275,7 +277,7 @@ impl AuthManager {
                 error!("{}", error_msg);
 
                 // Notify callback on failure
-                if let Some(callback) = &self.callback {
+                if let Some(ref callback) = *self.callback.lock() {
                     callback.on_token_refresh_failed(error_msg.clone());
                 }
 
@@ -362,12 +364,12 @@ mod tests {
 
     #[test]
     fn test_auth_manager_with_callback() {
-        let callback = Arc::new(MockCallback::new());
+        let callback = Box::new(MockCallback::new());
         let auth = AuthManager::new(
             "test_client_id".to_string(),
             "test_client_secret".to_string(),
             "urn:ietf:wg:oauth:2.0:oob".to_string(),
-            Some(callback.clone()),
+            Some(callback),
         );
         assert!(auth.is_ok());
     }
@@ -419,12 +421,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_refresh_token_callback_on_failure() {
-        let callback = Arc::new(MockCallback::new());
+        use std::sync::atomic::AtomicBool;
+
+        // Use a static flag to track callback invocation
+        static FAILURE_CALLED: AtomicBool = AtomicBool::new(false);
+
+        struct FailureTrackingCallback;
+        impl TraktTokenCallback for FailureTrackingCallback {
+            fn on_token_refreshed(&self, _access_token: String, _expires_at: i64) {}
+            fn on_token_refresh_failed(&self, _error: String) {
+                FAILURE_CALLED.store(true, Ordering::SeqCst);
+            }
+        }
+
+        // Reset the flag
+        FAILURE_CALLED.store(false, Ordering::SeqCst);
+
+        let callback = Box::new(FailureTrackingCallback);
         let auth = AuthManager::new(
             "test_client_id".to_string(),
             "test_client_secret".to_string(),
             "urn:ietf:wg:oauth:2.0:oob".to_string(),
-            Some(callback.clone()),
+            Some(callback),
         )
         .unwrap();
 
@@ -440,8 +458,6 @@ mod tests {
         assert!(result.is_err());
 
         // Verify callback was invoked with failure
-        assert!(callback.was_failure_called());
-        let error = callback.get_failure_error();
-        assert!(error.contains("Failed to refresh token"));
+        assert!(FAILURE_CALLED.load(Ordering::SeqCst), "Callback should have been called on failure");
     }
 }

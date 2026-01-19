@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package com.nuvio.sdk.core
+package uniffi.nuvio_core
 
 // Common helper code.
 //
@@ -618,6 +618,114 @@ internal open class UniffiForeignFutureResultVoid(
 internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
     fun callback(`callbackData`: Long,`result`: UniffiForeignFutureResultVoid.UniffiByValue,)
 }
+internal interface UniffiCallbackInterfaceTmdbStorageMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`timestamp`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTmdbStorageMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTmdbStorageMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktStorageMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktStorageMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktStorageMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktStorageMethod3 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktStorageMethod4 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktTokenCallbackMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`accessToken`: RustBuffer.ByValue,`expiresAt`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceTraktTokenCallbackMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "saveItem", "readItem", "removeItem")
+internal open class UniffiVTableCallbackInterfaceTmdbStorage(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `saveItem`: UniffiCallbackInterfaceTmdbStorageMethod0? = null,
+    @JvmField internal var `readItem`: UniffiCallbackInterfaceTmdbStorageMethod1? = null,
+    @JvmField internal var `removeItem`: UniffiCallbackInterfaceTmdbStorageMethod2? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `saveItem`: UniffiCallbackInterfaceTmdbStorageMethod0? = null,
+        `readItem`: UniffiCallbackInterfaceTmdbStorageMethod1? = null,
+        `removeItem`: UniffiCallbackInterfaceTmdbStorageMethod2? = null,
+    ): UniffiVTableCallbackInterfaceTmdbStorage(`uniffiFree`,`uniffiClone`,`saveItem`,`readItem`,`removeItem`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceTmdbStorage) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `saveItem` = other.`saveItem`
+        `readItem` = other.`readItem`
+        `removeItem` = other.`removeItem`
+    }
+
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "saveItem", "readItem", "removeItem", "deleteAllUserData", "exportUserData")
+internal open class UniffiVTableCallbackInterfaceTraktStorage(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `saveItem`: UniffiCallbackInterfaceTraktStorageMethod0? = null,
+    @JvmField internal var `readItem`: UniffiCallbackInterfaceTraktStorageMethod1? = null,
+    @JvmField internal var `removeItem`: UniffiCallbackInterfaceTraktStorageMethod2? = null,
+    @JvmField internal var `deleteAllUserData`: UniffiCallbackInterfaceTraktStorageMethod3? = null,
+    @JvmField internal var `exportUserData`: UniffiCallbackInterfaceTraktStorageMethod4? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `saveItem`: UniffiCallbackInterfaceTraktStorageMethod0? = null,
+        `readItem`: UniffiCallbackInterfaceTraktStorageMethod1? = null,
+        `removeItem`: UniffiCallbackInterfaceTraktStorageMethod2? = null,
+        `deleteAllUserData`: UniffiCallbackInterfaceTraktStorageMethod3? = null,
+        `exportUserData`: UniffiCallbackInterfaceTraktStorageMethod4? = null,
+    ): UniffiVTableCallbackInterfaceTraktStorage(`uniffiFree`,`uniffiClone`,`saveItem`,`readItem`,`removeItem`,`deleteAllUserData`,`exportUserData`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceTraktStorage) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `saveItem` = other.`saveItem`
+        `readItem` = other.`readItem`
+        `removeItem` = other.`removeItem`
+        `deleteAllUserData` = other.`deleteAllUserData`
+        `exportUserData` = other.`exportUserData`
+    }
+
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onTokenRefreshed", "onTokenRefreshFailed")
+internal open class UniffiVTableCallbackInterfaceTraktTokenCallback(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `onTokenRefreshed`: UniffiCallbackInterfaceTraktTokenCallbackMethod0? = null,
+    @JvmField internal var `onTokenRefreshFailed`: UniffiCallbackInterfaceTraktTokenCallbackMethod1? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `onTokenRefreshed`: UniffiCallbackInterfaceTraktTokenCallbackMethod0? = null,
+        `onTokenRefreshFailed`: UniffiCallbackInterfaceTraktTokenCallbackMethod1? = null,
+    ): UniffiVTableCallbackInterfaceTraktTokenCallback(`uniffiFree`,`uniffiClone`,`onTokenRefreshed`,`onTokenRefreshFailed`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceTraktTokenCallback) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `onTokenRefreshed` = other.`onTokenRefreshed`
+        `onTokenRefreshFailed` = other.`onTokenRefreshFailed`
+    }
+
+}
 
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
@@ -641,56 +749,334 @@ internal object IntegrityCheckingUniffiLib {
         uniffiCheckContractApiVersion(this)
         uniffiCheckApiChecksums(this)
     }
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_create_profile(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_delete_profile(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_export_profiles(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_get_active_profile(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_get_profiles(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_get_watched_history(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_import_profiles(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_set_pin(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_switch_profile(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_update_profile(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_update_watched_item(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_profilemanager_verify_pin(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_add_addon(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_addon_count(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_aggregate_meta(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_clear_addons(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_discover(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_get_addons(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_get_catalog(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_method_stremioservice_resolve_streams(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_constructor_profilemanager_new(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_constructor_stremioservice_new(
-    ): Short
-    external fun uniffi_nuvio_core_checksum_constructor_stremioservice_with_config(
-    ): Short
-    external fun ffi_nuvio_core_uniffi_contract_version(
-    ): Int
+    external fun uniffi_nuvio_core_checksum_func_abort_request(
+): Short
+external fun uniffi_nuvio_core_checksum_func_cache_key_for_cast(
+): Short
+external fun uniffi_nuvio_core_checksum_func_cache_key_for_episodes(
+): Short
+external fun uniffi_nuvio_core_checksum_func_cache_key_for_metadata(
+): Short
+external fun uniffi_nuvio_core_checksum_func_cache_key_for_streams(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_delete(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_get(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_get_cancellable(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_post(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_post_cancellable(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_put(
+): Short
+external fun uniffi_nuvio_core_checksum_func_http_request(
+): Short
+external fun uniffi_nuvio_core_checksum_func_init_logging(
+): Short
+external fun uniffi_nuvio_core_checksum_func_is_request_finished(
+): Short
+external fun uniffi_nuvio_core_checksum_func_nuvio_get_instance(
+): Short
+external fun uniffi_nuvio_core_checksum_func_nuvio_initialize(
+): Short
+external fun uniffi_nuvio_core_checksum_func_nuvio_initialize_with_config(
+): Short
+external fun uniffi_nuvio_core_checksum_func_nuvio_is_initialized(
+): Short
+external fun uniffi_nuvio_core_checksum_func_remove_request_handle(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_clear_tokens(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_get_access_token(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_refresh_token(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_store_tokens(
+): Short
+external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies(
+): Short
+external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_new_shows(
+): Short
+external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_premieres(
+): Short
+external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_shows(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_get_episode_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_get_movie_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_get_season_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_get_show_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_validate_pagination(
+): Short
+external fun uniffi_nuvio_core_checksum_method_commentsmanager_validate_sort(
+): Short
+external fun uniffi_nuvio_core_checksum_method_localmediascanner_scan_directory(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_build_episode_notification_content(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_cancel_all_notifications(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notification(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notifications_for_series(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_cleanup_old_notifications(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_get_notification_stats(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_get_scheduled_notifications(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_get_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_mark_synced(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_complete(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_progress(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_schedule_episode_notification(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_schedule_multiple_notifications(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_should_sync(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationmanager_update_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_add_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_clear_download_notification(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_clear_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_get_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_get_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_load_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_load_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_mark_download_notified(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_remove_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_save_scheduled(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_save_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_update_settings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_notificationstorage_was_download_notified(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviocachemanager_clear(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviocachemanager_get(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviocachemanager_remove(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviocachemanager_set(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviocachemanager_stats(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviosdk_config(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviosdk_environment_name(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviosdk_initialized_at(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviosdk_is_debug(
+): Short
+external fun uniffi_nuvio_core_checksum_method_nuviosdk_version(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_create_profile(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_delete_profile(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_export_profiles(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_get_active_profile(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_get_profiles(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_get_watched_history(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_import_profiles(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_set_pin(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_switch_profile(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_update_profile(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_update_watched_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_profilemanager_verify_pin(
+): Short
+external fun uniffi_nuvio_core_checksum_method_recommendationsmanager_get_movies(
+): Short
+external fun uniffi_nuvio_core_checksum_method_recommendationsmanager_get_shows(
+): Short
+external fun uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_movie(
+): Short
+external fun uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_show(
+): Short
+external fun uniffi_nuvio_core_checksum_method_searchmanager_search_by_imdb(
+): Short
+external fun uniffi_nuvio_core_checksum_method_searchmanager_search_by_tmdb(
+): Short
+external fun uniffi_nuvio_core_checksum_method_searchmanager_search_text(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_add_addon(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_addon_count(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_aggregate_meta(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_clear_addons(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_discover(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_get_addons(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_get_catalog(
+): Short
+external fun uniffi_nuvio_core_checksum_method_stremioservice_resolve_streams(
+): Short
+external fun uniffi_nuvio_core_checksum_method_syncmanager_remove_from_collection(
+): Short
+external fun uniffi_nuvio_core_checksum_method_syncmanager_remove_from_history(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_extract_tmdb_id_from_stremio_id(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_find_by_imdb_id(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_all_episodes(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_collection_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_credits(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_episode_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_episode_external_ids(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_episode_image_url(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_image_url(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_imdb_ratings(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_movie_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_person_combined_credits(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_person_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_popular(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_recommendations(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_season_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_show_external_ids(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_show_image_hints(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_similar(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_top_rated(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_trending(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_get_tv_show_details(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_search_movie(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_search_multi(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_search_person(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdb_search_tv_show(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_auth(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_calendar(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_client(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_delete_account_data(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_recommendations(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_search(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_sync(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_apiclient_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_authmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_calendarmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_commentsmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_localmediascanner_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_notificationmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_notificationstorage_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_nuviocachemanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_nuviocachemanager_with_defaults(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_profilemanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_recommendationsmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_searchmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_stremioservice_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_stremioservice_with_config(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_syncmanager_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_tmdb_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_trakt_new(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdbstorage_save_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdbstorage_read_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_tmdbstorage_remove_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_traktstorage_save_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_traktstorage_read_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_traktstorage_remove_item(
+): Short
+external fun uniffi_nuvio_core_checksum_method_traktstorage_delete_all_user_data(
+): Short
+external fun uniffi_nuvio_core_checksum_method_traktstorage_export_user_data(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refreshed(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refresh_failed(
+): Short
+external fun ffi_nuvio_core_uniffi_contract_version(
+): Int
+
     
-        
 }
 
 internal object UniffiLib {
@@ -703,168 +1089,491 @@ internal object UniffiLib {
 
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "nuvio_core"))
+        uniffiCallbackInterfaceTmdbStorage.register(this)
+        uniffiCallbackInterfaceTraktStorage.register(this)
+        uniffiCallbackInterfaceTraktTokenCallback.register(this)
         
     }
-    external fun uniffi_nuvio_core_fn_clone_profilemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun uniffi_nuvio_core_fn_free_profilemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_constructor_profilemanager_new(`baseDir`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun uniffi_nuvio_core_fn_method_profilemanager_create_profile(`ptr`: Long,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_delete_profile(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_profilemanager_export_profiles(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_get_active_profile(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_get_profiles(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_get_watched_history(`ptr`: Long,`profileId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_import_profiles(`ptr`: Long,`json`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_profilemanager_set_pin(`ptr`: Long,`id`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_profilemanager_switch_profile(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_profilemanager_update_profile(`ptr`: Long,`id`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_profilemanager_update_watched_item(`ptr`: Long,`profileId`: RustBuffer.ByValue,`item`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_profilemanager_verify_pin(`ptr`: Long,`id`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Byte
-    external fun uniffi_nuvio_core_fn_clone_stremioservice(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun uniffi_nuvio_core_fn_free_stremioservice(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_constructor_stremioservice_new(uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun uniffi_nuvio_core_fn_constructor_stremioservice_with_config(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun uniffi_nuvio_core_fn_method_stremioservice_add_addon(`ptr`: Long,`addon`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_stremioservice_addon_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Int
-    external fun uniffi_nuvio_core_fn_method_stremioservice_aggregate_meta(`ptr`: Long,`contentType`: RustBuffer.ByValue,`contentId`: RustBuffer.ByValue,
-    ): Long
-    external fun uniffi_nuvio_core_fn_method_stremioservice_clear_addons(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun uniffi_nuvio_core_fn_method_stremioservice_discover(`ptr`: Long,`url`: RustBuffer.ByValue,
-    ): Long
-    external fun uniffi_nuvio_core_fn_method_stremioservice_get_addons(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun uniffi_nuvio_core_fn_method_stremioservice_get_catalog(`ptr`: Long,`addonId`: RustBuffer.ByValue,`contentType`: RustBuffer.ByValue,`catalogId`: RustBuffer.ByValue,`page`: Int,`search`: RustBuffer.ByValue,
-    ): Long
-    external fun uniffi_nuvio_core_fn_method_stremioservice_resolve_streams(`ptr`: Long,`contentType`: RustBuffer.ByValue,`contentId`: RustBuffer.ByValue,
-    ): Long
-    external fun ffi_nuvio_core_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun ffi_nuvio_core_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun ffi_nuvio_core_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
-    external fun ffi_nuvio_core_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun ffi_nuvio_core_rust_future_poll_u8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_u8(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_u8(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Byte
-    external fun ffi_nuvio_core_rust_future_poll_i8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_i8(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_i8(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Byte
-    external fun ffi_nuvio_core_rust_future_poll_u16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_u16(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_u16(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Short
-    external fun ffi_nuvio_core_rust_future_poll_i16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_i16(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_i16(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Short
-    external fun ffi_nuvio_core_rust_future_poll_u32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_u32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_u32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Int
-    external fun ffi_nuvio_core_rust_future_poll_i32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_i32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_i32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Int
-    external fun ffi_nuvio_core_rust_future_poll_u64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_u64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_u64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun ffi_nuvio_core_rust_future_poll_i64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_i64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_i64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Long
-    external fun ffi_nuvio_core_rust_future_poll_f32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_f32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_f32(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Float
-    external fun ffi_nuvio_core_rust_future_poll_f64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_f64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_f64(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Double
-    external fun ffi_nuvio_core_rust_future_poll_rust_buffer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_rust_buffer(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_rust_buffer(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): RustBuffer.ByValue
-    external fun ffi_nuvio_core_rust_future_poll_void(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_cancel_void(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_free_void(`handle`: Long,
-    ): Unit
-    external fun ffi_nuvio_core_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
-    ): Unit
+    external fun uniffi_nuvio_core_fn_clone_apiclient(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_apiclient(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_apiclient_new(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_clone_authmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_authmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_authmanager_new(`clientId`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,`redirectUri`: RustBuffer.ByValue,`callback`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_clear_tokens(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_authmanager_get_access_token(`ptr`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_refresh_token(`ptr`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_store_tokens(`ptr`: Long,`accessToken`: RustBuffer.ByValue,`refreshToken`: RustBuffer.ByValue,`expiresInSecs`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_clone_calendarmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_calendarmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_calendarmanager_new(`apiClient`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_calendarmanager_get_my_movies(`ptr`: Long,`startDate`: RustBuffer.ByValue,`days`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_calendarmanager_get_my_new_shows(`ptr`: Long,`startDate`: RustBuffer.ByValue,`days`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_calendarmanager_get_my_premieres(`ptr`: Long,`startDate`: RustBuffer.ByValue,`days`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_calendarmanager_get_my_shows(`ptr`: Long,`startDate`: RustBuffer.ByValue,`days`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_clone_commentsmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_commentsmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_commentsmanager_new(`apiClient`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_commentsmanager_get_episode_comments(`ptr`: Long,`id`: RustBuffer.ByValue,`sort`: RustBuffer.ByValue,`page`: Int,`limit`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_commentsmanager_get_movie_comments(`ptr`: Long,`id`: RustBuffer.ByValue,`sort`: RustBuffer.ByValue,`page`: Int,`limit`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_commentsmanager_get_season_comments(`ptr`: Long,`id`: RustBuffer.ByValue,`sort`: RustBuffer.ByValue,`page`: Int,`limit`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_commentsmanager_get_show_comments(`ptr`: Long,`id`: RustBuffer.ByValue,`sort`: RustBuffer.ByValue,`page`: Int,`limit`: Int,
+): Long
+external fun uniffi_nuvio_core_fn_method_commentsmanager_validate_pagination(`ptr`: Long,`page`: Int,`limit`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_commentsmanager_validate_sort(`ptr`: Long,`sort`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_clone_localmediascanner(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_localmediascanner(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_localmediascanner_new(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_localmediascanner_scan_directory(`ptr`: Long,`rootPath`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_notificationmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_notificationmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_notificationmanager_new(`storage`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_notificationmanager_build_episode_notification_content(`ptr`: Long,`item`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationmanager_cancel_all_notifications(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationmanager_cancel_notification(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationmanager_cancel_notifications_for_series(`ptr`: Long,`seriesId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun uniffi_nuvio_core_fn_method_notificationmanager_cleanup_old_notifications(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun uniffi_nuvio_core_fn_method_notificationmanager_get_notification_stats(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationmanager_get_scheduled_notifications(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationmanager_get_settings(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationmanager_mark_synced(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationmanager_notify_download_complete(`ptr`: Long,`title`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_method_notificationmanager_notify_download_progress(`ptr`: Long,`title`: RustBuffer.ByValue,`progress`: Int,`downloadedBytes`: RustBuffer.ByValue,`totalBytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_method_notificationmanager_schedule_episode_notification(`ptr`: Long,`params`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationmanager_schedule_multiple_notifications(`ptr`: Long,`paramsList`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun uniffi_nuvio_core_fn_method_notificationmanager_should_sync(`ptr`: Long,`minIntervalSeconds`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_method_notificationmanager_update_settings(`ptr`: Long,`settings`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_notificationstorage(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_notificationstorage(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_notificationstorage_new(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_notificationstorage_add_scheduled(`ptr`: Long,`item`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationstorage_clear_download_notification(`ptr`: Long,`title`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationstorage_clear_scheduled(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationstorage_get_scheduled(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_get_settings(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_load_scheduled(`ptr`: Long,`json`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_load_settings(`ptr`: Long,`json`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_mark_download_notified(`ptr`: Long,`title`: RustBuffer.ByValue,`progress`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationstorage_remove_scheduled(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_notificationstorage_save_scheduled(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_save_settings(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_update_settings(`ptr`: Long,`settings`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_notificationstorage_was_download_notified(`ptr`: Long,`title`: RustBuffer.ByValue,`progress`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_clone_nuviocachemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_nuviocachemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_nuviocachemanager_new(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_constructor_nuviocachemanager_with_defaults(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_nuviocachemanager_clear(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_nuviocachemanager_get(`ptr`: Long,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_nuviocachemanager_remove(`ptr`: Long,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_nuviocachemanager_set(`ptr`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_nuviocachemanager_stats(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_nuviosdk(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_nuviosdk(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_nuviosdk_config(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_nuviosdk_environment_name(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_nuviosdk_initialized_at(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_nuviosdk_is_debug(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_method_nuviosdk_version(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_profilemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_profilemanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_profilemanager_new(`baseDir`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_profilemanager_create_profile(`ptr`: Long,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_delete_profile(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_profilemanager_export_profiles(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_get_active_profile(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_get_profiles(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_get_watched_history(`ptr`: Long,`profileId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_import_profiles(`ptr`: Long,`json`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_profilemanager_set_pin(`ptr`: Long,`id`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_profilemanager_switch_profile(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_profilemanager_update_profile(`ptr`: Long,`id`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_profilemanager_update_watched_item(`ptr`: Long,`profileId`: RustBuffer.ByValue,`item`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_profilemanager_verify_pin(`ptr`: Long,`id`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_clone_recommendationsmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_recommendationsmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_recommendationsmanager_new(`apiClient`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_recommendationsmanager_get_movies(`ptr`: Long,`limit`: Int,`ignoreCollected`: Byte,
+): Long
+external fun uniffi_nuvio_core_fn_method_recommendationsmanager_get_shows(`ptr`: Long,`limit`: Int,`ignoreCollected`: Byte,
+): Long
+external fun uniffi_nuvio_core_fn_method_recommendationsmanager_hide_movie(`ptr`: Long,`id`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_method_recommendationsmanager_hide_show(`ptr`: Long,`id`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_clone_searchmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_searchmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_searchmanager_new(`apiClient`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_searchmanager_search_by_imdb(`ptr`: Long,`imdbId`: RustBuffer.ByValue,`searchType`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_searchmanager_search_by_tmdb(`ptr`: Long,`tmdbId`: Long,`searchType`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_searchmanager_search_text(`ptr`: Long,`searchType`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_clone_stremioservice(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_stremioservice(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_stremioservice_new(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_constructor_stremioservice_with_config(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_stremioservice_add_addon(`ptr`: Long,`addon`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_stremioservice_addon_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun uniffi_nuvio_core_fn_method_stremioservice_aggregate_meta(`ptr`: Long,`contentType`: RustBuffer.ByValue,`contentId`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_stremioservice_clear_addons(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_stremioservice_discover(`ptr`: Long,`url`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_stremioservice_get_addons(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_stremioservice_get_catalog(`ptr`: Long,`addonId`: RustBuffer.ByValue,`contentType`: RustBuffer.ByValue,`catalogId`: RustBuffer.ByValue,`page`: Int,`search`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_stremioservice_resolve_streams(`ptr`: Long,`contentType`: RustBuffer.ByValue,`contentId`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_clone_syncmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_syncmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_syncmanager_new(`apiClient`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_syncmanager_remove_from_collection(`ptr`: Long,`payload`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_method_syncmanager_remove_from_history(`ptr`: Long,`payload`: RustBuffer.ByValue,
+): Long
+external fun uniffi_nuvio_core_fn_clone_tmdb(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_tmdb(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_tmdb_new(`config`: RustBuffer.ByValue,`storage`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_tmdb_extract_tmdb_id_from_stremio_id(`ptr`: Long,`stremioId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_find_by_imdb_id(`ptr`: Long,`imdbId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_all_episodes(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_collection_details(`ptr`: Long,`collectionId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_credits(`ptr`: Long,`tmdbId`: Int,`type`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_episode_details(`ptr`: Long,`tmdbId`: Int,`seasonNumber`: Int,`episodeNumber`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_episode_external_ids(`ptr`: Long,`tmdbId`: Int,`seasonNumber`: Int,`episodeNumber`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_episode_image_url(`ptr`: Long,`episode`: RustBuffer.ByValue,`show`: RustBuffer.ByValue,`size`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_image_url(`ptr`: Long,`path`: RustBuffer.ByValue,`size`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_imdb_ratings(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_movie_details(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_person_combined_credits(`ptr`: Long,`personId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_person_details(`ptr`: Long,`personId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_popular(`ptr`: Long,`type`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_recommendations(`ptr`: Long,`type`: RustBuffer.ByValue,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_season_details(`ptr`: Long,`tmdbId`: Int,`seasonNumber`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_show_external_ids(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_show_image_hints(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_similar(`ptr`: Long,`type`: RustBuffer.ByValue,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_top_rated(`ptr`: Long,`type`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_trending(`ptr`: Long,`timeWindow`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_get_tv_show_details(`ptr`: Long,`tmdbId`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_search_movie(`ptr`: Long,`query`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_search_multi(`ptr`: Long,`query`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_search_person(`ptr`: Long,`query`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_method_tmdb_search_tv_show(`ptr`: Long,`query`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_trakt(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_trakt(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_trakt_new(`clientId`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,`redirectUri`: RustBuffer.ByValue,`tokenCallback`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_auth(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_calendar(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_client(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_comments(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_delete_account_data(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_trakt_recommendations(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_search(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_sync(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_init_callback_vtable_tmdbstorage(`vtable`: UniffiVTableCallbackInterfaceTmdbStorage,
+): Unit
+external fun uniffi_nuvio_core_fn_init_callback_vtable_traktstorage(`vtable`: UniffiVTableCallbackInterfaceTraktStorage,
+): Unit
+external fun uniffi_nuvio_core_fn_init_callback_vtable_trakttokencallback(`vtable`: UniffiVTableCallbackInterfaceTraktTokenCallback,
+): Unit
+external fun uniffi_nuvio_core_fn_func_abort_request(`handleId`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_func_cache_key_for_cast(`contentId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_cache_key_for_episodes(`seriesId`: RustBuffer.ByValue,`season`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_cache_key_for_metadata(`contentType`: RustBuffer.ByValue,`contentId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_cache_key_for_streams(`contentId`: RustBuffer.ByValue,`episodeId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_http_delete(`url`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_http_get(`url`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_http_get_cancellable(`url`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_func_http_post(`url`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`contentType`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_http_post_cancellable(`url`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`contentType`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_func_http_put(`url`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`contentType`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_http_request(`method`: RustBuffer.ByValue,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_init_logging(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_func_is_request_finished(`handleId`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_func_nuvio_get_instance(uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_func_nuvio_initialize(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_func_nuvio_initialize_with_config(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_func_nuvio_is_initialized(uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun uniffi_nuvio_core_fn_func_remove_request_handle(`handleId`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun ffi_nuvio_core_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun ffi_nuvio_core_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun ffi_nuvio_core_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun ffi_nuvio_core_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun ffi_nuvio_core_rust_future_poll_u8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_u8(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_u8(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun ffi_nuvio_core_rust_future_poll_i8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_i8(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_i8(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+external fun ffi_nuvio_core_rust_future_poll_u16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_u16(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_u16(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Short
+external fun ffi_nuvio_core_rust_future_poll_i16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_i16(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_i16(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Short
+external fun ffi_nuvio_core_rust_future_poll_u32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_u32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_u32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun ffi_nuvio_core_rust_future_poll_i32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_i32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_i32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+external fun ffi_nuvio_core_rust_future_poll_u64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_u64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_u64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun ffi_nuvio_core_rust_future_poll_i64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_i64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_i64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun ffi_nuvio_core_rust_future_poll_f32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_f32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_f32(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Float
+external fun ffi_nuvio_core_rust_future_poll_f64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_f64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_f64(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Double
+external fun ffi_nuvio_core_rust_future_poll_rust_buffer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_rust_buffer(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_rust_buffer(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+external fun ffi_nuvio_core_rust_future_poll_void(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_cancel_void(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_free_void(`handle`: Long,
+): Unit
+external fun ffi_nuvio_core_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+
     
-        
 }
 
 private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
@@ -878,6 +1587,222 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 }
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
+    if (lib.uniffi_nuvio_core_checksum_func_abort_request() != 51701.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_cache_key_for_cast() != 55470.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_cache_key_for_episodes() != 34468.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_cache_key_for_metadata() != 10351.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_cache_key_for_streams() != 64830.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_delete() != 18025.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_get() != 59286.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_get_cancellable() != 13335.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_post() != 50774.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_post_cancellable() != 37045.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_put() != 4733.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_http_request() != 14073.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_init_logging() != 51341.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_is_request_finished() != 3110.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_nuvio_get_instance() != 14201.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_nuvio_initialize() != 46238.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_nuvio_initialize_with_config() != 51404.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_nuvio_is_initialized() != 42811.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_func_remove_request_handle() != 8799.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_clear_tokens() != 9522.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_get_access_token() != 29233.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_refresh_token() != 21274.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_store_tokens() != 15787.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies() != 47909.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_calendarmanager_get_my_new_shows() != 40241.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_calendarmanager_get_my_premieres() != 37736.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_calendarmanager_get_my_shows() != 15253.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_get_episode_comments() != 47918.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_get_movie_comments() != 29546.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_get_season_comments() != 64477.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_get_show_comments() != 19826.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_validate_pagination() != 63877.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_commentsmanager_validate_sort() != 21082.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_localmediascanner_scan_directory() != 37932.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_build_episode_notification_content() != 61839.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_cancel_all_notifications() != 5000.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notification() != 49163.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notifications_for_series() != 11961.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_cleanup_old_notifications() != 3137.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_get_notification_stats() != 24685.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_get_scheduled_notifications() != 52391.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_get_settings() != 2486.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_mark_synced() != 3940.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_complete() != 2925.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_progress() != 29773.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_schedule_episode_notification() != 64926.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_schedule_multiple_notifications() != 21684.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_should_sync() != 12137.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationmanager_update_settings() != 3065.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_add_scheduled() != 27662.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_clear_download_notification() != 51019.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_clear_scheduled() != 14848.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_get_scheduled() != 65136.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_get_settings() != 16880.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_load_scheduled() != 51242.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_load_settings() != 57751.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_mark_download_notified() != 30760.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_remove_scheduled() != 25757.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_save_scheduled() != 53157.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_save_settings() != 59099.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_update_settings() != 10375.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_notificationstorage_was_download_notified() != 54845.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviocachemanager_clear() != 60790.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviocachemanager_get() != 7467.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviocachemanager_remove() != 53961.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviocachemanager_set() != 40150.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviocachemanager_stats() != 21271.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviosdk_config() != 2828.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviosdk_environment_name() != 52186.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviosdk_initialized_at() != 20915.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviosdk_is_debug() != 51098.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_nuviosdk_version() != 21658.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_nuvio_core_checksum_method_profilemanager_create_profile() != 39401.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -914,6 +1839,27 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_nuvio_core_checksum_method_profilemanager_verify_pin() != 16828.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_nuvio_core_checksum_method_recommendationsmanager_get_movies() != 31055.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_recommendationsmanager_get_shows() != 8125.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_movie() != 23105.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_show() != 62444.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_searchmanager_search_by_imdb() != 45626.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_searchmanager_search_by_tmdb() != 59331.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_searchmanager_search_text() != 10579.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_nuvio_core_checksum_method_stremioservice_add_addon() != 51111.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -938,13 +1884,193 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_nuvio_core_checksum_method_stremioservice_resolve_streams() != 10100.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_nuvio_core_checksum_method_syncmanager_remove_from_collection() != 35378.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_syncmanager_remove_from_history() != 24344.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_extract_tmdb_id_from_stremio_id() != 38285.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_find_by_imdb_id() != 64710.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_all_episodes() != 1061.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_collection_details() != 9301.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_credits() != 27017.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_episode_details() != 2021.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_episode_external_ids() != 45250.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_episode_image_url() != 5887.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_image_url() != 38478.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_imdb_ratings() != 25743.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_movie_details() != 41113.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_person_combined_credits() != 24376.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_person_details() != 42909.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_popular() != 5509.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_recommendations() != 46428.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_season_details() != 19079.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_show_external_ids() != 6807.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_show_image_hints() != 28395.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_similar() != 2252.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_top_rated() != 47674.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_trending() != 58836.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_get_tv_show_details() != 14710.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_search_movie() != 54656.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_search_multi() != 7743.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_search_person() != 18104.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdb_search_tv_show() != 12668.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_auth() != 36118.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_calendar() != 7866.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_client() != 8797.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_comments() != 27976.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_delete_account_data() != 27770.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_recommendations() != 16718.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_search() != 23228.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_sync() != 13660.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_apiclient_new() != 24711.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_authmanager_new() != 32290.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_calendarmanager_new() != 25968.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_commentsmanager_new() != 14245.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_localmediascanner_new() != 48151.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_notificationmanager_new() != 48661.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_notificationstorage_new() != 19227.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_nuviocachemanager_new() != 6054.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_nuviocachemanager_with_defaults() != 32049.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_nuvio_core_checksum_constructor_profilemanager_new() != 22705.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_recommendationsmanager_new() != 52096.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_searchmanager_new() != 20671.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_constructor_stremioservice_new() != 26971.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_constructor_stremioservice_with_config() != 6632.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_syncmanager_new() != 29465.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_tmdb_new() != 39821.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_trakt_new() != 15524.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdbstorage_save_item() != 16676.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdbstorage_read_item() != 19381.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_tmdbstorage_remove_item() != 42856.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_traktstorage_save_item() != 15173.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_traktstorage_read_item() != 12176.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_traktstorage_remove_item() != 29047.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_traktstorage_delete_all_user_data() != 4378.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_traktstorage_export_user_data() != 24942.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refreshed() != 59384.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refresh_failed() != 54548.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -1078,7 +2204,38 @@ object UniffiWithHandle
  *
  * @suppress
  * */
-object NoHandle
+object NoHandle// Magic number for the Rust proxy to call using the same mechanism as every other method,
+// to free the callback once it's dropped by Rust.
+internal const val IDX_CALLBACK_FREE = 0
+// Callback return codes
+internal const val UNIFFI_CALLBACK_SUCCESS = 0
+internal const val UNIFFI_CALLBACK_ERROR = 1
+internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
+
+/**
+ * @suppress
+ */
+public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: FfiConverter<CallbackInterface, Long> {
+    internal val handleMap = UniffiHandleMap<CallbackInterface>()
+
+    internal fun drop(handle: Long) {
+        handleMap.remove(handle)
+    }
+
+    override fun lift(value: Long): CallbackInterface {
+        return handleMap.get(value)
+    }
+
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
+
+    override fun lower(value: CallbackInterface) = handleMap.insert(value)
+
+    override fun allocationSize(value: CallbackInterface) = 8UL
+
+    override fun write(value: CallbackInterface, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
 /**
  * The cleaner interface for Object finalization code to run.
  * This is the entry point to any implementation that we're using.
@@ -1142,6 +2299,29 @@ private class JavaLangRefCleanable(
     val cleanable: java.lang.ref.Cleaner.Cleanable
 ) : UniffiCleaner.Cleanable {
     override fun clean() = cleanable.clean()
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterUShort: FfiConverter<UShort, Short> {
+    override fun lift(value: Short): UShort {
+        return value.toUShort()
+    }
+
+    override fun read(buf: ByteBuffer): UShort {
+        return lift(buf.getShort())
+    }
+
+    override fun lower(value: UShort): Short {
+        return value.toShort()
+    }
+
+    override fun allocationSize(value: UShort) = 2UL
+
+    override fun write(value: UShort, buf: ByteBuffer) {
+        buf.putShort(value.toShort())
+    }
 }
 
 /**
@@ -1336,6 +2516,4433 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
         val byteBuf = toUtf8(value)
         buf.putInt(byteBuf.limit())
         buf.put(byteBuf)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
+    override fun read(buf: ByteBuffer): ByteArray {
+        val len = buf.getInt()
+        val byteArr = ByteArray(len)
+        buf.get(byteArr)
+        return byteArr
+    }
+    override fun allocationSize(value: ByteArray): ULong {
+        return 4UL + value.size.toULong()
+    }
+    override fun write(value: ByteArray, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        buf.put(value)
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * API client for Trakt.tv with rate limiting
+ */
+public interface ApiClientInterface {
+    
+    companion object
+}
+
+/**
+ * API client for Trakt.tv with rate limiting
+ */
+open class ApiClient: Disposable, AutoCloseable, ApiClientInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Create a new API client with standard rate limits
+     *
+     * Standard limits:
+     * - Read (GET): 1,000 requests per 5 minutes (200 req/min)
+     * - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+     */
+    constructor() :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_apiclient_new(
+    
+        _status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_apiclient(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_apiclient(handle, status)
+        }
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeApiClient: FfiConverter<ApiClient, Long> {
+    override fun lower(value: ApiClient): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): ApiClient {
+        return ApiClient(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): ApiClient {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: ApiClient) = 8UL
+
+    override fun write(value: ApiClient, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+public interface AuthManagerInterface {
+    
+    /**
+     * Clears stored tokens
+     */
+    fun `clearTokens`()
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+    suspend fun `getAccessToken`(): kotlin.String?
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+    suspend fun `refreshToken`(): kotlin.String
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */
+    fun `storeTokens`(`accessToken`: kotlin.String, `refreshToken`: kotlin.String, `expiresInSecs`: kotlin.Long)
+    
+    companion object
+}
+
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+open class AuthManager: Disposable, AutoCloseable, AuthManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new authentication manager
+     *
+     * # Parameters
+     * - `client_id`: Trakt API client ID
+     * - `client_secret`: Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI
+     * - `callback`: Optional callback for token refresh notifications
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::AuthManager;
+     *
+     * let auth_manager = AuthManager::new(
+     * "your_client_id".to_string(),
+     * "your_client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     * ```
+     */
+    constructor(`clientId`: kotlin.String, `clientSecret`: kotlin.String, `redirectUri`: kotlin.String, `callback`: TraktTokenCallback?) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_authmanager_new(
+    
+        FfiConverterString.lower(`clientId`),FfiConverterString.lower(`clientSecret`),FfiConverterString.lower(`redirectUri`),FfiConverterOptionalTypeTraktTokenCallback.lower(`callback`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_authmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_authmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Clears stored tokens
+     */override fun `clearTokens`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_authmanager_clear_tokens(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getAccessToken`() : kotlin.String? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_authmanager_get_access_token(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalString.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `refreshToken`() : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_authmanager_refresh_token(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */override fun `storeTokens`(`accessToken`: kotlin.String, `refreshToken`: kotlin.String, `expiresInSecs`: kotlin.Long)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_authmanager_store_tokens(
+        it,
+        FfiConverterString.lower(`accessToken`),FfiConverterString.lower(`refreshToken`),FfiConverterLong.lower(`expiresInSecs`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuthManager: FfiConverter<AuthManager, Long> {
+    override fun lower(value: AuthManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): AuthManager {
+        return AuthManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): AuthManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: AuthManager) = 8UL
+
+    override fun write(value: AuthManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Calendar manager for Trakt.tv
+ *
+ * Provides access to personalized calendar data including:
+ * - My shows: Episodes from shows in your watched/collected history
+ * - New shows: Season premieres of shows you watch
+ * - Premieres: All new show premieres
+ * - Movies: Movies releasing in theaters or on streaming
+ *
+ * # Date Format
+ * Dates should be in ISO 8601 format (YYYY-MM-DD), e.g., "2024-01-15"
+ *
+ * # Days Range
+ * The `days` parameter can be 1-33, representing how many days to fetch
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CalendarManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let calendar = CalendarManager::new(api_client);
+ *
+ * // Get shows for the next 7 days starting today
+ * // let shows = calendar.get_my_shows("2024-01-15", 7).await.unwrap();
+ * ```
+ */
+public interface CalendarManagerInterface {
+    
+    /**
+     * Get calendar for my movies
+     *
+     * Returns movies being released during the time period.
+     * This is personalized based on the user's watchlist and viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarMovie>)`: List of upcoming movies
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/movies/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get movies releasing in the next 7 days
+     * let movies = calendar.get_my_movies("2024-01-15".to_string(), 7).await?;
+     * for movie in movies {
+     * println!("{} ({})", movie.movie.title, movie.released);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMyMovies`(`startDate`: kotlin.String, `days`: kotlin.Int): List<TraktCalendarMovie>
+    
+    /**
+     * Get calendar for new show premieres that the user watches
+     *
+     * Returns season premieres for shows the user has watched or collected.
+     * This includes both new series premieres and returning series season premieres.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of new season episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/new/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get new season premieres for the next 14 days
+     * let premieres = calendar.get_my_new_shows("2024-01-15".to_string(), 14).await?;
+     * for show in premieres {
+     * println!("New season: {} - S{}E{}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMyNewShows`(`startDate`: kotlin.String, `days`: kotlin.Int): List<TraktCalendarShow>
+    
+    /**
+     * Get calendar for all show premieres
+     *
+     * Returns all show season premieres airing during the time period.
+     * Unlike get_my_new_shows(), this includes ALL shows, not just ones the user watches.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of all show premieres
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/premieres/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get all premieres for the next 30 days
+     * let premieres = calendar.get_my_premieres("2024-01-15".to_string(), 30).await?;
+     * println!("Found {} premieres", premieres.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMyPremieres`(`startDate`: kotlin.String, `days`: kotlin.Int): List<TraktCalendarShow>
+    
+    /**
+     * Get calendar for my shows
+     *
+     * Returns upcoming episodes for shows the user has watched or collected.
+     * This is a personalized calendar based on the user's viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of upcoming show episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get shows for the next week starting from January 15, 2024
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * for show in shows {
+     * println!("{} - S{}E{}: {}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number,
+     * show.episode.title
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMyShows`(`startDate`: kotlin.String, `days`: kotlin.Int): List<TraktCalendarShow>
+    
+    companion object
+}
+
+/**
+ * Calendar manager for Trakt.tv
+ *
+ * Provides access to personalized calendar data including:
+ * - My shows: Episodes from shows in your watched/collected history
+ * - New shows: Season premieres of shows you watch
+ * - Premieres: All new show premieres
+ * - Movies: Movies releasing in theaters or on streaming
+ *
+ * # Date Format
+ * Dates should be in ISO 8601 format (YYYY-MM-DD), e.g., "2024-01-15"
+ *
+ * # Days Range
+ * The `days` parameter can be 1-33, representing how many days to fetch
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CalendarManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let calendar = CalendarManager::new(api_client);
+ *
+ * // Get shows for the next 7 days starting today
+ * // let shows = calendar.get_my_shows("2024-01-15", 7).await.unwrap();
+ * ```
+ */
+open class CalendarManager: Disposable, AutoCloseable, CalendarManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new calendar manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new CalendarManager instance
+     */
+    constructor(`apiClient`: ApiClient) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_calendarmanager_new(
+    
+        FfiConverterTypeApiClient.lower(`apiClient`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_calendarmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_calendarmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Get calendar for my movies
+     *
+     * Returns movies being released during the time period.
+     * This is personalized based on the user's watchlist and viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarMovie>)`: List of upcoming movies
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/movies/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get movies releasing in the next 7 days
+     * let movies = calendar.get_my_movies("2024-01-15".to_string(), 7).await?;
+     * for movie in movies {
+     * println!("{} ({})", movie.movie.title, movie.released);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMyMovies`(`startDate`: kotlin.String, `days`: kotlin.Int) : List<TraktCalendarMovie> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_calendarmanager_get_my_movies(
+                uniffiHandle,
+                FfiConverterString.lower(`startDate`),FfiConverterInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktCalendarMovie.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get calendar for new show premieres that the user watches
+     *
+     * Returns season premieres for shows the user has watched or collected.
+     * This includes both new series premieres and returning series season premieres.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of new season episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/new/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get new season premieres for the next 14 days
+     * let premieres = calendar.get_my_new_shows("2024-01-15".to_string(), 14).await?;
+     * for show in premieres {
+     * println!("New season: {} - S{}E{}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMyNewShows`(`startDate`: kotlin.String, `days`: kotlin.Int) : List<TraktCalendarShow> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_calendarmanager_get_my_new_shows(
+                uniffiHandle,
+                FfiConverterString.lower(`startDate`),FfiConverterInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktCalendarShow.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get calendar for all show premieres
+     *
+     * Returns all show season premieres airing during the time period.
+     * Unlike get_my_new_shows(), this includes ALL shows, not just ones the user watches.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of all show premieres
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/premieres/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get all premieres for the next 30 days
+     * let premieres = calendar.get_my_premieres("2024-01-15".to_string(), 30).await?;
+     * println!("Found {} premieres", premieres.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMyPremieres`(`startDate`: kotlin.String, `days`: kotlin.Int) : List<TraktCalendarShow> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_calendarmanager_get_my_premieres(
+                uniffiHandle,
+                FfiConverterString.lower(`startDate`),FfiConverterInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktCalendarShow.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get calendar for my shows
+     *
+     * Returns upcoming episodes for shows the user has watched or collected.
+     * This is a personalized calendar based on the user's viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of upcoming show episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get shows for the next week starting from January 15, 2024
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * for show in shows {
+     * println!("{} - S{}E{}: {}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number,
+     * show.episode.title
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMyShows`(`startDate`: kotlin.String, `days`: kotlin.Int) : List<TraktCalendarShow> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_calendarmanager_get_my_shows(
+                uniffiHandle,
+                FfiConverterString.lower(`startDate`),FfiConverterInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktCalendarShow.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCalendarManager: FfiConverter<CalendarManager, Long> {
+    override fun lower(value: CalendarManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): CalendarManager {
+        return CalendarManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): CalendarManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: CalendarManager) = 8UL
+
+    override fun write(value: CalendarManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Comments manager for Trakt.tv
+ *
+ * Provides access to user comments and reviews for:
+ * - Movies: User reviews and discussions about movies
+ * - Shows: User reviews and discussions about TV shows
+ * - Seasons: User comments about specific seasons
+ * - Episodes: User comments about specific episodes
+ *
+ * # Sort Options
+ * Comments can be sorted by:
+ * - `newest`: Most recent comments first
+ * - `oldest`: Oldest comments first
+ * - `likes`: Most liked comments first
+ * - `replies`: Comments with most replies first
+ *
+ * # Pagination
+ * Use `page` and `limit` parameters to paginate through large comment threads.
+ * - `page`: 1-indexed page number (default: 1)
+ * - `limit`: Number of comments per page (default: 10, max: 1000)
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CommentsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let comments = CommentsManager::new(api_client);
+ *
+ * // Get comments for a movie
+ * // let movie_comments = comments.get_movie_comments("tron-legacy-2010".to_string(), "likes".to_string(), 1, 10).await.unwrap();
+ * ```
+ */
+public interface CommentsManagerInterface {
+    
+    /**
+     * Get comments for an episode
+     *
+     * Returns user comments for a specific episode of a TV show.
+     *
+     * # Parameters
+     * - `id`: Episode Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /episodes/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific episode
+     * let episode_comments = comments.get_episode_comments(
+     * "67890".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getEpisodeComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int): List<TraktComment>
+    
+    /**
+     * Get comments for a movie
+     *
+     * Returns user comments and reviews for a specific movie.
+     *
+     * # Parameters
+     * - `id`: Movie Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /movies/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the most liked comments for Inception
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     *
+     * for comment in movie_comments {
+     * println!("{}: {}", comment.user.username, comment.comment);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMovieComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int): List<TraktComment>
+    
+    /**
+     * Get comments for a season
+     *
+     * Returns user comments for a specific season of a TV show.
+     *
+     * # Parameters
+     * - `id`: Season Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /seasons/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific season
+     * let season_comments = comments.get_season_comments(
+     * "12345".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getSeasonComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int): List<TraktComment>
+    
+    /**
+     * Get comments for a TV show
+     *
+     * Returns user comments and reviews for a specific TV show.
+     *
+     * # Parameters
+     * - `id`: Show Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /shows/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the newest comments for Breaking Bad
+     * let show_comments = comments.get_show_comments(
+     * "breaking-bad".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 20
+     * ).await?;
+     *
+     * println!("Found {} comments", show_comments.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getShowComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int): List<TraktComment>
+    
+    /**
+     * Validates pagination parameters
+     *
+     * # Parameters
+     * - `page`: Page number to validate (must be >= 1)
+     * - `limit`: Limit to validate (must be 1-1000)
+     *
+     * # Returns
+     * - `Ok(())`: Pagination parameters are valid
+     * - `Err(String)`: Pagination parameters are invalid
+     */
+    fun `validatePagination`(`page`: kotlin.Int, `limit`: kotlin.Int)
+    
+    /**
+     * Validates the sort parameter
+     *
+     * # Parameters
+     * - `sort`: Sort order to validate
+     *
+     * # Returns
+     * - `Ok(())`: Sort parameter is valid
+     * - `Err(String)`: Sort parameter is invalid
+     */
+    fun `validateSort`(`sort`: kotlin.String)
+    
+    companion object
+}
+
+/**
+ * Comments manager for Trakt.tv
+ *
+ * Provides access to user comments and reviews for:
+ * - Movies: User reviews and discussions about movies
+ * - Shows: User reviews and discussions about TV shows
+ * - Seasons: User comments about specific seasons
+ * - Episodes: User comments about specific episodes
+ *
+ * # Sort Options
+ * Comments can be sorted by:
+ * - `newest`: Most recent comments first
+ * - `oldest`: Oldest comments first
+ * - `likes`: Most liked comments first
+ * - `replies`: Comments with most replies first
+ *
+ * # Pagination
+ * Use `page` and `limit` parameters to paginate through large comment threads.
+ * - `page`: 1-indexed page number (default: 1)
+ * - `limit`: Number of comments per page (default: 10, max: 1000)
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CommentsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let comments = CommentsManager::new(api_client);
+ *
+ * // Get comments for a movie
+ * // let movie_comments = comments.get_movie_comments("tron-legacy-2010".to_string(), "likes".to_string(), 1, 10).await.unwrap();
+ * ```
+ */
+open class CommentsManager: Disposable, AutoCloseable, CommentsManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new comments manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new CommentsManager instance
+     */
+    constructor(`apiClient`: ApiClient) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_commentsmanager_new(
+    
+        FfiConverterTypeApiClient.lower(`apiClient`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_commentsmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_commentsmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Get comments for an episode
+     *
+     * Returns user comments for a specific episode of a TV show.
+     *
+     * # Parameters
+     * - `id`: Episode Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /episodes/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific episode
+     * let episode_comments = comments.get_episode_comments(
+     * "67890".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getEpisodeComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int) : List<TraktComment> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_get_episode_comments(
+                uniffiHandle,
+                FfiConverterString.lower(`id`),FfiConverterString.lower(`sort`),FfiConverterInt.lower(`page`),FfiConverterInt.lower(`limit`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktComment.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get comments for a movie
+     *
+     * Returns user comments and reviews for a specific movie.
+     *
+     * # Parameters
+     * - `id`: Movie Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /movies/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the most liked comments for Inception
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     *
+     * for comment in movie_comments {
+     * println!("{}: {}", comment.user.username, comment.comment);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMovieComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int) : List<TraktComment> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_get_movie_comments(
+                uniffiHandle,
+                FfiConverterString.lower(`id`),FfiConverterString.lower(`sort`),FfiConverterInt.lower(`page`),FfiConverterInt.lower(`limit`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktComment.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get comments for a season
+     *
+     * Returns user comments for a specific season of a TV show.
+     *
+     * # Parameters
+     * - `id`: Season Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /seasons/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific season
+     * let season_comments = comments.get_season_comments(
+     * "12345".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getSeasonComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int) : List<TraktComment> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_get_season_comments(
+                uniffiHandle,
+                FfiConverterString.lower(`id`),FfiConverterString.lower(`sort`),FfiConverterInt.lower(`page`),FfiConverterInt.lower(`limit`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktComment.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get comments for a TV show
+     *
+     * Returns user comments and reviews for a specific TV show.
+     *
+     * # Parameters
+     * - `id`: Show Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /shows/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the newest comments for Breaking Bad
+     * let show_comments = comments.get_show_comments(
+     * "breaking-bad".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 20
+     * ).await?;
+     *
+     * println!("Found {} comments", show_comments.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getShowComments`(`id`: kotlin.String, `sort`: kotlin.String, `page`: kotlin.Int, `limit`: kotlin.Int) : List<TraktComment> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_get_show_comments(
+                uniffiHandle,
+                FfiConverterString.lower(`id`),FfiConverterString.lower(`sort`),FfiConverterInt.lower(`page`),FfiConverterInt.lower(`limit`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktComment.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Validates pagination parameters
+     *
+     * # Parameters
+     * - `page`: Page number to validate (must be >= 1)
+     * - `limit`: Limit to validate (must be 1-1000)
+     *
+     * # Returns
+     * - `Ok(())`: Pagination parameters are valid
+     * - `Err(String)`: Pagination parameters are invalid
+     */
+    @Throws(TraktException::class)override fun `validatePagination`(`page`: kotlin.Int, `limit`: kotlin.Int)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_validate_pagination(
+        it,
+        FfiConverterInt.lower(`page`),FfiConverterInt.lower(`limit`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Validates the sort parameter
+     *
+     * # Parameters
+     * - `sort`: Sort order to validate
+     *
+     * # Returns
+     * - `Ok(())`: Sort parameter is valid
+     * - `Err(String)`: Sort parameter is invalid
+     */
+    @Throws(TraktException::class)override fun `validateSort`(`sort`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_commentsmanager_validate_sort(
+        it,
+        FfiConverterString.lower(`sort`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCommentsManager: FfiConverter<CommentsManager, Long> {
+    override fun lower(value: CommentsManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): CommentsManager {
+        return CommentsManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): CommentsManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: CommentsManager) = 8UL
+
+    override fun write(value: CommentsManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Scanner for local media files
+ */
+public interface LocalMediaScannerInterface {
+    
+    /**
+     * Scans a directory for media files
+     *
+     * This function traverses the directory recursively and returns a list of
+     * supported media files with their metadata.
+     */
+    fun `scanDirectory`(`rootPath`: kotlin.String): List<LocalMediaFile>
+    
+    companion object
+}
+
+/**
+ * Scanner for local media files
+ */
+open class LocalMediaScanner: Disposable, AutoCloseable, LocalMediaScannerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new LocalMediaScanner
+     */
+    constructor() :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_localmediascanner_new(
+    
+        _status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_localmediascanner(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_localmediascanner(handle, status)
+        }
+    }
+
+    
+    /**
+     * Scans a directory for media files
+     *
+     * This function traverses the directory recursively and returns a list of
+     * supported media files with their metadata.
+     */
+    @Throws(NuvioException::class)override fun `scanDirectory`(`rootPath`: kotlin.String): List<LocalMediaFile> {
+            return FfiConverterSequenceTypeLocalMediaFile.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_localmediascanner_scan_directory(
+        it,
+        FfiConverterString.lower(`rootPath`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLocalMediaScanner: FfiConverter<LocalMediaScanner, Long> {
+    override fun lower(value: LocalMediaScanner): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): LocalMediaScanner {
+        return LocalMediaScanner(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): LocalMediaScanner {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: LocalMediaScanner) = 8UL
+
+    override fun write(value: LocalMediaScanner, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Main notification manager
+ *
+ * Handles all notification operations including scheduling, cleanup, and statistics
+ */
+public interface NotificationManagerInterface {
+    
+    /**
+     * Build notification content for an episode
+     *
+     * Helper to create platform-agnostic notification content
+     */
+    fun `buildEpisodeNotificationContent`(`item`: NotificationItem): NotificationContent
+    
+    /**
+     * Cancel all scheduled notifications
+     */
+    fun `cancelAllNotifications`()
+    
+    /**
+     * Cancel a scheduled notification by ID
+     */
+    fun `cancelNotification`(`id`: kotlin.String)
+    
+    /**
+     * Cancel all notifications for a specific series
+     */
+    fun `cancelNotificationsForSeries`(`seriesId`: kotlin.String): kotlin.Int
+    
+    /**
+     * Clean up old and expired notifications
+     *
+     * Removes notifications for episodes that aired more than 24 hours ago
+     */
+    fun `cleanupOldNotifications`(): kotlin.Int
+    
+    /**
+     * Get notification statistics
+     */
+    fun `getNotificationStats`(): NotificationStats
+    
+    /**
+     * Get all scheduled notifications
+     */
+    fun `getScheduledNotifications`(): List<NotificationItem>
+    
+    /**
+     * Get current notification settings
+     */
+    fun `getSettings`(): NotificationSettings
+    
+    /**
+     * Update the last sync time to now
+     */
+    fun `markSynced`()
+    
+    /**
+     * Notify download complete (background only)
+     */
+    fun `notifyDownloadComplete`(`title`: kotlin.String): kotlin.Boolean
+    
+    /**
+     * Notify download progress (background only)
+     *
+     * Only notifies once at 50% progress when app is in background
+     */
+    fun `notifyDownloadProgress`(`title`: kotlin.String, `progress`: kotlin.Int, `downloadedBytes`: kotlin.Long?, `totalBytes`: kotlin.Long?): kotlin.Boolean
+    
+    /**
+     * Schedule an episode notification
+     *
+     * Checks if the notification should be scheduled based on settings and timing,
+     * then creates a notification item and stores it.
+     *
+     * # Parameters
+     * - `params`: Notification scheduling parameters
+     *
+     * # Returns
+     * - `Ok(Some(NotificationItem))`: Successfully scheduled notification
+     * - `Ok(None)`: Notification not scheduled (disabled, duplicate, or past date)
+     * - `Err`: Error occurred
+     */
+    fun `scheduleEpisodeNotification`(`params`: ScheduleNotificationParams): NotificationItem?
+    
+    /**
+     * Schedule multiple episode notifications
+     *
+     * Convenience method to schedule many notifications at once
+     */
+    fun `scheduleMultipleNotifications`(`paramsList`: List<ScheduleNotificationParams>): kotlin.Int
+    
+    /**
+     * Check if enough time has passed since last sync
+     *
+     * Prevents excessive syncing
+     */
+    fun `shouldSync`(`minIntervalSeconds`: kotlin.Long): kotlin.Boolean
+    
+    /**
+     * Update notification settings
+     */
+    fun `updateSettings`(`settings`: NotificationSettings): NotificationSettings
+    
+    companion object
+}
+
+/**
+ * Main notification manager
+ *
+ * Handles all notification operations including scheduling, cleanup, and statistics
+ */
+open class NotificationManager: Disposable, AutoCloseable, NotificationManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new notification manager
+     *
+     * # Parameters
+     * - `storage`: Notification storage instance
+     *
+     * # Returns
+     * A new NotificationManager instance
+     */
+    constructor(`storage`: NotificationStorage) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_notificationmanager_new(
+    
+        FfiConverterTypeNotificationStorage.lower(`storage`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_notificationmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_notificationmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Build notification content for an episode
+     *
+     * Helper to create platform-agnostic notification content
+     */
+    @Throws(NuvioException::class)override fun `buildEpisodeNotificationContent`(`item`: NotificationItem): NotificationContent {
+            return FfiConverterTypeNotificationContent.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_build_episode_notification_content(
+        it,
+        FfiConverterTypeNotificationItem.lower(`item`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Cancel all scheduled notifications
+     */
+    @Throws(NuvioException::class)override fun `cancelAllNotifications`()
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_cancel_all_notifications(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Cancel a scheduled notification by ID
+     */
+    @Throws(NuvioException::class)override fun `cancelNotification`(`id`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_cancel_notification(
+        it,
+        FfiConverterString.lower(`id`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Cancel all notifications for a specific series
+     */
+    @Throws(NuvioException::class)override fun `cancelNotificationsForSeries`(`seriesId`: kotlin.String): kotlin.Int {
+            return FfiConverterInt.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_cancel_notifications_for_series(
+        it,
+        FfiConverterString.lower(`seriesId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Clean up old and expired notifications
+     *
+     * Removes notifications for episodes that aired more than 24 hours ago
+     */
+    @Throws(NuvioException::class)override fun `cleanupOldNotifications`(): kotlin.Int {
+            return FfiConverterInt.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_cleanup_old_notifications(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Get notification statistics
+     */
+    @Throws(NuvioException::class)override fun `getNotificationStats`(): NotificationStats {
+            return FfiConverterTypeNotificationStats.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_get_notification_stats(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Get all scheduled notifications
+     */
+    @Throws(NuvioException::class)override fun `getScheduledNotifications`(): List<NotificationItem> {
+            return FfiConverterSequenceTypeNotificationItem.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_get_scheduled_notifications(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Get current notification settings
+     */
+    @Throws(NuvioException::class)override fun `getSettings`(): NotificationSettings {
+            return FfiConverterTypeNotificationSettings.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_get_settings(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Update the last sync time to now
+     */
+    @Throws(NuvioException::class)override fun `markSynced`()
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_mark_synced(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Notify download complete (background only)
+     */
+    @Throws(NuvioException::class)override fun `notifyDownloadComplete`(`title`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_notify_download_complete(
+        it,
+        FfiConverterString.lower(`title`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Notify download progress (background only)
+     *
+     * Only notifies once at 50% progress when app is in background
+     */
+    @Throws(NuvioException::class)override fun `notifyDownloadProgress`(`title`: kotlin.String, `progress`: kotlin.Int, `downloadedBytes`: kotlin.Long?, `totalBytes`: kotlin.Long?): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_notify_download_progress(
+        it,
+        FfiConverterString.lower(`title`),FfiConverterInt.lower(`progress`),FfiConverterOptionalLong.lower(`downloadedBytes`),FfiConverterOptionalLong.lower(`totalBytes`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Schedule an episode notification
+     *
+     * Checks if the notification should be scheduled based on settings and timing,
+     * then creates a notification item and stores it.
+     *
+     * # Parameters
+     * - `params`: Notification scheduling parameters
+     *
+     * # Returns
+     * - `Ok(Some(NotificationItem))`: Successfully scheduled notification
+     * - `Ok(None)`: Notification not scheduled (disabled, duplicate, or past date)
+     * - `Err`: Error occurred
+     */
+    @Throws(NuvioException::class)override fun `scheduleEpisodeNotification`(`params`: ScheduleNotificationParams): NotificationItem? {
+            return FfiConverterOptionalTypeNotificationItem.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_schedule_episode_notification(
+        it,
+        FfiConverterTypeScheduleNotificationParams.lower(`params`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Schedule multiple episode notifications
+     *
+     * Convenience method to schedule many notifications at once
+     */
+    @Throws(NuvioException::class)override fun `scheduleMultipleNotifications`(`paramsList`: List<ScheduleNotificationParams>): kotlin.Int {
+            return FfiConverterInt.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_schedule_multiple_notifications(
+        it,
+        FfiConverterSequenceTypeScheduleNotificationParams.lower(`paramsList`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Check if enough time has passed since last sync
+     *
+     * Prevents excessive syncing
+     */
+    @Throws(NuvioException::class)override fun `shouldSync`(`minIntervalSeconds`: kotlin.Long): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_should_sync(
+        it,
+        FfiConverterLong.lower(`minIntervalSeconds`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Update notification settings
+     */
+    @Throws(NuvioException::class)override fun `updateSettings`(`settings`: NotificationSettings): NotificationSettings {
+            return FfiConverterTypeNotificationSettings.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationmanager_update_settings(
+        it,
+        FfiConverterTypeNotificationSettings.lower(`settings`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationManager: FfiConverter<NotificationManager, Long> {
+    override fun lower(value: NotificationManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): NotificationManager {
+        return NotificationManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): NotificationManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: NotificationManager) = 8UL
+
+    override fun write(value: NotificationManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Storage for notification data
+ *
+ * This provides an in-memory storage layer with serialization support.
+ * Platform implementations should save/load via MMKV or similar.
+ */
+public interface NotificationStorageInterface {
+    
+    /**
+     * Add a scheduled notification
+     */
+    fun `addScheduled`(`item`: NotificationItem)
+    
+    /**
+     * Clear download notification tracking for a title
+     */
+    fun `clearDownloadNotification`(`title`: kotlin.String)
+    
+    /**
+     * Clear all scheduled notifications
+     */
+    fun `clearScheduled`()
+    
+    /**
+     * Get all scheduled notifications
+     */
+    fun `getScheduled`(): List<NotificationItem>
+    
+    /**
+     * Get current settings
+     */
+    fun `getSettings`(): NotificationSettings
+    
+    /**
+     * Load scheduled notifications from JSON string
+     */
+    fun `loadScheduled`(`json`: kotlin.String): List<NotificationItem>
+    
+    /**
+     * Load settings from JSON string
+     *
+     * Platform should call this with data from MMKV or similar storage
+     */
+    fun `loadSettings`(`json`: kotlin.String): NotificationSettings
+    
+    /**
+     * Track that a download notification was sent
+     */
+    fun `markDownloadNotified`(`title`: kotlin.String, `progress`: kotlin.Int)
+    
+    /**
+     * Remove a scheduled notification by ID
+     */
+    fun `removeScheduled`(`id`: kotlin.String)
+    
+    /**
+     * Save scheduled notifications to JSON string
+     */
+    fun `saveScheduled`(): kotlin.String
+    
+    /**
+     * Save settings to JSON string
+     *
+     * Platform should persist this to MMKV or similar storage
+     */
+    fun `saveSettings`(): kotlin.String
+    
+    /**
+     * Update settings
+     */
+    fun `updateSettings`(`settings`: NotificationSettings): NotificationSettings
+    
+    /**
+     * Check if a download notification was already sent at this progress
+     */
+    fun `wasDownloadNotified`(`title`: kotlin.String, `progress`: kotlin.Int): kotlin.Boolean
+    
+    companion object
+}
+
+/**
+ * Storage for notification data
+ *
+ * This provides an in-memory storage layer with serialization support.
+ * Platform implementations should save/load via MMKV or similar.
+ */
+open class NotificationStorage: Disposable, AutoCloseable, NotificationStorageInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new notification storage instance
+     */
+    constructor() :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_notificationstorage_new(
+    
+        _status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_notificationstorage(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_notificationstorage(handle, status)
+        }
+    }
+
+    
+    /**
+     * Add a scheduled notification
+     */
+    @Throws(NuvioException::class)override fun `addScheduled`(`item`: NotificationItem)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_add_scheduled(
+        it,
+        FfiConverterTypeNotificationItem.lower(`item`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Clear download notification tracking for a title
+     */
+    @Throws(NuvioException::class)override fun `clearDownloadNotification`(`title`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_clear_download_notification(
+        it,
+        FfiConverterString.lower(`title`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Clear all scheduled notifications
+     */
+    @Throws(NuvioException::class)override fun `clearScheduled`()
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_clear_scheduled(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Get all scheduled notifications
+     */
+    @Throws(NuvioException::class)override fun `getScheduled`(): List<NotificationItem> {
+            return FfiConverterSequenceTypeNotificationItem.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_get_scheduled(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Get current settings
+     */
+    @Throws(NuvioException::class)override fun `getSettings`(): NotificationSettings {
+            return FfiConverterTypeNotificationSettings.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_get_settings(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Load scheduled notifications from JSON string
+     */
+    @Throws(NuvioException::class)override fun `loadScheduled`(`json`: kotlin.String): List<NotificationItem> {
+            return FfiConverterSequenceTypeNotificationItem.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_load_scheduled(
+        it,
+        FfiConverterString.lower(`json`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Load settings from JSON string
+     *
+     * Platform should call this with data from MMKV or similar storage
+     */
+    @Throws(NuvioException::class)override fun `loadSettings`(`json`: kotlin.String): NotificationSettings {
+            return FfiConverterTypeNotificationSettings.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_load_settings(
+        it,
+        FfiConverterString.lower(`json`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Track that a download notification was sent
+     */
+    @Throws(NuvioException::class)override fun `markDownloadNotified`(`title`: kotlin.String, `progress`: kotlin.Int)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_mark_download_notified(
+        it,
+        FfiConverterString.lower(`title`),FfiConverterInt.lower(`progress`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Remove a scheduled notification by ID
+     */
+    @Throws(NuvioException::class)override fun `removeScheduled`(`id`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_remove_scheduled(
+        it,
+        FfiConverterString.lower(`id`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Save scheduled notifications to JSON string
+     */
+    @Throws(NuvioException::class)override fun `saveScheduled`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_save_scheduled(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Save settings to JSON string
+     *
+     * Platform should persist this to MMKV or similar storage
+     */
+    @Throws(NuvioException::class)override fun `saveSettings`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_save_settings(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Update settings
+     */
+    @Throws(NuvioException::class)override fun `updateSettings`(`settings`: NotificationSettings): NotificationSettings {
+            return FfiConverterTypeNotificationSettings.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_update_settings(
+        it,
+        FfiConverterTypeNotificationSettings.lower(`settings`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Check if a download notification was already sent at this progress
+     */
+    @Throws(NuvioException::class)override fun `wasDownloadNotified`(`title`: kotlin.String, `progress`: kotlin.Int): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_notificationstorage_was_download_notified(
+        it,
+        FfiConverterString.lower(`title`),FfiConverterInt.lower(`progress`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationStorage: FfiConverter<NotificationStorage, Long> {
+    override fun lower(value: NotificationStorage): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): NotificationStorage {
+        return NotificationStorage(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): NotificationStorage {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: NotificationStorage) = 8UL
+
+    override fun write(value: NotificationStorage, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * UniFFI-exported cache manager
+ *
+ * This wraps the internal CacheManager and provides blocking FFI methods
+ * that can be called from Kotlin and Swift.
+ */
+public interface NuvioCacheManagerInterface {
+    
+    /**
+     * Clears all entries from the cache
+     */
+    fun `clear`()
+    
+    /**
+     * Retrieves a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to retrieve
+     *
+     * # Returns
+     *
+     * The cached value if it exists, or None if not found or expired
+     */
+    fun `get`(`key`: kotlin.String): kotlin.ByteArray?
+    
+    /**
+     * Removes a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to remove
+     */
+    fun `remove`(`key`: kotlin.String)
+    
+    /**
+     * Stores a value in the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key
+     * * `value` - The value to store (raw bytes)
+     */
+    fun `set`(`key`: kotlin.String, `value`: kotlin.ByteArray)
+    
+    /**
+     * Returns cache statistics
+     */
+    fun `stats`(): CacheStats
+    
+    companion object
+}
+
+/**
+ * UniFFI-exported cache manager
+ *
+ * This wraps the internal CacheManager and provides blocking FFI methods
+ * that can be called from Kotlin and Swift.
+ */
+open class NuvioCacheManager: Disposable, AutoCloseable, NuvioCacheManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new cache manager with the given configuration
+     */
+    constructor(`config`: CacheConfiguration) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_nuviocachemanager_new(
+    
+        FfiConverterTypeCacheConfiguration.lower(`config`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_nuviocachemanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_nuviocachemanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Clears all entries from the cache
+     */
+    @Throws(NuvioException::class)override fun `clear`()
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviocachemanager_clear(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Retrieves a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to retrieve
+     *
+     * # Returns
+     *
+     * The cached value if it exists, or None if not found or expired
+     */
+    @Throws(NuvioException::class)override fun `get`(`key`: kotlin.String): kotlin.ByteArray? {
+            return FfiConverterOptionalByteArray.lift(
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviocachemanager_get(
+        it,
+        FfiConverterString.lower(`key`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Removes a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to remove
+     */
+    @Throws(NuvioException::class)override fun `remove`(`key`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviocachemanager_remove(
+        it,
+        FfiConverterString.lower(`key`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Stores a value in the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key
+     * * `value` - The value to store (raw bytes)
+     */
+    @Throws(NuvioException::class)override fun `set`(`key`: kotlin.String, `value`: kotlin.ByteArray)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviocachemanager_set(
+        it,
+        FfiConverterString.lower(`key`),FfiConverterByteArray.lower(`value`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Returns cache statistics
+     */override fun `stats`(): CacheStats {
+            return FfiConverterTypeCacheStats.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviocachemanager_stats(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    companion object {
+        
+    /**
+     * Creates a new cache manager with default configuration
+     */
+    @Throws(NuvioException::class) fun `withDefaults`(): NuvioCacheManager {
+            return FfiConverterTypeNuvioCacheManager.lift(
+    uniffiRustCallWithError(NuvioException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_nuviocachemanager_with_defaults(
+    
+        _status)
+}
+    )
+    }
+    
+
+        
+    }
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNuvioCacheManager: FfiConverter<NuvioCacheManager, Long> {
+    override fun lower(value: NuvioCacheManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): NuvioCacheManager {
+        return NuvioCacheManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): NuvioCacheManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: NuvioCacheManager) = 8UL
+
+    override fun write(value: NuvioCacheManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * The main Nuvio SDK singleton.
+ *
+ * This struct provides access to SDK functionality and maintains the SDK state.
+ * It should be initialized once at application startup using [`nuvio_initialize`]
+ * or [`nuvio_initialize_with_config`].
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Thread Safety
+ *
+ * The SDK is thread-safe and can be accessed from multiple threads concurrently.
+ */
+public interface NuvioSdkInterface {
+    
+    /**
+     * Returns the SDK configuration.
+     */
+    fun `config`(): SdkConfig
+    
+    /**
+     * Returns the current environment name.
+     */
+    fun `environmentName`(): kotlin.String
+    
+    /**
+     * Returns the timestamp when the SDK was initialized (Unix epoch milliseconds).
+     */
+    fun `initializedAt`(): kotlin.Long
+    
+    /**
+     * Returns whether the SDK is running in debug mode.
+     */
+    fun `isDebug`(): kotlin.Boolean
+    
+    /**
+     * Returns the SDK version.
+     */
+    fun `version`(): kotlin.String
+    
+    companion object
+}
+
+/**
+ * The main Nuvio SDK singleton.
+ *
+ * This struct provides access to SDK functionality and maintains the SDK state.
+ * It should be initialized once at application startup using [`nuvio_initialize`]
+ * or [`nuvio_initialize_with_config`].
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Thread Safety
+ *
+ * The SDK is thread-safe and can be accessed from multiple threads concurrently.
+ */
+open class NuvioSdk: Disposable, AutoCloseable, NuvioSdkInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_nuviosdk(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_nuviosdk(handle, status)
+        }
+    }
+
+    
+    /**
+     * Returns the SDK configuration.
+     */override fun `config`(): SdkConfig {
+            return FfiConverterTypeSdkConfig.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviosdk_config(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Returns the current environment name.
+     */override fun `environmentName`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviosdk_environment_name(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Returns the timestamp when the SDK was initialized (Unix epoch milliseconds).
+     */override fun `initializedAt`(): kotlin.Long {
+            return FfiConverterLong.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviosdk_initialized_at(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Returns whether the SDK is running in debug mode.
+     */override fun `isDebug`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviosdk_is_debug(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Returns the SDK version.
+     */override fun `version`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_nuviosdk_version(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNuvioSdk: FfiConverter<NuvioSdk, Long> {
+    override fun lower(value: NuvioSdk): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): NuvioSdk {
+        return NuvioSdk(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): NuvioSdk {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: NuvioSdk) = 8UL
+
+    override fun write(value: NuvioSdk, buf: ByteBuffer) {
+        buf.putLong(lower(value))
     }
 }
 
@@ -1766,6 +7373,1263 @@ public object FfiConverterTypeProfileManager: FfiConverter<ProfileManager, Long>
     override fun allocationSize(value: ProfileManager) = 8UL
 
     override fun write(value: ProfileManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Recommendations manager for Trakt.tv
+ *
+ * Provides access to personalized content recommendations including:
+ * - Movie recommendations based on viewing history and ratings
+ * - Show recommendations based on viewing history and ratings
+ * - Ability to hide recommendations that aren't of interest
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let recommendations = RecommendationsManager::new(api_client);
+ *
+ * // Get top 10 movie recommendations
+ * // let movies = recommendations.get_movies(10, false).await.unwrap();
+ * ```
+ */
+public interface RecommendationsManagerInterface {
+    
+    /**
+     * Get movie recommendations
+     *
+     * Returns personalized movie recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude movies already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of movie recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/movies?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 10 movie recommendations, excluding collected movies
+     * let movies = recommendations.get_movies(10, true).await?;
+     * for rec in movies {
+     * if let Some(movie) = rec.movie {
+     * println!("{} ({})", movie.title, movie.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getMovies`(`limit`: kotlin.Int, `ignoreCollected`: kotlin.Boolean): List<TraktRecommendation>
+    
+    /**
+     * Get show recommendations
+     *
+     * Returns personalized show recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude shows already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of show recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/shows?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 20 show recommendations, including collected shows
+     * let shows = recommendations.get_shows(20, false).await?;
+     * for rec in shows {
+     * if let Some(show) = rec.show {
+     * println!("{} ({})", show.title, show.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `getShows`(`limit`: kotlin.Int, `ignoreCollected`: kotlin.Boolean): List<TraktRecommendation>
+    
+    /**
+     * Hide a movie recommendation
+     *
+     * Removes a specific movie from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The movie will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the movie to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/movies/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a movie recommendation by Trakt ID
+     * recommendations.hide_movie(12345).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `hideMovie`(`id`: kotlin.Long)
+    
+    /**
+     * Hide a show recommendation
+     *
+     * Removes a specific show from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The show will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the show to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/shows/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a show recommendation by Trakt ID
+     * recommendations.hide_show(67890).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `hideShow`(`id`: kotlin.Long)
+    
+    companion object
+}
+
+/**
+ * Recommendations manager for Trakt.tv
+ *
+ * Provides access to personalized content recommendations including:
+ * - Movie recommendations based on viewing history and ratings
+ * - Show recommendations based on viewing history and ratings
+ * - Ability to hide recommendations that aren't of interest
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let recommendations = RecommendationsManager::new(api_client);
+ *
+ * // Get top 10 movie recommendations
+ * // let movies = recommendations.get_movies(10, false).await.unwrap();
+ * ```
+ */
+open class RecommendationsManager: Disposable, AutoCloseable, RecommendationsManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new recommendations manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new RecommendationsManager instance
+     */
+    constructor(`apiClient`: ApiClient) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_recommendationsmanager_new(
+    
+        FfiConverterTypeApiClient.lower(`apiClient`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_recommendationsmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_recommendationsmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Get movie recommendations
+     *
+     * Returns personalized movie recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude movies already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of movie recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/movies?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 10 movie recommendations, excluding collected movies
+     * let movies = recommendations.get_movies(10, true).await?;
+     * for rec in movies {
+     * if let Some(movie) = rec.movie {
+     * println!("{} ({})", movie.title, movie.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getMovies`(`limit`: kotlin.Int, `ignoreCollected`: kotlin.Boolean) : List<TraktRecommendation> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_recommendationsmanager_get_movies(
+                uniffiHandle,
+                FfiConverterInt.lower(`limit`),FfiConverterBoolean.lower(`ignoreCollected`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktRecommendation.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Get show recommendations
+     *
+     * Returns personalized show recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude shows already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of show recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/shows?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 20 show recommendations, including collected shows
+     * let shows = recommendations.get_shows(20, false).await?;
+     * for rec in shows {
+     * if let Some(show) = rec.show {
+     * println!("{} ({})", show.title, show.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getShows`(`limit`: kotlin.Int, `ignoreCollected`: kotlin.Boolean) : List<TraktRecommendation> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_recommendationsmanager_get_shows(
+                uniffiHandle,
+                FfiConverterInt.lower(`limit`),FfiConverterBoolean.lower(`ignoreCollected`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktRecommendation.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Hide a movie recommendation
+     *
+     * Removes a specific movie from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The movie will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the movie to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/movies/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a movie recommendation by Trakt ID
+     * recommendations.hide_movie(12345).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `hideMovie`(`id`: kotlin.Long) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_recommendationsmanager_hide_movie(
+                uniffiHandle,
+                FfiConverterLong.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Hide a show recommendation
+     *
+     * Removes a specific show from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The show will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the show to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/shows/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a show recommendation by Trakt ID
+     * recommendations.hide_show(67890).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `hideShow`(`id`: kotlin.Long) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_recommendationsmanager_hide_show(
+                uniffiHandle,
+                FfiConverterLong.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeRecommendationsManager: FfiConverter<RecommendationsManager, Long> {
+    override fun lower(value: RecommendationsManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): RecommendationsManager {
+        return RecommendationsManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): RecommendationsManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: RecommendationsManager) = 8UL
+
+    override fun write(value: RecommendationsManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Search manager for Trakt.tv
+ *
+ * Provides search functionality including:
+ * - Text search across movies, shows, episodes, people, and lists
+ * - Exact IMDb ID lookup
+ * - TMDB ID search
+ *
+ * # Search Types
+ * Supported search types: `movie`, `show`, `episode`, `person`, `list`
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SearchManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let search = SearchManager::new(api_client);
+ *
+ * // Search for movies matching "inception"
+ * // let results = search.search_text("movie", "inception").await.unwrap();
+ * ```
+ */
+public interface SearchManagerInterface {
+    
+    /**
+     * Search by IMDb ID
+     *
+     * Lookup content by exact IMDb ID. This is useful for finding the
+     * Trakt equivalent of content when you have an IMDb identifier.
+     *
+     * # Parameters
+     * - `imdb_id`: IMDb ID (e.g., "tt0133093" for The Matrix)
+     * - `search_type`: Optional type filter (movie, show, episode). If empty, searches all types.
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/imdb/{id}?type={type}` (type parameter is optional)
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by IMDb ID
+     * let results = search.search_by_imdb("tt0133093".to_string(), "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `searchByImdb`(`imdbId`: kotlin.String, `searchType`: kotlin.String): List<TraktSearchResult>
+    
+    /**
+     * Search by TMDB ID
+     *
+     * Lookup content by TMDB (The Movie Database) ID. This is useful for
+     * finding the Trakt equivalent when you have a TMDB identifier.
+     *
+     * # Parameters
+     * - `tmdb_id`: TMDB ID (positive integer)
+     * - `search_type`: Type of content (movie or show)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?id_type=tmdb&id={id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by TMDB ID
+     * let results = search.search_by_tmdb(603, "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `searchByTmdb`(`tmdbId`: kotlin.Long, `searchType`: kotlin.String): List<TraktSearchResult>
+    
+    /**
+     * Search by text query
+     *
+     * Search for content by text query. The search will match against
+     * titles, descriptions, and other metadata depending on the type.
+     *
+     * # Parameters
+     * - `search_type`: Type of content to search (movie, show, episode, person, list)
+     * - `query`: Search query text (must not be empty)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of search results with relevance scores
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?query={query}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Search for movies matching "inception"
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * for result in results {
+     * if let Some(movie) = result.movie {
+     * println!("{} (score: {})", movie.title, result.score);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    suspend fun `searchText`(`searchType`: kotlin.String, `query`: kotlin.String): List<TraktSearchResult>
+    
+    companion object
+}
+
+/**
+ * Search manager for Trakt.tv
+ *
+ * Provides search functionality including:
+ * - Text search across movies, shows, episodes, people, and lists
+ * - Exact IMDb ID lookup
+ * - TMDB ID search
+ *
+ * # Search Types
+ * Supported search types: `movie`, `show`, `episode`, `person`, `list`
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SearchManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let search = SearchManager::new(api_client);
+ *
+ * // Search for movies matching "inception"
+ * // let results = search.search_text("movie", "inception").await.unwrap();
+ * ```
+ */
+open class SearchManager: Disposable, AutoCloseable, SearchManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new search manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new SearchManager instance
+     */
+    constructor(`apiClient`: ApiClient) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_searchmanager_new(
+    
+        FfiConverterTypeApiClient.lower(`apiClient`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_searchmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_searchmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Search by IMDb ID
+     *
+     * Lookup content by exact IMDb ID. This is useful for finding the
+     * Trakt equivalent of content when you have an IMDb identifier.
+     *
+     * # Parameters
+     * - `imdb_id`: IMDb ID (e.g., "tt0133093" for The Matrix)
+     * - `search_type`: Optional type filter (movie, show, episode). If empty, searches all types.
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/imdb/{id}?type={type}` (type parameter is optional)
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by IMDb ID
+     * let results = search.search_by_imdb("tt0133093".to_string(), "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `searchByImdb`(`imdbId`: kotlin.String, `searchType`: kotlin.String) : List<TraktSearchResult> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_searchmanager_search_by_imdb(
+                uniffiHandle,
+                FfiConverterString.lower(`imdbId`),FfiConverterString.lower(`searchType`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktSearchResult.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Search by TMDB ID
+     *
+     * Lookup content by TMDB (The Movie Database) ID. This is useful for
+     * finding the Trakt equivalent when you have a TMDB identifier.
+     *
+     * # Parameters
+     * - `tmdb_id`: TMDB ID (positive integer)
+     * - `search_type`: Type of content (movie or show)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?id_type=tmdb&id={id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by TMDB ID
+     * let results = search.search_by_tmdb(603, "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `searchByTmdb`(`tmdbId`: kotlin.Long, `searchType`: kotlin.String) : List<TraktSearchResult> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_searchmanager_search_by_tmdb(
+                uniffiHandle,
+                FfiConverterLong.lower(`tmdbId`),FfiConverterString.lower(`searchType`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktSearchResult.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Search by text query
+     *
+     * Search for content by text query. The search will match against
+     * titles, descriptions, and other metadata depending on the type.
+     *
+     * # Parameters
+     * - `search_type`: Type of content to search (movie, show, episode, person, list)
+     * - `query`: Search query text (must not be empty)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of search results with relevance scores
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?query={query}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Search for movies matching "inception"
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * for result in results {
+     * if let Some(movie) = result.movie {
+     * println!("{} (score: {})", movie.title, result.score);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `searchText`(`searchType`: kotlin.String, `query`: kotlin.String) : List<TraktSearchResult> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_searchmanager_search_text(
+                uniffiHandle,
+                FfiConverterString.lower(`searchType`),FfiConverterString.lower(`query`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTraktSearchResult.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSearchManager: FfiConverter<SearchManager, Long> {
+    override fun lower(value: SearchManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): SearchManager {
+        return SearchManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): SearchManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: SearchManager) = 8UL
+
+    override fun write(value: SearchManager, buf: ByteBuffer) {
         buf.putLong(lower(value))
     }
 }
@@ -2622,6 +9486,2392 @@ public object FfiConverterTypeStremioService: FfiConverter<StremioService, Long>
 }
 
 
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Sync manager for Trakt.tv
+ *
+ * Provides access to sync operations including:
+ * - Watched history management (add/remove)
+ * - Collection management (add/remove)
+ * - Watchlist management (add/remove)
+ * - Ratings management
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SyncManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let sync = SyncManager::new(api_client);
+ *
+ * // Remove items from history
+ * // let result = sync.remove_from_history(payload).await.unwrap();
+ * ```
+ */
+public interface SyncManagerInterface {
+    
+    /**
+     * Remove items from collection
+     *
+     * Removes movies, shows, seasons, or episodes from the user's collection.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from collection (movies or shows with optional seasons/episodes)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/collection/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from collection by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_collection(payload).await?;
+     * println!("Removed {} movies, {} episodes from collection",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from collection
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromCollection(payload: payload)
+     * print("Removed \(result.deleted.movies) movies from collection")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from collection
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromCollection(payload)
+     * println("Removed ${result.deleted.episodes} episodes from collection")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    suspend fun `removeFromCollection`(`payload`: TraktHistoryRemovePayload): TraktHistoryRemoveResponse
+    
+    /**
+     * Remove items from watched history
+     *
+     * Removes movies, shows, seasons, or episodes from the user's watched history.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from history (movies, shows with optional seasons/episodes, or history IDs)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/history/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from history by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_history(payload).await?;
+     * println!("Deleted {} movies, {} episodes",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from history
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromHistory(payload: payload)
+     * print("Deleted \(result.deleted.movies) movies")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from history
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromHistory(payload)
+     * println("Deleted ${result.deleted.episodes} episodes")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    suspend fun `removeFromHistory`(`payload`: TraktHistoryRemovePayload): TraktHistoryRemoveResponse
+    
+    companion object
+}
+
+/**
+ * Sync manager for Trakt.tv
+ *
+ * Provides access to sync operations including:
+ * - Watched history management (add/remove)
+ * - Collection management (add/remove)
+ * - Watchlist management (add/remove)
+ * - Ratings management
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SyncManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let sync = SyncManager::new(api_client);
+ *
+ * // Remove items from history
+ * // let result = sync.remove_from_history(payload).await.unwrap();
+ * ```
+ */
+open class SyncManager: Disposable, AutoCloseable, SyncManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new sync manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new SyncManager instance
+     */
+    constructor(`apiClient`: ApiClient) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_syncmanager_new(
+    
+        FfiConverterTypeApiClient.lower(`apiClient`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_syncmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_syncmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Remove items from collection
+     *
+     * Removes movies, shows, seasons, or episodes from the user's collection.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from collection (movies or shows with optional seasons/episodes)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/collection/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from collection by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_collection(payload).await?;
+     * println!("Removed {} movies, {} episodes from collection",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from collection
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromCollection(payload: payload)
+     * print("Removed \(result.deleted.movies) movies from collection")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from collection
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromCollection(payload)
+     * println("Removed ${result.deleted.episodes} episodes from collection")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeFromCollection`(`payload`: TraktHistoryRemovePayload) : TraktHistoryRemoveResponse {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_syncmanager_remove_from_collection(
+                uniffiHandle,
+                FfiConverterTypeTraktHistoryRemovePayload.lower(`payload`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTraktHistoryRemoveResponse.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Remove items from watched history
+     *
+     * Removes movies, shows, seasons, or episodes from the user's watched history.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from history (movies, shows with optional seasons/episodes, or history IDs)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/history/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from history by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_history(payload).await?;
+     * println!("Deleted {} movies, {} episodes",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from history
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromHistory(payload: payload)
+     * print("Deleted \(result.deleted.movies) movies")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from history
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromHistory(payload)
+     * println("Deleted ${result.deleted.episodes} episodes")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeFromHistory`(`payload`: TraktHistoryRemovePayload) : TraktHistoryRemoveResponse {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_syncmanager_remove_from_history(
+                uniffiHandle,
+                FfiConverterTypeTraktHistoryRemovePayload.lower(`payload`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTraktHistoryRemoveResponse.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSyncManager: FfiConverter<SyncManager, Long> {
+    override fun lower(value: SyncManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): SyncManager {
+        return SyncManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): SyncManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: SyncManager) = 8UL
+
+    override fun write(value: SyncManager, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+public interface TmdbInterface {
+    
+    fun `extractTmdbIdFromStremioId`(`stremioId`: kotlin.String): kotlin.Int?
+    
+    fun `findByImdbId`(`imdbId`: kotlin.String): kotlin.Int?
+    
+    fun `getAllEpisodes`(`tmdbId`: kotlin.Int): List<TmdbEpisode>
+    
+    fun `getCollectionDetails`(`collectionId`: kotlin.Int): TmdbCollection
+    
+    fun `getCredits`(`tmdbId`: kotlin.Int, `type`: kotlin.String): Credits
+    
+    fun `getEpisodeDetails`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int, `episodeNumber`: kotlin.Int): TmdbEpisode
+    
+    fun `getEpisodeExternalIds`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int, `episodeNumber`: kotlin.Int): TmdbExternalIds
+    
+    fun `getEpisodeImageUrl`(`episode`: TmdbEpisode, `show`: TmdbShow?, `size`: kotlin.String): kotlin.String?
+    
+    fun `getImageUrl`(`path`: kotlin.String?, `size`: kotlin.String): kotlin.String?
+    
+    fun `getImdbRatings`(`tmdbId`: kotlin.Int): List<ImDbRatingSeason>?
+    
+    fun `getMovieDetails`(`tmdbId`: kotlin.Int): TmdbMovie
+    
+    fun `getPersonCombinedCredits`(`personId`: kotlin.Int): PersonCombinedCredits
+    
+    fun `getPersonDetails`(`personId`: kotlin.Int): TmdbPerson
+    
+    fun `getPopular`(`type`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `getRecommendations`(`type`: kotlin.String, `tmdbId`: kotlin.Int): List<TmdbSearchResult>
+    
+    fun `getSeasonDetails`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int): TmdbSeason
+    
+    fun `getShowExternalIds`(`tmdbId`: kotlin.Int): TmdbExternalIds
+    
+    fun `getShowImageHints`(`tmdbId`: kotlin.Int): List<kotlin.String>
+    
+    fun `getSimilar`(`type`: kotlin.String, `tmdbId`: kotlin.Int): List<TmdbSearchResult>
+    
+    fun `getTopRated`(`type`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `getTrending`(`timeWindow`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `getTvShowDetails`(`tmdbId`: kotlin.Int): TmdbShow
+    
+    fun `searchMovie`(`query`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `searchMulti`(`query`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `searchPerson`(`query`: kotlin.String): List<TmdbSearchResult>
+    
+    fun `searchTvShow`(`query`: kotlin.String): List<TmdbSearchResult>
+    
+    companion object
+}
+
+open class Tmdb: Disposable, AutoCloseable, TmdbInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    constructor(`config`: TmdbConfig, `storage`: TmdbStorage) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_tmdb_new(
+    
+        FfiConverterTypeTmdbConfig.lower(`config`),FfiConverterTypeTmdbStorage.lower(`storage`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_tmdb(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_tmdb(handle, status)
+        }
+    }
+
+    
+    @Throws(TmdbException::class)override fun `extractTmdbIdFromStremioId`(`stremioId`: kotlin.String): kotlin.Int? {
+            return FfiConverterOptionalInt.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_extract_tmdb_id_from_stremio_id(
+        it,
+        FfiConverterString.lower(`stremioId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `findByImdbId`(`imdbId`: kotlin.String): kotlin.Int? {
+            return FfiConverterOptionalInt.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_find_by_imdb_id(
+        it,
+        FfiConverterString.lower(`imdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getAllEpisodes`(`tmdbId`: kotlin.Int): List<TmdbEpisode> {
+            return FfiConverterSequenceTypeTmdbEpisode.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_all_episodes(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getCollectionDetails`(`collectionId`: kotlin.Int): TmdbCollection {
+            return FfiConverterTypeTmdbCollection.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_collection_details(
+        it,
+        FfiConverterInt.lower(`collectionId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getCredits`(`tmdbId`: kotlin.Int, `type`: kotlin.String): Credits {
+            return FfiConverterTypeCredits.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_credits(
+        it,
+        FfiConverterInt.lower(`tmdbId`),FfiConverterString.lower(`type`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getEpisodeDetails`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int, `episodeNumber`: kotlin.Int): TmdbEpisode {
+            return FfiConverterTypeTmdbEpisode.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_episode_details(
+        it,
+        FfiConverterInt.lower(`tmdbId`),FfiConverterInt.lower(`seasonNumber`),FfiConverterInt.lower(`episodeNumber`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getEpisodeExternalIds`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int, `episodeNumber`: kotlin.Int): TmdbExternalIds {
+            return FfiConverterTypeTmdbExternalIds.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_episode_external_ids(
+        it,
+        FfiConverterInt.lower(`tmdbId`),FfiConverterInt.lower(`seasonNumber`),FfiConverterInt.lower(`episodeNumber`),_status)
+}
+    }
+    )
+    }
+    
+
+    override fun `getEpisodeImageUrl`(`episode`: TmdbEpisode, `show`: TmdbShow?, `size`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_episode_image_url(
+        it,
+        FfiConverterTypeTmdbEpisode.lower(`episode`),FfiConverterOptionalTypeTmdbShow.lower(`show`),FfiConverterString.lower(`size`),_status)
+}
+    }
+    )
+    }
+    
+
+    override fun `getImageUrl`(`path`: kotlin.String?, `size`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_image_url(
+        it,
+        FfiConverterOptionalString.lower(`path`),FfiConverterString.lower(`size`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getImdbRatings`(`tmdbId`: kotlin.Int): List<ImDbRatingSeason>? {
+            return FfiConverterOptionalSequenceTypeIMDbRatingSeason.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_imdb_ratings(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getMovieDetails`(`tmdbId`: kotlin.Int): TmdbMovie {
+            return FfiConverterTypeTmdbMovie.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_movie_details(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getPersonCombinedCredits`(`personId`: kotlin.Int): PersonCombinedCredits {
+            return FfiConverterTypePersonCombinedCredits.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_person_combined_credits(
+        it,
+        FfiConverterInt.lower(`personId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getPersonDetails`(`personId`: kotlin.Int): TmdbPerson {
+            return FfiConverterTypeTmdbPerson.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_person_details(
+        it,
+        FfiConverterInt.lower(`personId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getPopular`(`type`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_popular(
+        it,
+        FfiConverterString.lower(`type`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getRecommendations`(`type`: kotlin.String, `tmdbId`: kotlin.Int): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_recommendations(
+        it,
+        FfiConverterString.lower(`type`),FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getSeasonDetails`(`tmdbId`: kotlin.Int, `seasonNumber`: kotlin.Int): TmdbSeason {
+            return FfiConverterTypeTmdbSeason.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_season_details(
+        it,
+        FfiConverterInt.lower(`tmdbId`),FfiConverterInt.lower(`seasonNumber`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getShowExternalIds`(`tmdbId`: kotlin.Int): TmdbExternalIds {
+            return FfiConverterTypeTmdbExternalIds.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_show_external_ids(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getShowImageHints`(`tmdbId`: kotlin.Int): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_show_image_hints(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getSimilar`(`type`: kotlin.String, `tmdbId`: kotlin.Int): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_similar(
+        it,
+        FfiConverterString.lower(`type`),FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getTopRated`(`type`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_top_rated(
+        it,
+        FfiConverterString.lower(`type`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getTrending`(`timeWindow`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_trending(
+        it,
+        FfiConverterString.lower(`timeWindow`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `getTvShowDetails`(`tmdbId`: kotlin.Int): TmdbShow {
+            return FfiConverterTypeTmdbShow.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_get_tv_show_details(
+        it,
+        FfiConverterInt.lower(`tmdbId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `searchMovie`(`query`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_search_movie(
+        it,
+        FfiConverterString.lower(`query`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `searchMulti`(`query`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_search_multi(
+        it,
+        FfiConverterString.lower(`query`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `searchPerson`(`query`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_search_person(
+        it,
+        FfiConverterString.lower(`query`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TmdbException::class)override fun `searchTvShow`(`query`: kotlin.String): List<TmdbSearchResult> {
+            return FfiConverterSequenceTypeTmdbSearchResult.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TmdbException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_tmdb_search_tv_show(
+        it,
+        FfiConverterString.lower(`query`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdb: FfiConverter<Tmdb, Long> {
+    override fun lower(value: Tmdb): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): Tmdb {
+        return Tmdb(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): Tmdb {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: Tmdb) = 8UL
+
+    override fun write(value: Tmdb, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+public interface TraktInterface {
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */
+    fun `auth`(): AuthManager
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `calendar`(): CalendarManager
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */
+    fun `client`(): ApiClient
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `comments`(): CommentsManager
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */
+    fun `deleteAccountData`()
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `recommendations`(): RecommendationsManager
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `search`(): SearchManager
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `sync`(): SyncManager
+    
+    companion object
+}
+
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+open class Trakt: Disposable, AutoCloseable, TraktInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new Trakt client
+     *
+     * # Parameters
+     * - `client_id`: Your Trakt API client ID
+     * - `client_secret`: Your Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI (use "urn:ietf:wg:oauth:2.0:oob" for out-of-band)
+     * - `token_callback`: Optional callback for token refresh notifications
+     *
+     * # Returns
+     * - `Ok(Trakt)`: Successfully created client
+     * - `Err(AuthError)`: Failed to initialize (invalid URLs, etc.)
+     *
+     * # Example
+     *
+     * ```no_run
+     * use nuvio_core::trakt::{Trakt, TraktTokenCallback};
+     *
+     * // Without callback
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // With callback
+     * struct MyHandler;
+     * impl TraktTokenCallback for MyHandler {
+     * fn on_token_refreshed(&self, access_token: String, expires_at: i64) {
+     * // Handle token refresh
+     * }
+     * fn on_token_refresh_failed(&self, error: String) {
+     * // Handle refresh failure
+     * }
+     * }
+     *
+     * let callback = Box::new(MyHandler);
+     * let trakt_with_cb = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * Some(callback),
+     * ).unwrap();
+     * ```
+     */
+    constructor(`clientId`: kotlin.String, `clientSecret`: kotlin.String, `redirectUri`: kotlin.String, `tokenCallback`: TraktTokenCallback?) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_trakt_new(
+    
+        FfiConverterString.lower(`clientId`),FfiConverterString.lower(`clientSecret`),FfiConverterString.lower(`redirectUri`),FfiConverterOptionalTypeTraktTokenCallback.lower(`tokenCallback`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_trakt(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_trakt(handle, status)
+        }
+    }
+
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */override fun `auth`(): AuthManager {
+            return FfiConverterTypeAuthManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_auth(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `calendar`(): CalendarManager {
+            return FfiConverterTypeCalendarManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_calendar(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */override fun `client`(): ApiClient {
+            return FfiConverterTypeApiClient.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_client(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `comments`(): CommentsManager {
+            return FfiConverterTypeCommentsManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_comments(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */override fun `deleteAccountData`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_delete_account_data(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `recommendations`(): RecommendationsManager {
+            return FfiConverterTypeRecommendationsManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_recommendations(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `search`(): SearchManager {
+            return FfiConverterTypeSearchManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_search(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `sync`(): SyncManager {
+            return FfiConverterTypeSyncManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_sync(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTrakt: FfiConverter<Trakt, Long> {
+    override fun lower(value: Trakt): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): Trakt {
+        return Trakt(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): Trakt {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: Trakt) = 8UL
+
+    override fun write(value: Trakt, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
 
 /**
  * Represents a Stremio addon with its configuration and metadata.
@@ -2722,6 +11972,567 @@ public object FfiConverterTypeAddon: FfiConverterRustBuffer<Addon> {
             FfiConverterOptionalString.write(value.`originalUrl`, buf)
             FfiConverterBoolean.write(value.`healthy`, buf)
             FfiConverterUInt.write(value.`consecutiveFailures`, buf)
+    }
+}
+
+
+
+/**
+ * Backup information (minimal metadata without full data)
+ */
+data class BackupInfo (
+    /**
+     * Backup file path
+     */
+    var `filePath`: kotlin.String
+    , 
+    /**
+     * Backup format version
+     */
+    var `version`: kotlin.String
+    , 
+    /**
+     * Timestamp when backup was created
+     */
+    var `timestamp`: kotlin.Long
+    , 
+    /**
+     * Application version
+     */
+    var `appVersion`: kotlin.String
+    , 
+    /**
+     * Platform (ios, android)
+     */
+    var `platform`: kotlin.String
+    , 
+    /**
+     * User scope identifier
+     */
+    var `userScope`: kotlin.String
+    , 
+    /**
+     * Backup metadata
+     */
+    var `metadata`: BackupMetadata
+    , 
+    /**
+     * File size in bytes (if available)
+     */
+    var `fileSize`: kotlin.ULong?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeBackupInfo: FfiConverterRustBuffer<BackupInfo> {
+    override fun read(buf: ByteBuffer): BackupInfo {
+        return BackupInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeBackupMetadata.read(buf),
+            FfiConverterOptionalULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: BackupInfo) = (
+            FfiConverterString.allocationSize(value.`filePath`) +
+            FfiConverterString.allocationSize(value.`version`) +
+            FfiConverterLong.allocationSize(value.`timestamp`) +
+            FfiConverterString.allocationSize(value.`appVersion`) +
+            FfiConverterString.allocationSize(value.`platform`) +
+            FfiConverterString.allocationSize(value.`userScope`) +
+            FfiConverterTypeBackupMetadata.allocationSize(value.`metadata`) +
+            FfiConverterOptionalULong.allocationSize(value.`fileSize`)
+    )
+
+    override fun write(value: BackupInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`filePath`, buf)
+            FfiConverterString.write(value.`version`, buf)
+            FfiConverterLong.write(value.`timestamp`, buf)
+            FfiConverterString.write(value.`appVersion`, buf)
+            FfiConverterString.write(value.`platform`, buf)
+            FfiConverterString.write(value.`userScope`, buf)
+            FfiConverterTypeBackupMetadata.write(value.`metadata`, buf)
+            FfiConverterOptionalULong.write(value.`fileSize`, buf)
+    }
+}
+
+
+
+/**
+ * Backup metadata
+ */
+data class BackupMetadata (
+    /**
+     * Total number of items in backup
+     */
+    var `totalItems`: kotlin.UInt
+    , 
+    /**
+     * Number of library items
+     */
+    var `libraryCount`: kotlin.UInt
+    , 
+    /**
+     * Number of watch progress items
+     */
+    var `watchProgressCount`: kotlin.UInt
+    , 
+    /**
+     * Number of downloads
+     */
+    var `downloadsCount`: kotlin.UInt
+    , 
+    /**
+     * Number of addons
+     */
+    var `addonsCount`: kotlin.UInt
+    , 
+    /**
+     * Number of scrapers
+     */
+    var `scrapersCount`: kotlin.UInt
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeBackupMetadata: FfiConverterRustBuffer<BackupMetadata> {
+    override fun read(buf: ByteBuffer): BackupMetadata {
+        return BackupMetadata(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: BackupMetadata) = (
+            FfiConverterUInt.allocationSize(value.`totalItems`) +
+            FfiConverterUInt.allocationSize(value.`libraryCount`) +
+            FfiConverterUInt.allocationSize(value.`watchProgressCount`) +
+            FfiConverterUInt.allocationSize(value.`downloadsCount`) +
+            FfiConverterUInt.allocationSize(value.`addonsCount`) +
+            FfiConverterUInt.allocationSize(value.`scrapersCount`)
+    )
+
+    override fun write(value: BackupMetadata, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`totalItems`, buf)
+            FfiConverterUInt.write(value.`libraryCount`, buf)
+            FfiConverterUInt.write(value.`watchProgressCount`, buf)
+            FfiConverterUInt.write(value.`downloadsCount`, buf)
+            FfiConverterUInt.write(value.`addonsCount`, buf)
+            FfiConverterUInt.write(value.`scrapersCount`, buf)
+    }
+}
+
+
+
+/**
+ * Backup options to control what data to include in backup
+ */
+data class BackupOptions (
+    /**
+     * Include library data
+     */
+    var `includeLibrary`: kotlin.Boolean
+    , 
+    /**
+     * Include watch progress data
+     */
+    var `includeWatchProgress`: kotlin.Boolean
+    , 
+    /**
+     * Include downloads data
+     */
+    var `includeDownloads`: kotlin.Boolean
+    , 
+    /**
+     * Include addons data
+     */
+    var `includeAddons`: kotlin.Boolean
+    , 
+    /**
+     * Include settings data
+     */
+    var `includeSettings`: kotlin.Boolean
+    , 
+    /**
+     * Include Trakt data
+     */
+    var `includeTraktData`: kotlin.Boolean
+    , 
+    /**
+     * Include local scrapers
+     */
+    var `includeLocalScrapers`: kotlin.Boolean
+    , 
+    /**
+     * Include API keys
+     */
+    var `includeApiKeys`: kotlin.Boolean
+    , 
+    /**
+     * Include catalog settings
+     */
+    var `includeCatalogSettings`: kotlin.Boolean
+    , 
+    /**
+     * Include user preferences
+     */
+    var `includeUserPreferences`: kotlin.Boolean
+    , 
+    /**
+     * Enable compression
+     */
+    var `enableCompression`: kotlin.Boolean
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeBackupOptions: FfiConverterRustBuffer<BackupOptions> {
+    override fun read(buf: ByteBuffer): BackupOptions {
+        return BackupOptions(
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: BackupOptions) = (
+            FfiConverterBoolean.allocationSize(value.`includeLibrary`) +
+            FfiConverterBoolean.allocationSize(value.`includeWatchProgress`) +
+            FfiConverterBoolean.allocationSize(value.`includeDownloads`) +
+            FfiConverterBoolean.allocationSize(value.`includeAddons`) +
+            FfiConverterBoolean.allocationSize(value.`includeSettings`) +
+            FfiConverterBoolean.allocationSize(value.`includeTraktData`) +
+            FfiConverterBoolean.allocationSize(value.`includeLocalScrapers`) +
+            FfiConverterBoolean.allocationSize(value.`includeApiKeys`) +
+            FfiConverterBoolean.allocationSize(value.`includeCatalogSettings`) +
+            FfiConverterBoolean.allocationSize(value.`includeUserPreferences`) +
+            FfiConverterBoolean.allocationSize(value.`enableCompression`)
+    )
+
+    override fun write(value: BackupOptions, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`includeLibrary`, buf)
+            FfiConverterBoolean.write(value.`includeWatchProgress`, buf)
+            FfiConverterBoolean.write(value.`includeDownloads`, buf)
+            FfiConverterBoolean.write(value.`includeAddons`, buf)
+            FfiConverterBoolean.write(value.`includeSettings`, buf)
+            FfiConverterBoolean.write(value.`includeTraktData`, buf)
+            FfiConverterBoolean.write(value.`includeLocalScrapers`, buf)
+            FfiConverterBoolean.write(value.`includeApiKeys`, buf)
+            FfiConverterBoolean.write(value.`includeCatalogSettings`, buf)
+            FfiConverterBoolean.write(value.`includeUserPreferences`, buf)
+            FfiConverterBoolean.write(value.`enableCompression`, buf)
+    }
+}
+
+
+
+/**
+ * Backup preview (counts without creating backup)
+ */
+data class BackupPreview (
+    /**
+     * Number of library items
+     */
+    var `library`: kotlin.UInt
+    , 
+    /**
+     * Number of watch progress items
+     */
+    var `watchProgress`: kotlin.UInt
+    , 
+    /**
+     * Number of addons
+     */
+    var `addons`: kotlin.UInt
+    , 
+    /**
+     * Number of downloads
+     */
+    var `downloads`: kotlin.UInt
+    , 
+    /**
+     * Number of scrapers
+     */
+    var `scrapers`: kotlin.UInt
+    , 
+    /**
+     * Number of watched status items
+     */
+    var `watchedStatus`: kotlin.UInt
+    , 
+    /**
+     * Total number of items
+     */
+    var `total`: kotlin.UInt
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeBackupPreview: FfiConverterRustBuffer<BackupPreview> {
+    override fun read(buf: ByteBuffer): BackupPreview {
+        return BackupPreview(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: BackupPreview) = (
+            FfiConverterUInt.allocationSize(value.`library`) +
+            FfiConverterUInt.allocationSize(value.`watchProgress`) +
+            FfiConverterUInt.allocationSize(value.`addons`) +
+            FfiConverterUInt.allocationSize(value.`downloads`) +
+            FfiConverterUInt.allocationSize(value.`scrapers`) +
+            FfiConverterUInt.allocationSize(value.`watchedStatus`) +
+            FfiConverterUInt.allocationSize(value.`total`)
+    )
+
+    override fun write(value: BackupPreview, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`library`, buf)
+            FfiConverterUInt.write(value.`watchProgress`, buf)
+            FfiConverterUInt.write(value.`addons`, buf)
+            FfiConverterUInt.write(value.`downloads`, buf)
+            FfiConverterUInt.write(value.`scrapers`, buf)
+            FfiConverterUInt.write(value.`watchedStatus`, buf)
+            FfiConverterUInt.write(value.`total`, buf)
+    }
+}
+
+
+
+/**
+ * Configuration for initializing the cache manager
+ */
+data class CacheConfiguration (
+    /**
+     * Maximum number of items in memory cache
+     */
+    var `memoryMaxItems`: kotlin.ULong
+    , 
+    /**
+     * TTL for memory cache in seconds
+     */
+    var `memoryTtlSeconds`: kotlin.ULong
+    , 
+    /**
+     * Maximum disk cache size in bytes
+     */
+    var `diskMaxBytes`: kotlin.ULong
+    , 
+    /**
+     * Path to disk cache directory
+     */
+    var `diskPath`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCacheConfiguration: FfiConverterRustBuffer<CacheConfiguration> {
+    override fun read(buf: ByteBuffer): CacheConfiguration {
+        return CacheConfiguration(
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CacheConfiguration) = (
+            FfiConverterULong.allocationSize(value.`memoryMaxItems`) +
+            FfiConverterULong.allocationSize(value.`memoryTtlSeconds`) +
+            FfiConverterULong.allocationSize(value.`diskMaxBytes`) +
+            FfiConverterString.allocationSize(value.`diskPath`)
+    )
+
+    override fun write(value: CacheConfiguration, buf: ByteBuffer) {
+            FfiConverterULong.write(value.`memoryMaxItems`, buf)
+            FfiConverterULong.write(value.`memoryTtlSeconds`, buf)
+            FfiConverterULong.write(value.`diskMaxBytes`, buf)
+            FfiConverterString.write(value.`diskPath`, buf)
+    }
+}
+
+
+
+/**
+ * Cache statistics for monitoring cache performance
+ */
+data class CacheStats (
+    /**
+     * Total number of cache hits across all tiers
+     */
+    var `hits`: kotlin.ULong
+    , 
+    /**
+     * Total number of cache misses
+     */
+    var `misses`: kotlin.ULong
+    , 
+    /**
+     * Current number of items in memory cache
+     */
+    var `memoryItems`: kotlin.ULong
+    , 
+    /**
+     * Current number of items in disk cache
+     */
+    var `diskItems`: kotlin.ULong
+    , 
+    /**
+     * Total memory used by memory cache (bytes)
+     */
+    var `memoryBytes`: kotlin.ULong
+    , 
+    /**
+     * Total disk used by disk cache (bytes)
+     */
+    var `diskBytes`: kotlin.ULong
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCacheStats: FfiConverterRustBuffer<CacheStats> {
+    override fun read(buf: ByteBuffer): CacheStats {
+        return CacheStats(
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CacheStats) = (
+            FfiConverterULong.allocationSize(value.`hits`) +
+            FfiConverterULong.allocationSize(value.`misses`) +
+            FfiConverterULong.allocationSize(value.`memoryItems`) +
+            FfiConverterULong.allocationSize(value.`diskItems`) +
+            FfiConverterULong.allocationSize(value.`memoryBytes`) +
+            FfiConverterULong.allocationSize(value.`diskBytes`)
+    )
+
+    override fun write(value: CacheStats, buf: ByteBuffer) {
+            FfiConverterULong.write(value.`hits`, buf)
+            FfiConverterULong.write(value.`misses`, buf)
+            FfiConverterULong.write(value.`memoryItems`, buf)
+            FfiConverterULong.write(value.`diskItems`, buf)
+            FfiConverterULong.write(value.`memoryBytes`, buf)
+            FfiConverterULong.write(value.`diskBytes`, buf)
+    }
+}
+
+
+
+data class CastMember (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `character`: kotlin.String
+    , 
+    var `profilePath`: kotlin.String?
+    , 
+    var `order`: kotlin.Int
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCastMember: FfiConverterRustBuffer<CastMember> {
+    override fun read(buf: ByteBuffer): CastMember {
+        return CastMember(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CastMember) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`character`) +
+            FfiConverterOptionalString.allocationSize(value.`profilePath`) +
+            FfiConverterInt.allocationSize(value.`order`)
+    )
+
+    override fun write(value: CastMember, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`character`, buf)
+            FfiConverterOptionalString.write(value.`profilePath`, buf)
+            FfiConverterInt.write(value.`order`, buf)
     }
 }
 
@@ -2918,6 +12729,467 @@ public object FfiConverterTypeCreateProfileInput: FfiConverterRustBuffer<CreateP
             FfiConverterOptionalString.write(value.`avatarId`, buf)
             FfiConverterOptionalString.write(value.`maxAgeRating`, buf)
             FfiConverterOptionalString.write(value.`pin`, buf)
+    }
+}
+
+
+
+data class Credits (
+    var `cast`: List<CastMember>
+    , 
+    var `crew`: List<CrewMember>
+    , 
+    var `guestStars`: List<CastMember>?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCredits: FfiConverterRustBuffer<Credits> {
+    override fun read(buf: ByteBuffer): Credits {
+        return Credits(
+            FfiConverterSequenceTypeCastMember.read(buf),
+            FfiConverterSequenceTypeCrewMember.read(buf),
+            FfiConverterOptionalSequenceTypeCastMember.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: Credits) = (
+            FfiConverterSequenceTypeCastMember.allocationSize(value.`cast`) +
+            FfiConverterSequenceTypeCrewMember.allocationSize(value.`crew`) +
+            FfiConverterOptionalSequenceTypeCastMember.allocationSize(value.`guestStars`)
+    )
+
+    override fun write(value: Credits, buf: ByteBuffer) {
+            FfiConverterSequenceTypeCastMember.write(value.`cast`, buf)
+            FfiConverterSequenceTypeCrewMember.write(value.`crew`, buf)
+            FfiConverterOptionalSequenceTypeCastMember.write(value.`guestStars`, buf)
+    }
+}
+
+
+
+data class CrewMember (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `job`: kotlin.String
+    , 
+    var `department`: kotlin.String
+    , 
+    var `profilePath`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCrewMember: FfiConverterRustBuffer<CrewMember> {
+    override fun read(buf: ByteBuffer): CrewMember {
+        return CrewMember(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CrewMember) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`job`) +
+            FfiConverterString.allocationSize(value.`department`) +
+            FfiConverterOptionalString.allocationSize(value.`profilePath`)
+    )
+
+    override fun write(value: CrewMember, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`job`, buf)
+            FfiConverterString.write(value.`department`, buf)
+            FfiConverterOptionalString.write(value.`profilePath`, buf)
+    }
+}
+
+
+
+/**
+ * HTTP request configuration for FFI functions
+ *
+ * This is a simplified, FFI-safe representation of an HTTP request.
+ * All fields are simple types that can cross language boundaries easily.
+ */
+data class HttpRequest (
+    /**
+     * Request URL
+     */
+    var `url`: kotlin.String
+    , 
+    /**
+     * Request body (for POST, PUT, etc.)
+     */
+    var `body`: kotlin.String?
+    , 
+    /**
+     * Request headers as key-value pairs
+     */
+    var `headers`: Map<kotlin.String, kotlin.String>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHttpRequest: FfiConverterRustBuffer<HttpRequest> {
+    override fun read(buf: ByteBuffer): HttpRequest {
+        return HttpRequest(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterMapStringString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: HttpRequest) = (
+            FfiConverterString.allocationSize(value.`url`) +
+            FfiConverterOptionalString.allocationSize(value.`body`) +
+            FfiConverterMapStringString.allocationSize(value.`headers`)
+    )
+
+    override fun write(value: HttpRequest, buf: ByteBuffer) {
+            FfiConverterString.write(value.`url`, buf)
+            FfiConverterOptionalString.write(value.`body`, buf)
+            FfiConverterMapStringString.write(value.`headers`, buf)
+    }
+}
+
+
+
+/**
+ * HTTP response returned from FFI functions
+ *
+ * This is a simplified, FFI-safe representation of an HTTP response.
+ * All fields are simple types that can cross language boundaries easily.
+ */
+data class HttpResponse (
+    /**
+     * HTTP status code (e.g., 200, 404, 500)
+     */
+    var `statusCode`: kotlin.UShort
+    , 
+    /**
+     * Response body as a UTF-8 string
+     */
+    var `body`: kotlin.String
+    , 
+    /**
+     * Response headers as key-value pairs
+     */
+    var `headers`: Map<kotlin.String, kotlin.String>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHttpResponse: FfiConverterRustBuffer<HttpResponse> {
+    override fun read(buf: ByteBuffer): HttpResponse {
+        return HttpResponse(
+            FfiConverterUShort.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterMapStringString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: HttpResponse) = (
+            FfiConverterUShort.allocationSize(value.`statusCode`) +
+            FfiConverterString.allocationSize(value.`body`) +
+            FfiConverterMapStringString.allocationSize(value.`headers`)
+    )
+
+    override fun write(value: HttpResponse, buf: ByteBuffer) {
+            FfiConverterUShort.write(value.`statusCode`, buf)
+            FfiConverterString.write(value.`body`, buf)
+            FfiConverterMapStringString.write(value.`headers`, buf)
+    }
+}
+
+
+
+data class ImDbRatingEpisode (
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `episodeNumber`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `seasonNumber`: kotlin.Int
+    , 
+    var `tconst`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeIMDbRatingEpisode: FfiConverterRustBuffer<ImDbRatingEpisode> {
+    override fun read(buf: ByteBuffer): ImDbRatingEpisode {
+        return ImDbRatingEpisode(
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImDbRatingEpisode) = (
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterInt.allocationSize(value.`episodeNumber`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterInt.allocationSize(value.`seasonNumber`) +
+            FfiConverterString.allocationSize(value.`tconst`)
+    )
+
+    override fun write(value: ImDbRatingEpisode, buf: ByteBuffer) {
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterInt.write(value.`episodeNumber`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterInt.write(value.`seasonNumber`, buf)
+            FfiConverterString.write(value.`tconst`, buf)
+    }
+}
+
+
+
+data class ImDbRatingSeason (
+    var `episodes`: List<ImDbRatingEpisode>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeIMDbRatingSeason: FfiConverterRustBuffer<ImDbRatingSeason> {
+    override fun read(buf: ByteBuffer): ImDbRatingSeason {
+        return ImDbRatingSeason(
+            FfiConverterSequenceTypeIMDbRatingEpisode.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImDbRatingSeason) = (
+            FfiConverterSequenceTypeIMDbRatingEpisode.allocationSize(value.`episodes`)
+    )
+
+    override fun write(value: ImDbRatingSeason, buf: ByteBuffer) {
+            FfiConverterSequenceTypeIMDbRatingEpisode.write(value.`episodes`, buf)
+    }
+}
+
+
+
+/**
+ * Represents a media file found on the local file system
+ */
+data class LocalMediaFile (
+    /**
+     * Absolute path to the file
+     */
+    var `path`: kotlin.String
+    , 
+    /**
+     * File name
+     */
+    var `name`: kotlin.String
+    , 
+    /**
+     * File size in bytes
+     */
+    var `size`: kotlin.Long
+    , 
+    /**
+     * MIME type (e.g., "video/mp4", "audio/mpeg")
+     */
+    var `mimeType`: kotlin.String?
+    , 
+    /**
+     * Last modification timestamp (seconds since epoch)
+     */
+    var `modifiedAt`: kotlin.Long
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLocalMediaFile: FfiConverterRustBuffer<LocalMediaFile> {
+    override fun read(buf: ByteBuffer): LocalMediaFile {
+        return LocalMediaFile(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LocalMediaFile) = (
+            FfiConverterString.allocationSize(value.`path`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterLong.allocationSize(value.`size`) +
+            FfiConverterOptionalString.allocationSize(value.`mimeType`) +
+            FfiConverterLong.allocationSize(value.`modifiedAt`)
+    )
+
+    override fun write(value: LocalMediaFile, buf: ByteBuffer) {
+            FfiConverterString.write(value.`path`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterLong.write(value.`size`, buf)
+            FfiConverterOptionalString.write(value.`mimeType`, buf)
+            FfiConverterLong.write(value.`modifiedAt`, buf)
+    }
+}
+
+
+
+/**
+ * Configuration for the logging subsystem.
+ *
+ * This struct controls how the SDK outputs log messages including
+ * format, verbosity, and what metadata to include.
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::logging::LoggingConfig;
+ * use nuvio_core::config::LogLevel;
+ *
+ * let config = LoggingConfig::builder()
+ * .level(LogLevel::Debug)
+ * .show_target(true)
+ * .show_file(true)
+ * .build();
+ * ```
+ */
+data class LoggingConfig (
+    /**
+     * The minimum log level to output.
+     */
+    var `level`: LogLevel
+    , 
+    /**
+     * Whether to include the log target (module path) in output.
+     */
+    var `showTarget`: kotlin.Boolean
+    , 
+    /**
+     * Whether to include the source file name in output.
+     */
+    var `showFile`: kotlin.Boolean
+    , 
+    /**
+     * Whether to include the line number in output.
+     */
+    var `showLine`: kotlin.Boolean
+    , 
+    /**
+     * Whether to include timestamps in output.
+     */
+    var `showTimestamp`: kotlin.Boolean
+    , 
+    /**
+     * Whether to use ANSI color codes in output.
+     */
+    var `useAnsi`: kotlin.Boolean
+    , 
+    /**
+     * Optional custom filter string (overrides level if set).
+     * Uses the tracing EnvFilter syntax (e.g., "nuvio_core=debug,info").
+     */
+    var `filter`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLoggingConfig: FfiConverterRustBuffer<LoggingConfig> {
+    override fun read(buf: ByteBuffer): LoggingConfig {
+        return LoggingConfig(
+            FfiConverterTypeLogLevel.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LoggingConfig) = (
+            FfiConverterTypeLogLevel.allocationSize(value.`level`) +
+            FfiConverterBoolean.allocationSize(value.`showTarget`) +
+            FfiConverterBoolean.allocationSize(value.`showFile`) +
+            FfiConverterBoolean.allocationSize(value.`showLine`) +
+            FfiConverterBoolean.allocationSize(value.`showTimestamp`) +
+            FfiConverterBoolean.allocationSize(value.`useAnsi`) +
+            FfiConverterOptionalString.allocationSize(value.`filter`)
+    )
+
+    override fun write(value: LoggingConfig, buf: ByteBuffer) {
+            FfiConverterTypeLogLevel.write(value.`level`, buf)
+            FfiConverterBoolean.write(value.`showTarget`, buf)
+            FfiConverterBoolean.write(value.`showFile`, buf)
+            FfiConverterBoolean.write(value.`showLine`, buf)
+            FfiConverterBoolean.write(value.`showTimestamp`, buf)
+            FfiConverterBoolean.write(value.`useAnsi`, buf)
+            FfiConverterOptionalString.write(value.`filter`, buf)
     }
 }
 
@@ -3148,25 +13420,633 @@ public object FfiConverterTypeMeta: FfiConverterRustBuffer<Meta> {
 
 
 
-data class Profile (
+/**
+ * Notification content to be displayed
+ *
+ * Platform-agnostic notification content structure
+ */
+data class NotificationContent (
+    /**
+     * Notification title
+     */
+    var `title`: kotlin.String
+    , 
+    /**
+     * Notification body text
+     */
+    var `body`: kotlin.String
+    , 
+    /**
+     * Additional data as key-value pairs
+     */
+    var `data`: Map<kotlin.String, kotlin.String>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationContent: FfiConverterRustBuffer<NotificationContent> {
+    override fun read(buf: ByteBuffer): NotificationContent {
+        return NotificationContent(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterMapStringString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NotificationContent) = (
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`body`) +
+            FfiConverterMapStringString.allocationSize(value.`data`)
+    )
+
+    override fun write(value: NotificationContent, buf: ByteBuffer) {
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`body`, buf)
+            FfiConverterMapStringString.write(value.`data`, buf)
+    }
+}
+
+
+
+/**
+ * A scheduled notification item for an episode
+ *
+ * Represents a single notification that will be sent to the user
+ */
+data class NotificationItem (
+    /**
+     * Unique identifier for this notification
+     */
     var `id`: kotlin.String
+    , 
+    /**
+     * Series IMDB or TMDB ID
+     */
+    var `seriesId`: kotlin.String
+    , 
+    /**
+     * Name of the series
+     */
+    var `seriesName`: kotlin.String
+    , 
+    /**
+     * Title of the episode
+     */
+    var `episodeTitle`: kotlin.String
+    , 
+    /**
+     * Season number
+     */
+    var `season`: kotlin.Int
+    , 
+    /**
+     * Episode number
+     */
+    var `episode`: kotlin.Int
+    , 
+    /**
+     * ISO 8601 release date string
+     */
+    var `releaseDate`: kotlin.String
+    , 
+    /**
+     * Whether the notification has been sent
+     */
+    var `notified`: kotlin.Boolean
+    , 
+    /**
+     * Optional poster URL
+     */
+    var `poster`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationItem: FfiConverterRustBuffer<NotificationItem> {
+    override fun read(buf: ByteBuffer): NotificationItem {
+        return NotificationItem(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NotificationItem) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`seriesId`) +
+            FfiConverterString.allocationSize(value.`seriesName`) +
+            FfiConverterString.allocationSize(value.`episodeTitle`) +
+            FfiConverterInt.allocationSize(value.`season`) +
+            FfiConverterInt.allocationSize(value.`episode`) +
+            FfiConverterString.allocationSize(value.`releaseDate`) +
+            FfiConverterBoolean.allocationSize(value.`notified`) +
+            FfiConverterOptionalString.allocationSize(value.`poster`)
+    )
+
+    override fun write(value: NotificationItem, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`seriesId`, buf)
+            FfiConverterString.write(value.`seriesName`, buf)
+            FfiConverterString.write(value.`episodeTitle`, buf)
+            FfiConverterInt.write(value.`season`, buf)
+            FfiConverterInt.write(value.`episode`, buf)
+            FfiConverterString.write(value.`releaseDate`, buf)
+            FfiConverterBoolean.write(value.`notified`, buf)
+            FfiConverterOptionalString.write(value.`poster`, buf)
+    }
+}
+
+
+
+/**
+ * Notification settings for the user
+ *
+ * Controls how and when notifications are delivered
+ */
+data class NotificationSettings (
+    /**
+     * Master toggle for all notifications
+     */
+    var `enabled`: kotlin.Boolean
+    , 
+    /**
+     * Enable notifications for new episodes
+     */
+    var `newEpisodeNotifications`: kotlin.Boolean
+    , 
+    /**
+     * Enable reminder notifications
+     */
+    var `reminderNotifications`: kotlin.Boolean
+    , 
+    /**
+     * Enable notifications for upcoming shows
+     */
+    var `upcomingShowsNotifications`: kotlin.Boolean
+    , 
+    /**
+     * How many hours before airing to send notification (default: 24)
+     */
+    var `timeBeforeAiring`: kotlin.Int
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationSettings: FfiConverterRustBuffer<NotificationSettings> {
+    override fun read(buf: ByteBuffer): NotificationSettings {
+        return NotificationSettings(
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NotificationSettings) = (
+            FfiConverterBoolean.allocationSize(value.`enabled`) +
+            FfiConverterBoolean.allocationSize(value.`newEpisodeNotifications`) +
+            FfiConverterBoolean.allocationSize(value.`reminderNotifications`) +
+            FfiConverterBoolean.allocationSize(value.`upcomingShowsNotifications`) +
+            FfiConverterInt.allocationSize(value.`timeBeforeAiring`)
+    )
+
+    override fun write(value: NotificationSettings, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`enabled`, buf)
+            FfiConverterBoolean.write(value.`newEpisodeNotifications`, buf)
+            FfiConverterBoolean.write(value.`reminderNotifications`, buf)
+            FfiConverterBoolean.write(value.`upcomingShowsNotifications`, buf)
+            FfiConverterInt.write(value.`timeBeforeAiring`, buf)
+    }
+}
+
+
+
+/**
+ * Statistics about scheduled notifications
+ *
+ * Provides a summary of notification counts for the UI
+ */
+data class NotificationStats (
+    /**
+     * Total number of scheduled notifications
+     */
+    var `total`: kotlin.Int
+    , 
+    /**
+     * Number of upcoming notifications (not yet sent)
+     */
+    var `upcoming`: kotlin.Int
+    , 
+    /**
+     * Number of notifications scheduled for this week
+     */
+    var `thisWeek`: kotlin.Int
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNotificationStats: FfiConverterRustBuffer<NotificationStats> {
+    override fun read(buf: ByteBuffer): NotificationStats {
+        return NotificationStats(
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NotificationStats) = (
+            FfiConverterInt.allocationSize(value.`total`) +
+            FfiConverterInt.allocationSize(value.`upcoming`) +
+            FfiConverterInt.allocationSize(value.`thisWeek`)
+    )
+
+    override fun write(value: NotificationStats, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`total`, buf)
+            FfiConverterInt.write(value.`upcoming`, buf)
+            FfiConverterInt.write(value.`thisWeek`, buf)
+    }
+}
+
+
+
+data class PersonCombinedCredit (
+    var `id`: kotlin.Int
+    , 
+    var `mediaType`: kotlin.String
+    , 
+    var `title`: kotlin.String?
+    , 
+    var `name`: kotlin.String?
+    , 
+    var `character`: kotlin.String
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `releaseDate`: kotlin.String?
+    , 
+    var `firstAirDate`: kotlin.String?
+    , 
+    var `voteAverage`: kotlin.Double?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonCombinedCredit: FfiConverterRustBuffer<PersonCombinedCredit> {
+    override fun read(buf: ByteBuffer): PersonCombinedCredit {
+        return PersonCombinedCredit(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonCombinedCredit) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`mediaType`) +
+            FfiConverterOptionalString.allocationSize(value.`title`) +
+            FfiConverterOptionalString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`character`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAirDate`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`)
+    )
+
+    override fun write(value: PersonCombinedCredit, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`mediaType`, buf)
+            FfiConverterOptionalString.write(value.`title`, buf)
+            FfiConverterOptionalString.write(value.`name`, buf)
+            FfiConverterString.write(value.`character`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalString.write(value.`firstAirDate`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+    }
+}
+
+
+
+data class PersonCombinedCredits (
+    var `cast`: List<PersonCombinedCredit>
+    , 
+    var `crew`: List<PersonCombinedCredit>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonCombinedCredits: FfiConverterRustBuffer<PersonCombinedCredits> {
+    override fun read(buf: ByteBuffer): PersonCombinedCredits {
+        return PersonCombinedCredits(
+            FfiConverterSequenceTypePersonCombinedCredit.read(buf),
+            FfiConverterSequenceTypePersonCombinedCredit.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonCombinedCredits) = (
+            FfiConverterSequenceTypePersonCombinedCredit.allocationSize(value.`cast`) +
+            FfiConverterSequenceTypePersonCombinedCredit.allocationSize(value.`crew`)
+    )
+
+    override fun write(value: PersonCombinedCredits, buf: ByteBuffer) {
+            FfiConverterSequenceTypePersonCombinedCredit.write(value.`cast`, buf)
+            FfiConverterSequenceTypePersonCombinedCredit.write(value.`crew`, buf)
+    }
+}
+
+
+
+data class PersonMovieCredit (
+    var `id`: kotlin.Int
+    , 
+    var `title`: kotlin.String
+    , 
+    var `character`: kotlin.String
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `releaseDate`: kotlin.String?
+    , 
+    var `voteAverage`: kotlin.Double?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonMovieCredit: FfiConverterRustBuffer<PersonMovieCredit> {
+    override fun read(buf: ByteBuffer): PersonMovieCredit {
+        return PersonMovieCredit(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonMovieCredit) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`character`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`)
+    )
+
+    override fun write(value: PersonMovieCredit, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`character`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+    }
+}
+
+
+
+data class PersonMovieCredits (
+    var `cast`: List<PersonMovieCredit>
+    , 
+    var `crew`: List<PersonMovieCredit>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonMovieCredits: FfiConverterRustBuffer<PersonMovieCredits> {
+    override fun read(buf: ByteBuffer): PersonMovieCredits {
+        return PersonMovieCredits(
+            FfiConverterSequenceTypePersonMovieCredit.read(buf),
+            FfiConverterSequenceTypePersonMovieCredit.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonMovieCredits) = (
+            FfiConverterSequenceTypePersonMovieCredit.allocationSize(value.`cast`) +
+            FfiConverterSequenceTypePersonMovieCredit.allocationSize(value.`crew`)
+    )
+
+    override fun write(value: PersonMovieCredits, buf: ByteBuffer) {
+            FfiConverterSequenceTypePersonMovieCredit.write(value.`cast`, buf)
+            FfiConverterSequenceTypePersonMovieCredit.write(value.`crew`, buf)
+    }
+}
+
+
+
+data class PersonTvCredit (
+    var `id`: kotlin.Int
     , 
     var `name`: kotlin.String
     , 
+    var `character`: kotlin.String
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `firstAirDate`: kotlin.String?
+    , 
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `episodeCount`: kotlin.Int?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonTvCredit: FfiConverterRustBuffer<PersonTvCredit> {
+    override fun read(buf: ByteBuffer): PersonTvCredit {
+        return PersonTvCredit(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonTvCredit) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`character`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAirDate`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterOptionalInt.allocationSize(value.`episodeCount`)
+    )
+
+    override fun write(value: PersonTvCredit, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`character`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`firstAirDate`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterOptionalInt.write(value.`episodeCount`, buf)
+    }
+}
+
+
+
+data class PersonTvCredits (
+    var `cast`: List<PersonTvCredit>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePersonTvCredits: FfiConverterRustBuffer<PersonTvCredits> {
+    override fun read(buf: ByteBuffer): PersonTvCredits {
+        return PersonTvCredits(
+            FfiConverterSequenceTypePersonTvCredit.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PersonTvCredits) = (
+            FfiConverterSequenceTypePersonTvCredit.allocationSize(value.`cast`)
+    )
+
+    override fun write(value: PersonTvCredits, buf: ByteBuffer) {
+            FfiConverterSequenceTypePersonTvCredit.write(value.`cast`, buf)
+    }
+}
+
+
+
+/**
+ * A user profile with personalization settings
+ */
+data class Profile (
+    /**
+     * Unique identifier for this profile
+     */
+    var `id`: kotlin.String
+    , 
+    /**
+     * Display name of the profile
+     */
+    var `name`: kotlin.String
+    , 
+    /**
+     * Type of profile (Admin, Standard, Kids)
+     */
     var `profileType`: ProfileType
     , 
+    /**
+     * Avatar identifier
+     */
     var `avatarId`: kotlin.String
     , 
+    /**
+     * Maximum age rating (e.g., "G", "PG", "PG-13", "R")
+     */
     var `maxAgeRating`: kotlin.String
     , 
+    /**
+     * Whether the profile is protected by a PIN
+     */
     var `isPinProtected`: kotlin.Boolean
     , 
+    /**
+     * Whether the profile has admin privileges
+     */
     var `isAdmin`: kotlin.Boolean
     , 
+    /**
+     * Profile preferences
+     */
     var `preferences`: ProfilePreferences
     , 
+    /**
+     * Creation timestamp
+     */
     var `createdAt`: kotlin.Long
     , 
+    /**
+     * Last update timestamp
+     */
     var `updatedAt`: kotlin.Long
     
 ){
@@ -3333,6 +14213,213 @@ public object FfiConverterTypeResourceObject: FfiConverterRustBuffer<ResourceObj
             FfiConverterSequenceString.write(value.`types`, buf)
             FfiConverterOptionalSequenceString.write(value.`idPrefix`, buf)
             FfiConverterOptionalSequenceString.write(value.`idPrefixes`, buf)
+    }
+}
+
+
+
+/**
+ * Parameters for scheduling an episode notification
+ *
+ * Used when creating new notifications from external data
+ */
+data class ScheduleNotificationParams (
+    /**
+     * Series ID
+     */
+    var `seriesId`: kotlin.String
+    , 
+    /**
+     * Series name
+     */
+    var `seriesName`: kotlin.String
+    , 
+    /**
+     * Episode title
+     */
+    var `episodeTitle`: kotlin.String
+    , 
+    /**
+     * Season number
+     */
+    var `season`: kotlin.Int
+    , 
+    /**
+     * Episode number
+     */
+    var `episode`: kotlin.Int
+    , 
+    /**
+     * ISO 8601 release date
+     */
+    var `releaseDate`: kotlin.String
+    , 
+    /**
+     * Optional poster URL
+     */
+    var `poster`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeScheduleNotificationParams: FfiConverterRustBuffer<ScheduleNotificationParams> {
+    override fun read(buf: ByteBuffer): ScheduleNotificationParams {
+        return ScheduleNotificationParams(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ScheduleNotificationParams) = (
+            FfiConverterString.allocationSize(value.`seriesId`) +
+            FfiConverterString.allocationSize(value.`seriesName`) +
+            FfiConverterString.allocationSize(value.`episodeTitle`) +
+            FfiConverterInt.allocationSize(value.`season`) +
+            FfiConverterInt.allocationSize(value.`episode`) +
+            FfiConverterString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalString.allocationSize(value.`poster`)
+    )
+
+    override fun write(value: ScheduleNotificationParams, buf: ByteBuffer) {
+            FfiConverterString.write(value.`seriesId`, buf)
+            FfiConverterString.write(value.`seriesName`, buf)
+            FfiConverterString.write(value.`episodeTitle`, buf)
+            FfiConverterInt.write(value.`season`, buf)
+            FfiConverterInt.write(value.`episode`, buf)
+            FfiConverterString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalString.write(value.`poster`, buf)
+    }
+}
+
+
+
+/**
+ * SDK Configuration.
+ *
+ * This struct holds all configuration parameters for the Nuvio SDK including
+ * environment settings, logging configuration, and application metadata.
+ *
+ * Use [`SdkConfigBuilder`] to construct instances of this struct.
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::config::{SdkConfig, Environment, LogLevel};
+ *
+ * // Default configuration
+ * let config = SdkConfig::default();
+ *
+ * // Custom configuration
+ * let config = SdkConfig::builder()
+ * .environment(Environment::Development)
+ * .log_level(LogLevel::Debug)
+ * .app_name("MyApp")
+ * .app_version("1.0.0")
+ * .build();
+ * ```
+ */
+data class SdkConfig (
+    /**
+     * The runtime environment (Development, Staging, Production).
+     */
+    var `environment`: Environment
+    , 
+    /**
+     * The log level for SDK logging.
+     */
+    var `logLevel`: LogLevel
+    , 
+    /**
+     * Application name for logging and identification.
+     */
+    var `appName`: kotlin.String
+    , 
+    /**
+     * Application version for logging and identification.
+     */
+    var `appVersion`: kotlin.String
+    , 
+    /**
+     * User agent string to use for HTTP requests.
+     */
+    var `userAgent`: kotlin.String
+    , 
+    /**
+     * Whether to enable debug assertions and additional validation.
+     */
+    var `debugMode`: kotlin.Boolean
+    , 
+    /**
+     * Optional custom data directory path for SDK storage.
+     * If not set, the SDK will use platform-specific defaults.
+     */
+    var `dataDirectory`: kotlin.String?
+    , 
+    /**
+     * Whether to collect anonymous usage analytics.
+     */
+    var `analyticsEnabled`: kotlin.Boolean
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSdkConfig: FfiConverterRustBuffer<SdkConfig> {
+    override fun read(buf: ByteBuffer): SdkConfig {
+        return SdkConfig(
+            FfiConverterTypeEnvironment.read(buf),
+            FfiConverterTypeLogLevel.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SdkConfig) = (
+            FfiConverterTypeEnvironment.allocationSize(value.`environment`) +
+            FfiConverterTypeLogLevel.allocationSize(value.`logLevel`) +
+            FfiConverterString.allocationSize(value.`appName`) +
+            FfiConverterString.allocationSize(value.`appVersion`) +
+            FfiConverterString.allocationSize(value.`userAgent`) +
+            FfiConverterBoolean.allocationSize(value.`debugMode`) +
+            FfiConverterOptionalString.allocationSize(value.`dataDirectory`) +
+            FfiConverterBoolean.allocationSize(value.`analyticsEnabled`)
+    )
+
+    override fun write(value: SdkConfig, buf: ByteBuffer) {
+            FfiConverterTypeEnvironment.write(value.`environment`, buf)
+            FfiConverterTypeLogLevel.write(value.`logLevel`, buf)
+            FfiConverterString.write(value.`appName`, buf)
+            FfiConverterString.write(value.`appVersion`, buf)
+            FfiConverterString.write(value.`userAgent`, buf)
+            FfiConverterBoolean.write(value.`debugMode`, buf)
+            FfiConverterOptionalString.write(value.`dataDirectory`, buf)
+            FfiConverterBoolean.write(value.`analyticsEnabled`, buf)
     }
 }
 
@@ -4218,6 +15305,2393 @@ public object FfiConverterTypeSubtitle: FfiConverterRustBuffer<Subtitle> {
 
 
 
+data class TmdbCollection (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `backdropPath`: kotlin.String?
+    , 
+    var `parts`: List<TmdbCollectionPart>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbCollection: FfiConverterRustBuffer<TmdbCollection> {
+    override fun read(buf: ByteBuffer): TmdbCollection {
+        return TmdbCollection(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceTypeTmdbCollectionPart.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbCollection) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`backdropPath`) +
+            FfiConverterSequenceTypeTmdbCollectionPart.allocationSize(value.`parts`)
+    )
+
+    override fun write(value: TmdbCollection, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`backdropPath`, buf)
+            FfiConverterSequenceTypeTmdbCollectionPart.write(value.`parts`, buf)
+    }
+}
+
+
+
+data class TmdbCollectionPart (
+    var `id`: kotlin.Int
+    , 
+    var `title`: kotlin.String
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `backdropPath`: kotlin.String?
+    , 
+    var `releaseDate`: kotlin.String?
+    , 
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `voteCount`: kotlin.Int?
+    , 
+    var `genreIds`: List<kotlin.Int>
+    , 
+    var `originalLanguage`: kotlin.String
+    , 
+    var `originalTitle`: kotlin.String
+    , 
+    var `popularity`: kotlin.Double?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbCollectionPart: FfiConverterRustBuffer<TmdbCollectionPart> {
+    override fun read(buf: ByteBuffer): TmdbCollectionPart {
+        return TmdbCollectionPart(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterSequenceInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbCollectionPart) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`backdropPath`) +
+            FfiConverterOptionalString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterOptionalInt.allocationSize(value.`voteCount`) +
+            FfiConverterSequenceInt.allocationSize(value.`genreIds`) +
+            FfiConverterString.allocationSize(value.`originalLanguage`) +
+            FfiConverterString.allocationSize(value.`originalTitle`) +
+            FfiConverterOptionalDouble.allocationSize(value.`popularity`)
+    )
+
+    override fun write(value: TmdbCollectionPart, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`backdropPath`, buf)
+            FfiConverterOptionalString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterOptionalInt.write(value.`voteCount`, buf)
+            FfiConverterSequenceInt.write(value.`genreIds`, buf)
+            FfiConverterString.write(value.`originalLanguage`, buf)
+            FfiConverterString.write(value.`originalTitle`, buf)
+            FfiConverterOptionalDouble.write(value.`popularity`, buf)
+    }
+}
+
+
+
+data class TmdbConfig (
+    var `apiKey`: kotlin.String
+    , 
+    var `baseUrl`: kotlin.String
+    , 
+    var `imdbRatingsApiBaseUrl`: kotlin.String?
+    , 
+    var `language`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbConfig: FfiConverterRustBuffer<TmdbConfig> {
+    override fun read(buf: ByteBuffer): TmdbConfig {
+        return TmdbConfig(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbConfig) = (
+            FfiConverterString.allocationSize(value.`apiKey`) +
+            FfiConverterString.allocationSize(value.`baseUrl`) +
+            FfiConverterOptionalString.allocationSize(value.`imdbRatingsApiBaseUrl`) +
+            FfiConverterString.allocationSize(value.`language`)
+    )
+
+    override fun write(value: TmdbConfig, buf: ByteBuffer) {
+            FfiConverterString.write(value.`apiKey`, buf)
+            FfiConverterString.write(value.`baseUrl`, buf)
+            FfiConverterOptionalString.write(value.`imdbRatingsApiBaseUrl`, buf)
+            FfiConverterString.write(value.`language`, buf)
+    }
+}
+
+
+
+data class TmdbCreator (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `profilePath`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbCreator: FfiConverterRustBuffer<TmdbCreator> {
+    override fun read(buf: ByteBuffer): TmdbCreator {
+        return TmdbCreator(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbCreator) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`profilePath`)
+    )
+
+    override fun write(value: TmdbCreator, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`profilePath`, buf)
+    }
+}
+
+
+
+data class TmdbEpisode (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `overview`: kotlin.String
+    , 
+    var `episodeNumber`: kotlin.Int
+    , 
+    var `seasonNumber`: kotlin.Int
+    , 
+    var `stillPath`: kotlin.String?
+    , 
+    var `airDate`: kotlin.String?
+    , 
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `imdbId`: kotlin.String?
+    , 
+    var `seasonPosterPath`: kotlin.String?
+    , 
+    var `runtime`: kotlin.Int?
+    , 
+    var `credits`: Credits?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbEpisode: FfiConverterRustBuffer<TmdbEpisode> {
+    override fun read(buf: ByteBuffer): TmdbEpisode {
+        return TmdbEpisode(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalTypeCredits.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbEpisode) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`overview`) +
+            FfiConverterInt.allocationSize(value.`episodeNumber`) +
+            FfiConverterInt.allocationSize(value.`seasonNumber`) +
+            FfiConverterOptionalString.allocationSize(value.`stillPath`) +
+            FfiConverterOptionalString.allocationSize(value.`airDate`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterOptionalString.allocationSize(value.`imdbId`) +
+            FfiConverterOptionalString.allocationSize(value.`seasonPosterPath`) +
+            FfiConverterOptionalInt.allocationSize(value.`runtime`) +
+            FfiConverterOptionalTypeCredits.allocationSize(value.`credits`)
+    )
+
+    override fun write(value: TmdbEpisode, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`overview`, buf)
+            FfiConverterInt.write(value.`episodeNumber`, buf)
+            FfiConverterInt.write(value.`seasonNumber`, buf)
+            FfiConverterOptionalString.write(value.`stillPath`, buf)
+            FfiConverterOptionalString.write(value.`airDate`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterOptionalString.write(value.`imdbId`, buf)
+            FfiConverterOptionalString.write(value.`seasonPosterPath`, buf)
+            FfiConverterOptionalInt.write(value.`runtime`, buf)
+            FfiConverterOptionalTypeCredits.write(value.`credits`, buf)
+    }
+}
+
+
+
+data class TmdbExternalIds (
+    var `imdbId`: kotlin.String?
+    , 
+    var `freebaseMid`: kotlin.String?
+    , 
+    var `freebaseId`: kotlin.String?
+    , 
+    var `tvdbId`: kotlin.Int?
+    , 
+    var `tvrageId`: kotlin.Int?
+    , 
+    var `wikidataId`: kotlin.String?
+    , 
+    var `facebookId`: kotlin.String?
+    , 
+    var `instagramId`: kotlin.String?
+    , 
+    var `twitterId`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbExternalIds: FfiConverterRustBuffer<TmdbExternalIds> {
+    override fun read(buf: ByteBuffer): TmdbExternalIds {
+        return TmdbExternalIds(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbExternalIds) = (
+            FfiConverterOptionalString.allocationSize(value.`imdbId`) +
+            FfiConverterOptionalString.allocationSize(value.`freebaseMid`) +
+            FfiConverterOptionalString.allocationSize(value.`freebaseId`) +
+            FfiConverterOptionalInt.allocationSize(value.`tvdbId`) +
+            FfiConverterOptionalInt.allocationSize(value.`tvrageId`) +
+            FfiConverterOptionalString.allocationSize(value.`wikidataId`) +
+            FfiConverterOptionalString.allocationSize(value.`facebookId`) +
+            FfiConverterOptionalString.allocationSize(value.`instagramId`) +
+            FfiConverterOptionalString.allocationSize(value.`twitterId`)
+    )
+
+    override fun write(value: TmdbExternalIds, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`imdbId`, buf)
+            FfiConverterOptionalString.write(value.`freebaseMid`, buf)
+            FfiConverterOptionalString.write(value.`freebaseId`, buf)
+            FfiConverterOptionalInt.write(value.`tvdbId`, buf)
+            FfiConverterOptionalInt.write(value.`tvrageId`, buf)
+            FfiConverterOptionalString.write(value.`wikidataId`, buf)
+            FfiConverterOptionalString.write(value.`facebookId`, buf)
+            FfiConverterOptionalString.write(value.`instagramId`, buf)
+            FfiConverterOptionalString.write(value.`twitterId`, buf)
+    }
+}
+
+
+
+data class TmdbGenre (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbGenre: FfiConverterRustBuffer<TmdbGenre> {
+    override fun read(buf: ByteBuffer): TmdbGenre {
+        return TmdbGenre(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbGenre) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`)
+    )
+
+    override fun write(value: TmdbGenre, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+    }
+}
+
+
+
+data class TmdbMovie (
+    var `id`: kotlin.Int
+    , 
+    var `title`: kotlin.String
+    , 
+    var `originalTitle`: kotlin.String
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `backdropPath`: kotlin.String?
+    , 
+    var `releaseDate`: kotlin.String?
+    , 
+    var `runtime`: kotlin.Int?
+    , 
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `voteCount`: kotlin.Int?
+    , 
+    var `status`: kotlin.String?
+    , 
+    var `tagline`: kotlin.String?
+    , 
+    var `genres`: List<TmdbGenre>
+    , 
+    var `credits`: Credits?
+    , 
+    var `externalIds`: TmdbExternalIds?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbMovie: FfiConverterRustBuffer<TmdbMovie> {
+    override fun read(buf: ByteBuffer): TmdbMovie {
+        return TmdbMovie(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceTypeTmdbGenre.read(buf),
+            FfiConverterOptionalTypeCredits.read(buf),
+            FfiConverterOptionalTypeTmdbExternalIds.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbMovie) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`originalTitle`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`backdropPath`) +
+            FfiConverterOptionalString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalInt.allocationSize(value.`runtime`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterOptionalInt.allocationSize(value.`voteCount`) +
+            FfiConverterOptionalString.allocationSize(value.`status`) +
+            FfiConverterOptionalString.allocationSize(value.`tagline`) +
+            FfiConverterSequenceTypeTmdbGenre.allocationSize(value.`genres`) +
+            FfiConverterOptionalTypeCredits.allocationSize(value.`credits`) +
+            FfiConverterOptionalTypeTmdbExternalIds.allocationSize(value.`externalIds`)
+    )
+
+    override fun write(value: TmdbMovie, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`originalTitle`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`backdropPath`, buf)
+            FfiConverterOptionalString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalInt.write(value.`runtime`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterOptionalInt.write(value.`voteCount`, buf)
+            FfiConverterOptionalString.write(value.`status`, buf)
+            FfiConverterOptionalString.write(value.`tagline`, buf)
+            FfiConverterSequenceTypeTmdbGenre.write(value.`genres`, buf)
+            FfiConverterOptionalTypeCredits.write(value.`credits`, buf)
+            FfiConverterOptionalTypeTmdbExternalIds.write(value.`externalIds`, buf)
+    }
+}
+
+
+
+data class TmdbNetwork (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `logoPath`: kotlin.String?
+    , 
+    var `originCountry`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbNetwork: FfiConverterRustBuffer<TmdbNetwork> {
+    override fun read(buf: ByteBuffer): TmdbNetwork {
+        return TmdbNetwork(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbNetwork) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`logoPath`) +
+            FfiConverterString.allocationSize(value.`originCountry`)
+    )
+
+    override fun write(value: TmdbNetwork, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`logoPath`, buf)
+            FfiConverterString.write(value.`originCountry`, buf)
+    }
+}
+
+
+
+data class TmdbPerson (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `biography`: kotlin.String
+    , 
+    var `birthday`: kotlin.String?
+    , 
+    var `deathday`: kotlin.String?
+    , 
+    var `placeOfBirth`: kotlin.String?
+    , 
+    var `profilePath`: kotlin.String?
+    , 
+    var `knownForDepartment`: kotlin.String
+    , 
+    var `externalIds`: TmdbExternalIds?
+    , 
+    var `combinedCredits`: PersonCombinedCredits?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbPerson: FfiConverterRustBuffer<TmdbPerson> {
+    override fun read(buf: ByteBuffer): TmdbPerson {
+        return TmdbPerson(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalTypeTmdbExternalIds.read(buf),
+            FfiConverterOptionalTypePersonCombinedCredits.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbPerson) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`biography`) +
+            FfiConverterOptionalString.allocationSize(value.`birthday`) +
+            FfiConverterOptionalString.allocationSize(value.`deathday`) +
+            FfiConverterOptionalString.allocationSize(value.`placeOfBirth`) +
+            FfiConverterOptionalString.allocationSize(value.`profilePath`) +
+            FfiConverterString.allocationSize(value.`knownForDepartment`) +
+            FfiConverterOptionalTypeTmdbExternalIds.allocationSize(value.`externalIds`) +
+            FfiConverterOptionalTypePersonCombinedCredits.allocationSize(value.`combinedCredits`)
+    )
+
+    override fun write(value: TmdbPerson, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`biography`, buf)
+            FfiConverterOptionalString.write(value.`birthday`, buf)
+            FfiConverterOptionalString.write(value.`deathday`, buf)
+            FfiConverterOptionalString.write(value.`placeOfBirth`, buf)
+            FfiConverterOptionalString.write(value.`profilePath`, buf)
+            FfiConverterString.write(value.`knownForDepartment`, buf)
+            FfiConverterOptionalTypeTmdbExternalIds.write(value.`externalIds`, buf)
+            FfiConverterOptionalTypePersonCombinedCredits.write(value.`combinedCredits`, buf)
+    }
+}
+
+
+
+data class TmdbSearchResult (
+    var `id`: kotlin.Int
+    , 
+    var `mediaType`: kotlin.String?
+    , 
+    var `title`: kotlin.String?
+    , 
+    var `name`: kotlin.String?
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `backdropPath`: kotlin.String?
+    , 
+    var `releaseDate`: kotlin.String?
+    , 
+    var `firstAirDate`: kotlin.String?
+    , 
+    var `genreIds`: List<kotlin.Int>
+    , 
+    var `popularity`: kotlin.Double
+    , 
+    var `voteAverage`: kotlin.Double?
+    , 
+    var `voteCount`: kotlin.Int?
+    , 
+    var `profilePath`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbSearchResult: FfiConverterRustBuffer<TmdbSearchResult> {
+    override fun read(buf: ByteBuffer): TmdbSearchResult {
+        return TmdbSearchResult(
+            FfiConverterInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceInt.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbSearchResult) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterOptionalString.allocationSize(value.`mediaType`) +
+            FfiConverterOptionalString.allocationSize(value.`title`) +
+            FfiConverterOptionalString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`backdropPath`) +
+            FfiConverterOptionalString.allocationSize(value.`releaseDate`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAirDate`) +
+            FfiConverterSequenceInt.allocationSize(value.`genreIds`) +
+            FfiConverterDouble.allocationSize(value.`popularity`) +
+            FfiConverterOptionalDouble.allocationSize(value.`voteAverage`) +
+            FfiConverterOptionalInt.allocationSize(value.`voteCount`) +
+            FfiConverterOptionalString.allocationSize(value.`profilePath`)
+    )
+
+    override fun write(value: TmdbSearchResult, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterOptionalString.write(value.`mediaType`, buf)
+            FfiConverterOptionalString.write(value.`title`, buf)
+            FfiConverterOptionalString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`backdropPath`, buf)
+            FfiConverterOptionalString.write(value.`releaseDate`, buf)
+            FfiConverterOptionalString.write(value.`firstAirDate`, buf)
+            FfiConverterSequenceInt.write(value.`genreIds`, buf)
+            FfiConverterDouble.write(value.`popularity`, buf)
+            FfiConverterOptionalDouble.write(value.`voteAverage`, buf)
+            FfiConverterOptionalInt.write(value.`voteCount`, buf)
+            FfiConverterOptionalString.write(value.`profilePath`, buf)
+    }
+}
+
+
+
+data class TmdbSeason (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `overview`: kotlin.String
+    , 
+    var `seasonNumber`: kotlin.Int
+    , 
+    var `episodes`: List<TmdbEpisode>
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `airDate`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbSeason: FfiConverterRustBuffer<TmdbSeason> {
+    override fun read(buf: ByteBuffer): TmdbSeason {
+        return TmdbSeason(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterSequenceTypeTmdbEpisode.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbSeason) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`overview`) +
+            FfiConverterInt.allocationSize(value.`seasonNumber`) +
+            FfiConverterSequenceTypeTmdbEpisode.allocationSize(value.`episodes`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`airDate`)
+    )
+
+    override fun write(value: TmdbSeason, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`overview`, buf)
+            FfiConverterInt.write(value.`seasonNumber`, buf)
+            FfiConverterSequenceTypeTmdbEpisode.write(value.`episodes`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`airDate`, buf)
+    }
+}
+
+
+
+data class TmdbSeasonSummary (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `seasonNumber`: kotlin.Int
+    , 
+    var `episodeCount`: kotlin.Int
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `airDate`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbSeasonSummary: FfiConverterRustBuffer<TmdbSeasonSummary> {
+    override fun read(buf: ByteBuffer): TmdbSeasonSummary {
+        return TmdbSeasonSummary(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbSeasonSummary) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterInt.allocationSize(value.`seasonNumber`) +
+            FfiConverterInt.allocationSize(value.`episodeCount`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`airDate`)
+    )
+
+    override fun write(value: TmdbSeasonSummary, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterInt.write(value.`seasonNumber`, buf)
+            FfiConverterInt.write(value.`episodeCount`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`airDate`, buf)
+    }
+}
+
+
+
+data class TmdbShow (
+    var `id`: kotlin.Int
+    , 
+    var `name`: kotlin.String
+    , 
+    var `overview`: kotlin.String
+    , 
+    var `posterPath`: kotlin.String?
+    , 
+    var `backdropPath`: kotlin.String?
+    , 
+    var `firstAirDate`: kotlin.String?
+    , 
+    var `lastAirDate`: kotlin.String?
+    , 
+    var `numberOfSeasons`: kotlin.Int
+    , 
+    var `numberOfEpisodes`: kotlin.Int
+    , 
+    var `genres`: List<TmdbGenre>
+    , 
+    var `seasons`: List<TmdbSeasonSummary>
+    , 
+    var `status`: kotlin.String
+    , 
+    var `typeField`: kotlin.String
+    , 
+    var `originalLanguage`: kotlin.String
+    , 
+    var `createdBy`: List<TmdbCreator>
+    , 
+    var `networks`: List<TmdbNetwork>
+    , 
+    var `credits`: Credits?
+    , 
+    var `externalIds`: TmdbExternalIds?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbShow: FfiConverterRustBuffer<TmdbShow> {
+    override fun read(buf: ByteBuffer): TmdbShow {
+        return TmdbShow(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterSequenceTypeTmdbGenre.read(buf),
+            FfiConverterSequenceTypeTmdbSeasonSummary.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceTypeTmdbCreator.read(buf),
+            FfiConverterSequenceTypeTmdbNetwork.read(buf),
+            FfiConverterOptionalTypeCredits.read(buf),
+            FfiConverterOptionalTypeTmdbExternalIds.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TmdbShow) = (
+            FfiConverterInt.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`posterPath`) +
+            FfiConverterOptionalString.allocationSize(value.`backdropPath`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAirDate`) +
+            FfiConverterOptionalString.allocationSize(value.`lastAirDate`) +
+            FfiConverterInt.allocationSize(value.`numberOfSeasons`) +
+            FfiConverterInt.allocationSize(value.`numberOfEpisodes`) +
+            FfiConverterSequenceTypeTmdbGenre.allocationSize(value.`genres`) +
+            FfiConverterSequenceTypeTmdbSeasonSummary.allocationSize(value.`seasons`) +
+            FfiConverterString.allocationSize(value.`status`) +
+            FfiConverterString.allocationSize(value.`typeField`) +
+            FfiConverterString.allocationSize(value.`originalLanguage`) +
+            FfiConverterSequenceTypeTmdbCreator.allocationSize(value.`createdBy`) +
+            FfiConverterSequenceTypeTmdbNetwork.allocationSize(value.`networks`) +
+            FfiConverterOptionalTypeCredits.allocationSize(value.`credits`) +
+            FfiConverterOptionalTypeTmdbExternalIds.allocationSize(value.`externalIds`)
+    )
+
+    override fun write(value: TmdbShow, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`posterPath`, buf)
+            FfiConverterOptionalString.write(value.`backdropPath`, buf)
+            FfiConverterOptionalString.write(value.`firstAirDate`, buf)
+            FfiConverterOptionalString.write(value.`lastAirDate`, buf)
+            FfiConverterInt.write(value.`numberOfSeasons`, buf)
+            FfiConverterInt.write(value.`numberOfEpisodes`, buf)
+            FfiConverterSequenceTypeTmdbGenre.write(value.`genres`, buf)
+            FfiConverterSequenceTypeTmdbSeasonSummary.write(value.`seasons`, buf)
+            FfiConverterString.write(value.`status`, buf)
+            FfiConverterString.write(value.`typeField`, buf)
+            FfiConverterString.write(value.`originalLanguage`, buf)
+            FfiConverterSequenceTypeTmdbCreator.write(value.`createdBy`, buf)
+            FfiConverterSequenceTypeTmdbNetwork.write(value.`networks`, buf)
+            FfiConverterOptionalTypeCredits.write(value.`credits`, buf)
+            FfiConverterOptionalTypeTmdbExternalIds.write(value.`externalIds`, buf)
+    }
+}
+
+
+
+/**
+ * Calendar item for movies - represents a movie releasing on a specific date
+ */
+data class TraktCalendarMovie (
+    /**
+     * When the movie was/will be released (ISO 8601 date format)
+     */
+    var `released`: kotlin.String
+    , 
+    /**
+     * The movie details
+     */
+    var `movie`: TraktMovie
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktCalendarMovie: FfiConverterRustBuffer<TraktCalendarMovie> {
+    override fun read(buf: ByteBuffer): TraktCalendarMovie {
+        return TraktCalendarMovie(
+            FfiConverterString.read(buf),
+            FfiConverterTypeTraktMovie.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktCalendarMovie) = (
+            FfiConverterString.allocationSize(value.`released`) +
+            FfiConverterTypeTraktMovie.allocationSize(value.`movie`)
+    )
+
+    override fun write(value: TraktCalendarMovie, buf: ByteBuffer) {
+            FfiConverterString.write(value.`released`, buf)
+            FfiConverterTypeTraktMovie.write(value.`movie`, buf)
+    }
+}
+
+
+
+/**
+ * Calendar item for TV shows - represents an episode airing on a specific date
+ */
+data class TraktCalendarShow (
+    /**
+     * When the episode first aired (ISO 8601 format)
+     */
+    var `firstAired`: kotlin.String
+    , 
+    /**
+     * The episode details
+     */
+    var `episode`: TraktEpisode
+    , 
+    /**
+     * The show details
+     */
+    var `show`: TraktShow
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktCalendarShow: FfiConverterRustBuffer<TraktCalendarShow> {
+    override fun read(buf: ByteBuffer): TraktCalendarShow {
+        return TraktCalendarShow(
+            FfiConverterString.read(buf),
+            FfiConverterTypeTraktEpisode.read(buf),
+            FfiConverterTypeTraktShow.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktCalendarShow) = (
+            FfiConverterString.allocationSize(value.`firstAired`) +
+            FfiConverterTypeTraktEpisode.allocationSize(value.`episode`) +
+            FfiConverterTypeTraktShow.allocationSize(value.`show`)
+    )
+
+    override fun write(value: TraktCalendarShow, buf: ByteBuffer) {
+            FfiConverterString.write(value.`firstAired`, buf)
+            FfiConverterTypeTraktEpisode.write(value.`episode`, buf)
+            FfiConverterTypeTraktShow.write(value.`show`, buf)
+    }
+}
+
+
+
+/**
+ * Comment data from Trakt API
+ */
+data class TraktComment (
+    var `id`: kotlin.Long
+    , 
+    var `comment`: kotlin.String
+    , 
+    var `spoiler`: kotlin.Boolean
+    , 
+    var `review`: kotlin.Boolean
+    , 
+    var `parentId`: kotlin.Long
+    , 
+    var `createdAt`: kotlin.String
+    , 
+    var `updatedAt`: kotlin.String
+    , 
+    var `replies`: kotlin.Int
+    , 
+    var `likes`: kotlin.Int
+    , 
+    var `language`: kotlin.String
+    , 
+    var `user`: TraktCommentUser
+    , 
+    var `userRating`: kotlin.Int?
+    , 
+    var `userStats`: TraktCommentUserStats?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktComment: FfiConverterRustBuffer<TraktComment> {
+    override fun read(buf: ByteBuffer): TraktComment {
+        return TraktComment(
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeTraktCommentUser.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalTypeTraktCommentUserStats.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktComment) = (
+            FfiConverterLong.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`comment`) +
+            FfiConverterBoolean.allocationSize(value.`spoiler`) +
+            FfiConverterBoolean.allocationSize(value.`review`) +
+            FfiConverterLong.allocationSize(value.`parentId`) +
+            FfiConverterString.allocationSize(value.`createdAt`) +
+            FfiConverterString.allocationSize(value.`updatedAt`) +
+            FfiConverterInt.allocationSize(value.`replies`) +
+            FfiConverterInt.allocationSize(value.`likes`) +
+            FfiConverterString.allocationSize(value.`language`) +
+            FfiConverterTypeTraktCommentUser.allocationSize(value.`user`) +
+            FfiConverterOptionalInt.allocationSize(value.`userRating`) +
+            FfiConverterOptionalTypeTraktCommentUserStats.allocationSize(value.`userStats`)
+    )
+
+    override fun write(value: TraktComment, buf: ByteBuffer) {
+            FfiConverterLong.write(value.`id`, buf)
+            FfiConverterString.write(value.`comment`, buf)
+            FfiConverterBoolean.write(value.`spoiler`, buf)
+            FfiConverterBoolean.write(value.`review`, buf)
+            FfiConverterLong.write(value.`parentId`, buf)
+            FfiConverterString.write(value.`createdAt`, buf)
+            FfiConverterString.write(value.`updatedAt`, buf)
+            FfiConverterInt.write(value.`replies`, buf)
+            FfiConverterInt.write(value.`likes`, buf)
+            FfiConverterString.write(value.`language`, buf)
+            FfiConverterTypeTraktCommentUser.write(value.`user`, buf)
+            FfiConverterOptionalInt.write(value.`userRating`, buf)
+            FfiConverterOptionalTypeTraktCommentUserStats.write(value.`userStats`, buf)
+    }
+}
+
+
+
+/**
+ * User information for comment authors
+ */
+data class TraktCommentUser (
+    var `username`: kotlin.String
+    , 
+    var `private`: kotlin.Boolean
+    , 
+    var `vip`: kotlin.Boolean
+    , 
+    var `vipEp`: kotlin.Boolean
+    , 
+    var `ids`: TraktCommentUserIds
+    , 
+    var `deleted`: kotlin.Boolean?
+    , 
+    var `name`: kotlin.String?
+    , 
+    var `director`: kotlin.Boolean?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktCommentUser: FfiConverterRustBuffer<TraktCommentUser> {
+    override fun read(buf: ByteBuffer): TraktCommentUser {
+        return TraktCommentUser(
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterTypeTraktCommentUserIds.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktCommentUser) = (
+            FfiConverterString.allocationSize(value.`username`) +
+            FfiConverterBoolean.allocationSize(value.`private`) +
+            FfiConverterBoolean.allocationSize(value.`vip`) +
+            FfiConverterBoolean.allocationSize(value.`vipEp`) +
+            FfiConverterTypeTraktCommentUserIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`deleted`) +
+            FfiConverterOptionalString.allocationSize(value.`name`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`director`)
+    )
+
+    override fun write(value: TraktCommentUser, buf: ByteBuffer) {
+            FfiConverterString.write(value.`username`, buf)
+            FfiConverterBoolean.write(value.`private`, buf)
+            FfiConverterBoolean.write(value.`vip`, buf)
+            FfiConverterBoolean.write(value.`vipEp`, buf)
+            FfiConverterTypeTraktCommentUserIds.write(value.`ids`, buf)
+            FfiConverterOptionalBoolean.write(value.`deleted`, buf)
+            FfiConverterOptionalString.write(value.`name`, buf)
+            FfiConverterOptionalBoolean.write(value.`director`, buf)
+    }
+}
+
+
+
+/**
+ * User IDs for comment authors
+ */
+data class TraktCommentUserIds (
+    var `slug`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktCommentUserIds: FfiConverterRustBuffer<TraktCommentUserIds> {
+    override fun read(buf: ByteBuffer): TraktCommentUserIds {
+        return TraktCommentUserIds(
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktCommentUserIds) = (
+            FfiConverterString.allocationSize(value.`slug`)
+    )
+
+    override fun write(value: TraktCommentUserIds, buf: ByteBuffer) {
+            FfiConverterString.write(value.`slug`, buf)
+    }
+}
+
+
+
+/**
+ * User statistics for comment authors
+ */
+data class TraktCommentUserStats (
+    var `rating`: kotlin.Int?
+    , 
+    var `playCount`: kotlin.Int?
+    , 
+    var `completedCount`: kotlin.Int?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktCommentUserStats: FfiConverterRustBuffer<TraktCommentUserStats> {
+    override fun read(buf: ByteBuffer): TraktCommentUserStats {
+        return TraktCommentUserStats(
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktCommentUserStats) = (
+            FfiConverterOptionalInt.allocationSize(value.`rating`) +
+            FfiConverterOptionalInt.allocationSize(value.`playCount`) +
+            FfiConverterOptionalInt.allocationSize(value.`completedCount`)
+    )
+
+    override fun write(value: TraktCommentUserStats, buf: ByteBuffer) {
+            FfiConverterOptionalInt.write(value.`rating`, buf)
+            FfiConverterOptionalInt.write(value.`playCount`, buf)
+            FfiConverterOptionalInt.write(value.`completedCount`, buf)
+    }
+}
+
+
+
+/**
+ * Trakt episode metadata
+ */
+data class TraktEpisode (
+    var `season`: kotlin.Int
+    , 
+    var `number`: kotlin.Int
+    , 
+    var `title`: kotlin.String
+    , 
+    var `ids`: TraktIds
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `firstAired`: kotlin.String?
+    , 
+    var `runtime`: kotlin.Int?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktEpisode: FfiConverterRustBuffer<TraktEpisode> {
+    override fun read(buf: ByteBuffer): TraktEpisode {
+        return TraktEpisode(
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeTraktIds.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktEpisode) = (
+            FfiConverterInt.allocationSize(value.`season`) +
+            FfiConverterInt.allocationSize(value.`number`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterTypeTraktIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAired`) +
+            FfiConverterOptionalInt.allocationSize(value.`runtime`)
+    )
+
+    override fun write(value: TraktEpisode, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`season`, buf)
+            FfiConverterInt.write(value.`number`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterTypeTraktIds.write(value.`ids`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`firstAired`, buf)
+            FfiConverterOptionalInt.write(value.`runtime`, buf)
+    }
+}
+
+
+
+/**
+ * Count of deleted items
+ */
+data class TraktHistoryDeletedCount (
+    var `movies`: kotlin.Int
+    , 
+    var `episodes`: kotlin.Int
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryDeletedCount: FfiConverterRustBuffer<TraktHistoryDeletedCount> {
+    override fun read(buf: ByteBuffer): TraktHistoryDeletedCount {
+        return TraktHistoryDeletedCount(
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryDeletedCount) = (
+            FfiConverterInt.allocationSize(value.`movies`) +
+            FfiConverterInt.allocationSize(value.`episodes`)
+    )
+
+    override fun write(value: TraktHistoryDeletedCount, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`movies`, buf)
+            FfiConverterInt.write(value.`episodes`, buf)
+    }
+}
+
+
+
+/**
+ * Episode information for history removal
+ */
+data class TraktHistoryEpisode (
+    var `number`: kotlin.Int
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryEpisode: FfiConverterRustBuffer<TraktHistoryEpisode> {
+    override fun read(buf: ByteBuffer): TraktHistoryEpisode {
+        return TraktHistoryEpisode(
+            FfiConverterInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryEpisode) = (
+            FfiConverterInt.allocationSize(value.`number`)
+    )
+
+    override fun write(value: TraktHistoryEpisode, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`number`, buf)
+    }
+}
+
+
+
+/**
+ * Partial IDs for history removal requests
+ */
+data class TraktHistoryIds (
+    var `trakt`: kotlin.Long?
+    , 
+    var `imdb`: kotlin.String?
+    , 
+    var `tmdb`: kotlin.Long?
+    , 
+    var `tvdb`: kotlin.Long?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryIds: FfiConverterRustBuffer<TraktHistoryIds> {
+    override fun read(buf: ByteBuffer): TraktHistoryIds {
+        return TraktHistoryIds(
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryIds) = (
+            FfiConverterOptionalLong.allocationSize(value.`trakt`) +
+            FfiConverterOptionalString.allocationSize(value.`imdb`) +
+            FfiConverterOptionalLong.allocationSize(value.`tmdb`) +
+            FfiConverterOptionalLong.allocationSize(value.`tvdb`)
+    )
+
+    override fun write(value: TraktHistoryIds, buf: ByteBuffer) {
+            FfiConverterOptionalLong.write(value.`trakt`, buf)
+            FfiConverterOptionalString.write(value.`imdb`, buf)
+            FfiConverterOptionalLong.write(value.`tmdb`, buf)
+            FfiConverterOptionalLong.write(value.`tvdb`, buf)
+    }
+}
+
+
+
+/**
+ * Movie item for history removal
+ */
+data class TraktHistoryMovie (
+    var `ids`: TraktHistoryIds
+    , 
+    var `title`: kotlin.String?
+    , 
+    var `year`: kotlin.Int?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryMovie: FfiConverterRustBuffer<TraktHistoryMovie> {
+    override fun read(buf: ByteBuffer): TraktHistoryMovie {
+        return TraktHistoryMovie(
+            FfiConverterTypeTraktHistoryIds.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryMovie) = (
+            FfiConverterTypeTraktHistoryIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalString.allocationSize(value.`title`) +
+            FfiConverterOptionalInt.allocationSize(value.`year`)
+    )
+
+    override fun write(value: TraktHistoryMovie, buf: ByteBuffer) {
+            FfiConverterTypeTraktHistoryIds.write(value.`ids`, buf)
+            FfiConverterOptionalString.write(value.`title`, buf)
+            FfiConverterOptionalInt.write(value.`year`, buf)
+    }
+}
+
+
+
+/**
+ * Not found items
+ */
+data class TraktHistoryNotFound (
+    var `movies`: List<TraktHistoryNotFoundItem>
+    , 
+    var `shows`: List<TraktHistoryNotFoundItem>
+    , 
+    var `episodes`: List<TraktHistoryNotFoundItem>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryNotFound: FfiConverterRustBuffer<TraktHistoryNotFound> {
+    override fun read(buf: ByteBuffer): TraktHistoryNotFound {
+        return TraktHistoryNotFound(
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(buf),
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(buf),
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryNotFound) = (
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.allocationSize(value.`movies`) +
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.allocationSize(value.`shows`) +
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.allocationSize(value.`episodes`)
+    )
+
+    override fun write(value: TraktHistoryNotFound, buf: ByteBuffer) {
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.`movies`, buf)
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.`shows`, buf)
+            FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.`episodes`, buf)
+    }
+}
+
+
+
+/**
+ * Not found item in history removal response
+ */
+data class TraktHistoryNotFoundItem (
+    var `ids`: TraktHistoryIds
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryNotFoundItem: FfiConverterRustBuffer<TraktHistoryNotFoundItem> {
+    override fun read(buf: ByteBuffer): TraktHistoryNotFoundItem {
+        return TraktHistoryNotFoundItem(
+            FfiConverterTypeTraktHistoryIds.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryNotFoundItem) = (
+            FfiConverterTypeTraktHistoryIds.allocationSize(value.`ids`)
+    )
+
+    override fun write(value: TraktHistoryNotFoundItem, buf: ByteBuffer) {
+            FfiConverterTypeTraktHistoryIds.write(value.`ids`, buf)
+    }
+}
+
+
+
+/**
+ * Payload for removing items from watched history
+ */
+data class TraktHistoryRemovePayload (
+    var `movies`: List<TraktHistoryMovie>?
+    , 
+    var `shows`: List<TraktHistoryShow>?
+    , 
+    var `ids`: List<kotlin.Long>?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryRemovePayload: FfiConverterRustBuffer<TraktHistoryRemovePayload> {
+    override fun read(buf: ByteBuffer): TraktHistoryRemovePayload {
+        return TraktHistoryRemovePayload(
+            FfiConverterOptionalSequenceTypeTraktHistoryMovie.read(buf),
+            FfiConverterOptionalSequenceTypeTraktHistoryShow.read(buf),
+            FfiConverterOptionalSequenceLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryRemovePayload) = (
+            FfiConverterOptionalSequenceTypeTraktHistoryMovie.allocationSize(value.`movies`) +
+            FfiConverterOptionalSequenceTypeTraktHistoryShow.allocationSize(value.`shows`) +
+            FfiConverterOptionalSequenceLong.allocationSize(value.`ids`)
+    )
+
+    override fun write(value: TraktHistoryRemovePayload, buf: ByteBuffer) {
+            FfiConverterOptionalSequenceTypeTraktHistoryMovie.write(value.`movies`, buf)
+            FfiConverterOptionalSequenceTypeTraktHistoryShow.write(value.`shows`, buf)
+            FfiConverterOptionalSequenceLong.write(value.`ids`, buf)
+    }
+}
+
+
+
+/**
+ * Response from history removal API
+ */
+data class TraktHistoryRemoveResponse (
+    var `deleted`: TraktHistoryDeletedCount
+    , 
+    var `notFound`: TraktHistoryNotFound
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryRemoveResponse: FfiConverterRustBuffer<TraktHistoryRemoveResponse> {
+    override fun read(buf: ByteBuffer): TraktHistoryRemoveResponse {
+        return TraktHistoryRemoveResponse(
+            FfiConverterTypeTraktHistoryDeletedCount.read(buf),
+            FfiConverterTypeTraktHistoryNotFound.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryRemoveResponse) = (
+            FfiConverterTypeTraktHistoryDeletedCount.allocationSize(value.`deleted`) +
+            FfiConverterTypeTraktHistoryNotFound.allocationSize(value.`notFound`)
+    )
+
+    override fun write(value: TraktHistoryRemoveResponse, buf: ByteBuffer) {
+            FfiConverterTypeTraktHistoryDeletedCount.write(value.`deleted`, buf)
+            FfiConverterTypeTraktHistoryNotFound.write(value.`notFound`, buf)
+    }
+}
+
+
+
+/**
+ * Season information for history removal
+ */
+data class TraktHistorySeason (
+    var `number`: kotlin.Int
+    , 
+    var `episodes`: List<TraktHistoryEpisode>?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistorySeason: FfiConverterRustBuffer<TraktHistorySeason> {
+    override fun read(buf: ByteBuffer): TraktHistorySeason {
+        return TraktHistorySeason(
+            FfiConverterInt.read(buf),
+            FfiConverterOptionalSequenceTypeTraktHistoryEpisode.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistorySeason) = (
+            FfiConverterInt.allocationSize(value.`number`) +
+            FfiConverterOptionalSequenceTypeTraktHistoryEpisode.allocationSize(value.`episodes`)
+    )
+
+    override fun write(value: TraktHistorySeason, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`number`, buf)
+            FfiConverterOptionalSequenceTypeTraktHistoryEpisode.write(value.`episodes`, buf)
+    }
+}
+
+
+
+/**
+ * Show item for history removal
+ */
+data class TraktHistoryShow (
+    var `ids`: TraktHistoryIds
+    , 
+    var `title`: kotlin.String?
+    , 
+    var `year`: kotlin.Int?
+    , 
+    var `seasons`: List<TraktHistorySeason>?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktHistoryShow: FfiConverterRustBuffer<TraktHistoryShow> {
+    override fun read(buf: ByteBuffer): TraktHistoryShow {
+        return TraktHistoryShow(
+            FfiConverterTypeTraktHistoryIds.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalSequenceTypeTraktHistorySeason.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktHistoryShow) = (
+            FfiConverterTypeTraktHistoryIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalString.allocationSize(value.`title`) +
+            FfiConverterOptionalInt.allocationSize(value.`year`) +
+            FfiConverterOptionalSequenceTypeTraktHistorySeason.allocationSize(value.`seasons`)
+    )
+
+    override fun write(value: TraktHistoryShow, buf: ByteBuffer) {
+            FfiConverterTypeTraktHistoryIds.write(value.`ids`, buf)
+            FfiConverterOptionalString.write(value.`title`, buf)
+            FfiConverterOptionalInt.write(value.`year`, buf)
+            FfiConverterOptionalSequenceTypeTraktHistorySeason.write(value.`seasons`, buf)
+    }
+}
+
+
+
+/**
+ * Trakt IDs for content items (movies, shows, episodes)
+ */
+data class TraktIds (
+    var `trakt`: kotlin.Long
+    , 
+    var `slug`: kotlin.String
+    , 
+    var `imdb`: kotlin.String?
+    , 
+    var `tmdb`: kotlin.Long?
+    , 
+    var `tvdb`: kotlin.Long?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktIds: FfiConverterRustBuffer<TraktIds> {
+    override fun read(buf: ByteBuffer): TraktIds {
+        return TraktIds(
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktIds) = (
+            FfiConverterLong.allocationSize(value.`trakt`) +
+            FfiConverterString.allocationSize(value.`slug`) +
+            FfiConverterOptionalString.allocationSize(value.`imdb`) +
+            FfiConverterOptionalLong.allocationSize(value.`tmdb`) +
+            FfiConverterOptionalLong.allocationSize(value.`tvdb`)
+    )
+
+    override fun write(value: TraktIds, buf: ByteBuffer) {
+            FfiConverterLong.write(value.`trakt`, buf)
+            FfiConverterString.write(value.`slug`, buf)
+            FfiConverterOptionalString.write(value.`imdb`, buf)
+            FfiConverterOptionalLong.write(value.`tmdb`, buf)
+            FfiConverterOptionalLong.write(value.`tvdb`, buf)
+    }
+}
+
+
+
+/**
+ * Trakt movie metadata
+ */
+data class TraktMovie (
+    var `title`: kotlin.String
+    , 
+    var `year`: kotlin.Int?
+    , 
+    var `ids`: TraktIds
+    , 
+    var `tagline`: kotlin.String?
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `released`: kotlin.String?
+    , 
+    var `runtime`: kotlin.Int?
+    , 
+    var `language`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktMovie: FfiConverterRustBuffer<TraktMovie> {
+    override fun read(buf: ByteBuffer): TraktMovie {
+        return TraktMovie(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterTypeTraktIds.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktMovie) = (
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterOptionalInt.allocationSize(value.`year`) +
+            FfiConverterTypeTraktIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalString.allocationSize(value.`tagline`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`released`) +
+            FfiConverterOptionalInt.allocationSize(value.`runtime`) +
+            FfiConverterOptionalString.allocationSize(value.`language`)
+    )
+
+    override fun write(value: TraktMovie, buf: ByteBuffer) {
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterOptionalInt.write(value.`year`, buf)
+            FfiConverterTypeTraktIds.write(value.`ids`, buf)
+            FfiConverterOptionalString.write(value.`tagline`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`released`, buf)
+            FfiConverterOptionalInt.write(value.`runtime`, buf)
+            FfiConverterOptionalString.write(value.`language`, buf)
+    }
+}
+
+
+
+/**
+ * Recommendation item - can be either a movie or show recommendation
+ */
+data class TraktRecommendation (
+    var `movie`: TraktMovie?
+    , 
+    var `show`: TraktShow?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktRecommendation: FfiConverterRustBuffer<TraktRecommendation> {
+    override fun read(buf: ByteBuffer): TraktRecommendation {
+        return TraktRecommendation(
+            FfiConverterOptionalTypeTraktMovie.read(buf),
+            FfiConverterOptionalTypeTraktShow.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktRecommendation) = (
+            FfiConverterOptionalTypeTraktMovie.allocationSize(value.`movie`) +
+            FfiConverterOptionalTypeTraktShow.allocationSize(value.`show`)
+    )
+
+    override fun write(value: TraktRecommendation, buf: ByteBuffer) {
+            FfiConverterOptionalTypeTraktMovie.write(value.`movie`, buf)
+            FfiConverterOptionalTypeTraktShow.write(value.`show`, buf)
+    }
+}
+
+
+
+/**
+ * Search result item containing the search score and the matched content
+ */
+data class TraktSearchResult (
+    /**
+     * Type of the search result (movie, show, episode, person, list)
+     */
+    var `resultType`: kotlin.String
+    , 
+    /**
+     * Search relevance score
+     */
+    var `score`: kotlin.Double
+    , 
+    /**
+     * Movie data if this is a movie result
+     */
+    var `movie`: TraktMovie?
+    , 
+    /**
+     * Show data if this is a show result
+     */
+    var `show`: TraktShow?
+    , 
+    /**
+     * Episode data if this is an episode result
+     */
+    var `episode`: TraktEpisode?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktSearchResult: FfiConverterRustBuffer<TraktSearchResult> {
+    override fun read(buf: ByteBuffer): TraktSearchResult {
+        return TraktSearchResult(
+            FfiConverterString.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterOptionalTypeTraktMovie.read(buf),
+            FfiConverterOptionalTypeTraktShow.read(buf),
+            FfiConverterOptionalTypeTraktEpisode.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktSearchResult) = (
+            FfiConverterString.allocationSize(value.`resultType`) +
+            FfiConverterDouble.allocationSize(value.`score`) +
+            FfiConverterOptionalTypeTraktMovie.allocationSize(value.`movie`) +
+            FfiConverterOptionalTypeTraktShow.allocationSize(value.`show`) +
+            FfiConverterOptionalTypeTraktEpisode.allocationSize(value.`episode`)
+    )
+
+    override fun write(value: TraktSearchResult, buf: ByteBuffer) {
+            FfiConverterString.write(value.`resultType`, buf)
+            FfiConverterDouble.write(value.`score`, buf)
+            FfiConverterOptionalTypeTraktMovie.write(value.`movie`, buf)
+            FfiConverterOptionalTypeTraktShow.write(value.`show`, buf)
+            FfiConverterOptionalTypeTraktEpisode.write(value.`episode`, buf)
+    }
+}
+
+
+
+/**
+ * Trakt show metadata
+ */
+data class TraktShow (
+    var `title`: kotlin.String
+    , 
+    var `year`: kotlin.Int?
+    , 
+    var `ids`: TraktIds
+    , 
+    var `overview`: kotlin.String?
+    , 
+    var `firstAired`: kotlin.String?
+    , 
+    var `runtime`: kotlin.Int?
+    , 
+    var `network`: kotlin.String?
+    , 
+    var `status`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktShow: FfiConverterRustBuffer<TraktShow> {
+    override fun read(buf: ByteBuffer): TraktShow {
+        return TraktShow(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterTypeTraktIds.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktShow) = (
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterOptionalInt.allocationSize(value.`year`) +
+            FfiConverterTypeTraktIds.allocationSize(value.`ids`) +
+            FfiConverterOptionalString.allocationSize(value.`overview`) +
+            FfiConverterOptionalString.allocationSize(value.`firstAired`) +
+            FfiConverterOptionalInt.allocationSize(value.`runtime`) +
+            FfiConverterOptionalString.allocationSize(value.`network`) +
+            FfiConverterOptionalString.allocationSize(value.`status`)
+    )
+
+    override fun write(value: TraktShow, buf: ByteBuffer) {
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterOptionalInt.write(value.`year`, buf)
+            FfiConverterTypeTraktIds.write(value.`ids`, buf)
+            FfiConverterOptionalString.write(value.`overview`, buf)
+            FfiConverterOptionalString.write(value.`firstAired`, buf)
+            FfiConverterOptionalInt.write(value.`runtime`, buf)
+            FfiConverterOptionalString.write(value.`network`, buf)
+            FfiConverterOptionalString.write(value.`status`, buf)
+    }
+}
+
+
+
+/**
+ * User settings from /users/settings endpoint
+ */
+data class TraktUserSettings (
+    /**
+     * User profile information
+     */
+    var `user`: TraktUserSettingsUser
+    , 
+    /**
+     * Account information including VIP status
+     */
+    var `account`: TraktUserSettingsAccount
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktUserSettings: FfiConverterRustBuffer<TraktUserSettings> {
+    override fun read(buf: ByteBuffer): TraktUserSettings {
+        return TraktUserSettings(
+            FfiConverterTypeTraktUserSettingsUser.read(buf),
+            FfiConverterTypeTraktUserSettingsAccount.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktUserSettings) = (
+            FfiConverterTypeTraktUserSettingsUser.allocationSize(value.`user`) +
+            FfiConverterTypeTraktUserSettingsAccount.allocationSize(value.`account`)
+    )
+
+    override fun write(value: TraktUserSettings, buf: ByteBuffer) {
+            FfiConverterTypeTraktUserSettingsUser.write(value.`user`, buf)
+            FfiConverterTypeTraktUserSettingsAccount.write(value.`account`, buf)
+    }
+}
+
+
+
+/**
+ * Account information from settings
+ */
+data class TraktUserSettingsAccount (
+    var `timezone`: kotlin.String?
+    , 
+    var `dateFormat`: kotlin.String?
+    , 
+    var `time24hr`: kotlin.Boolean?
+    , 
+    var `coverImage`: kotlin.String?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktUserSettingsAccount: FfiConverterRustBuffer<TraktUserSettingsAccount> {
+    override fun read(buf: ByteBuffer): TraktUserSettingsAccount {
+        return TraktUserSettingsAccount(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktUserSettingsAccount) = (
+            FfiConverterOptionalString.allocationSize(value.`timezone`) +
+            FfiConverterOptionalString.allocationSize(value.`dateFormat`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`time24hr`) +
+            FfiConverterOptionalString.allocationSize(value.`coverImage`)
+    )
+
+    override fun write(value: TraktUserSettingsAccount, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`timezone`, buf)
+            FfiConverterOptionalString.write(value.`dateFormat`, buf)
+            FfiConverterOptionalBoolean.write(value.`time24hr`, buf)
+            FfiConverterOptionalString.write(value.`coverImage`, buf)
+    }
+}
+
+
+
+/**
+ * User profile information from settings
+ */
+data class TraktUserSettingsUser (
+    var `username`: kotlin.String
+    , 
+    var `private`: kotlin.Boolean?
+    , 
+    var `name`: kotlin.String?
+    , 
+    var `vip`: kotlin.Boolean?
+    , 
+    var `vipEp`: kotlin.Boolean?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktUserSettingsUser: FfiConverterRustBuffer<TraktUserSettingsUser> {
+    override fun read(buf: ByteBuffer): TraktUserSettingsUser {
+        return TraktUserSettingsUser(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktUserSettingsUser) = (
+            FfiConverterString.allocationSize(value.`username`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`private`) +
+            FfiConverterOptionalString.allocationSize(value.`name`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`vip`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`vipEp`)
+    )
+
+    override fun write(value: TraktUserSettingsUser, buf: ByteBuffer) {
+            FfiConverterString.write(value.`username`, buf)
+            FfiConverterOptionalBoolean.write(value.`private`, buf)
+            FfiConverterOptionalString.write(value.`name`, buf)
+            FfiConverterOptionalBoolean.write(value.`vip`, buf)
+            FfiConverterOptionalBoolean.write(value.`vipEp`, buf)
+    }
+}
+
+
+
+/**
+ * Episode data in watched history
+ */
+data class TraktWatchedEpisode (
+    var `number`: kotlin.Int
+    , 
+    var `plays`: kotlin.Int
+    , 
+    var `lastWatchedAt`: kotlin.String
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktWatchedEpisode: FfiConverterRustBuffer<TraktWatchedEpisode> {
+    override fun read(buf: ByteBuffer): TraktWatchedEpisode {
+        return TraktWatchedEpisode(
+            FfiConverterInt.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktWatchedEpisode) = (
+            FfiConverterInt.allocationSize(value.`number`) +
+            FfiConverterInt.allocationSize(value.`plays`) +
+            FfiConverterString.allocationSize(value.`lastWatchedAt`)
+    )
+
+    override fun write(value: TraktWatchedEpisode, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`number`, buf)
+            FfiConverterInt.write(value.`plays`, buf)
+            FfiConverterString.write(value.`lastWatchedAt`, buf)
+    }
+}
+
+
+
+/**
+ * Watched item from sync history
+ */
+data class TraktWatchedItem (
+    var `plays`: kotlin.Int
+    , 
+    var `lastWatchedAt`: kotlin.String
+    , 
+    var `lastUpdatedAt`: kotlin.String?
+    , 
+    var `resetAt`: kotlin.String?
+    , 
+    var `movie`: TraktMovie?
+    , 
+    var `show`: TraktShow?
+    , 
+    var `seasons`: List<TraktWatchedSeason>?
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktWatchedItem: FfiConverterRustBuffer<TraktWatchedItem> {
+    override fun read(buf: ByteBuffer): TraktWatchedItem {
+        return TraktWatchedItem(
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalTypeTraktMovie.read(buf),
+            FfiConverterOptionalTypeTraktShow.read(buf),
+            FfiConverterOptionalSequenceTypeTraktWatchedSeason.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktWatchedItem) = (
+            FfiConverterInt.allocationSize(value.`plays`) +
+            FfiConverterString.allocationSize(value.`lastWatchedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`lastUpdatedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`resetAt`) +
+            FfiConverterOptionalTypeTraktMovie.allocationSize(value.`movie`) +
+            FfiConverterOptionalTypeTraktShow.allocationSize(value.`show`) +
+            FfiConverterOptionalSequenceTypeTraktWatchedSeason.allocationSize(value.`seasons`)
+    )
+
+    override fun write(value: TraktWatchedItem, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`plays`, buf)
+            FfiConverterString.write(value.`lastWatchedAt`, buf)
+            FfiConverterOptionalString.write(value.`lastUpdatedAt`, buf)
+            FfiConverterOptionalString.write(value.`resetAt`, buf)
+            FfiConverterOptionalTypeTraktMovie.write(value.`movie`, buf)
+            FfiConverterOptionalTypeTraktShow.write(value.`show`, buf)
+            FfiConverterOptionalSequenceTypeTraktWatchedSeason.write(value.`seasons`, buf)
+    }
+}
+
+
+
+/**
+ * Season data in watched history
+ */
+data class TraktWatchedSeason (
+    var `number`: kotlin.Int
+    , 
+    var `episodes`: List<TraktWatchedEpisode>
+    
+){
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktWatchedSeason: FfiConverterRustBuffer<TraktWatchedSeason> {
+    override fun read(buf: ByteBuffer): TraktWatchedSeason {
+        return TraktWatchedSeason(
+            FfiConverterInt.read(buf),
+            FfiConverterSequenceTypeTraktWatchedEpisode.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TraktWatchedSeason) = (
+            FfiConverterInt.allocationSize(value.`number`) +
+            FfiConverterSequenceTypeTraktWatchedEpisode.allocationSize(value.`episodes`)
+    )
+
+    override fun write(value: TraktWatchedSeason, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`number`, buf)
+            FfiConverterSequenceTypeTraktWatchedEpisode.write(value.`episodes`, buf)
+    }
+}
+
+
+
 data class UpdateProfileInput (
     var `name`: kotlin.String?
     , 
@@ -4323,54 +17797,687 @@ public object FfiConverterTypeWatchedItem: FfiConverterRustBuffer<WatchedItem> {
 
 
 /**
+ * Errors that can occur during backup and restore operations
+ */
+sealed class BackupException: kotlin.Exception() {
+    
+    /**
+     * Error occurred during serialization or deserialization
+     */
+    class SerializationException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Error occurred during compression or decompression
+     */
+    class CompressionException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Error occurred during file I/O operations
+     */
+    class IoException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Error occurred during data validation
+     */
+    class ValidationException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Backup file not found
+     */
+    class BackupNotFound(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Unsupported backup version
+     */
+    class UnsupportedVersion(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Cloud backup operation failed
+     */
+    class CloudBackupException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Storage error
+     */
+    class StorageException(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Unknown error
+     */
+    class Unknown(
+        
+        /**
+         * Detailed error message
+         */
+        val `msg`: kotlin.String
+        ) : BackupException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<BackupException> {
+        override fun lift(error_buf: RustBuffer.ByValue): BackupException = FfiConverterTypeBackupError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeBackupError : FfiConverterRustBuffer<BackupException> {
+    override fun read(buf: ByteBuffer): BackupException {
+        
+
+        return when(buf.getInt()) {
+            1 -> BackupException.SerializationException(
+                FfiConverterString.read(buf),
+                )
+            2 -> BackupException.CompressionException(
+                FfiConverterString.read(buf),
+                )
+            3 -> BackupException.IoException(
+                FfiConverterString.read(buf),
+                )
+            4 -> BackupException.ValidationException(
+                FfiConverterString.read(buf),
+                )
+            5 -> BackupException.BackupNotFound(
+                FfiConverterString.read(buf),
+                )
+            6 -> BackupException.UnsupportedVersion(
+                FfiConverterString.read(buf),
+                )
+            7 -> BackupException.CloudBackupException(
+                FfiConverterString.read(buf),
+                )
+            8 -> BackupException.StorageException(
+                FfiConverterString.read(buf),
+                )
+            9 -> BackupException.Unknown(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: BackupException): ULong {
+        return when(value) {
+            is BackupException.SerializationException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.CompressionException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.IoException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.ValidationException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.BackupNotFound -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.UnsupportedVersion -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.CloudBackupException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.StorageException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is BackupException.Unknown -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+        }
+    }
+
+    override fun write(value: BackupException, buf: ByteBuffer) {
+        when(value) {
+            is BackupException.SerializationException -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.CompressionException -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.IoException -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.ValidationException -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.BackupNotFound -> {
+                buf.putInt(5)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.UnsupportedVersion -> {
+                buf.putInt(6)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.CloudBackupException -> {
+                buf.putInt(7)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.StorageException -> {
+                buf.putInt(8)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is BackupException.Unknown -> {
+                buf.putInt(9)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+/**
+ * The runtime environment for the SDK.
+ *
+ * This affects various SDK behaviors including:
+ * - Logging verbosity and format
+ * - Debug features enablement
+ * - API endpoint selection (if applicable)
+ * - Error detail level in responses
+ *
+ * # FFI Safety
+ *
+ * This enum is exported via UniFFI and can be used from Kotlin and Swift.
+ */
+
+enum class Environment {
+    
+    /**
+     * Development environment with verbose logging and debug features.
+     * Use this during local development.
+     */
+    DEVELOPMENT,
+    /**
+     * Staging environment for testing before production.
+     * Similar to production but with additional logging.
+     */
+    STAGING,
+    /**
+     * Production environment with optimized logging and error handling.
+     * This is the default environment.
+     */
+    PRODUCTION;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeEnvironment: FfiConverterRustBuffer<Environment> {
+    override fun read(buf: ByteBuffer) = try {
+        Environment.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: Environment) = 4UL
+
+    override fun write(value: Environment, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+
+/**
+ * Error types that can occur during HTTP operations.
+ *
+ * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
+ * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ *
+ * Error codes for NetworkError:
+ * - 0: General network error
+ * - 1: DNS resolution failure
+ * - 2: Connection refused
+ * - 3: Connection reset
+ * - 4: Other connection error
+ */
+sealed class HttpException: kotlin.Exception() {
+    
+    /**
+     * Network-level error (DNS, connection, etc.)
+     */
+    class NetworkException(
+        
+        /**
+         * Error code indicating the type of network failure
+         */
+        val `code`: kotlin.Int, 
+        
+        /**
+         * Detailed error message describing what went wrong
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "code=${ `code` }, msg=${ `msg` }"
+    }
+    
+    /**
+     * Request or connection timeout
+     */
+    class TimeoutException(
+        
+        /**
+         * Detailed error message describing the timeout
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * HTTP status code error (4xx or 5xx)
+     */
+    class HttpStatusException(
+        
+        /**
+         * HTTP status code (e.g., 404, 500)
+         */
+        val `statusCode`: kotlin.UShort, 
+        
+        /**
+         * Detailed error message or response body
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "statusCode=${ `statusCode` }, msg=${ `msg` }"
+    }
+    
+    /**
+     * TLS/SSL certificate validation error
+     */
+    class TlsException(
+        
+        /**
+         * Detailed error message describing the TLS error
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Request was cancelled by the user
+     */
+    class CancellationException(
+        
+        /**
+         * Detailed error message about the cancellation
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Invalid HTTP client configuration
+     */
+    class ConfigurationException(
+        
+        /**
+         * Detailed error message describing the configuration issue
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Unknown or unexpected error
+     */
+    class Unknown(
+        
+        /**
+         * Detailed error message describing the error
+         */
+        val `msg`: kotlin.String
+        ) : HttpException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<HttpException> {
+        override fun lift(error_buf: RustBuffer.ByValue): HttpException = FfiConverterTypeHttpError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHttpError : FfiConverterRustBuffer<HttpException> {
+    override fun read(buf: ByteBuffer): HttpException {
+        
+
+        return when(buf.getInt()) {
+            1 -> HttpException.NetworkException(
+                FfiConverterInt.read(buf),
+                FfiConverterString.read(buf),
+                )
+            2 -> HttpException.TimeoutException(
+                FfiConverterString.read(buf),
+                )
+            3 -> HttpException.HttpStatusException(
+                FfiConverterUShort.read(buf),
+                FfiConverterString.read(buf),
+                )
+            4 -> HttpException.TlsException(
+                FfiConverterString.read(buf),
+                )
+            5 -> HttpException.CancellationException(
+                FfiConverterString.read(buf),
+                )
+            6 -> HttpException.ConfigurationException(
+                FfiConverterString.read(buf),
+                )
+            7 -> HttpException.Unknown(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: HttpException): ULong {
+        return when(value) {
+            is HttpException.NetworkException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterInt.allocationSize(value.`code`)
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.TimeoutException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.HttpStatusException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterUShort.allocationSize(value.`statusCode`)
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.TlsException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.CancellationException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.ConfigurationException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is HttpException.Unknown -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+        }
+    }
+
+    override fun write(value: HttpException, buf: ByteBuffer) {
+        when(value) {
+            is HttpException.NetworkException -> {
+                buf.putInt(1)
+                FfiConverterInt.write(value.`code`, buf)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.TimeoutException -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.HttpStatusException -> {
+                buf.putInt(3)
+                FfiConverterUShort.write(value.`statusCode`, buf)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.TlsException -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.CancellationException -> {
+                buf.putInt(5)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.ConfigurationException -> {
+                buf.putInt(6)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is HttpException.Unknown -> {
+                buf.putInt(7)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+/**
+ * The log level for SDK logging.
+ *
+ * Controls the verbosity of logs emitted by the SDK. Log levels are hierarchical:
+ * - `Trace` includes all log levels
+ * - `Debug` includes Debug, Info, Warn, and Error
+ * - `Info` includes Info, Warn, and Error
+ * - `Warn` includes Warn and Error
+ * - `Error` includes only Error
+ * - `Off` disables all logging
+ *
+ * # FFI Safety
+ *
+ * This enum is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::config::LogLevel;
+ *
+ * let level = LogLevel::Info;
+ * assert!(level.is_enabled_for(&LogLevel::Warn));
+ * assert!(level.is_enabled_for(&LogLevel::Error));
+ * assert!(!level.is_enabled_for(&LogLevel::Debug));
+ * ```
+ */
+
+enum class LogLevel {
+    
+    /**
+     * Most verbose logging level. Includes fine-grained diagnostic information.
+     * Use sparingly as it can generate a lot of output.
+     */
+    TRACE,
+    /**
+     * Debug-level logging. Useful during development for debugging.
+     */
+    DEBUG,
+    /**
+     * Informational messages. Default logging level for production.
+     */
+    INFO,
+    /**
+     * Warning messages indicating potential issues.
+     */
+    WARN,
+    /**
+     * Error messages for actual failures.
+     */
+    ERROR,
+    /**
+     * Disable all logging.
+     */
+    OFF;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLogLevel: FfiConverterRustBuffer<LogLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        LogLevel.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: LogLevel) = 4UL
+
+    override fun write(value: LogLevel, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+
+/**
  * Error types that can occur in the Nuvio Core SDK.
  *
  * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
  * These errors can be safely propagated across language boundaries to Kotlin and Swift.
  */
 sealed class NuvioException: kotlin.Exception() {
-    
-    /**
-     * Error occurred during security operations (hashing, verification)
-     */
-    class SecurityException(
-        
-        /**
-         * Detailed error message describing what went wrong
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Error occurred during profile operations
-     */
-    class ProfileException(
-        
-        /**
-         * Detailed error message describing what went wrong
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Error occurred during storage operations
-     */
-    class StorageException(
-        
-        /**
-         * Detailed error message describing what went wrong
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
     
     /**
      * Error occurred during serialization or deserialization
@@ -4401,87 +18508,124 @@ sealed class NuvioException: kotlin.Exception() {
     }
     
     /**
+     * Error occurred in cache operations
+     */
+    class CacheException(
+        
+        /**
+         * Detailed error message describing the cache error
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Network-level error (DNS, connection, etc.)
+     */
+    class NetworkException(
+        
+        /**
+         * Detailed error message describing the network failure
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Request or connection timeout
+     */
+    class TimeoutException(
+        
+        /**
+         * Detailed error message describing the timeout
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Storage/IO error
+     */
+    class StorageException(
+        
+        /**
+         * Detailed error message describing the storage failure
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Security-related error (encryption, authentication, etc.)
+     */
+    class SecurityException(
+        
+        /**
+         * Detailed error message describing the security failure
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Profile-related error (management, authentication, etc.)
+     */
+    class ProfileException(
+        
+        /**
+         * Detailed error message describing the profile error
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Addon not found error
+     */
+    class AddonNotFoundException(
+        
+        /**
+         * Detailed error message describing which addon was not found
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Response too large error
+     */
+    class ResponseTooLargeException(
+        
+        /**
+         * Detailed error message describing the size limit exceeded
+         */
+        val `msg`: kotlin.String
+        ) : NuvioException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
      * Unknown or unexpected error occurred
      */
     class Unknown(
         
         /**
          * Detailed error message describing the error
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Network error occurred
-     */
-    class NetworkException(
-        
-        /**
-         * Detailed error message
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Request timed out
-     */
-    class Timeout(
-        
-        /**
-         * Timeout details
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Response size invalid
-     */
-    class ResponseTooLarge(
-        
-        /**
-         * Actual size
-         */
-        val `size`: kotlin.ULong, 
-        
-        /**
-         * Size limit
-         */
-        val `limit`: kotlin.ULong
-        ) : NuvioException() {
-        override val message
-            get() = "size=${ `size` }, limit=${ `limit` }"
-    }
-    
-    /**
-     * Invalid manifest format
-     */
-    class InvalidManifest(
-        
-        /**
-         * Validation message
-         */
-        val `msg`: kotlin.String
-        ) : NuvioException() {
-        override val message
-            get() = "msg=${ `msg` }"
-    }
-    
-    /**
-     * Addon not found
-     */
-    class AddonNotFound(
-        
-        /**
-         * Error message
          */
         val `msg`: kotlin.String
         ) : NuvioException() {
@@ -4505,38 +18649,37 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
         
 
         return when(buf.getInt()) {
-            1 -> NuvioException.SecurityException(
+            1 -> NuvioException.SerializationException(
                 FfiConverterString.read(buf),
                 )
-            2 -> NuvioException.ProfileException(
+            2 -> NuvioException.ValidationException(
                 FfiConverterString.read(buf),
                 )
-            3 -> NuvioException.StorageException(
+            3 -> NuvioException.CacheException(
                 FfiConverterString.read(buf),
                 )
-            4 -> NuvioException.SerializationException(
+            4 -> NuvioException.NetworkException(
                 FfiConverterString.read(buf),
                 )
-            5 -> NuvioException.ValidationException(
+            5 -> NuvioException.TimeoutException(
                 FfiConverterString.read(buf),
                 )
-            6 -> NuvioException.Unknown(
+            6 -> NuvioException.StorageException(
                 FfiConverterString.read(buf),
                 )
-            7 -> NuvioException.NetworkException(
+            7 -> NuvioException.SecurityException(
                 FfiConverterString.read(buf),
                 )
-            8 -> NuvioException.Timeout(
+            8 -> NuvioException.ProfileException(
                 FfiConverterString.read(buf),
                 )
-            9 -> NuvioException.ResponseTooLarge(
-                FfiConverterULong.read(buf),
-                FfiConverterULong.read(buf),
-                )
-            10 -> NuvioException.InvalidManifest(
+            9 -> NuvioException.AddonNotFoundException(
                 FfiConverterString.read(buf),
                 )
-            11 -> NuvioException.AddonNotFound(
+            10 -> NuvioException.ResponseTooLargeException(
+                FfiConverterString.read(buf),
+                )
+            11 -> NuvioException.Unknown(
                 FfiConverterString.read(buf),
                 )
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
@@ -4545,21 +18688,6 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
 
     override fun allocationSize(value: NuvioException): ULong {
         return when(value) {
-            is NuvioException.SecurityException -> (
-                // Add the size for the Int that specifies the variant plus the size needed for all fields
-                4UL
-                + FfiConverterString.allocationSize(value.`msg`)
-            )
-            is NuvioException.ProfileException -> (
-                // Add the size for the Int that specifies the variant plus the size needed for all fields
-                4UL
-                + FfiConverterString.allocationSize(value.`msg`)
-            )
-            is NuvioException.StorageException -> (
-                // Add the size for the Int that specifies the variant plus the size needed for all fields
-                4UL
-                + FfiConverterString.allocationSize(value.`msg`)
-            )
             is NuvioException.SerializationException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
@@ -4570,7 +18698,7 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
             )
-            is NuvioException.Unknown -> (
+            is NuvioException.CacheException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
@@ -4580,23 +18708,37 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
             )
-            is NuvioException.Timeout -> (
+            is NuvioException.TimeoutException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
             )
-            is NuvioException.ResponseTooLarge -> (
-                // Add the size for the Int that specifies the variant plus the size needed for all fields
-                4UL
-                + FfiConverterULong.allocationSize(value.`size`)
-                + FfiConverterULong.allocationSize(value.`limit`)
-            )
-            is NuvioException.InvalidManifest -> (
+            is NuvioException.StorageException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
             )
-            is NuvioException.AddonNotFound -> (
+            is NuvioException.SecurityException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is NuvioException.ProfileException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is NuvioException.AddonNotFoundException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is NuvioException.ResponseTooLargeException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is NuvioException.Unknown -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 + FfiConverterString.allocationSize(value.`msg`)
@@ -4606,58 +18748,57 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
 
     override fun write(value: NuvioException, buf: ByteBuffer) {
         when(value) {
-            is NuvioException.SecurityException -> {
+            is NuvioException.SerializationException -> {
                 buf.putInt(1)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.ProfileException -> {
+            is NuvioException.ValidationException -> {
                 buf.putInt(2)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.StorageException -> {
+            is NuvioException.CacheException -> {
                 buf.putInt(3)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.SerializationException -> {
+            is NuvioException.NetworkException -> {
                 buf.putInt(4)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.ValidationException -> {
+            is NuvioException.TimeoutException -> {
                 buf.putInt(5)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.Unknown -> {
+            is NuvioException.StorageException -> {
                 buf.putInt(6)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.NetworkException -> {
+            is NuvioException.SecurityException -> {
                 buf.putInt(7)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.Timeout -> {
+            is NuvioException.ProfileException -> {
                 buf.putInt(8)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.ResponseTooLarge -> {
+            is NuvioException.AddonNotFoundException -> {
                 buf.putInt(9)
-                FfiConverterULong.write(value.`size`, buf)
-                FfiConverterULong.write(value.`limit`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.InvalidManifest -> {
+            is NuvioException.ResponseTooLargeException -> {
                 buf.putInt(10)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
-            is NuvioException.AddonNotFound -> {
+            is NuvioException.Unknown -> {
                 buf.putInt(11)
                 FfiConverterString.write(value.`msg`, buf)
                 Unit
@@ -4673,8 +18814,7 @@ public object FfiConverterTypeNuvioError : FfiConverterRustBuffer<NuvioException
 enum class ProfileType {
     
     ADMIN,
-    ADULT,
-    TEEN,
+    STANDARD,
     KIDS;
     companion object
 }
@@ -4698,6 +18838,976 @@ public object FfiConverterTypeProfileType: FfiConverterRustBuffer<ProfileType> {
 }
 
 
+
+
+
+
+
+sealed class TmdbException: kotlin.Exception() {
+    
+    class Network(
+        
+        val v1: kotlin.String
+        ) : TmdbException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+    class Serialization(
+        
+        val v1: kotlin.String
+        ) : TmdbException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+    class Storage(
+        
+        val v1: kotlin.String
+        ) : TmdbException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+    class Config(
+        
+        val v1: kotlin.String
+        ) : TmdbException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+    class NotFound(
+        ) : TmdbException() {
+        override val message
+            get() = ""
+    }
+    
+    class Generic(
+        
+        val v1: kotlin.String
+        ) : TmdbException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TmdbException> {
+        override fun lift(error_buf: RustBuffer.ByValue): TmdbException = FfiConverterTypeTmdbError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTmdbError : FfiConverterRustBuffer<TmdbException> {
+    override fun read(buf: ByteBuffer): TmdbException {
+        
+
+        return when(buf.getInt()) {
+            1 -> TmdbException.Network(
+                FfiConverterString.read(buf),
+                )
+            2 -> TmdbException.Serialization(
+                FfiConverterString.read(buf),
+                )
+            3 -> TmdbException.Storage(
+                FfiConverterString.read(buf),
+                )
+            4 -> TmdbException.Config(
+                FfiConverterString.read(buf),
+                )
+            5 -> TmdbException.NotFound()
+            6 -> TmdbException.Generic(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: TmdbException): ULong {
+        return when(value) {
+            is TmdbException.Network -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+            is TmdbException.Serialization -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+            is TmdbException.Storage -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+            is TmdbException.Config -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+            is TmdbException.NotFound -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+            )
+            is TmdbException.Generic -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+        }
+    }
+
+    override fun write(value: TmdbException, buf: ByteBuffer) {
+        when(value) {
+            is TmdbException.Network -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+            is TmdbException.Serialization -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+            is TmdbException.Storage -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+            is TmdbException.Config -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+            is TmdbException.NotFound -> {
+                buf.putInt(5)
+                Unit
+            }
+            is TmdbException.Generic -> {
+                buf.putInt(6)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+
+
+/**
+ * Error types that can occur during Trakt API operations.
+ *
+ * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
+ * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ * Note: Field is named `msg` (not `message`) to avoid conflict with Kotlin Exception.message
+ */
+sealed class TraktException: kotlin.Exception() {
+    
+    /**
+     * OAuth2 authentication error
+     */
+    class OAuth2Exception(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Network or HTTP error
+     */
+    class NetworkException(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Storage/persistence error
+     */
+    class StorageException(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Invalid token error
+     */
+    class InvalidToken(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * API error from Trakt service
+     */
+    class ApiException(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Input validation error
+     */
+    class ValidationException(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Rate limit exceeded
+     */
+    class RateLimitExceeded(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Resource not found (404)
+     */
+    class NotFound(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+    /**
+     * Unknown or unexpected error
+     */
+    class Unknown(
+        
+        val `msg`: kotlin.String
+        ) : TraktException() {
+        override val message
+            get() = "msg=${ `msg` }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TraktException> {
+        override fun lift(error_buf: RustBuffer.ByValue): TraktException = FfiConverterTypeTraktError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTraktError : FfiConverterRustBuffer<TraktException> {
+    override fun read(buf: ByteBuffer): TraktException {
+        
+
+        return when(buf.getInt()) {
+            1 -> TraktException.OAuth2Exception(
+                FfiConverterString.read(buf),
+                )
+            2 -> TraktException.NetworkException(
+                FfiConverterString.read(buf),
+                )
+            3 -> TraktException.StorageException(
+                FfiConverterString.read(buf),
+                )
+            4 -> TraktException.InvalidToken(
+                FfiConverterString.read(buf),
+                )
+            5 -> TraktException.ApiException(
+                FfiConverterString.read(buf),
+                )
+            6 -> TraktException.ValidationException(
+                FfiConverterString.read(buf),
+                )
+            7 -> TraktException.RateLimitExceeded(
+                FfiConverterString.read(buf),
+                )
+            8 -> TraktException.NotFound(
+                FfiConverterString.read(buf),
+                )
+            9 -> TraktException.Unknown(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: TraktException): ULong {
+        return when(value) {
+            is TraktException.OAuth2Exception -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.NetworkException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.StorageException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.InvalidToken -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.ApiException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.ValidationException -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.RateLimitExceeded -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.NotFound -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+            is TraktException.Unknown -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`msg`)
+            )
+        }
+    }
+
+    override fun write(value: TraktException, buf: ByteBuffer) {
+        when(value) {
+            is TraktException.OAuth2Exception -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.NetworkException -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.StorageException -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.InvalidToken -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.ApiException -> {
+                buf.putInt(5)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.ValidationException -> {
+                buf.putInt(6)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.RateLimitExceeded -> {
+                buf.putInt(7)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.NotFound -> {
+                buf.putInt(8)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+            is TraktException.Unknown -> {
+                buf.putInt(9)
+                FfiConverterString.write(value.`msg`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+
+
+public interface TmdbStorage {
+    
+    fun `saveItem`(`key`: kotlin.String, `value`: kotlin.String, `timestamp`: kotlin.Long)
+    
+    fun `readItem`(`key`: kotlin.String): kotlin.String?
+    
+    fun `removeItem`(`key`: kotlin.String)
+    
+    companion object
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceTmdbStorage {
+    internal object `saveItem`: UniffiCallbackInterfaceTmdbStorageMethod0 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`timestamp`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTmdbStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`saveItem`(
+                    FfiConverterString.lift(`key`),
+                    FfiConverterString.lift(`value`),
+                    FfiConverterLong.lift(`timestamp`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TmdbException -> FfiConverterTypeTmdbError.lower(e) }
+            )
+        }
+    }
+    internal object `readItem`: UniffiCallbackInterfaceTmdbStorageMethod1 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTmdbStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`readItem`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { value: kotlin.String? -> uniffiOutReturn.setValue(FfiConverterOptionalString.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TmdbException -> FfiConverterTypeTmdbError.lower(e) }
+            )
+        }
+    }
+    internal object `removeItem`: UniffiCallbackInterfaceTmdbStorageMethod2 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTmdbStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`removeItem`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TmdbException -> FfiConverterTypeTmdbError.lower(e) }
+            )
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeTmdbStorage.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeTmdbStorage.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceTmdbStorage.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `saveItem`,
+        `readItem`,
+        `removeItem`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_nuvio_core_fn_init_callback_vtable_tmdbstorage(vtable)
+    }
+}
+
+/**
+ * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
+ *
+ * @suppress
+ */
+public object FfiConverterTypeTmdbStorage: FfiConverterCallbackInterface<TmdbStorage>()
+
+
+
+
+
+/**
+ * Platform-agnostic storage interface for Trakt data
+ *
+ * This trait must be implemented by native platforms (iOS/Android) to provide
+ * secure storage for OAuth tokens, offline queue data, and other Trakt-related
+ * information. Implementations should use platform-specific secure storage mechanisms.
+ *
+ * # Security Considerations
+ *
+ * - **OAuth Tokens**: Must be stored securely (iOS Keychain, Android KeyStore)
+ * - **Encryption**: All sensitive data should be encrypted at rest
+ * - **Access Control**: Storage should be protected by device authentication
+ * - **Data Isolation**: Trakt data should be isolated from other app data
+ *
+ * # GDPR Compliance
+ *
+ * This trait includes methods for GDPR compliance:
+ * - `delete_all_user_data()`: Complete removal of all user data (Right to Erasure)
+ * - `export_user_data()`: Export all user data in JSON format (Right to Data Portability)
+ *
+ * # Error Handling
+ *
+ * All methods return `Result<T, TraktError>` where the error should contain
+ * a human-readable description of what went wrong. This allows native platforms
+ * to provide context-specific error messages.
+ */
+public interface TraktStorage {
+    
+    /**
+     * Save a key-value pair to storage
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data (e.g., "oauth_tokens", "offline_queue")
+     * - `value`: Data to store (typically JSON-serialized string)
+     *
+     * # Returns
+     * - `Ok(())`: Data successfully saved
+     * - `Err(TraktError)`: Error if save failed
+     *
+     * # Example
+     * ```ignore
+     * storage.save_item("oauth_tokens".to_string(), tokens_json)?;
+     * ```
+     */
+    fun `saveItem`(`key`: kotlin.String, `value`: kotlin.String)
+    
+    /**
+     * Read a value from storage by key
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data
+     *
+     * # Returns
+     * - `Ok(Some(value))`: Data found and returned
+     * - `Ok(None)`: No data found for this key
+     * - `Err(TraktError)`: Error if read failed
+     *
+     * # Example
+     * ```ignore
+     * if let Some(tokens_json) = storage.read_item("oauth_tokens"))? {
+     * // Parse and use tokens
+     * }
+     * ```
+     */
+    fun `readItem`(`key`: kotlin.String): kotlin.String?
+    
+    /**
+     * Remove a key-value pair from storage
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data to remove
+     *
+     * # Returns
+     * - `Ok(())`: Data successfully removed (or didn't exist)
+     * - `Err(TraktError)`: Error if removal failed
+     *
+     * # Example
+     * ```ignore
+     * storage.remove_item("oauth_tokens"))?;
+     * ```
+     */
+    fun `removeItem`(`key`: kotlin.String)
+    
+    /**
+     * Delete all user data from storage (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17).
+     * It must completely and irreversibly delete all Trakt-related user data,
+     * including but not limited to:
+     * - OAuth access tokens and refresh tokens
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     * - Any other user-specific data
+     *
+     * # Returns
+     * - `Ok(())`: All data successfully deleted
+     * - `Err(TraktError)`: Error if deletion failed
+     *
+     * # Implementation Notes
+     * - This operation is irreversible - there is no undo
+     * - Platform implementations should clear all Trakt-prefixed keys
+     * - Consider logging this action for audit purposes
+     * - User should be logged out after this operation
+     *
+     * # Security
+     * - Ensure cryptographic erasure where possible
+     * - On iOS: Remove all items from Keychain with Trakt-related keys
+     * - On Android: Clear EncryptedSharedPreferences completely
+     *
+     * # Example (Rust caller)
+     * ```ignore
+     * // User requested account deletion
+     * storage.delete_all_user_data()?;
+     * // User is now logged out with no local data remaining
+     * ```
+     */
+    fun `deleteAllUserData`()
+    
+    /**
+     * Export all user data as JSON (GDPR Right to Data Portability)
+     *
+     * This method implements the GDPR "Right to Data Portability" (Article 20).
+     * It must export all Trakt-related user data in a structured, commonly used,
+     * machine-readable format (JSON).
+     *
+     * # Returns
+     * - `Ok(String)`: JSON string containing all user data
+     * - `Err(TraktError)`: Error if export failed
+     *
+     * # JSON Format
+     * The returned JSON should be a single object with all stored keys:
+     * ```json
+     * {
+     * "oauth_tokens": "{\"access_token\":\"...\",\"refresh_token\":\"...\"}",
+     * "offline_queue": "[...]",
+     * "user_settings": "{...}"
+     * }
+     * ```
+     *
+     * # Implementation Notes
+     * - Include all Trakt-related keys and their values
+     * - Values are typically JSON strings themselves (nested JSON)
+     * - If no data exists, return an empty object: `"{}"`
+     * - Sensitive tokens should be included (user requested export)
+     *
+     * # Privacy
+     * - The exported data contains sensitive information (OAuth tokens)
+     * - Platform should warn user before exporting
+     * - Consider encrypting the export or requiring authentication
+     *
+     * # Example (Rust caller)
+     * ```ignore
+     * // User requested data export
+     * let user_data_json = storage.export_user_data()?;
+     * // Save to file or send to user via email
+     * ```
+     */
+    fun `exportUserData`(): kotlin.String
+    
+    companion object
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceTraktStorage {
+    internal object `saveItem`: UniffiCallbackInterfaceTraktStorageMethod0 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`saveItem`(
+                    FfiConverterString.lift(`key`),
+                    FfiConverterString.lift(`value`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TraktException -> FfiConverterTypeTraktError.lower(e) }
+            )
+        }
+    }
+    internal object `readItem`: UniffiCallbackInterfaceTraktStorageMethod1 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`readItem`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { value: kotlin.String? -> uniffiOutReturn.setValue(FfiConverterOptionalString.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TraktException -> FfiConverterTypeTraktError.lower(e) }
+            )
+        }
+    }
+    internal object `removeItem`: UniffiCallbackInterfaceTraktStorageMethod2 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`removeItem`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TraktException -> FfiConverterTypeTraktError.lower(e) }
+            )
+        }
+    }
+    internal object `deleteAllUserData`: UniffiCallbackInterfaceTraktStorageMethod3 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`deleteAllUserData`(
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TraktException -> FfiConverterTypeTraktError.lower(e) }
+            )
+        }
+    }
+    internal object `exportUserData`: UniffiCallbackInterfaceTraktStorageMethod4 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktStorage.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`exportUserData`(
+                )
+            }
+            val writeReturn = { value: kotlin.String -> uniffiOutReturn.setValue(FfiConverterString.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: TraktException -> FfiConverterTypeTraktError.lower(e) }
+            )
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeTraktStorage.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeTraktStorage.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceTraktStorage.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `saveItem`,
+        `readItem`,
+        `removeItem`,
+        `deleteAllUserData`,
+        `exportUserData`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_nuvio_core_fn_init_callback_vtable_traktstorage(vtable)
+    }
+}
+
+/**
+ * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
+ *
+ * @suppress
+ */
+public object FfiConverterTypeTraktStorage: FfiConverterCallbackInterface<TraktStorage>()
+
+
+
+
+
+/**
+ * Callback trait for token refresh events
+ *
+ * Implement this trait in your native platform code (iOS/Android) to receive
+ * notifications when OAuth tokens are refreshed or when refresh fails.
+ * This allows native code to update UI, persist tokens, or handle errors.
+ *
+ * # Example (Kotlin)
+ * ```kotlin
+ * class TraktTokenHandler : TraktTokenCallback {
+ * override fun onTokenRefreshed(accessToken: String, expiresAt: Long) {
+ * // Update local storage
+ * secureStorage.saveToken(accessToken, expiresAt)
+ * // Update UI if needed
+ * notifyUserTokenRefreshed()
+ * }
+ *
+ * override fun onTokenRefreshFailed(error: String) {
+ * // Log the error
+ * Log.e("Trakt", "Token refresh failed: $error")
+ * // Notify user to re-authenticate
+ * promptUserReAuthentication()
+ * }
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ * ```swift
+ * class TraktTokenHandler: TraktTokenCallback {
+ * func onTokenRefreshed(accessToken: String, expiresAt: Int64) {
+ * // Update keychain
+ * KeychainHelper.save(token: accessToken, expiresAt: expiresAt)
+ * // Post notification
+ * NotificationCenter.default.post(name: .traktTokenRefreshed, object: nil)
+ * }
+ *
+ * func onTokenRefreshFailed(error: String) {
+ * // Log the error
+ * print("Token refresh failed: \(error)")
+ * // Show alert to user
+ * showReAuthenticationAlert()
+ * }
+ * }
+ * ```
+ */
+public interface TraktTokenCallback {
+    
+    /**
+     * Called when an OAuth token is successfully refreshed
+     *
+     * # Parameters
+     * - `access_token`: The new access token to use for API requests
+     * - `expires_at`: Unix timestamp (seconds since epoch) when the token expires
+     *
+     * # Platform Implementation Notes
+     * - **iOS**: Store the token securely in Keychain
+     * - **Android**: Store the token securely in KeyStore or EncryptedSharedPreferences
+     * - Update any in-memory caches or UI state as needed
+     * - Consider posting a notification event for other parts of the app
+     */
+    fun `onTokenRefreshed`(`accessToken`: kotlin.String, `expiresAt`: kotlin.Long)
+    
+    /**
+     * Called when token refresh fails
+     *
+     * # Parameters
+     * - `error`: Human-readable error message describing why the refresh failed
+     *
+     * # Common Failure Scenarios
+     * - Network connectivity issues
+     * - Invalid or expired refresh token (user needs to re-authenticate)
+     * - Trakt.tv API service downtime
+     * - Rate limiting (429 responses)
+     *
+     * # Platform Implementation Notes
+     * - Log the error for debugging
+     * - If the error indicates an invalid refresh token, prompt user to re-authenticate
+     * - Consider implementing exponential backoff for retries
+     * - Update UI to reflect authentication state
+     */
+    fun `onTokenRefreshFailed`(`error`: kotlin.String)
+    
+    companion object
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceTraktTokenCallback {
+    internal object `onTokenRefreshed`: UniffiCallbackInterfaceTraktTokenCallbackMethod0 {
+        override fun callback(`uniffiHandle`: Long,`accessToken`: RustBuffer.ByValue,`expiresAt`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktTokenCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onTokenRefreshed`(
+                    FfiConverterString.lift(`accessToken`),
+                    FfiConverterLong.lift(`expiresAt`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onTokenRefreshFailed`: UniffiCallbackInterfaceTraktTokenCallbackMethod1 {
+        override fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeTraktTokenCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onTokenRefreshFailed`(
+                    FfiConverterString.lift(`error`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeTraktTokenCallback.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeTraktTokenCallback.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceTraktTokenCallback.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `onTokenRefreshed`,
+        `onTokenRefreshFailed`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_nuvio_core_fn_init_callback_vtable_trakttokencallback(vtable)
+    }
+}
+
+/**
+ * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
+ *
+ * @suppress
+ */
+public object FfiConverterTypeTraktTokenCallback: FfiConverterCallbackInterface<TraktTokenCallback>()
 
 
 
@@ -4727,6 +19837,38 @@ public object FfiConverterOptionalInt: FfiConverterRustBuffer<kotlin.Int?> {
         } else {
             buf.put(1)
             FfiConverterInt.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalULong: FfiConverterRustBuffer<kotlin.ULong?> {
+    override fun read(buf: ByteBuffer): kotlin.ULong? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterULong.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.ULong?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterULong.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.ULong?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterULong.write(value, buf)
         }
     }
 }
@@ -4865,6 +20007,198 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
 /**
  * @suppress
  */
+public object FfiConverterOptionalByteArray: FfiConverterRustBuffer<kotlin.ByteArray?> {
+    override fun read(buf: ByteBuffer): kotlin.ByteArray? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterByteArray.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.ByteArray?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterByteArray.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.ByteArray?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterByteArray.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeNuvioSdk: FfiConverterRustBuffer<NuvioSdk?> {
+    override fun read(buf: ByteBuffer): NuvioSdk? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeNuvioSdk.read(buf)
+    }
+
+    override fun allocationSize(value: NuvioSdk?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeNuvioSdk.allocationSize(value)
+        }
+    }
+
+    override fun write(value: NuvioSdk?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeNuvioSdk.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeCredits: FfiConverterRustBuffer<Credits?> {
+    override fun read(buf: ByteBuffer): Credits? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCredits.read(buf)
+    }
+
+    override fun allocationSize(value: Credits?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCredits.allocationSize(value)
+        }
+    }
+
+    override fun write(value: Credits?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCredits.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeLoggingConfig: FfiConverterRustBuffer<LoggingConfig?> {
+    override fun read(buf: ByteBuffer): LoggingConfig? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeLoggingConfig.read(buf)
+    }
+
+    override fun allocationSize(value: LoggingConfig?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeLoggingConfig.allocationSize(value)
+        }
+    }
+
+    override fun write(value: LoggingConfig?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeLoggingConfig.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeNotificationItem: FfiConverterRustBuffer<NotificationItem?> {
+    override fun read(buf: ByteBuffer): NotificationItem? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeNotificationItem.read(buf)
+    }
+
+    override fun allocationSize(value: NotificationItem?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeNotificationItem.allocationSize(value)
+        }
+    }
+
+    override fun write(value: NotificationItem?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeNotificationItem.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypePersonCombinedCredits: FfiConverterRustBuffer<PersonCombinedCredits?> {
+    override fun read(buf: ByteBuffer): PersonCombinedCredits? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypePersonCombinedCredits.read(buf)
+    }
+
+    override fun allocationSize(value: PersonCombinedCredits?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypePersonCombinedCredits.allocationSize(value)
+        }
+    }
+
+    override fun write(value: PersonCombinedCredits?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypePersonCombinedCredits.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeProfile: FfiConverterRustBuffer<Profile?> {
     override fun read(buf: ByteBuffer): Profile? {
         if (buf.get().toInt() == 0) {
@@ -4961,6 +20295,262 @@ public object FfiConverterOptionalTypeStremioMeta: FfiConverterRustBuffer<Stremi
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeTmdbExternalIds: FfiConverterRustBuffer<TmdbExternalIds?> {
+    override fun read(buf: ByteBuffer): TmdbExternalIds? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTmdbExternalIds.read(buf)
+    }
+
+    override fun allocationSize(value: TmdbExternalIds?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTmdbExternalIds.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TmdbExternalIds?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTmdbExternalIds.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTmdbShow: FfiConverterRustBuffer<TmdbShow?> {
+    override fun read(buf: ByteBuffer): TmdbShow? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTmdbShow.read(buf)
+    }
+
+    override fun allocationSize(value: TmdbShow?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTmdbShow.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TmdbShow?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTmdbShow.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktCommentUserStats: FfiConverterRustBuffer<TraktCommentUserStats?> {
+    override fun read(buf: ByteBuffer): TraktCommentUserStats? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktCommentUserStats.read(buf)
+    }
+
+    override fun allocationSize(value: TraktCommentUserStats?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktCommentUserStats.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktCommentUserStats?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktCommentUserStats.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktEpisode: FfiConverterRustBuffer<TraktEpisode?> {
+    override fun read(buf: ByteBuffer): TraktEpisode? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktEpisode.read(buf)
+    }
+
+    override fun allocationSize(value: TraktEpisode?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktEpisode.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktEpisode?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktEpisode.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktMovie: FfiConverterRustBuffer<TraktMovie?> {
+    override fun read(buf: ByteBuffer): TraktMovie? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktMovie.read(buf)
+    }
+
+    override fun allocationSize(value: TraktMovie?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktMovie.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktMovie?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktMovie.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktShow: FfiConverterRustBuffer<TraktShow?> {
+    override fun read(buf: ByteBuffer): TraktShow? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktShow.read(buf)
+    }
+
+    override fun allocationSize(value: TraktShow?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktShow.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktShow?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktShow.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktTokenCallback: FfiConverterRustBuffer<TraktTokenCallback?> {
+    override fun read(buf: ByteBuffer): TraktTokenCallback? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktTokenCallback.read(buf)
+    }
+
+    override fun allocationSize(value: TraktTokenCallback?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktTokenCallback.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktTokenCallback?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktTokenCallback.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceLong: FfiConverterRustBuffer<List<kotlin.Long>?> {
+    override fun read(buf: ByteBuffer): List<kotlin.Long>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceLong.read(buf)
+    }
+
+    override fun allocationSize(value: List<kotlin.Long>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceLong.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<kotlin.Long>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceLong.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalSequenceString: FfiConverterRustBuffer<List<kotlin.String>?> {
     override fun read(buf: ByteBuffer): List<kotlin.String>? {
         if (buf.get().toInt() == 0) {
@@ -4993,6 +20583,38 @@ public object FfiConverterOptionalSequenceString: FfiConverterRustBuffer<List<ko
 /**
  * @suppress
  */
+public object FfiConverterOptionalSequenceTypeCastMember: FfiConverterRustBuffer<List<CastMember>?> {
+    override fun read(buf: ByteBuffer): List<CastMember>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeCastMember.read(buf)
+    }
+
+    override fun allocationSize(value: List<CastMember>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeCastMember.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<CastMember>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeCastMember.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalSequenceTypeCatalogExtra: FfiConverterRustBuffer<List<CatalogExtra>?> {
     override fun read(buf: ByteBuffer): List<CatalogExtra>? {
         if (buf.get().toInt() == 0) {
@@ -5015,6 +20637,38 @@ public object FfiConverterOptionalSequenceTypeCatalogExtra: FfiConverterRustBuff
         } else {
             buf.put(1)
             FfiConverterSequenceTypeCatalogExtra.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeIMDbRatingSeason: FfiConverterRustBuffer<List<ImDbRatingSeason>?> {
+    override fun read(buf: ByteBuffer): List<ImDbRatingSeason>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeIMDbRatingSeason.read(buf)
+    }
+
+    override fun allocationSize(value: List<ImDbRatingSeason>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeIMDbRatingSeason.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<ImDbRatingSeason>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeIMDbRatingSeason.write(value, buf)
         }
     }
 }
@@ -5153,6 +20807,166 @@ public object FfiConverterOptionalSequenceTypeSubtitle: FfiConverterRustBuffer<L
 /**
  * @suppress
  */
+public object FfiConverterOptionalSequenceTypeTraktHistoryEpisode: FfiConverterRustBuffer<List<TraktHistoryEpisode>?> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryEpisode>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeTraktHistoryEpisode.read(buf)
+    }
+
+    override fun allocationSize(value: List<TraktHistoryEpisode>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeTraktHistoryEpisode.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<TraktHistoryEpisode>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeTraktHistoryEpisode.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeTraktHistoryMovie: FfiConverterRustBuffer<List<TraktHistoryMovie>?> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryMovie>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeTraktHistoryMovie.read(buf)
+    }
+
+    override fun allocationSize(value: List<TraktHistoryMovie>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeTraktHistoryMovie.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<TraktHistoryMovie>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeTraktHistoryMovie.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeTraktHistorySeason: FfiConverterRustBuffer<List<TraktHistorySeason>?> {
+    override fun read(buf: ByteBuffer): List<TraktHistorySeason>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeTraktHistorySeason.read(buf)
+    }
+
+    override fun allocationSize(value: List<TraktHistorySeason>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeTraktHistorySeason.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<TraktHistorySeason>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeTraktHistorySeason.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeTraktHistoryShow: FfiConverterRustBuffer<List<TraktHistoryShow>?> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryShow>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeTraktHistoryShow.read(buf)
+    }
+
+    override fun allocationSize(value: List<TraktHistoryShow>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeTraktHistoryShow.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<TraktHistoryShow>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeTraktHistoryShow.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeTraktWatchedSeason: FfiConverterRustBuffer<List<TraktWatchedSeason>?> {
+    override fun read(buf: ByteBuffer): List<TraktWatchedSeason>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeTraktWatchedSeason.read(buf)
+    }
+
+    override fun allocationSize(value: List<TraktWatchedSeason>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeTraktWatchedSeason.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<TraktWatchedSeason>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeTraktWatchedSeason.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalMapStringString: FfiConverterRustBuffer<Map<kotlin.String, kotlin.String>?> {
     override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.String>? {
         if (buf.get().toInt() == 0) {
@@ -5175,6 +20989,62 @@ public object FfiConverterOptionalMapStringString: FfiConverterRustBuffer<Map<ko
         } else {
             buf.put(1)
             FfiConverterMapStringString.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceInt: FfiConverterRustBuffer<List<kotlin.Int>> {
+    override fun read(buf: ByteBuffer): List<kotlin.Int> {
+        val len = buf.getInt()
+        return List<kotlin.Int>(len) {
+            FfiConverterInt.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<kotlin.Int>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterInt.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<kotlin.Int>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterInt.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceLong: FfiConverterRustBuffer<List<kotlin.Long>> {
+    override fun read(buf: ByteBuffer): List<kotlin.Long> {
+        val len = buf.getInt()
+        return List<kotlin.Long>(len) {
+            FfiConverterLong.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<kotlin.Long>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterLong.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<kotlin.Long>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterLong.write(it, buf)
         }
     }
 }
@@ -5241,6 +21111,34 @@ public object FfiConverterSequenceTypeAddon: FfiConverterRustBuffer<List<Addon>>
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeCastMember: FfiConverterRustBuffer<List<CastMember>> {
+    override fun read(buf: ByteBuffer): List<CastMember> {
+        val len = buf.getInt()
+        return List<CastMember>(len) {
+            FfiConverterTypeCastMember.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CastMember>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCastMember.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CastMember>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCastMember.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeCatalogExtra: FfiConverterRustBuffer<List<CatalogExtra>> {
     override fun read(buf: ByteBuffer): List<CatalogExtra> {
         val len = buf.getInt()
@@ -5259,6 +21157,230 @@ public object FfiConverterSequenceTypeCatalogExtra: FfiConverterRustBuffer<List<
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeCatalogExtra.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeCrewMember: FfiConverterRustBuffer<List<CrewMember>> {
+    override fun read(buf: ByteBuffer): List<CrewMember> {
+        val len = buf.getInt()
+        return List<CrewMember>(len) {
+            FfiConverterTypeCrewMember.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CrewMember>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCrewMember.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CrewMember>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCrewMember.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeIMDbRatingEpisode: FfiConverterRustBuffer<List<ImDbRatingEpisode>> {
+    override fun read(buf: ByteBuffer): List<ImDbRatingEpisode> {
+        val len = buf.getInt()
+        return List<ImDbRatingEpisode>(len) {
+            FfiConverterTypeIMDbRatingEpisode.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ImDbRatingEpisode>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeIMDbRatingEpisode.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ImDbRatingEpisode>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeIMDbRatingEpisode.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeIMDbRatingSeason: FfiConverterRustBuffer<List<ImDbRatingSeason>> {
+    override fun read(buf: ByteBuffer): List<ImDbRatingSeason> {
+        val len = buf.getInt()
+        return List<ImDbRatingSeason>(len) {
+            FfiConverterTypeIMDbRatingSeason.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ImDbRatingSeason>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeIMDbRatingSeason.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ImDbRatingSeason>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeIMDbRatingSeason.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeLocalMediaFile: FfiConverterRustBuffer<List<LocalMediaFile>> {
+    override fun read(buf: ByteBuffer): List<LocalMediaFile> {
+        val len = buf.getInt()
+        return List<LocalMediaFile>(len) {
+            FfiConverterTypeLocalMediaFile.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<LocalMediaFile>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeLocalMediaFile.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<LocalMediaFile>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeLocalMediaFile.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeNotificationItem: FfiConverterRustBuffer<List<NotificationItem>> {
+    override fun read(buf: ByteBuffer): List<NotificationItem> {
+        val len = buf.getInt()
+        return List<NotificationItem>(len) {
+            FfiConverterTypeNotificationItem.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<NotificationItem>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeNotificationItem.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<NotificationItem>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeNotificationItem.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePersonCombinedCredit: FfiConverterRustBuffer<List<PersonCombinedCredit>> {
+    override fun read(buf: ByteBuffer): List<PersonCombinedCredit> {
+        val len = buf.getInt()
+        return List<PersonCombinedCredit>(len) {
+            FfiConverterTypePersonCombinedCredit.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PersonCombinedCredit>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePersonCombinedCredit.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PersonCombinedCredit>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePersonCombinedCredit.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePersonMovieCredit: FfiConverterRustBuffer<List<PersonMovieCredit>> {
+    override fun read(buf: ByteBuffer): List<PersonMovieCredit> {
+        val len = buf.getInt()
+        return List<PersonMovieCredit>(len) {
+            FfiConverterTypePersonMovieCredit.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PersonMovieCredit>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePersonMovieCredit.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PersonMovieCredit>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePersonMovieCredit.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePersonTvCredit: FfiConverterRustBuffer<List<PersonTvCredit>> {
+    override fun read(buf: ByteBuffer): List<PersonTvCredit> {
+        val len = buf.getInt()
+        return List<PersonTvCredit>(len) {
+            FfiConverterTypePersonTvCredit.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PersonTvCredit>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePersonTvCredit.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PersonTvCredit>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePersonTvCredit.write(it, buf)
         }
     }
 }
@@ -5315,6 +21437,34 @@ public object FfiConverterSequenceTypeResourceObject: FfiConverterRustBuffer<Lis
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeResourceObject.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeScheduleNotificationParams: FfiConverterRustBuffer<List<ScheduleNotificationParams>> {
+    override fun read(buf: ByteBuffer): List<ScheduleNotificationParams> {
+        val len = buf.getInt()
+        return List<ScheduleNotificationParams>(len) {
+            FfiConverterTypeScheduleNotificationParams.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ScheduleNotificationParams>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeScheduleNotificationParams.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ScheduleNotificationParams>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeScheduleNotificationParams.write(it, buf)
         }
     }
 }
@@ -5465,6 +21615,538 @@ public object FfiConverterSequenceTypeSubtitle: FfiConverterRustBuffer<List<Subt
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeTmdbCollectionPart: FfiConverterRustBuffer<List<TmdbCollectionPart>> {
+    override fun read(buf: ByteBuffer): List<TmdbCollectionPart> {
+        val len = buf.getInt()
+        return List<TmdbCollectionPart>(len) {
+            FfiConverterTypeTmdbCollectionPart.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbCollectionPart>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbCollectionPart.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbCollectionPart>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbCollectionPart.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbCreator: FfiConverterRustBuffer<List<TmdbCreator>> {
+    override fun read(buf: ByteBuffer): List<TmdbCreator> {
+        val len = buf.getInt()
+        return List<TmdbCreator>(len) {
+            FfiConverterTypeTmdbCreator.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbCreator>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbCreator.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbCreator>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbCreator.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbEpisode: FfiConverterRustBuffer<List<TmdbEpisode>> {
+    override fun read(buf: ByteBuffer): List<TmdbEpisode> {
+        val len = buf.getInt()
+        return List<TmdbEpisode>(len) {
+            FfiConverterTypeTmdbEpisode.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbEpisode>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbEpisode.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbEpisode>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbEpisode.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbGenre: FfiConverterRustBuffer<List<TmdbGenre>> {
+    override fun read(buf: ByteBuffer): List<TmdbGenre> {
+        val len = buf.getInt()
+        return List<TmdbGenre>(len) {
+            FfiConverterTypeTmdbGenre.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbGenre>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbGenre.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbGenre>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbGenre.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbNetwork: FfiConverterRustBuffer<List<TmdbNetwork>> {
+    override fun read(buf: ByteBuffer): List<TmdbNetwork> {
+        val len = buf.getInt()
+        return List<TmdbNetwork>(len) {
+            FfiConverterTypeTmdbNetwork.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbNetwork>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbNetwork.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbNetwork>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbNetwork.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbSearchResult: FfiConverterRustBuffer<List<TmdbSearchResult>> {
+    override fun read(buf: ByteBuffer): List<TmdbSearchResult> {
+        val len = buf.getInt()
+        return List<TmdbSearchResult>(len) {
+            FfiConverterTypeTmdbSearchResult.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbSearchResult>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbSearchResult.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbSearchResult>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbSearchResult.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTmdbSeasonSummary: FfiConverterRustBuffer<List<TmdbSeasonSummary>> {
+    override fun read(buf: ByteBuffer): List<TmdbSeasonSummary> {
+        val len = buf.getInt()
+        return List<TmdbSeasonSummary>(len) {
+            FfiConverterTypeTmdbSeasonSummary.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TmdbSeasonSummary>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTmdbSeasonSummary.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TmdbSeasonSummary>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTmdbSeasonSummary.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktCalendarMovie: FfiConverterRustBuffer<List<TraktCalendarMovie>> {
+    override fun read(buf: ByteBuffer): List<TraktCalendarMovie> {
+        val len = buf.getInt()
+        return List<TraktCalendarMovie>(len) {
+            FfiConverterTypeTraktCalendarMovie.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktCalendarMovie>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktCalendarMovie.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktCalendarMovie>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktCalendarMovie.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktCalendarShow: FfiConverterRustBuffer<List<TraktCalendarShow>> {
+    override fun read(buf: ByteBuffer): List<TraktCalendarShow> {
+        val len = buf.getInt()
+        return List<TraktCalendarShow>(len) {
+            FfiConverterTypeTraktCalendarShow.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktCalendarShow>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktCalendarShow.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktCalendarShow>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktCalendarShow.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktComment: FfiConverterRustBuffer<List<TraktComment>> {
+    override fun read(buf: ByteBuffer): List<TraktComment> {
+        val len = buf.getInt()
+        return List<TraktComment>(len) {
+            FfiConverterTypeTraktComment.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktComment>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktComment.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktComment>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktComment.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktHistoryEpisode: FfiConverterRustBuffer<List<TraktHistoryEpisode>> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryEpisode> {
+        val len = buf.getInt()
+        return List<TraktHistoryEpisode>(len) {
+            FfiConverterTypeTraktHistoryEpisode.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktHistoryEpisode>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktHistoryEpisode.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktHistoryEpisode>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktHistoryEpisode.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktHistoryMovie: FfiConverterRustBuffer<List<TraktHistoryMovie>> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryMovie> {
+        val len = buf.getInt()
+        return List<TraktHistoryMovie>(len) {
+            FfiConverterTypeTraktHistoryMovie.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktHistoryMovie>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktHistoryMovie.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktHistoryMovie>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktHistoryMovie.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktHistoryNotFoundItem: FfiConverterRustBuffer<List<TraktHistoryNotFoundItem>> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryNotFoundItem> {
+        val len = buf.getInt()
+        return List<TraktHistoryNotFoundItem>(len) {
+            FfiConverterTypeTraktHistoryNotFoundItem.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktHistoryNotFoundItem>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktHistoryNotFoundItem.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktHistoryNotFoundItem>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktHistoryNotFoundItem.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktHistorySeason: FfiConverterRustBuffer<List<TraktHistorySeason>> {
+    override fun read(buf: ByteBuffer): List<TraktHistorySeason> {
+        val len = buf.getInt()
+        return List<TraktHistorySeason>(len) {
+            FfiConverterTypeTraktHistorySeason.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktHistorySeason>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktHistorySeason.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktHistorySeason>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktHistorySeason.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktHistoryShow: FfiConverterRustBuffer<List<TraktHistoryShow>> {
+    override fun read(buf: ByteBuffer): List<TraktHistoryShow> {
+        val len = buf.getInt()
+        return List<TraktHistoryShow>(len) {
+            FfiConverterTypeTraktHistoryShow.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktHistoryShow>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktHistoryShow.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktHistoryShow>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktHistoryShow.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktRecommendation: FfiConverterRustBuffer<List<TraktRecommendation>> {
+    override fun read(buf: ByteBuffer): List<TraktRecommendation> {
+        val len = buf.getInt()
+        return List<TraktRecommendation>(len) {
+            FfiConverterTypeTraktRecommendation.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktRecommendation>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktRecommendation.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktRecommendation>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktRecommendation.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktSearchResult: FfiConverterRustBuffer<List<TraktSearchResult>> {
+    override fun read(buf: ByteBuffer): List<TraktSearchResult> {
+        val len = buf.getInt()
+        return List<TraktSearchResult>(len) {
+            FfiConverterTypeTraktSearchResult.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktSearchResult>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktSearchResult.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktSearchResult>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktSearchResult.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktWatchedEpisode: FfiConverterRustBuffer<List<TraktWatchedEpisode>> {
+    override fun read(buf: ByteBuffer): List<TraktWatchedEpisode> {
+        val len = buf.getInt()
+        return List<TraktWatchedEpisode>(len) {
+            FfiConverterTypeTraktWatchedEpisode.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktWatchedEpisode>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktWatchedEpisode.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktWatchedEpisode>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktWatchedEpisode.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTraktWatchedSeason: FfiConverterRustBuffer<List<TraktWatchedSeason>> {
+    override fun read(buf: ByteBuffer): List<TraktWatchedSeason> {
+        val len = buf.getInt()
+        return List<TraktWatchedSeason>(len) {
+            FfiConverterTypeTraktWatchedSeason.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TraktWatchedSeason>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTraktWatchedSeason.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TraktWatchedSeason>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTraktWatchedSeason.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeWatchedItem: FfiConverterRustBuffer<List<WatchedItem>> {
     override fun read(buf: ByteBuffer): List<WatchedItem> {
         val len = buf.getInt()
@@ -5532,5 +22214,634 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
 
 
 
+
+        /**
+         * Abort a request by its handle ID
+         *
+         * This function cancels a request that was started with `http_get_cancellable()` or
+         * `http_post_cancellable()`. The request will be stopped and any associated resources
+         * will be released.
+         *
+         * **Note**: Calling abort on an already finished request is safe and has no effect.
+         * Calling abort on an invalid handle ID will return an error.
+         *
+         * # Parameters
+         *
+         * - `handle_id`: The handle ID returned from a cancellable request function
+         *
+         * # Returns
+         *
+         * - `Ok(())`: Request was aborted successfully
+         * - `Err(HttpError)`: Invalid handle ID
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * val handleId = httpGetCancellable("https://api.example.com/data")
+         * // ... later ...
+         * abortRequest(handleId)
+         * ```
+         *
+         * # Example (Swift)
+         *
+         * ```swift
+         * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+         * // ... later ...
+         * try abortRequest(handleId: handleId)
+         * ```
+         */
+    @Throws(HttpException::class) fun `abortRequest`(`handleId`: kotlin.ULong)
+        = 
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_abort_request(
+    
+        FfiConverterULong.lower(`handleId`),_status)
+}
+    
+    
+
+        /**
+         * Creates a cache key for cast information
+         *
+         * # Arguments
+         *
+         * * `content_id` - Unique identifier for the content
+         */ fun `cacheKeyForCast`(`contentId`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_cache_key_for_cast(
+    
+        FfiConverterString.lower(`contentId`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Creates a cache key for episode lists
+         *
+         * # Arguments
+         *
+         * * `series_id` - Unique identifier for the series
+         * * `season` - Season number
+         */ fun `cacheKeyForEpisodes`(`seriesId`: kotlin.String, `season`: kotlin.UInt): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_cache_key_for_episodes(
+    
+        FfiConverterString.lower(`seriesId`),FfiConverterUInt.lower(`season`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Convenience functions for common cache operations
+         * Creates a cache key for metadata caching
+         *
+         * # Arguments
+         *
+         * * `content_type` - Type of content (e.g., "movie", "series")
+         * * `content_id` - Unique identifier for the content
+         */ fun `cacheKeyForMetadata`(`contentType`: kotlin.String, `contentId`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_cache_key_for_metadata(
+    
+        FfiConverterString.lower(`contentType`),FfiConverterString.lower(`contentId`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Creates a cache key for stream data caching
+         *
+         * # Arguments
+         *
+         * * `content_id` - Unique identifier for the content
+         * * `episode_id` - Optional episode identifier for series
+         */ fun `cacheKeyForStreams`(`contentId`: kotlin.String, `episodeId`: kotlin.String?): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_cache_key_for_streams(
+    
+        FfiConverterString.lower(`contentId`),FfiConverterOptionalString.lower(`episodeId`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform an HTTP DELETE request (blocking adapter for FFI)
+         *
+         * This function performs a synchronous HTTP DELETE request by blocking on the
+         * async reqwest operation using the global tokio runtime.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         *
+         * # Returns
+         *
+         * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+         * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+         */
+    @Throws(HttpException::class) fun `httpDelete`(`url`: kotlin.String): HttpResponse {
+            return FfiConverterTypeHttpResponse.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_delete(
+    
+        FfiConverterString.lower(`url`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform an HTTP GET request (blocking adapter for FFI)
+         *
+         * This function performs a synchronous HTTP GET request by blocking on the
+         * async reqwest operation using the global tokio runtime. This is the
+         * recommended pattern for FFI exports with async operations.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         *
+         * # Returns
+         *
+         * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+         * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * suspend fun fetchData(url: String): HttpResponse = withContext(Dispatchers.IO) {
+         * httpGet(url)
+         * }
+         * ```
+         *
+         * # Example (Swift)
+         *
+         * ```swift
+         * func fetchData(url: String) async throws -> HttpResponse {
+         * return try await Task {
+         * try httpGet(url: url)
+         * }.value
+         * }
+         * ```
+         */
+    @Throws(HttpException::class) fun `httpGet`(`url`: kotlin.String): HttpResponse {
+            return FfiConverterTypeHttpResponse.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_get(
+    
+        FfiConverterString.lower(`url`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform a cancellable HTTP GET request (non-blocking, returns handle ID)
+         *
+         * This function spawns an HTTP GET request in the background and returns a handle ID
+         * that can be used to cancel the request via `abort_request()` or check its status
+         * via `is_request_finished()`.
+         *
+         * Unlike `http_get()`, this function returns immediately without waiting for the
+         * request to complete. The handle ID can be used to manage the request's lifecycle.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         *
+         * # Returns
+         *
+         * - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * val handleId = httpGetCancellable("https://api.example.com/data")
+         * // ... do other work ...
+         * if (needsCancel) {
+         * abortRequest(handleId)
+         * }
+         * ```
+         *
+         * # Example (Swift)
+         *
+         * ```swift
+         * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+         * // ... do other work ...
+         * if needsCancel {
+         * abortRequest(handleId: handleId)
+         * }
+         * ```
+         */ fun `httpGetCancellable`(`url`: kotlin.String): kotlin.ULong {
+            return FfiConverterULong.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_get_cancellable(
+    
+        FfiConverterString.lower(`url`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform an HTTP POST request (blocking adapter for FFI)
+         *
+         * This function performs a synchronous HTTP POST request by blocking on the
+         * async reqwest operation using the global tokio runtime.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         * - `body`: The request body as a string (usually JSON)
+         * - `content_type`: The Content-Type header value (e.g., "application/json")
+         *
+         * # Returns
+         *
+         * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+         * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * suspend fun postData(url: String, json: String): HttpResponse = withContext(Dispatchers.IO) {
+         * httpPost(url, json, "application/json")
+         * }
+         * ```
+         *
+         * # Example (Swift)
+         *
+         * ```swift
+         * func postData(url: String, json: String) async throws -> HttpResponse {
+         * return try await Task {
+         * try httpPost(url: url, body: json, contentType: "application/json")
+         * }.value
+         * }
+         * ```
+         */
+    @Throws(HttpException::class) fun `httpPost`(`url`: kotlin.String, `body`: kotlin.String, `contentType`: kotlin.String): HttpResponse {
+            return FfiConverterTypeHttpResponse.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_post(
+    
+        FfiConverterString.lower(`url`),FfiConverterString.lower(`body`),FfiConverterString.lower(`contentType`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform a cancellable HTTP POST request (non-blocking, returns handle ID)
+         *
+         * This function spawns an HTTP POST request in the background and returns a handle ID
+         * that can be used to cancel the request via `abort_request()` or check its status
+         * via `is_request_finished()`.
+         *
+         * Unlike `http_post()`, this function returns immediately without waiting for the
+         * request to complete. The handle ID can be used to manage the request's lifecycle.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         * - `body`: The request body as a string (usually JSON)
+         * - `content_type`: The Content-Type header value (e.g., "application/json")
+         *
+         * # Returns
+         *
+         * - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * val handleId = httpPostCancellable(
+         * "https://api.example.com/data",
+         * """{"key": "value"}""",
+         * "application/json"
+         * )
+         * // ... do other work ...
+         * if (needsCancel) {
+         * abortRequest(handleId)
+         * }
+         * ```
+         */ fun `httpPostCancellable`(`url`: kotlin.String, `body`: kotlin.String, `contentType`: kotlin.String): kotlin.ULong {
+            return FfiConverterULong.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_post_cancellable(
+    
+        FfiConverterString.lower(`url`),FfiConverterString.lower(`body`),FfiConverterString.lower(`contentType`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform an HTTP PUT request (blocking adapter for FFI)
+         *
+         * This function performs a synchronous HTTP PUT request by blocking on the
+         * async reqwest operation using the global tokio runtime.
+         *
+         * # Parameters
+         *
+         * - `url`: The URL to request
+         * - `body`: The request body as a string (usually JSON)
+         * - `content_type`: The Content-Type header value (e.g., "application/json")
+         *
+         * # Returns
+         *
+         * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+         * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+         */
+    @Throws(HttpException::class) fun `httpPut`(`url`: kotlin.String, `body`: kotlin.String, `contentType`: kotlin.String): HttpResponse {
+            return FfiConverterTypeHttpResponse.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_put(
+    
+        FfiConverterString.lower(`url`),FfiConverterString.lower(`body`),FfiConverterString.lower(`contentType`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Perform an HTTP request with custom configuration (blocking adapter for FFI)
+         *
+         * This function provides full control over the HTTP request, allowing custom
+         * headers, body, and method. It uses the blocking adapter pattern for FFI.
+         *
+         * # Parameters
+         *
+         * - `method`: HTTP method (GET, POST, PUT, DELETE, etc.)
+         * - `request`: Request configuration (url, body, headers)
+         *
+         * # Returns
+         *
+         * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+         * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+         */
+    @Throws(HttpException::class) fun `httpRequest`(`method`: kotlin.String, `request`: HttpRequest): HttpResponse {
+            return FfiConverterTypeHttpResponse.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_http_request(
+    
+        FfiConverterString.lower(`method`),FfiConverterTypeHttpRequest.lower(`request`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Initializes the logging subsystem with optional configuration.
+         *
+         * This function should be called once at application startup. If called
+         * multiple times, subsequent calls are ignored.
+         *
+         * # Arguments
+         *
+         * * `config` - Optional logging configuration. If None, uses defaults.
+         *
+         * # Example
+         *
+         * ```rust
+         * use nuvio_core::logging::{init_logging, LoggingConfig};
+         * use nuvio_core::config::LogLevel;
+         *
+         * // Initialize with defaults
+         * init_logging(None);
+         *
+         * // Or with custom config
+         * let config = LoggingConfig::builder()
+         * .level(LogLevel::Debug)
+         * .build();
+         * init_logging(Some(config));
+         * ```
+         *
+         * # FFI Note
+         *
+         * This function is exported via UniFFI and can be called from Kotlin and Swift.
+         */ fun `initLogging`(`config`: LoggingConfig?)
+        = 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_init_logging(
+    
+        FfiConverterOptionalTypeLoggingConfig.lower(`config`),_status)
+}
+    
+    
+
+        /**
+         * Check if a request is finished
+         *
+         * This function checks whether a request started with `http_get_cancellable()` or
+         * `http_post_cancellable()` has completed (either successfully, with an error, or
+         * was cancelled).
+         *
+         * # Parameters
+         *
+         * - `handle_id`: The handle ID returned from a cancellable request function
+         *
+         * # Returns
+         *
+         * - `Ok(true)`: Request is finished
+         * - `Ok(false)`: Request is still running
+         * - `Err(HttpError)`: Invalid handle ID
+         *
+         * # Example (Kotlin)
+         *
+         * ```kotlin
+         * val handleId = httpGetCancellable("https://api.example.com/data")
+         * while (!isRequestFinished(handleId)) {
+         * // ... do other work ...
+         * Thread.sleep(100)
+         * }
+         * ```
+         *
+         * # Example (Swift)
+         *
+         * ```swift
+         * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+         * while try !isRequestFinished(handleId: handleId) {
+         * // ... do other work ...
+         * try await Task.sleep(nanoseconds: 100_000_000)
+         * }
+         * ```
+         */
+    @Throws(HttpException::class) fun `isRequestFinished`(`handleId`: kotlin.ULong): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_is_request_finished(
+    
+        FfiConverterULong.lower(`handleId`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Returns the global SDK instance.
+         *
+         * This function returns the SDK instance if it has been initialized,
+         * or None if [`nuvio_initialize`] has not been called yet.
+         *
+         * # Returns
+         *
+         * The SDK instance, or None if not initialized.
+         *
+         * # Example
+         *
+         * ```rust
+         * use nuvio_core::ffi::{nuvio_get_instance, nuvio_initialize};
+         *
+         * // Before initialization
+         * assert!(nuvio_get_instance().is_none());
+         *
+         * // After initialization
+         * nuvio_initialize();
+         * assert!(nuvio_get_instance().is_some());
+         * ```
+         *
+         * # FFI Note
+         *
+         * This function is exported via UniFFI and can be called from Kotlin and Swift.
+         */ fun `nuvioGetInstance`(): NuvioSdk? {
+            return FfiConverterOptionalTypeNuvioSdk.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_nuvio_get_instance(
+    
+        _status)
+}
+    )
+    }
+    
+
+        /**
+         * Initializes the Nuvio SDK with default configuration.
+         *
+         * This function should be called once at application startup. If called
+         * multiple times, subsequent calls are ignored and the existing instance
+         * is returned.
+         *
+         * # Returns
+         *
+         * The initialized SDK instance.
+         *
+         * # Example (Rust)
+         *
+         * ```rust
+         * use nuvio_core::ffi::nuvio_initialize;
+         *
+         * let sdk = nuvio_initialize();
+         * println!("SDK version: {}", sdk.version());
+         * ```
+         *
+         * # FFI Note
+         *
+         * This function is exported via UniFFI and can be called from Kotlin and Swift.
+         */ fun `nuvioInitialize`(): NuvioSdk {
+            return FfiConverterTypeNuvioSdk.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_nuvio_initialize(
+    
+        _status)
+}
+    )
+    }
+    
+
+        /**
+         * Initializes the Nuvio SDK with custom configuration.
+         *
+         * This function should be called once at application startup. If called
+         * multiple times, subsequent calls are ignored and the existing instance
+         * is returned.
+         *
+         * # Arguments
+         *
+         * * `config` - The SDK configuration to use.
+         *
+         * # Returns
+         *
+         * The initialized SDK instance.
+         *
+         * # Example (Rust)
+         *
+         * ```rust
+         * use nuvio_core::config::{SdkConfig, Environment, LogLevel};
+         * use nuvio_core::ffi::nuvio_initialize_with_config;
+         *
+         * let config = SdkConfig::builder()
+         * .environment(Environment::Development)
+         * .log_level(LogLevel::Debug)
+         * .build();
+         *
+         * let sdk = nuvio_initialize_with_config(config);
+         * println!("SDK initialized in {} mode", sdk.environment_name());
+         * ```
+         *
+         * # FFI Note
+         *
+         * This function is exported via UniFFI and can be called from Kotlin and Swift.
+         */ fun `nuvioInitializeWithConfig`(`config`: SdkConfig): NuvioSdk {
+            return FfiConverterTypeNuvioSdk.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_nuvio_initialize_with_config(
+    
+        FfiConverterTypeSdkConfig.lower(`config`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Checks if the SDK has been initialized.
+         *
+         * # Returns
+         *
+         * True if the SDK has been initialized, false otherwise.
+         *
+         * # FFI Note
+         *
+         * This function is exported via UniFFI and can be called from Kotlin and Swift.
+         */ fun `nuvioIsInitialized`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_nuvio_is_initialized(
+    
+        _status)
+}
+    )
+    }
+    
+
+        /**
+         * Remove a finished request handle from the registry
+         *
+         * This function cleans up a request handle after the request is finished.
+         * It's recommended to call this after a request completes to free resources.
+         *
+         * # Parameters
+         *
+         * - `handle_id`: The handle ID to remove
+         *
+         * # Returns
+         *
+         * - `Ok(())`: Handle removed successfully
+         * - `Err(HttpError)`: Invalid handle ID
+         */
+    @Throws(HttpException::class) fun `removeRequestHandle`(`handleId`: kotlin.ULong)
+        = 
+    uniffiRustCallWithError(HttpException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_func_remove_request_handle(
+    
+        FfiConverterULong.lower(`handleId`),_status)
+}
+    
+    
 
 

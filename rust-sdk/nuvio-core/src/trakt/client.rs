@@ -18,16 +18,22 @@ pub struct ApiClient {
     write_rate_limiter: Arc<DefaultDirectRateLimiter>,
 }
 
-// Internal implementation (not exported via UniFFI)
+// UniFFI-exported constructors
+#[uniffi::export]
 impl ApiClient {
     /// Create a new API client with standard rate limits
     ///
     /// Standard limits:
     /// - Read (GET): 1,000 requests per 5 minutes (200 req/min)
     /// - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+    #[uniffi::constructor]
     pub fn new() -> Self {
         Self::new_with_vip_status(false)
     }
+}
+
+// Internal implementation (not exported via UniFFI)
+impl ApiClient {
 
     /// Create a new API client with optional VIP rate limits
     ///

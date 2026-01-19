@@ -652,7 +652,21 @@ open class ApiClient: ApiClientProtocol, @unchecked Sendable {
     public func uniffiCloneHandle() -> UInt64 {
         return try! rustCall { uniffi_nuvio_core_fn_clone_apiclient(self.handle, $0) }
     }
-    // No primary constructor declared for this class.
+    /**
+     * Create a new API client with standard rate limits
+     *
+     * Standard limits:
+     * - Read (GET): 1,000 requests per 5 minutes (200 req/min)
+     * - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+     */
+public convenience init() {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_apiclient_new($0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
 
     deinit {
         try! rustCall { uniffi_nuvio_core_fn_free_apiclient(handle, $0) }
@@ -704,6 +718,274 @@ public func FfiConverterTypeApiClient_lift(_ handle: UInt64) throws -> ApiClient
 #endif
 public func FfiConverterTypeApiClient_lower(_ value: ApiClient) -> UInt64 {
     return FfiConverterTypeApiClient.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+public protocol AuthManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Clears stored tokens
+     */
+    func clearTokens() 
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+    func getAccessToken() async throws  -> String?
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+    func refreshToken() async throws  -> String
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */
+    func storeTokens(accessToken: String, refreshToken: String, expiresInSecs: Int64) 
+    
+}
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+open class AuthManager: AuthManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_authmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new authentication manager
+     *
+     * # Parameters
+     * - `client_id`: Trakt API client ID
+     * - `client_secret`: Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI
+     * - `callback`: Optional callback for token refresh notifications
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::AuthManager;
+     *
+     * let auth_manager = AuthManager::new(
+     * "your_client_id".to_string(),
+     * "your_client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     * ```
+     */
+public convenience init(clientId: String, clientSecret: String, redirectUri: String, callback: TraktTokenCallback?)throws  {
+    let handle =
+        try rustCallWithError(FfiConverterTypeTraktError_lift) {
+    uniffi_nuvio_core_fn_constructor_authmanager_new(
+        FfiConverterString.lower(clientId),
+        FfiConverterString.lower(clientSecret),
+        FfiConverterString.lower(redirectUri),
+        FfiConverterOptionCallbackInterfaceTraktTokenCallback.lower(callback),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_authmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Clears stored tokens
+     */
+open func clearTokens()  {try! rustCall() {
+    uniffi_nuvio_core_fn_method_authmanager_clear_tokens(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+open func getAccessToken()async throws  -> String?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_authmanager_get_access_token(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionString.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+open func refreshToken()async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_authmanager_refresh_token(
+                    self.uniffiCloneHandle()
+                    
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */
+open func storeTokens(accessToken: String, refreshToken: String, expiresInSecs: Int64)  {try! rustCall() {
+    uniffi_nuvio_core_fn_method_authmanager_store_tokens(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(accessToken),
+        FfiConverterString.lower(refreshToken),
+        FfiConverterInt64.lower(expiresInSecs),$0
+    )
+}
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = AuthManager
+
+    public static func lift(_ handle: UInt64) throws -> AuthManager {
+        return AuthManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: AuthManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: AuthManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthManager_lift(_ handle: UInt64) throws -> AuthManager {
+    return try FfiConverterTypeAuthManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthManager_lower(_ value: AuthManager) -> UInt64 {
+    return FfiConverterTypeAuthManager.lower(value)
 }
 
 
@@ -6202,6 +6484,749 @@ public func FfiConverterTypeTmdb_lift(_ handle: UInt64) throws -> Tmdb {
 #endif
 public func FfiConverterTypeTmdb_lower(_ value: Tmdb) -> UInt64 {
     return FfiConverterTypeTmdb.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+public protocol TraktProtocol: AnyObject, Sendable {
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */
+    func auth()  -> AuthManager
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func calendar()  -> CalendarManager
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */
+    func client()  -> ApiClient
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func comments()  -> CommentsManager
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */
+    func deleteAccountData() 
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func recommendations()  -> RecommendationsManager
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func search()  -> SearchManager
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func sync()  -> SyncManager
+    
+}
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+open class Trakt: TraktProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_trakt(self.handle, $0) }
+    }
+    /**
+     * Creates a new Trakt client
+     *
+     * # Parameters
+     * - `client_id`: Your Trakt API client ID
+     * - `client_secret`: Your Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI (use "urn:ietf:wg:oauth:2.0:oob" for out-of-band)
+     * - `token_callback`: Optional callback for token refresh notifications
+     *
+     * # Returns
+     * - `Ok(Trakt)`: Successfully created client
+     * - `Err(AuthError)`: Failed to initialize (invalid URLs, etc.)
+     *
+     * # Example
+     *
+     * ```no_run
+     * use nuvio_core::trakt::{Trakt, TraktTokenCallback};
+     *
+     * // Without callback
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // With callback
+     * struct MyHandler;
+     * impl TraktTokenCallback for MyHandler {
+     * fn on_token_refreshed(&self, access_token: String, expires_at: i64) {
+     * // Handle token refresh
+     * }
+     * fn on_token_refresh_failed(&self, error: String) {
+     * // Handle refresh failure
+     * }
+     * }
+     *
+     * let callback = Box::new(MyHandler);
+     * let trakt_with_cb = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * Some(callback),
+     * ).unwrap();
+     * ```
+     */
+public convenience init(clientId: String, clientSecret: String, redirectUri: String, tokenCallback: TraktTokenCallback?)throws  {
+    let handle =
+        try rustCallWithError(FfiConverterTypeTraktError_lift) {
+    uniffi_nuvio_core_fn_constructor_trakt_new(
+        FfiConverterString.lower(clientId),
+        FfiConverterString.lower(clientSecret),
+        FfiConverterString.lower(redirectUri),
+        FfiConverterOptionCallbackInterfaceTraktTokenCallback.lower(tokenCallback),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_trakt(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */
+open func auth() -> AuthManager  {
+    return try!  FfiConverterTypeAuthManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_auth(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func calendar() -> CalendarManager  {
+    return try!  FfiConverterTypeCalendarManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_calendar(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */
+open func client() -> ApiClient  {
+    return try!  FfiConverterTypeApiClient_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_client(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func comments() -> CommentsManager  {
+    return try!  FfiConverterTypeCommentsManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_comments(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */
+open func deleteAccountData()  {try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_delete_account_data(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func recommendations() -> RecommendationsManager  {
+    return try!  FfiConverterTypeRecommendationsManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_recommendations(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func search() -> SearchManager  {
+    return try!  FfiConverterTypeSearchManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_search(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func sync() -> SyncManager  {
+    return try!  FfiConverterTypeSyncManager_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_trakt_sync(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTrakt: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = Trakt
+
+    public static func lift(_ handle: UInt64) throws -> Trakt {
+        return Trakt(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: Trakt) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Trakt {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: Trakt, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTrakt_lift(_ handle: UInt64) throws -> Trakt {
+    return try FfiConverterTypeTrakt.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTrakt_lower(_ value: Trakt) -> UInt64 {
+    return FfiConverterTypeTrakt.lower(value)
 }
 
 
@@ -16450,6 +17475,30 @@ fileprivate struct FfiConverterOptionTypeTraktShow: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionCallbackInterfaceTraktTokenCallback: FfiConverterRustBuffer {
+    typealias SwiftType = TraktTokenCallback?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterCallbackInterfaceTraktTokenCallback.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterCallbackInterfaceTraktTokenCallback.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceInt64: FfiConverterRustBuffer {
     typealias SwiftType = [Int64]?
 
@@ -18574,6 +19623,18 @@ private let initializationResult: InitializationResult = {
     if (uniffi_nuvio_core_checksum_func_remove_request_handle() != 8799) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_nuvio_core_checksum_method_authmanager_clear_tokens() != 9522) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_authmanager_get_access_token() != 29233) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_authmanager_refresh_token() != 21274) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_authmanager_store_tokens() != 15787) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies() != 47909) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18886,6 +19947,36 @@ private let initializationResult: InitializationResult = {
     if (uniffi_nuvio_core_checksum_method_tmdb_search_tv_show() != 12668) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_nuvio_core_checksum_method_trakt_auth() != 36118) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_calendar() != 7866) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_client() != 8797) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_comments() != 27976) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_delete_account_data() != 27770) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_recommendations() != 16718) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_search() != 23228) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakt_sync() != 13660) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_apiclient_new() != 24711) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_authmanager_new() != 32290) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_nuvio_core_checksum_constructor_calendarmanager_new() != 25968) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18926,6 +20017,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_nuvio_core_checksum_constructor_tmdb_new() != 39821) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_trakt_new() != 15524) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_nuvio_core_checksum_method_tmdbstorage_save_item() != 16676) {

@@ -15,7 +15,6 @@
 //! # Example
 //!
 //! ```no_run
-//! use std::sync::Arc;
 //! use nuvio_core::trakt::{Trakt, TraktTokenCallback};
 //!
 //! // Create a Trakt client without token callback
@@ -37,7 +36,7 @@
 //!     }
 //! }
 //!
-//! let callback = Arc::new(MyCallback);
+//! let callback = Box::new(MyCallback);
 //! let trakt_with_callback = Trakt::new(
 //!     "your_client_id".to_string(),
 //!     "your_client_secret".to_string(),
@@ -93,6 +92,7 @@ pub use sync::SyncManager;
 /// // Access the auth manager
 /// let auth = trakt.auth();
 /// ```
+#[derive(uniffi::Object)]
 pub struct Trakt {
     auth_manager: Arc<AuthManager>,
     api_client: Arc<ApiClient>,
@@ -103,6 +103,7 @@ pub struct Trakt {
     sync_manager: Arc<SyncManager>,
 }
 
+#[uniffi::export]
 impl Trakt {
     /// Creates a new Trakt client
     ///
@@ -119,7 +120,6 @@ impl Trakt {
     /// # Example
     ///
     /// ```no_run
-    /// use std::sync::Arc;
     /// use nuvio_core::trakt::{Trakt, TraktTokenCallback};
     ///
     /// // Without callback
@@ -141,7 +141,7 @@ impl Trakt {
     ///     }
     /// }
     ///
-    /// let callback = Arc::new(MyHandler);
+    /// let callback = Box::new(MyHandler);
     /// let trakt_with_cb = Trakt::new(
     ///     "client_id".to_string(),
     ///     "client_secret".to_string(),
@@ -149,11 +149,12 @@ impl Trakt {
     ///     Some(callback),
     /// ).unwrap();
     /// ```
+    #[uniffi::constructor]
     pub fn new(
         client_id: String,
         client_secret: String,
         redirect_uri: String,
-        token_callback: Option<Arc<dyn TraktTokenCallback>>,
+        token_callback: Option<Box<dyn TraktTokenCallback>>,
     ) -> Result<Self, AuthError> {
         // Create authentication manager with optional callback
         let auth_manager = AuthManager::new(
@@ -496,12 +497,12 @@ mod tests {
 
     #[test]
     fn test_trakt_creation_with_callback() {
-        let callback = Arc::new(TestCallback::new());
+        let callback = Box::new(TestCallback::new());
         let trakt = Trakt::new(
             "test_client_id".to_string(),
             "test_client_secret".to_string(),
             "urn:ietf:wg:oauth:2.0:oob".to_string(),
-            Some(callback.clone()),
+            Some(callback),
         );
         assert!(trakt.is_ok());
     }

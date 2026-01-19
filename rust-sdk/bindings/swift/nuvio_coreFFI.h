@@ -357,6 +357,47 @@ uint64_t uniffi_nuvio_core_fn_clone_apiclient(uint64_t handle, RustCallStatus *_
 void uniffi_nuvio_core_fn_free_apiclient(uint64_t handle, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_APICLIENT_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_APICLIENT_NEW
+uint64_t uniffi_nuvio_core_fn_constructor_apiclient_new(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_AUTHMANAGER
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_AUTHMANAGER
+uint64_t uniffi_nuvio_core_fn_clone_authmanager(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_FREE_AUTHMANAGER
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_FREE_AUTHMANAGER
+void uniffi_nuvio_core_fn_free_authmanager(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_AUTHMANAGER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_AUTHMANAGER_NEW
+uint64_t uniffi_nuvio_core_fn_constructor_authmanager_new(RustBuffer client_id, RustBuffer client_secret, RustBuffer redirect_uri, RustBuffer callback, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_CLEAR_TOKENS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_CLEAR_TOKENS
+void uniffi_nuvio_core_fn_method_authmanager_clear_tokens(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_GET_ACCESS_TOKEN
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_GET_ACCESS_TOKEN
+uint64_t uniffi_nuvio_core_fn_method_authmanager_get_access_token(uint64_t ptr
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_REFRESH_TOKEN
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_REFRESH_TOKEN
+uint64_t uniffi_nuvio_core_fn_method_authmanager_refresh_token(uint64_t ptr
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_STORE_TOKENS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_AUTHMANAGER_STORE_TOKENS
+void uniffi_nuvio_core_fn_method_authmanager_store_tokens(uint64_t ptr, RustBuffer access_token, RustBuffer refresh_token, int64_t expires_in_secs, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_CALENDARMANAGER
 #define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_CALENDARMANAGER
 uint64_t uniffi_nuvio_core_fn_clone_calendarmanager(uint64_t handle, RustCallStatus *_Nonnull out_status
@@ -1081,6 +1122,61 @@ RustBuffer uniffi_nuvio_core_fn_method_tmdb_search_person(uint64_t ptr, RustBuff
 RustBuffer uniffi_nuvio_core_fn_method_tmdb_search_tv_show(uint64_t ptr, RustBuffer query, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_TRAKT
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CLONE_TRAKT
+uint64_t uniffi_nuvio_core_fn_clone_trakt(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_FREE_TRAKT
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_FREE_TRAKT
+void uniffi_nuvio_core_fn_free_trakt(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_TRAKT_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_CONSTRUCTOR_TRAKT_NEW
+uint64_t uniffi_nuvio_core_fn_constructor_trakt_new(RustBuffer client_id, RustBuffer client_secret, RustBuffer redirect_uri, RustBuffer token_callback, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_AUTH
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_AUTH
+uint64_t uniffi_nuvio_core_fn_method_trakt_auth(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_CALENDAR
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_CALENDAR
+uint64_t uniffi_nuvio_core_fn_method_trakt_calendar(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_CLIENT
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_CLIENT
+uint64_t uniffi_nuvio_core_fn_method_trakt_client(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_COMMENTS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_COMMENTS
+uint64_t uniffi_nuvio_core_fn_method_trakt_comments(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_DELETE_ACCOUNT_DATA
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_DELETE_ACCOUNT_DATA
+void uniffi_nuvio_core_fn_method_trakt_delete_account_data(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_RECOMMENDATIONS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_RECOMMENDATIONS
+uint64_t uniffi_nuvio_core_fn_method_trakt_recommendations(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_SEARCH
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_SEARCH
+uint64_t uniffi_nuvio_core_fn_method_trakt_search(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_SYNC
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_METHOD_TRAKT_SYNC
+uint64_t uniffi_nuvio_core_fn_method_trakt_sync(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_INIT_CALLBACK_VTABLE_TMDBSTORAGE
 #define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_FN_INIT_CALLBACK_VTABLE_TMDBSTORAGE
 void uniffi_nuvio_core_fn_init_callback_vtable_tmdbstorage(const UniffiVTableCallbackInterfaceTmdbStorage* _Nonnull vtable
@@ -1565,6 +1661,30 @@ uint16_t uniffi_nuvio_core_checksum_func_nuvio_is_initialized(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_FUNC_REMOVE_REQUEST_HANDLE
 #define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_FUNC_REMOVE_REQUEST_HANDLE
 uint16_t uniffi_nuvio_core_checksum_func_remove_request_handle(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_CLEAR_TOKENS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_CLEAR_TOKENS
+uint16_t uniffi_nuvio_core_checksum_method_authmanager_clear_tokens(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_GET_ACCESS_TOKEN
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_GET_ACCESS_TOKEN
+uint16_t uniffi_nuvio_core_checksum_method_authmanager_get_access_token(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_REFRESH_TOKEN
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_REFRESH_TOKEN
+uint16_t uniffi_nuvio_core_checksum_method_authmanager_refresh_token(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_STORE_TOKENS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_AUTHMANAGER_STORE_TOKENS
+uint16_t uniffi_nuvio_core_checksum_method_authmanager_store_tokens(void
     
 );
 #endif
@@ -2192,6 +2312,66 @@ uint16_t uniffi_nuvio_core_checksum_method_tmdb_search_tv_show(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_AUTH
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_AUTH
+uint16_t uniffi_nuvio_core_checksum_method_trakt_auth(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_CALENDAR
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_CALENDAR
+uint16_t uniffi_nuvio_core_checksum_method_trakt_calendar(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_CLIENT
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_CLIENT
+uint16_t uniffi_nuvio_core_checksum_method_trakt_client(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_COMMENTS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_COMMENTS
+uint16_t uniffi_nuvio_core_checksum_method_trakt_comments(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_DELETE_ACCOUNT_DATA
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_DELETE_ACCOUNT_DATA
+uint16_t uniffi_nuvio_core_checksum_method_trakt_delete_account_data(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_RECOMMENDATIONS
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_RECOMMENDATIONS
+uint16_t uniffi_nuvio_core_checksum_method_trakt_recommendations(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_SEARCH
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_SEARCH
+uint16_t uniffi_nuvio_core_checksum_method_trakt_search(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_SYNC
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_METHOD_TRAKT_SYNC
+uint16_t uniffi_nuvio_core_checksum_method_trakt_sync(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_APICLIENT_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_APICLIENT_NEW
+uint16_t uniffi_nuvio_core_checksum_constructor_apiclient_new(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_AUTHMANAGER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_AUTHMANAGER_NEW
+uint16_t uniffi_nuvio_core_checksum_constructor_authmanager_new(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_CALENDARMANAGER_NEW
 #define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_CALENDARMANAGER_NEW
 uint16_t uniffi_nuvio_core_checksum_constructor_calendarmanager_new(void
@@ -2273,6 +2453,12 @@ uint16_t uniffi_nuvio_core_checksum_constructor_syncmanager_new(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_TMDB_NEW
 #define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_TMDB_NEW
 uint16_t uniffi_nuvio_core_checksum_constructor_tmdb_new(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_TRAKT_NEW
+#define UNIFFI_FFIDEF_UNIFFI_NUVIO_CORE_CHECKSUM_CONSTRUCTOR_TRAKT_NEW
+uint16_t uniffi_nuvio_core_checksum_constructor_trakt_new(void
     
 );
 #endif

@@ -787,6 +787,14 @@ external fun uniffi_nuvio_core_checksum_func_nuvio_is_initialized(
 ): Short
 external fun uniffi_nuvio_core_checksum_func_remove_request_handle(
 ): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_clear_tokens(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_get_access_token(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_refresh_token(
+): Short
+external fun uniffi_nuvio_core_checksum_method_authmanager_store_tokens(
+): Short
 external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies(
 ): Short
 external fun uniffi_nuvio_core_checksum_method_calendarmanager_get_my_new_shows(
@@ -995,6 +1003,26 @@ external fun uniffi_nuvio_core_checksum_method_tmdb_search_person(
 ): Short
 external fun uniffi_nuvio_core_checksum_method_tmdb_search_tv_show(
 ): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_auth(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_calendar(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_client(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_comments(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_delete_account_data(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_recommendations(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_search(
+): Short
+external fun uniffi_nuvio_core_checksum_method_trakt_sync(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_apiclient_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_authmanager_new(
+): Short
 external fun uniffi_nuvio_core_checksum_constructor_calendarmanager_new(
 ): Short
 external fun uniffi_nuvio_core_checksum_constructor_commentsmanager_new(
@@ -1022,6 +1050,8 @@ external fun uniffi_nuvio_core_checksum_constructor_stremioservice_with_config(
 external fun uniffi_nuvio_core_checksum_constructor_syncmanager_new(
 ): Short
 external fun uniffi_nuvio_core_checksum_constructor_tmdb_new(
+): Short
+external fun uniffi_nuvio_core_checksum_constructor_trakt_new(
 ): Short
 external fun uniffi_nuvio_core_checksum_method_tmdbstorage_save_item(
 ): Short
@@ -1067,6 +1097,22 @@ internal object UniffiLib {
     external fun uniffi_nuvio_core_fn_clone_apiclient(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
 ): Long
 external fun uniffi_nuvio_core_fn_free_apiclient(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_apiclient_new(uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_clone_authmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_authmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_authmanager_new(`clientId`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,`redirectUri`: RustBuffer.ByValue,`callback`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_clear_tokens(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_authmanager_get_access_token(`ptr`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_refresh_token(`ptr`: Long,
+): Long
+external fun uniffi_nuvio_core_fn_method_authmanager_store_tokens(`ptr`: Long,`accessToken`: RustBuffer.ByValue,`refreshToken`: RustBuffer.ByValue,`expiresInSecs`: Long,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
 external fun uniffi_nuvio_core_fn_clone_calendarmanager(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
 ): Long
@@ -1356,6 +1402,28 @@ external fun uniffi_nuvio_core_fn_method_tmdb_search_person(`ptr`: Long,`query`:
 ): RustBuffer.ByValue
 external fun uniffi_nuvio_core_fn_method_tmdb_search_tv_show(`ptr`: Long,`query`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
+external fun uniffi_nuvio_core_fn_clone_trakt(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_free_trakt(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_constructor_trakt_new(`clientId`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,`redirectUri`: RustBuffer.ByValue,`tokenCallback`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_auth(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_calendar(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_client(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_comments(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_delete_account_data(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+external fun uniffi_nuvio_core_fn_method_trakt_recommendations(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_search(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+external fun uniffi_nuvio_core_fn_method_trakt_sync(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
 external fun uniffi_nuvio_core_fn_init_callback_vtable_tmdbstorage(`vtable`: UniffiVTableCallbackInterfaceTmdbStorage,
 ): Unit
 external fun uniffi_nuvio_core_fn_init_callback_vtable_traktstorage(`vtable`: UniffiVTableCallbackInterfaceTraktStorage,
@@ -1574,6 +1642,18 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_func_remove_request_handle() != 8799.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_clear_tokens() != 9522.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_get_access_token() != 29233.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_refresh_token() != 21274.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_authmanager_store_tokens() != 15787.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies() != 47909.toShort()) {
@@ -1888,6 +1968,36 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_nuvio_core_checksum_method_tmdb_search_tv_show() != 12668.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_auth() != 36118.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_calendar() != 7866.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_client() != 8797.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_comments() != 27976.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_delete_account_data() != 27770.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_recommendations() != 16718.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_search() != 23228.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_method_trakt_sync() != 13660.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_apiclient_new() != 24711.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_authmanager_new() != 32290.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_nuvio_core_checksum_constructor_calendarmanager_new() != 25968.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1928,6 +2038,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_constructor_tmdb_new() != 39821.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_nuvio_core_checksum_constructor_trakt_new() != 15524.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_nuvio_core_checksum_method_tmdbstorage_save_item() != 16676.toShort()) {
@@ -2557,6 +2670,21 @@ open class ApiClient: Disposable, AutoCloseable, ApiClientInterface
         this.handle = 0
         this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
     }
+    /**
+     * Create a new API client with standard rate limits
+     *
+     * Standard limits:
+     * - Read (GET): 1,000 requests per 5 minutes (200 req/min)
+     * - Write (POST/PUT/DELETE): 1 request per second (60 req/min)
+     */
+    constructor() :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_apiclient_new(
+    
+        _status)
+}
+    )
 
     protected val handle: Long
     protected val cleanable: UniffiCleaner.Cleanable
@@ -2663,6 +2791,421 @@ public object FfiConverterTypeApiClient: FfiConverter<ApiClient, Long> {
     override fun allocationSize(value: ApiClient) = 8UL
 
     override fun write(value: ApiClient, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+public interface AuthManagerInterface {
+    
+    /**
+     * Clears stored tokens
+     */
+    fun `clearTokens`()
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+    suspend fun `getAccessToken`(): kotlin.String?
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+    suspend fun `refreshToken`(): kotlin.String
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */
+    fun `storeTokens`(`accessToken`: kotlin.String, `refreshToken`: kotlin.String, `expiresInSecs`: kotlin.Long)
+    
+    companion object
+}
+
+/**
+ * Authentication manager for Trakt.tv OAuth2
+ *
+ * Handles OAuth2 flows, token storage, and automatic token refresh.
+ * Optionally invokes callbacks when tokens are refreshed or refresh fails.
+ */
+open class AuthManager: Disposable, AutoCloseable, AuthManagerInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new authentication manager
+     *
+     * # Parameters
+     * - `client_id`: Trakt API client ID
+     * - `client_secret`: Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI
+     * - `callback`: Optional callback for token refresh notifications
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::AuthManager;
+     *
+     * let auth_manager = AuthManager::new(
+     * "your_client_id".to_string(),
+     * "your_client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     * ```
+     */
+    constructor(`clientId`: kotlin.String, `clientSecret`: kotlin.String, `redirectUri`: kotlin.String, `callback`: TraktTokenCallback?) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_authmanager_new(
+    
+        FfiConverterString.lower(`clientId`),FfiConverterString.lower(`clientSecret`),FfiConverterString.lower(`redirectUri`),FfiConverterOptionalTypeTraktTokenCallback.lower(`callback`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_authmanager(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_authmanager(handle, status)
+        }
+    }
+
+    
+    /**
+     * Clears stored tokens
+     */override fun `clearTokens`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_authmanager_clear_tokens(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Gets the current access token
+     *
+     * Automatically refreshes the token if it's expired or expiring soon (within 5 minutes).
+     * Invokes the token callback if a refresh occurs.
+     *
+     * # Returns
+     * - `Ok(Some(token))`: Valid access token
+     * - `Ok(None)`: No tokens stored
+     * - `Err(_)`: Token refresh failed
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getAccessToken`() : kotlin.String? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_authmanager_get_access_token(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalString.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Refreshes the OAuth2 access token
+     *
+     * Uses the stored refresh token to obtain a new access token.
+     * Invokes the token callback on success or failure.
+     *
+     * # Returns
+     * - `Ok(access_token)`: New access token
+     * - `Err(_)`: Refresh failed (callback is invoked with error)
+     */
+    @Throws(TraktException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `refreshToken`() : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_nuvio_core_fn_method_authmanager_refresh_token(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_nuvio_core_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_nuvio_core_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_nuvio_core_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TraktException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Stores OAuth2 tokens
+     *
+     * # Parameters
+     * - `access_token`: The access token
+     * - `refresh_token`: The refresh token
+     * - `expires_in_secs`: Token expiration duration in seconds
+     */override fun `storeTokens`(`accessToken`: kotlin.String, `refreshToken`: kotlin.String, `expiresInSecs`: kotlin.Long)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_authmanager_store_tokens(
+        it,
+        FfiConverterString.lower(`accessToken`),FfiConverterString.lower(`refreshToken`),FfiConverterLong.lower(`expiresInSecs`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuthManager: FfiConverter<AuthManager, Long> {
+    override fun lower(value: AuthManager): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): AuthManager {
+        return AuthManager(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): AuthManager {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: AuthManager) = 8UL
+
+    override fun write(value: AuthManager, buf: ByteBuffer) {
         buf.putLong(lower(value))
     }
 }
@@ -10414,6 +10957,921 @@ public object FfiConverterTypeTmdb: FfiConverter<Tmdb, Long> {
 }
 
 
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+//
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+public interface TraktInterface {
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */
+    fun `auth`(): AuthManager
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `calendar`(): CalendarManager
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */
+    fun `client`(): ApiClient
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `comments`(): CommentsManager
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */
+    fun `deleteAccountData`()
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `recommendations`(): RecommendationsManager
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `search`(): SearchManager
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */
+    fun `sync`(): SyncManager
+    
+    companion object
+}
+
+/**
+ * Main Trakt.tv client
+ *
+ * This struct serves as the primary entry point for interacting with the Trakt.tv API.
+ * It manages authentication, rate limiting, and provides access to various API managers.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use nuvio_core::trakt::Trakt;
+ *
+ * let trakt = Trakt::new(
+ * "your_client_id".to_string(),
+ * "your_client_secret".to_string(),
+ * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+ * None, // No token callback
+ * ).unwrap();
+ *
+ * // Access the auth manager
+ * let auth = trakt.auth();
+ * ```
+ */
+open class Trakt: Disposable, AutoCloseable, TraktInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+    /**
+     * Creates a new Trakt client
+     *
+     * # Parameters
+     * - `client_id`: Your Trakt API client ID
+     * - `client_secret`: Your Trakt API client secret
+     * - `redirect_uri`: OAuth2 redirect URI (use "urn:ietf:wg:oauth:2.0:oob" for out-of-band)
+     * - `token_callback`: Optional callback for token refresh notifications
+     *
+     * # Returns
+     * - `Ok(Trakt)`: Successfully created client
+     * - `Err(AuthError)`: Failed to initialize (invalid URLs, etc.)
+     *
+     * # Example
+     *
+     * ```no_run
+     * use nuvio_core::trakt::{Trakt, TraktTokenCallback};
+     *
+     * // Without callback
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // With callback
+     * struct MyHandler;
+     * impl TraktTokenCallback for MyHandler {
+     * fn on_token_refreshed(&self, access_token: String, expires_at: i64) {
+     * // Handle token refresh
+     * }
+     * fn on_token_refresh_failed(&self, error: String) {
+     * // Handle refresh failure
+     * }
+     * }
+     *
+     * let callback = Box::new(MyHandler);
+     * let trakt_with_cb = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * Some(callback),
+     * ).unwrap();
+     * ```
+     */
+    constructor(`clientId`: kotlin.String, `clientSecret`: kotlin.String, `redirectUri`: kotlin.String, `tokenCallback`: TraktTokenCallback?) :
+        this(UniffiWithHandle, 
+    uniffiRustCallWithError(TraktException) { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_constructor_trakt_new(
+    
+        FfiConverterString.lower(`clientId`),FfiConverterString.lower(`clientSecret`),FfiConverterString.lower(`redirectUri`),FfiConverterOptionalTypeTraktTokenCallback.lower(`tokenCallback`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_nuvio_core_fn_free_trakt(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_nuvio_core_fn_clone_trakt(handle, status)
+        }
+    }
+
+    
+    /**
+     * Gets the authentication manager
+     *
+     * Use this to perform OAuth2 flows, store tokens, and manage authentication.
+     *
+     * # Returns
+     * Arc reference to the AuthManager instance
+     */override fun `auth`(): AuthManager {
+            return FfiConverterTypeAuthManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_auth(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the calendar manager
+     *
+     * Use this to access calendar endpoints for upcoming shows and movies.
+     *
+     * # Returns
+     * Arc reference to the CalendarManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let calendar = trakt.calendar();
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `calendar`(): CalendarManager {
+            return FfiConverterTypeCalendarManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_calendar(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the API client
+     *
+     * Use this to make low-level API requests with rate limiting.
+     *
+     * # Returns
+     * Arc reference to the ApiClient instance
+     */override fun `client`(): ApiClient {
+            return FfiConverterTypeApiClient.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_client(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the comments manager
+     *
+     * Use this to access comments and reviews for movies, shows, seasons, and episodes.
+     *
+     * # Returns
+     * Arc reference to the CommentsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let comments = trakt.comments();
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `comments`(): CommentsManager {
+            return FfiConverterTypeCommentsManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_comments(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Deletes all account data (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17) by removing
+     * all Trakt-related account data managed by this client instance.
+     *
+     * # What Gets Deleted
+     *
+     * This method clears:
+     * - OAuth2 access tokens and refresh tokens (stored in memory by AuthManager)
+     * - Any in-memory caches maintained by the API client
+     *
+     * # Platform Storage
+     *
+     * **IMPORTANT**: This method does NOT delete data stored via the `TraktStorage` trait.
+     * Platform implementations (iOS/Android) must separately call `TraktStorage::delete_all_user_data()`
+     * to remove:
+     * - Persisted OAuth tokens (Keychain/KeyStore)
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     *
+     * # Usage
+     *
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * // User requests account data deletion
+     * trakt.delete_account_data();
+     *
+     * // Platform code should also call:
+     * // storage.delete_all_user_data().unwrap();
+     * ```
+     *
+     * # Platform Implementation Example
+     *
+     * ## iOS (Swift)
+     * ```swift
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * try? traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * ## Android (Kotlin)
+     * ```kotlin
+     * // Clear Rust SDK managed data
+     * traktClient.deleteAccountData()
+     *
+     * // Clear platform storage
+     * traktStorage.deleteAllUserData()
+     *
+     * // User is now fully logged out with no data remaining
+     * ```
+     *
+     * # GDPR Compliance
+     *
+     * To fully comply with GDPR Article 17 (Right to Erasure), both this method
+     * AND `TraktStorage::delete_all_user_data()` must be called. This two-step
+     * process ensures complete data deletion across both the Rust SDK and
+     * platform-specific storage.
+     *
+     * # Security
+     *
+     * After calling this method:
+     * - The user will be logged out
+     * - All API calls requiring authentication will fail
+     * - No tokens remain in memory
+     * - The user must re-authenticate to use the API again
+     */override fun `deleteAccountData`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_delete_account_data(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Gets the recommendations manager
+     *
+     * Use this to access personalized recommendations for movies and shows.
+     *
+     * # Returns
+     * Arc reference to the RecommendationsManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let recommendations = trakt.recommendations();
+     * let movies = recommendations.get_movies(10, true).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `recommendations`(): RecommendationsManager {
+            return FfiConverterTypeRecommendationsManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_recommendations(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the search manager
+     *
+     * Use this to search for content by text query, IMDb ID, or TMDB ID.
+     *
+     * # Returns
+     * Arc reference to the SearchManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let search = trakt.search();
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `search`(): SearchManager {
+            return FfiConverterTypeSearchManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_search(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gets the sync manager
+     *
+     * Use this to manage watched history, collections, watchlists, and ratings.
+     *
+     * # Returns
+     * Arc reference to the SyncManager instance
+     *
+     * # Example
+     * ```no_run
+     * use nuvio_core::trakt::Trakt;
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let trakt = Trakt::new(
+     * "client_id".to_string(),
+     * "client_secret".to_string(),
+     * "urn:ietf:wg:oauth:2.0:oob".to_string(),
+     * None,
+     * ).unwrap();
+     *
+     * let sync = trakt.sync();
+     * // Use sync to manage history, collections, etc.
+     * # Ok(())
+     * # }
+     * ```
+     */override fun `sync`(): SyncManager {
+            return FfiConverterTypeSyncManager.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_nuvio_core_fn_method_trakt_sync(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTrakt: FfiConverter<Trakt, Long> {
+    override fun lower(value: Trakt): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): Trakt {
+        return Trakt(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): Trakt {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: Trakt) = 8UL
+
+    override fun write(value: Trakt, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
 
 /**
  * Represents a Stremio addon with its configuration and metadata.
@@ -17548,6 +19006,7 @@ public object FfiConverterTypeTmdbError : FfiConverterRustBuffer<TmdbException> 
  *
  * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
  * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ * Note: Field is named `msg` (not `message`) to avoid conflict with Kotlin Exception.message
  */
 sealed class TraktException: kotlin.Exception() {
     
@@ -17556,10 +19015,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class OAuth2Exception(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17567,10 +19026,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class NetworkException(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17578,10 +19037,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class StorageException(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17589,10 +19048,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class InvalidToken(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17600,10 +19059,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class ApiException(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17611,10 +19070,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class ValidationException(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17622,10 +19081,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class RateLimitExceeded(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17633,10 +19092,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class NotFound(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
     /**
@@ -17644,10 +19103,10 @@ sealed class TraktException: kotlin.Exception() {
      */
     class Unknown(
         
-        val `message`: kotlin.String
+        val `msg`: kotlin.String
         ) : TraktException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "msg=${ `msg` }"
     }
     
 
@@ -17702,47 +19161,47 @@ public object FfiConverterTypeTraktError : FfiConverterRustBuffer<TraktException
             is TraktException.OAuth2Exception -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.NetworkException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.StorageException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.InvalidToken -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.ApiException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.ValidationException -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.RateLimitExceeded -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.NotFound -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
             is TraktException.Unknown -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`msg`)
             )
         }
     }
@@ -17751,47 +19210,47 @@ public object FfiConverterTypeTraktError : FfiConverterRustBuffer<TraktException
         when(value) {
             is TraktException.OAuth2Exception -> {
                 buf.putInt(1)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.NetworkException -> {
                 buf.putInt(2)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.StorageException -> {
                 buf.putInt(3)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.InvalidToken -> {
                 buf.putInt(4)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.ApiException -> {
                 buf.putInt(5)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.ValidationException -> {
                 buf.putInt(6)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.RateLimitExceeded -> {
                 buf.putInt(7)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.NotFound -> {
                 buf.putInt(8)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
             is TraktException.Unknown -> {
                 buf.putInt(9)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`msg`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -19018,6 +20477,38 @@ public object FfiConverterOptionalTypeTraktShow: FfiConverterRustBuffer<TraktSho
         } else {
             buf.put(1)
             FfiConverterTypeTraktShow.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTraktTokenCallback: FfiConverterRustBuffer<TraktTokenCallback?> {
+    override fun read(buf: ByteBuffer): TraktTokenCallback? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTraktTokenCallback.read(buf)
+    }
+
+    override fun allocationSize(value: TraktTokenCallback?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTraktTokenCallback.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TraktTokenCallback?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTraktTokenCallback.write(value, buf)
         }
     }
 }
