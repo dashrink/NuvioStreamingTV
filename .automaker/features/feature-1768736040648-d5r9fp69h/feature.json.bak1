@@ -3,7 +3,7 @@
   "description": "Implement efficient file system scanning, mime-type detection, and metadata matching for local media files within Rust core. Coordinates with platform-specific file access APIs on Android (SAF) and Apple (FileManager).",
   "title": "Rust SDK: Local Media Scanner",
   "priority": 2,
-  "status": "verified",
+  "status": "completed",
   "branchName": "feature/main-1768737525994-h2p9",
   "id": "feature-1768736040648-d5r9fp69h",
   "descriptionHistory": [
