@@ -1,0 +1,105 @@
+{
+  "category": "Uncategorized",
+  "description": "Fix the warnings and errors when running the below commands to build the app for android:\n- npm run rust:build:android\n- npm run rust:bindings\n- npm run android:build\n- npm run android:install",
+  "title": "Fix Android build warnings and errors",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": false,
+  "model": "opus",
+  "thinkingLevel": "ultrathink",
+  "reasoningEffort": "none",
+  "branchName": null,
+  "priority": 1,
+  "planningMode": "full",
+  "requirePlanApproval": true,
+  "dependencies": [],
+  "workMode": "auto",
+  "titleGenerating": false,
+  "status": "verified",
+  "id": "feature-1768807248298-efjy9hidx",
+  "descriptionHistory": [
+    {
+      "description": "Fix the warnings and errors when running the below commands to build the app for android:\n- npm run rust:build:android\n- npm run rust:bindings\n- npm run android:build\n- npm run android:install",
+      "timestamp": "2026-01-19T07:20:48.326Z",
+      "source": "initial"
+    }
+  ],
+  "startedAt": "2026-01-19T07:20:59.351Z",
+  "updatedAt": "2026-01-19T07:49:19.958Z",
+  "planSpec": {
+    "status": "approved",
+    "version": 1,
+    "reviewedByUser": true,
+    "generatedAt": "2026-01-19T07:27:48.039Z",
+    "tasks": [
+      {
+        "id": "T001",
+        "description": "Remove unused `error` and `warn` imports from backup/manager.rs",
+        "filePath": "rust-sdk/nuvio-core/src/backup/manager.rs",
+        "phase": "Phase 1: Fix Rust Compiler Warnings",
+        "status": "pending"
+      },
+      {
+        "id": "T002",
+        "description": "Remove unused `error` and `warn` imports from notifications/manager.rs",
+        "filePath": "rust-sdk/nuvio-core/src/notifications/manager.rs",
+        "phase": "Phase 1: Fix Rust Compiler Warnings",
+        "status": "pending"
+      },
+      {
+        "id": "T003",
+        "description": "Remove unused `Deserialize` and `Serialize` imports from notifications/storage.rs",
+        "filePath": "rust-sdk/nuvio-core/src/notifications/storage.rs",
+        "phase": "Phase 1: Fix Rust Compiler Warnings",
+        "status": "pending"
+      },
+      {
+        "id": "T004",
+        "description": "Prefix unused variables with underscore in notifications/manager.rs",
+        "filePath": "rust-sdk/nuvio-core/src/notifications/manager.rs",
+        "phase": "Phase 1: Fix Rust Compiler Warnings",
+        "status": "pending"
+      },
+      {
+        "id": "T005",
+        "description": "Update generate-bindings.sh to use uniffi crate's bindgen_library function",
+        "filePath": "rust-sdk/generate-bindings.sh",
+        "phase": "Phase 2: Fix UniFFI Binding Generation",
+        "status": "pending"
+      },
+      {
+        "id": "T006",
+        "description": "Create local.properties file with Android SDK path",
+        "filePath": "android/local.properties",
+        "phase": "Phase 3: Fix Android Build Configuration",
+        "status": "pending"
+      },
+      {
+        "id": "T007",
+        "description": "Verify rust:build:android completes without warnings",
+        "filePath": "N/A",
+        "phase": "Phase 4: Verification",
+        "status": "pending"
+      },
+      {
+        "id": "T008",
+        "description": "Verify rust:bindings completes successfully",
+        "filePath": "N/A",
+        "phase": "Phase 4: Verification",
+        "status": "pending"
+      },
+      {
+        "id": "T009",
+        "description": "Verify android:build completes successfully",
+        "filePath": "N/A",
+        "phase": "Phase 4: Verification",
+        "status": "pending"
+      }
+    ],
+    "tasksTotal": 9,
+    "tasksCompleted": 9,
+    "approvedAt": "2026-01-19T07:30:10.693Z",
+    "currentTaskId": "T009"
+  }
+}

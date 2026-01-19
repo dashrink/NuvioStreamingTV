@@ -342,6 +342,14 @@
 
 create a README.md file in the root of the project documents the project and explain how to run this app for Kotlin and Swift with the architecture as well.</description>
     </feature>
+    <feature>
+      <name>Fix Android build warnings and errors</name>
+      <description>Fix the warnings and errors when running the below commands to build the app for android:
+- npm run rust:build:android
+- npm run rust:bindings
+- npm run android:build
+- npm run android:install</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>
