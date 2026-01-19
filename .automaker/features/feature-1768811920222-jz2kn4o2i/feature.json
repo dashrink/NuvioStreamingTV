@@ -1,0 +1,66 @@
+{
+  "category": "Uncategorized",
+  "description": "When running npm run android:build\nGetting errors. Fix them then run:\nnpm run android:install\n\nAnd check if all ok without any warn or error.",
+  "title": "Fix Android build errors and verify installation",
+  "images": [],
+  "imagePaths": [
+    {
+      "id": "img-1768811906747-a6vzuz7zh",
+      "path": "/home/dashrink/Desktop/NuvioStreamingTV/.automaker/features/feature-1768811920222-jz2kn4o2i/images/pasted-image-2026-01-19T08-38-26-732Z-1768811906745.png",
+      "filename": "pasted-image-2026-01-19T08-38-26-732Z.png",
+      "mimeType": "image/png"
+    }
+  ],
+  "textFilePaths": [],
+  "skipTests": false,
+  "model": "opus",
+  "thinkingLevel": "high",
+  "reasoningEffort": "none",
+  "priority": 2,
+  "planningMode": "spec",
+  "requirePlanApproval": true,
+  "dependencies": [],
+  "workMode": "current",
+  "titleGenerating": false,
+  "status": "verified",
+  "id": "feature-1768811920222-jz2kn4o2i",
+  "descriptionHistory": [
+    {
+      "description": "When running npm run android:build\nGetting errors. Fix them then run:\nnpm run android:install\n\nAnd check if all ok without any warn or error.",
+      "timestamp": "2026-01-19T08:38:40.411Z",
+      "source": "initial"
+    }
+  ],
+  "startedAt": "2026-01-19T08:38:43.232Z",
+  "updatedAt": "2026-01-19T08:59:06.692Z",
+  "planSpec": {
+    "status": "approved",
+    "version": 1,
+    "reviewedByUser": true,
+    "generatedAt": "2026-01-19T08:39:17.840Z",
+    "tasks": [
+      {
+        "id": "T001",
+        "description": "Change exportSchema from true to false in NuvioDatabase.kt",
+        "filePath": "android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/db/NuvioDatabase.kt",
+        "status": "pending"
+      },
+      {
+        "id": "T002",
+        "description": "Run npm run android:build to verify build succeeds",
+        "filePath": "package.json",
+        "status": "pending"
+      },
+      {
+        "id": "T003",
+        "description": "Run npm run android:install to verify installation",
+        "filePath": "package.json",
+        "status": "pending"
+      }
+    ],
+    "tasksTotal": 3,
+    "tasksCompleted": 3,
+    "approvedAt": "2026-01-19T08:52:55.517Z",
+    "currentTaskId": "T003"
+  }
+}

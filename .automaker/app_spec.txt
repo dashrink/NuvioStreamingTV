@@ -350,6 +350,14 @@ create a README.md file in the root of the project documents the project and exp
 - npm run android:build
 - npm run android:install</description>
     </feature>
+    <feature>
+      <name>Fix Android build errors and verify installation</name>
+      <description>When running npm run android:build
+Getting errors. Fix them then run:
+npm run android:install
+
+And check if all ok without any warn or error.</description>
+    </feature>
   </implemented_features>
 
   <additional_requirements>

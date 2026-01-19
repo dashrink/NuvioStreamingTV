@@ -56,7 +56,7 @@ import androidx.room.TypeConverters
 @Database(
     entities = [WatchHistoryEntity::class],
     version = 1,
-    exportSchema = true  // Export schema for version control and migration testing
+    exportSchema = false  // Disabled for now; enable when migration testing is needed
 )
 @TypeConverters(DatabaseConverters::class)
 abstract class NuvioDatabase : RoomDatabase() {

@@ -9,7 +9,7 @@
 # - Proc Macro Guide: https://mozilla.github.io/uniffi-rs/proc_macro/index.html
 
 [bindings.kotlin]
-package_name = "com.nuvio.sdk.core"
+package_name = "uniffi.nuvio_core"
 # Output directory for generated Kotlin bindings (relative to rust-sdk/)
 cdylib_name = "nuvio_core"
 
