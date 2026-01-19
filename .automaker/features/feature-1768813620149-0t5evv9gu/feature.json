@@ -1,0 +1,98 @@
+{
+  "category": "testing",
+  "description": "Running:\n- npm run android:build\nthrowing errors. Create a plan to fix this build. Keep testing it until it builds successfully without warn or error or failures.\n",
+  "title": "Fix Android build errors and verify successful compilation",
+  "images": [],
+  "imagePaths": [
+    {
+      "id": "img-1768813572455-nxfx1ewt7",
+      "path": "/home/dashrink/Desktop/NuvioStreamingTV/.automaker/features/feature-1768813620149-0t5evv9gu/images/pasted-image-2026-01-19T09-06-12-436Z-1768813572453.png",
+      "filename": "pasted-image-2026-01-19T09-06-12-436Z.png",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "img-1768813591268-fwtzysoxy",
+      "path": "/home/dashrink/Desktop/NuvioStreamingTV/.automaker/features/feature-1768813620149-0t5evv9gu/images/pasted-image-2026-01-19T09-06-31-253Z-1768813591266.png",
+      "filename": "pasted-image-2026-01-19T09-06-31-253Z.png",
+      "mimeType": "image/png"
+    }
+  ],
+  "textFilePaths": [],
+  "skipTests": false,
+  "model": "opus",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "branchName": null,
+  "priority": 1,
+  "planningMode": "spec",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "workMode": "auto",
+  "titleGenerating": false,
+  "status": "verified",
+  "id": "feature-1768813620149-0t5evv9gu",
+  "descriptionHistory": [
+    {
+      "description": "Running:\n- npm run android:build\nthrowing errors. Create a plan to fix this build. Keep testing it until it builds successfully without warn or error or failures.\n",
+      "timestamp": "2026-01-19T09:07:00.242Z",
+      "source": "initial"
+    }
+  ],
+  "startedAt": "2026-01-19T09:07:00.280Z",
+  "updatedAt": "2026-01-19T09:40:30.841Z",
+  "planSpec": {
+    "status": "approved",
+    "version": 1,
+    "reviewedByUser": false,
+    "content": "🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.automaker/features/feature-1768813620149-0t5evv9gu/images/pasted-image-2026-01-19T09-06-12-436Z-1768813572453.png\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.automaker/features/feature-1768813620149-0t5evv9gu/images/pasted-image-2026-01-19T09-06-31-253Z-1768813591266.png\"\n}\n\n🔧 Tool: Glob\nInput: {\n  \"pattern\": \"**/shared/src/**/*.kt\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"RustModule\",\n  \"glob\": \"**/*.kt\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/com/nuvio/streaming/shared/di/RustModule.kt\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/search/SearchRepository.kt\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/watchlist/WatchlistRepository.kt\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"provideTrakt\",\n  \"glob\": \"**/*.kt\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"provideProfileManager\",\n  \"glob\": \"**/*.kt\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"IoDispatcher\",\n  \"glob\": \"**/*.kt\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/com/nuvio/streaming/shared/di/AppModule.kt\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"class Trakt|object Trakt|fun Trakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\",\n  \"offset\": 18200,\n  \"limit\": 200\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"class Trakt\\\\(|fun Trakt\\\\(\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 5\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"^class Trakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 5\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\",\n  \"offset\": 1,\n  \"limit\": 100\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"Trakt\\\\(\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 3,\n  \"head_limit\": 30\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"ProfileManager\\\\(\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 3,\n  \"head_limit\": 30\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\",\n  \"offset\": 6700,\n  \"limit\": 200\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"interface Trakt|object Trakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 10\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"^public interface Trakt\\\\b\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 10\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"fun createTrakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 10\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"class Trakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-n\": true,\n  \"head_limit\": 50\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"Trakt:\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-n\": true,\n  \"-C\": 5,\n  \"head_limit\": 30\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\",\n  \"offset\": 7000,\n  \"limit\": 300\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"^open class Trakt|^class Trakt\\\\b\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core\",\n  \"output_mode\": \"content\",\n  \"-C\": 10\n}\n\n🔧 Tool: Bash\nInput: {\n  \"command\": \"grep -n \\\"^open class\\\\|^class\\\\|^interface\\\" /home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt | grep -i trakt | head -50\",\n  \"description\": \"Find Trakt class definitions\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"import uniffi.nuvio_core.Trakt\",\n  \"glob\": \"**/*.kt\",\n  \"output_mode\": \"content\"\n}\nThe `Trakt` class is imported but doesn't exist in the generated uniffi file. Let me check the Rust code that generates this:\n\n🔧 Tool: Glob\nInput: {\n  \"pattern\": \"**/rust/**/*.rs\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"pub struct Trakt|pub fn Trakt\",\n  \"glob\": \"**/*.rs\"\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"pub struct Trakt\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src\",\n  \"output_mode\": \"content\",\n  \"-C\": 15\n}\n\n🔧 Tool: Glob\nInput: {\n  \"pattern\": \"**/uniffi.toml\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src/trakt/mod.rs\",\n  \"limit\": 200\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/uniffi.toml\"\n}\nNow I need to check if the `Trakt` struct is exported via uniffi. Let me check the lib.rs file:\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"uniffi::Object|uniffi::export|uniffi::Record\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src/trakt/mod.rs\",\n  \"output_mode\": \"content\",\n  \"-C\": 3\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src/lib.rs\"\n}\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src/trakt/mod.rs\",\n  \"offset\": 195,\n  \"limit\": 100\n}\nNow I understand the issue. The `Trakt` struct in Rust is not being exported via UniFFI - it doesn't have the `#[uniffi::Object]` attribute. The Android code imports `uniffi.nuvio_core.Trakt` but that class doesn't exist in the generated bindings.\n\nLet me verify this and check what classes ARE exported:\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"#\\\\[uniffi::Object\\\\]\\\"\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src\",\n  \"output_mode\": \"content\",\n  \"-C\": 3\n}\n\n🔧 Tool: Grep\nInput: {\n  \"pattern\": \"uniffi::Object\",\n  \"path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src\",\n  \"output_mode\": \"content\",\n  \"-C\": 3\n}\nNow I understand the problem completely. The `Trakt` struct in `trakt/mod.rs` does NOT have the `#[derive(uniffi::Object)]` attribute, so it's not being exported to the Kotlin bindings. The Android code is trying to use `uniffi.nuvio_core.Trakt` which doesn't exist.\n\nLet me also check what the SearchManager returns:\n\n🔧 Tool: Read\nInput: {\n  \"file_path\": \"/home/dashrink/Desktop/NuvioStreamingTV/.worktrees/feature-main-1768813619468-2vxc/rust-sdk/nuvio-core/src/trakt/search.rs\"\n}\nNow I have enough context. The problem is clear:\n\n1. The `Trakt` struct in `rust-sdk/nuvio-core/src/trakt/mod.rs` is NOT exported via UniFFI (missing `#[derive(uniffi::Object)]` and `#[uniffi::export]` annotations)\n2. The Android code in `RustModule.kt`, `SearchRepository.kt`, and `WatchlistRepository.kt` all import and try to use `uniffi.nuvio_core.Trakt` which doesn't exist in the generated bindings\n3. The error message \"error.NonExistentClass\" indicates the KSP (Kotlin Symbol Processing) can't find the `Trakt` class during code generation\n\n# Specification: Fix Android Build Errors for Missing Trakt FFI Class\n\n## 1. **Problem**\n\nThe Android build (`npm run android:build`) fails because the Kotlin code references `uniffi.nuvio_core.Trakt` which doesn't exist in the generated UniFFI bindings. The `Trakt` struct in Rust is not annotated for FFI export.\n\n## 2. **Solution**\n\nAdd the `#[derive(uniffi::Object)]` and `#[uniffi::export]` annotations to the `Trakt` struct in Rust so it gets exported to Kotlin, OR update the Android code to use the exported manager classes directly (SearchManager, etc.) instead of the non-exported Trakt wrapper class.\n\n## 3. **Acceptance Criteria**\n\n- GIVEN the `npm run android:build` command is run, WHEN the build process executes, THEN it completes without KSP errors related to `NonExistentClass`\n- GIVEN the shared module's RustModule.kt, WHEN Hilt dependency injection runs, THEN the Trakt-related providers can inject valid dependencies\n- GIVEN the SearchRepository and WatchlistRepository, WHEN they are instantiated, THEN they can access the search/watchlist functionality without runtime errors\n- GIVEN the Android build completes, WHEN checking for warnings, THEN there are no warnings related to missing Trakt classes\n\n## 4. **Files to Modify**\n\n| File | Purpose | Action |\n|------|---------|--------|\n| rust-sdk/nuvio-core/src/trakt/mod.rs | Export Trakt struct via UniFFI | modify |\n| android/shared/src/main/kotlin/com/nuvio/streaming/shared/di/RustModule.kt | Update DI providers for Trakt | modify |\n| android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/search/SearchRepository.kt | Update to use SearchManager | modify |\n| android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/watchlist/WatchlistRepository.kt | Update to use SyncManager | modify |\n\n## 5. **Implementation Tasks**\n\n```tasks\n- [ ] T001: Add uniffi::Object derive macro to Trakt struct | File: rust-sdk/nuvio-core/src/trakt/mod.rs\n- [ ] T002: Add uniffi::export impl block for Trakt struct | File: rust-sdk/nuvio-core/src/trakt/mod.rs\n- [ ] T003: Update RustModule to use exported Trakt class correctly | File: android/shared/src/main/kotlin/com/nuvio/streaming/shared/di/RustModule.kt\n- [ ] T004: Update SearchRepository to use SearchManager | File: android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/search/SearchRepository.kt\n- [ ] T005: Update WatchlistRepository to use SyncManager | File: android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/watchlist/WatchlistRepository.kt\n- [ ] T006: Regenerate UniFFI Kotlin bindings | File: android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt\n- [ ] T007: Run Android build to verify fix | File: N/A\n```\n\n## 6. **Verification**\n\n1. Run `npm run android:build` and verify no KSP errors occur\n2. Check build output for absence of warnings about missing classes\n3. Verify the generated Kotlin bindings contain the Trakt class",
+    "generatedAt": "2026-01-19T09:09:23.494Z",
+    "tasks": [
+      {
+        "id": "T001",
+        "description": "Add uniffi::Object derive macro to Trakt struct",
+        "filePath": "rust-sdk/nuvio-core/src/trakt/mod.rs",
+        "status": "pending"
+      },
+      {
+        "id": "T002",
+        "description": "Add uniffi::export impl block for Trakt struct",
+        "filePath": "rust-sdk/nuvio-core/src/trakt/mod.rs",
+        "status": "pending"
+      },
+      {
+        "id": "T003",
+        "description": "Update RustModule to use exported Trakt class correctly",
+        "filePath": "android/shared/src/main/kotlin/com/nuvio/streaming/shared/di/RustModule.kt",
+        "status": "pending"
+      },
+      {
+        "id": "T004",
+        "description": "Update SearchRepository to use SearchManager",
+        "filePath": "android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/search/SearchRepository.kt",
+        "status": "pending"
+      },
+      {
+        "id": "T005",
+        "description": "Update WatchlistRepository to use SyncManager",
+        "filePath": "android/shared/src/main/kotlin/com/nuvio/streaming/shared/data/watchlist/WatchlistRepository.kt",
+        "status": "pending"
+      },
+      {
+        "id": "T006",
+        "description": "Regenerate UniFFI Kotlin bindings",
+        "filePath": "android/shared/src/main/kotlin/uniffi/nuvio_core/nuvio_core.kt",
+        "status": "pending"
+      },
+      {
+        "id": "T007",
+        "description": "Run Android build to verify fix",
+        "filePath": "N/A",
+        "status": "pending"
+      }
+    ],
+    "tasksTotal": 7,
+    "tasksCompleted": 7,
+    "approvedAt": "2026-01-19T09:09:23.496Z",
+    "currentTaskId": "T007"
+  }
+}
