@@ -5,7 +5,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import com.google.android.exoplayer2.ExoPlayer
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import com.nuvio.streaming.shared.data.db.NuvioDatabase
 import dagger.Module
 import dagger.Provides
@@ -134,6 +136,7 @@ object AppModule {
      * @param context Application context for ExoPlayer initialization
      * @return Singleton ExoPlayer instance
      */
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
     fun provideExoPlayer(

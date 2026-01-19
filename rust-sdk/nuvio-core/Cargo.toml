@@ -6,6 +6,16 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]  # CRITICAL: cdylib required for FFI
 
+[features]
+default = []
+# Enable CLI feature for uniffi-bindgen binary
+cli = ["uniffi/cli"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["cli"]
+
 [dependencies]
 uniffi = { workspace = true }
 serde = { workspace = true }

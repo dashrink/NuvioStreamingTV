@@ -414,7 +414,29 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 
 
 // Public interface members begin here.
+// Magic number for the Rust proxy to call using the same mechanism as every other method,
+// to free the callback once it's dropped by Rust.
+private let IDX_CALLBACK_FREE: Int32 = 0
+// Callback return codes
+private let UNIFFI_CALLBACK_SUCCESS: Int32 = 0
+private let UNIFFI_CALLBACK_ERROR: Int32 = 1
+private let UNIFFI_CALLBACK_UNEXPECTED_ERROR: Int32 = 2
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterUInt16: FfiConverterPrimitive {
+    typealias FfiType = UInt16
+    typealias SwiftType = UInt16
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt16 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -560,6 +582,2675 @@ fileprivate struct FfiConverterString: FfiConverter {
         writeBytes(&buf, value.utf8)
     }
 }
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
+
+
+
+/**
+ * API client for Trakt.tv with rate limiting
+ */
+public protocol ApiClientProtocol: AnyObject, Sendable {
+    
+}
+/**
+ * API client for Trakt.tv with rate limiting
+ */
+open class ApiClient: ApiClientProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_apiclient(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_apiclient(handle, $0) }
+    }
+
+    
+
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeApiClient: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ApiClient
+
+    public static func lift(_ handle: UInt64) throws -> ApiClient {
+        return ApiClient(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ApiClient) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ApiClient {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ApiClient, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiClient_lift(_ handle: UInt64) throws -> ApiClient {
+    return try FfiConverterTypeApiClient.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiClient_lower(_ value: ApiClient) -> UInt64 {
+    return FfiConverterTypeApiClient.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Calendar manager for Trakt.tv
+ *
+ * Provides access to personalized calendar data including:
+ * - My shows: Episodes from shows in your watched/collected history
+ * - New shows: Season premieres of shows you watch
+ * - Premieres: All new show premieres
+ * - Movies: Movies releasing in theaters or on streaming
+ *
+ * # Date Format
+ * Dates should be in ISO 8601 format (YYYY-MM-DD), e.g., "2024-01-15"
+ *
+ * # Days Range
+ * The `days` parameter can be 1-33, representing how many days to fetch
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CalendarManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let calendar = CalendarManager::new(api_client);
+ *
+ * // Get shows for the next 7 days starting today
+ * // let shows = calendar.get_my_shows("2024-01-15", 7).await.unwrap();
+ * ```
+ */
+public protocol CalendarManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Get calendar for my movies
+     *
+     * Returns movies being released during the time period.
+     * This is personalized based on the user's watchlist and viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarMovie>)`: List of upcoming movies
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/movies/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get movies releasing in the next 7 days
+     * let movies = calendar.get_my_movies("2024-01-15".to_string(), 7).await?;
+     * for movie in movies {
+     * println!("{} ({})", movie.movie.title, movie.released);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMyMovies(startDate: String, days: Int32) async throws  -> [TraktCalendarMovie]
+    
+    /**
+     * Get calendar for new show premieres that the user watches
+     *
+     * Returns season premieres for shows the user has watched or collected.
+     * This includes both new series premieres and returning series season premieres.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of new season episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/new/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get new season premieres for the next 14 days
+     * let premieres = calendar.get_my_new_shows("2024-01-15".to_string(), 14).await?;
+     * for show in premieres {
+     * println!("New season: {} - S{}E{}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMyNewShows(startDate: String, days: Int32) async throws  -> [TraktCalendarShow]
+    
+    /**
+     * Get calendar for all show premieres
+     *
+     * Returns all show season premieres airing during the time period.
+     * Unlike get_my_new_shows(), this includes ALL shows, not just ones the user watches.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of all show premieres
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/premieres/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get all premieres for the next 30 days
+     * let premieres = calendar.get_my_premieres("2024-01-15".to_string(), 30).await?;
+     * println!("Found {} premieres", premieres.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMyPremieres(startDate: String, days: Int32) async throws  -> [TraktCalendarShow]
+    
+    /**
+     * Get calendar for my shows
+     *
+     * Returns upcoming episodes for shows the user has watched or collected.
+     * This is a personalized calendar based on the user's viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of upcoming show episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get shows for the next week starting from January 15, 2024
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * for show in shows {
+     * println!("{} - S{}E{}: {}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number,
+     * show.episode.title
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMyShows(startDate: String, days: Int32) async throws  -> [TraktCalendarShow]
+    
+}
+/**
+ * Calendar manager for Trakt.tv
+ *
+ * Provides access to personalized calendar data including:
+ * - My shows: Episodes from shows in your watched/collected history
+ * - New shows: Season premieres of shows you watch
+ * - Premieres: All new show premieres
+ * - Movies: Movies releasing in theaters or on streaming
+ *
+ * # Date Format
+ * Dates should be in ISO 8601 format (YYYY-MM-DD), e.g., "2024-01-15"
+ *
+ * # Days Range
+ * The `days` parameter can be 1-33, representing how many days to fetch
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CalendarManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let calendar = CalendarManager::new(api_client);
+ *
+ * // Get shows for the next 7 days starting today
+ * // let shows = calendar.get_my_shows("2024-01-15", 7).await.unwrap();
+ * ```
+ */
+open class CalendarManager: CalendarManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_calendarmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new calendar manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new CalendarManager instance
+     */
+public convenience init(apiClient: ApiClient) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_calendarmanager_new(
+        FfiConverterTypeApiClient_lower(apiClient),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_calendarmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Get calendar for my movies
+     *
+     * Returns movies being released during the time period.
+     * This is personalized based on the user's watchlist and viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarMovie>)`: List of upcoming movies
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/movies/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get movies releasing in the next 7 days
+     * let movies = calendar.get_my_movies("2024-01-15".to_string(), 7).await?;
+     * for movie in movies {
+     * println!("{} ({})", movie.movie.title, movie.released);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMyMovies(startDate: String, days: Int32)async throws  -> [TraktCalendarMovie]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_calendarmanager_get_my_movies(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(startDate),FfiConverterInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktCalendarMovie.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get calendar for new show premieres that the user watches
+     *
+     * Returns season premieres for shows the user has watched or collected.
+     * This includes both new series premieres and returning series season premieres.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of new season episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/new/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get new season premieres for the next 14 days
+     * let premieres = calendar.get_my_new_shows("2024-01-15".to_string(), 14).await?;
+     * for show in premieres {
+     * println!("New season: {} - S{}E{}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMyNewShows(startDate: String, days: Int32)async throws  -> [TraktCalendarShow]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_calendarmanager_get_my_new_shows(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(startDate),FfiConverterInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktCalendarShow.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get calendar for all show premieres
+     *
+     * Returns all show season premieres airing during the time period.
+     * Unlike get_my_new_shows(), this includes ALL shows, not just ones the user watches.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of all show premieres
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/premieres/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get all premieres for the next 30 days
+     * let premieres = calendar.get_my_premieres("2024-01-15".to_string(), 30).await?;
+     * println!("Found {} premieres", premieres.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMyPremieres(startDate: String, days: Int32)async throws  -> [TraktCalendarShow]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_calendarmanager_get_my_premieres(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(startDate),FfiConverterInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktCalendarShow.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get calendar for my shows
+     *
+     * Returns upcoming episodes for shows the user has watched or collected.
+     * This is a personalized calendar based on the user's viewing history.
+     *
+     * # Parameters
+     * - `start_date`: Start date in ISO 8601 format (YYYY-MM-DD)
+     * - `days`: Number of days to retrieve (1-33)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktCalendarShow>)`: List of upcoming show episodes
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /calendars/my/shows/{start_date}/{days}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CalendarManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let calendar = CalendarManager::new(api_client);
+     *
+     * // Get shows for the next week starting from January 15, 2024
+     * let shows = calendar.get_my_shows("2024-01-15".to_string(), 7).await?;
+     * for show in shows {
+     * println!("{} - S{}E{}: {}",
+     * show.show.title,
+     * show.episode.season,
+     * show.episode.number,
+     * show.episode.title
+     * );
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMyShows(startDate: String, days: Int32)async throws  -> [TraktCalendarShow]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_calendarmanager_get_my_shows(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(startDate),FfiConverterInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktCalendarShow.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCalendarManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = CalendarManager
+
+    public static func lift(_ handle: UInt64) throws -> CalendarManager {
+        return CalendarManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: CalendarManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CalendarManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: CalendarManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCalendarManager_lift(_ handle: UInt64) throws -> CalendarManager {
+    return try FfiConverterTypeCalendarManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCalendarManager_lower(_ value: CalendarManager) -> UInt64 {
+    return FfiConverterTypeCalendarManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Comments manager for Trakt.tv
+ *
+ * Provides access to user comments and reviews for:
+ * - Movies: User reviews and discussions about movies
+ * - Shows: User reviews and discussions about TV shows
+ * - Seasons: User comments about specific seasons
+ * - Episodes: User comments about specific episodes
+ *
+ * # Sort Options
+ * Comments can be sorted by:
+ * - `newest`: Most recent comments first
+ * - `oldest`: Oldest comments first
+ * - `likes`: Most liked comments first
+ * - `replies`: Comments with most replies first
+ *
+ * # Pagination
+ * Use `page` and `limit` parameters to paginate through large comment threads.
+ * - `page`: 1-indexed page number (default: 1)
+ * - `limit`: Number of comments per page (default: 10, max: 1000)
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CommentsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let comments = CommentsManager::new(api_client);
+ *
+ * // Get comments for a movie
+ * // let movie_comments = comments.get_movie_comments("tron-legacy-2010".to_string(), "likes".to_string(), 1, 10).await.unwrap();
+ * ```
+ */
+public protocol CommentsManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Get comments for an episode
+     *
+     * Returns user comments for a specific episode of a TV show.
+     *
+     * # Parameters
+     * - `id`: Episode Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /episodes/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific episode
+     * let episode_comments = comments.get_episode_comments(
+     * "67890".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getEpisodeComments(id: String, sort: String, page: Int32, limit: Int32) async throws  -> [TraktComment]
+    
+    /**
+     * Get comments for a movie
+     *
+     * Returns user comments and reviews for a specific movie.
+     *
+     * # Parameters
+     * - `id`: Movie Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /movies/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the most liked comments for Inception
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     *
+     * for comment in movie_comments {
+     * println!("{}: {}", comment.user.username, comment.comment);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMovieComments(id: String, sort: String, page: Int32, limit: Int32) async throws  -> [TraktComment]
+    
+    /**
+     * Get comments for a season
+     *
+     * Returns user comments for a specific season of a TV show.
+     *
+     * # Parameters
+     * - `id`: Season Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /seasons/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific season
+     * let season_comments = comments.get_season_comments(
+     * "12345".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getSeasonComments(id: String, sort: String, page: Int32, limit: Int32) async throws  -> [TraktComment]
+    
+    /**
+     * Get comments for a TV show
+     *
+     * Returns user comments and reviews for a specific TV show.
+     *
+     * # Parameters
+     * - `id`: Show Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /shows/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the newest comments for Breaking Bad
+     * let show_comments = comments.get_show_comments(
+     * "breaking-bad".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 20
+     * ).await?;
+     *
+     * println!("Found {} comments", show_comments.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getShowComments(id: String, sort: String, page: Int32, limit: Int32) async throws  -> [TraktComment]
+    
+    /**
+     * Validates pagination parameters
+     *
+     * # Parameters
+     * - `page`: Page number to validate (must be >= 1)
+     * - `limit`: Limit to validate (must be 1-1000)
+     *
+     * # Returns
+     * - `Ok(())`: Pagination parameters are valid
+     * - `Err(String)`: Pagination parameters are invalid
+     */
+    func validatePagination(page: Int32, limit: Int32) throws 
+    
+    /**
+     * Validates the sort parameter
+     *
+     * # Parameters
+     * - `sort`: Sort order to validate
+     *
+     * # Returns
+     * - `Ok(())`: Sort parameter is valid
+     * - `Err(String)`: Sort parameter is invalid
+     */
+    func validateSort(sort: String) throws 
+    
+}
+/**
+ * Comments manager for Trakt.tv
+ *
+ * Provides access to user comments and reviews for:
+ * - Movies: User reviews and discussions about movies
+ * - Shows: User reviews and discussions about TV shows
+ * - Seasons: User comments about specific seasons
+ * - Episodes: User comments about specific episodes
+ *
+ * # Sort Options
+ * Comments can be sorted by:
+ * - `newest`: Most recent comments first
+ * - `oldest`: Oldest comments first
+ * - `likes`: Most liked comments first
+ * - `replies`: Comments with most replies first
+ *
+ * # Pagination
+ * Use `page` and `limit` parameters to paginate through large comment threads.
+ * - `page`: 1-indexed page number (default: 1)
+ * - `limit`: Number of comments per page (default: 10, max: 1000)
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, CommentsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let comments = CommentsManager::new(api_client);
+ *
+ * // Get comments for a movie
+ * // let movie_comments = comments.get_movie_comments("tron-legacy-2010".to_string(), "likes".to_string(), 1, 10).await.unwrap();
+ * ```
+ */
+open class CommentsManager: CommentsManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_commentsmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new comments manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new CommentsManager instance
+     */
+public convenience init(apiClient: ApiClient) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_commentsmanager_new(
+        FfiConverterTypeApiClient_lower(apiClient),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_commentsmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Get comments for an episode
+     *
+     * Returns user comments for a specific episode of a TV show.
+     *
+     * # Parameters
+     * - `id`: Episode Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /episodes/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific episode
+     * let episode_comments = comments.get_episode_comments(
+     * "67890".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getEpisodeComments(id: String, sort: String, page: Int32, limit: Int32)async throws  -> [TraktComment]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_commentsmanager_get_episode_comments(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id),FfiConverterString.lower(sort),FfiConverterInt32.lower(page),FfiConverterInt32.lower(limit)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktComment.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get comments for a movie
+     *
+     * Returns user comments and reviews for a specific movie.
+     *
+     * # Parameters
+     * - `id`: Movie Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /movies/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the most liked comments for Inception
+     * let movie_comments = comments.get_movie_comments(
+     * "inception-2010".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     *
+     * for comment in movie_comments {
+     * println!("{}: {}", comment.user.username, comment.comment);
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMovieComments(id: String, sort: String, page: Int32, limit: Int32)async throws  -> [TraktComment]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_commentsmanager_get_movie_comments(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id),FfiConverterString.lower(sort),FfiConverterInt32.lower(page),FfiConverterInt32.lower(limit)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktComment.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get comments for a season
+     *
+     * Returns user comments for a specific season of a TV show.
+     *
+     * # Parameters
+     * - `id`: Season Trakt ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /seasons/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get comments for a specific season
+     * let season_comments = comments.get_season_comments(
+     * "12345".to_string(),
+     * "likes".to_string(),
+     * 1,
+     * 10
+     * ).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getSeasonComments(id: String, sort: String, page: Int32, limit: Int32)async throws  -> [TraktComment]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_commentsmanager_get_season_comments(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id),FfiConverterString.lower(sort),FfiConverterInt32.lower(page),FfiConverterInt32.lower(limit)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktComment.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get comments for a TV show
+     *
+     * Returns user comments and reviews for a specific TV show.
+     *
+     * # Parameters
+     * - `id`: Show Trakt ID, Trakt slug, or IMDb ID
+     * - `sort`: Sort order (newest, oldest, likes, replies)
+     * - `page`: Page number for pagination (1-indexed)
+     * - `limit`: Number of comments per page (max: 1000)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktComment>)`: List of comments
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /shows/{id}/comments/{sort}?page={page}&limit={limit}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, CommentsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let comments = CommentsManager::new(api_client);
+     *
+     * // Get the newest comments for Breaking Bad
+     * let show_comments = comments.get_show_comments(
+     * "breaking-bad".to_string(),
+     * "newest".to_string(),
+     * 1,
+     * 20
+     * ).await?;
+     *
+     * println!("Found {} comments", show_comments.len());
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getShowComments(id: String, sort: String, page: Int32, limit: Int32)async throws  -> [TraktComment]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_commentsmanager_get_show_comments(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(id),FfiConverterString.lower(sort),FfiConverterInt32.lower(page),FfiConverterInt32.lower(limit)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktComment.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Validates pagination parameters
+     *
+     * # Parameters
+     * - `page`: Page number to validate (must be >= 1)
+     * - `limit`: Limit to validate (must be 1-1000)
+     *
+     * # Returns
+     * - `Ok(())`: Pagination parameters are valid
+     * - `Err(String)`: Pagination parameters are invalid
+     */
+open func validatePagination(page: Int32, limit: Int32)throws   {try rustCallWithError(FfiConverterTypeTraktError_lift) {
+    uniffi_nuvio_core_fn_method_commentsmanager_validate_pagination(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(page),
+        FfiConverterInt32.lower(limit),$0
+    )
+}
+}
+    
+    /**
+     * Validates the sort parameter
+     *
+     * # Parameters
+     * - `sort`: Sort order to validate
+     *
+     * # Returns
+     * - `Ok(())`: Sort parameter is valid
+     * - `Err(String)`: Sort parameter is invalid
+     */
+open func validateSort(sort: String)throws   {try rustCallWithError(FfiConverterTypeTraktError_lift) {
+    uniffi_nuvio_core_fn_method_commentsmanager_validate_sort(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(sort),$0
+    )
+}
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCommentsManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = CommentsManager
+
+    public static func lift(_ handle: UInt64) throws -> CommentsManager {
+        return CommentsManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: CommentsManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CommentsManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: CommentsManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommentsManager_lift(_ handle: UInt64) throws -> CommentsManager {
+    return try FfiConverterTypeCommentsManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommentsManager_lower(_ value: CommentsManager) -> UInt64 {
+    return FfiConverterTypeCommentsManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Scanner for local media files
+ */
+public protocol LocalMediaScannerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Scans a directory for media files
+     *
+     * This function traverses the directory recursively and returns a list of
+     * supported media files with their metadata.
+     */
+    func scanDirectory(rootPath: String) throws  -> [LocalMediaFile]
+    
+}
+/**
+ * Scanner for local media files
+ */
+open class LocalMediaScanner: LocalMediaScannerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_localmediascanner(self.handle, $0) }
+    }
+    /**
+     * Creates a new LocalMediaScanner
+     */
+public convenience init() {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_localmediascanner_new($0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_localmediascanner(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Scans a directory for media files
+     *
+     * This function traverses the directory recursively and returns a list of
+     * supported media files with their metadata.
+     */
+open func scanDirectory(rootPath: String)throws  -> [LocalMediaFile]  {
+    return try  FfiConverterSequenceTypeLocalMediaFile.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_localmediascanner_scan_directory(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(rootPath),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLocalMediaScanner: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = LocalMediaScanner
+
+    public static func lift(_ handle: UInt64) throws -> LocalMediaScanner {
+        return LocalMediaScanner(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: LocalMediaScanner) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocalMediaScanner {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: LocalMediaScanner, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalMediaScanner_lift(_ handle: UInt64) throws -> LocalMediaScanner {
+    return try FfiConverterTypeLocalMediaScanner.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalMediaScanner_lower(_ value: LocalMediaScanner) -> UInt64 {
+    return FfiConverterTypeLocalMediaScanner.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Main notification manager
+ *
+ * Handles all notification operations including scheduling, cleanup, and statistics
+ */
+public protocol NotificationManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Build notification content for an episode
+     *
+     * Helper to create platform-agnostic notification content
+     */
+    func buildEpisodeNotificationContent(item: NotificationItem) throws  -> NotificationContent
+    
+    /**
+     * Cancel all scheduled notifications
+     */
+    func cancelAllNotifications() throws 
+    
+    /**
+     * Cancel a scheduled notification by ID
+     */
+    func cancelNotification(id: String) throws 
+    
+    /**
+     * Cancel all notifications for a specific series
+     */
+    func cancelNotificationsForSeries(seriesId: String) throws  -> Int32
+    
+    /**
+     * Clean up old and expired notifications
+     *
+     * Removes notifications for episodes that aired more than 24 hours ago
+     */
+    func cleanupOldNotifications() throws  -> Int32
+    
+    /**
+     * Get notification statistics
+     */
+    func getNotificationStats() throws  -> NotificationStats
+    
+    /**
+     * Get all scheduled notifications
+     */
+    func getScheduledNotifications() throws  -> [NotificationItem]
+    
+    /**
+     * Get current notification settings
+     */
+    func getSettings() throws  -> NotificationSettings
+    
+    /**
+     * Update the last sync time to now
+     */
+    func markSynced() throws 
+    
+    /**
+     * Notify download complete (background only)
+     */
+    func notifyDownloadComplete(title: String) throws  -> Bool
+    
+    /**
+     * Notify download progress (background only)
+     *
+     * Only notifies once at 50% progress when app is in background
+     */
+    func notifyDownloadProgress(title: String, progress: Int32, downloadedBytes: Int64?, totalBytes: Int64?) throws  -> Bool
+    
+    /**
+     * Schedule an episode notification
+     *
+     * Checks if the notification should be scheduled based on settings and timing,
+     * then creates a notification item and stores it.
+     *
+     * # Parameters
+     * - `params`: Notification scheduling parameters
+     *
+     * # Returns
+     * - `Ok(Some(NotificationItem))`: Successfully scheduled notification
+     * - `Ok(None)`: Notification not scheduled (disabled, duplicate, or past date)
+     * - `Err`: Error occurred
+     */
+    func scheduleEpisodeNotification(params: ScheduleNotificationParams) throws  -> NotificationItem?
+    
+    /**
+     * Schedule multiple episode notifications
+     *
+     * Convenience method to schedule many notifications at once
+     */
+    func scheduleMultipleNotifications(paramsList: [ScheduleNotificationParams]) throws  -> Int32
+    
+    /**
+     * Check if enough time has passed since last sync
+     *
+     * Prevents excessive syncing
+     */
+    func shouldSync(minIntervalSeconds: Int64) throws  -> Bool
+    
+    /**
+     * Update notification settings
+     */
+    func updateSettings(settings: NotificationSettings) throws  -> NotificationSettings
+    
+}
+/**
+ * Main notification manager
+ *
+ * Handles all notification operations including scheduling, cleanup, and statistics
+ */
+open class NotificationManager: NotificationManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_notificationmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new notification manager
+     *
+     * # Parameters
+     * - `storage`: Notification storage instance
+     *
+     * # Returns
+     * A new NotificationManager instance
+     */
+public convenience init(storage: NotificationStorage) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_notificationmanager_new(
+        FfiConverterTypeNotificationStorage_lower(storage),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_notificationmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Build notification content for an episode
+     *
+     * Helper to create platform-agnostic notification content
+     */
+open func buildEpisodeNotificationContent(item: NotificationItem)throws  -> NotificationContent  {
+    return try  FfiConverterTypeNotificationContent_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_build_episode_notification_content(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeNotificationItem_lower(item),$0
+    )
+})
+}
+    
+    /**
+     * Cancel all scheduled notifications
+     */
+open func cancelAllNotifications()throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_cancel_all_notifications(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Cancel a scheduled notification by ID
+     */
+open func cancelNotification(id: String)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_cancel_notification(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),$0
+    )
+}
+}
+    
+    /**
+     * Cancel all notifications for a specific series
+     */
+open func cancelNotificationsForSeries(seriesId: String)throws  -> Int32  {
+    return try  FfiConverterInt32.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_cancel_notifications_for_series(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(seriesId),$0
+    )
+})
+}
+    
+    /**
+     * Clean up old and expired notifications
+     *
+     * Removes notifications for episodes that aired more than 24 hours ago
+     */
+open func cleanupOldNotifications()throws  -> Int32  {
+    return try  FfiConverterInt32.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_cleanup_old_notifications(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Get notification statistics
+     */
+open func getNotificationStats()throws  -> NotificationStats  {
+    return try  FfiConverterTypeNotificationStats_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_get_notification_stats(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Get all scheduled notifications
+     */
+open func getScheduledNotifications()throws  -> [NotificationItem]  {
+    return try  FfiConverterSequenceTypeNotificationItem.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_get_scheduled_notifications(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Get current notification settings
+     */
+open func getSettings()throws  -> NotificationSettings  {
+    return try  FfiConverterTypeNotificationSettings_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_get_settings(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Update the last sync time to now
+     */
+open func markSynced()throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_mark_synced(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Notify download complete (background only)
+     */
+open func notifyDownloadComplete(title: String)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_notify_download_complete(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(title),$0
+    )
+})
+}
+    
+    /**
+     * Notify download progress (background only)
+     *
+     * Only notifies once at 50% progress when app is in background
+     */
+open func notifyDownloadProgress(title: String, progress: Int32, downloadedBytes: Int64?, totalBytes: Int64?)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_notify_download_progress(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(title),
+        FfiConverterInt32.lower(progress),
+        FfiConverterOptionInt64.lower(downloadedBytes),
+        FfiConverterOptionInt64.lower(totalBytes),$0
+    )
+})
+}
+    
+    /**
+     * Schedule an episode notification
+     *
+     * Checks if the notification should be scheduled based on settings and timing,
+     * then creates a notification item and stores it.
+     *
+     * # Parameters
+     * - `params`: Notification scheduling parameters
+     *
+     * # Returns
+     * - `Ok(Some(NotificationItem))`: Successfully scheduled notification
+     * - `Ok(None)`: Notification not scheduled (disabled, duplicate, or past date)
+     * - `Err`: Error occurred
+     */
+open func scheduleEpisodeNotification(params: ScheduleNotificationParams)throws  -> NotificationItem?  {
+    return try  FfiConverterOptionTypeNotificationItem.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_schedule_episode_notification(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeScheduleNotificationParams_lower(params),$0
+    )
+})
+}
+    
+    /**
+     * Schedule multiple episode notifications
+     *
+     * Convenience method to schedule many notifications at once
+     */
+open func scheduleMultipleNotifications(paramsList: [ScheduleNotificationParams])throws  -> Int32  {
+    return try  FfiConverterInt32.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_schedule_multiple_notifications(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceTypeScheduleNotificationParams.lower(paramsList),$0
+    )
+})
+}
+    
+    /**
+     * Check if enough time has passed since last sync
+     *
+     * Prevents excessive syncing
+     */
+open func shouldSync(minIntervalSeconds: Int64)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_should_sync(
+            self.uniffiCloneHandle(),
+        FfiConverterInt64.lower(minIntervalSeconds),$0
+    )
+})
+}
+    
+    /**
+     * Update notification settings
+     */
+open func updateSettings(settings: NotificationSettings)throws  -> NotificationSettings  {
+    return try  FfiConverterTypeNotificationSettings_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationmanager_update_settings(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeNotificationSettings_lower(settings),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = NotificationManager
+
+    public static func lift(_ handle: UInt64) throws -> NotificationManager {
+        return NotificationManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: NotificationManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: NotificationManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationManager_lift(_ handle: UInt64) throws -> NotificationManager {
+    return try FfiConverterTypeNotificationManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationManager_lower(_ value: NotificationManager) -> UInt64 {
+    return FfiConverterTypeNotificationManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Storage for notification data
+ *
+ * This provides an in-memory storage layer with serialization support.
+ * Platform implementations should save/load via MMKV or similar.
+ */
+public protocol NotificationStorageProtocol: AnyObject, Sendable {
+    
+    /**
+     * Add a scheduled notification
+     */
+    func addScheduled(item: NotificationItem) throws 
+    
+    /**
+     * Clear download notification tracking for a title
+     */
+    func clearDownloadNotification(title: String) throws 
+    
+    /**
+     * Clear all scheduled notifications
+     */
+    func clearScheduled() throws 
+    
+    /**
+     * Get all scheduled notifications
+     */
+    func getScheduled() throws  -> [NotificationItem]
+    
+    /**
+     * Get current settings
+     */
+    func getSettings() throws  -> NotificationSettings
+    
+    /**
+     * Load scheduled notifications from JSON string
+     */
+    func loadScheduled(json: String) throws  -> [NotificationItem]
+    
+    /**
+     * Load settings from JSON string
+     *
+     * Platform should call this with data from MMKV or similar storage
+     */
+    func loadSettings(json: String) throws  -> NotificationSettings
+    
+    /**
+     * Track that a download notification was sent
+     */
+    func markDownloadNotified(title: String, progress: Int32) throws 
+    
+    /**
+     * Remove a scheduled notification by ID
+     */
+    func removeScheduled(id: String) throws 
+    
+    /**
+     * Save scheduled notifications to JSON string
+     */
+    func saveScheduled() throws  -> String
+    
+    /**
+     * Save settings to JSON string
+     *
+     * Platform should persist this to MMKV or similar storage
+     */
+    func saveSettings() throws  -> String
+    
+    /**
+     * Update settings
+     */
+    func updateSettings(settings: NotificationSettings) throws  -> NotificationSettings
+    
+    /**
+     * Check if a download notification was already sent at this progress
+     */
+    func wasDownloadNotified(title: String, progress: Int32) throws  -> Bool
+    
+}
+/**
+ * Storage for notification data
+ *
+ * This provides an in-memory storage layer with serialization support.
+ * Platform implementations should save/load via MMKV or similar.
+ */
+open class NotificationStorage: NotificationStorageProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_notificationstorage(self.handle, $0) }
+    }
+    /**
+     * Creates a new notification storage instance
+     */
+public convenience init() {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_notificationstorage_new($0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_notificationstorage(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Add a scheduled notification
+     */
+open func addScheduled(item: NotificationItem)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_add_scheduled(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeNotificationItem_lower(item),$0
+    )
+}
+}
+    
+    /**
+     * Clear download notification tracking for a title
+     */
+open func clearDownloadNotification(title: String)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_clear_download_notification(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(title),$0
+    )
+}
+}
+    
+    /**
+     * Clear all scheduled notifications
+     */
+open func clearScheduled()throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_clear_scheduled(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Get all scheduled notifications
+     */
+open func getScheduled()throws  -> [NotificationItem]  {
+    return try  FfiConverterSequenceTypeNotificationItem.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_get_scheduled(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Get current settings
+     */
+open func getSettings()throws  -> NotificationSettings  {
+    return try  FfiConverterTypeNotificationSettings_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_get_settings(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Load scheduled notifications from JSON string
+     */
+open func loadScheduled(json: String)throws  -> [NotificationItem]  {
+    return try  FfiConverterSequenceTypeNotificationItem.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_load_scheduled(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(json),$0
+    )
+})
+}
+    
+    /**
+     * Load settings from JSON string
+     *
+     * Platform should call this with data from MMKV or similar storage
+     */
+open func loadSettings(json: String)throws  -> NotificationSettings  {
+    return try  FfiConverterTypeNotificationSettings_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_load_settings(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(json),$0
+    )
+})
+}
+    
+    /**
+     * Track that a download notification was sent
+     */
+open func markDownloadNotified(title: String, progress: Int32)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_mark_download_notified(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(title),
+        FfiConverterInt32.lower(progress),$0
+    )
+}
+}
+    
+    /**
+     * Remove a scheduled notification by ID
+     */
+open func removeScheduled(id: String)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_remove_scheduled(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),$0
+    )
+}
+}
+    
+    /**
+     * Save scheduled notifications to JSON string
+     */
+open func saveScheduled()throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_save_scheduled(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Save settings to JSON string
+     *
+     * Platform should persist this to MMKV or similar storage
+     */
+open func saveSettings()throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_save_settings(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Update settings
+     */
+open func updateSettings(settings: NotificationSettings)throws  -> NotificationSettings  {
+    return try  FfiConverterTypeNotificationSettings_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_update_settings(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeNotificationSettings_lower(settings),$0
+    )
+})
+}
+    
+    /**
+     * Check if a download notification was already sent at this progress
+     */
+open func wasDownloadNotified(title: String, progress: Int32)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_notificationstorage_was_download_notified(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(title),
+        FfiConverterInt32.lower(progress),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationStorage: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = NotificationStorage
+
+    public static func lift(_ handle: UInt64) throws -> NotificationStorage {
+        return NotificationStorage(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: NotificationStorage) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationStorage {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: NotificationStorage, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationStorage_lift(_ handle: UInt64) throws -> NotificationStorage {
+    return try FfiConverterTypeNotificationStorage.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationStorage_lower(_ value: NotificationStorage) -> UInt64 {
+    return FfiConverterTypeNotificationStorage.lower(value)
+}
+
+
+
+
+
+
+/**
+ * UniFFI-exported cache manager
+ *
+ * This wraps the internal CacheManager and provides blocking FFI methods
+ * that can be called from Kotlin and Swift.
+ */
+public protocol NuvioCacheManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Clears all entries from the cache
+     */
+    func clear() throws 
+    
+    /**
+     * Retrieves a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to retrieve
+     *
+     * # Returns
+     *
+     * The cached value if it exists, or None if not found or expired
+     */
+    func get(key: String) throws  -> Data?
+    
+    /**
+     * Removes a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to remove
+     */
+    func remove(key: String) throws 
+    
+    /**
+     * Stores a value in the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key
+     * * `value` - The value to store (raw bytes)
+     */
+    func set(key: String, value: Data) throws 
+    
+    /**
+     * Returns cache statistics
+     */
+    func stats()  -> CacheStats
+    
+}
+/**
+ * UniFFI-exported cache manager
+ *
+ * This wraps the internal CacheManager and provides blocking FFI methods
+ * that can be called from Kotlin and Swift.
+ */
+open class NuvioCacheManager: NuvioCacheManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_nuviocachemanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new cache manager with the given configuration
+     */
+public convenience init(config: CacheConfiguration)throws  {
+    let handle =
+        try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_constructor_nuviocachemanager_new(
+        FfiConverterTypeCacheConfiguration_lower(config),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_nuviocachemanager(handle, $0) }
+    }
+
+    
+    /**
+     * Creates a new cache manager with default configuration
+     */
+public static func withDefaults()throws  -> NuvioCacheManager  {
+    return try  FfiConverterTypeNuvioCacheManager_lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_constructor_nuviocachemanager_with_defaults($0
+    )
+})
+}
+    
+
+    
+    /**
+     * Clears all entries from the cache
+     */
+open func clear()throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_nuviocachemanager_clear(
+            self.uniffiCloneHandle(),$0
+    )
+}
+}
+    
+    /**
+     * Retrieves a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to retrieve
+     *
+     * # Returns
+     *
+     * The cached value if it exists, or None if not found or expired
+     */
+open func get(key: String)throws  -> Data?  {
+    return try  FfiConverterOptionData.lift(try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_nuviocachemanager_get(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(key),$0
+    )
+})
+}
+    
+    /**
+     * Removes a value from the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key to remove
+     */
+open func remove(key: String)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_nuviocachemanager_remove(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(key),$0
+    )
+}
+}
+    
+    /**
+     * Stores a value in the cache
+     *
+     * # Arguments
+     *
+     * * `key` - The cache key
+     * * `value` - The value to store (raw bytes)
+     */
+open func set(key: String, value: Data)throws   {try rustCallWithError(FfiConverterTypeNuvioError_lift) {
+    uniffi_nuvio_core_fn_method_nuviocachemanager_set(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(key),
+        FfiConverterData.lower(value),$0
+    )
+}
+}
+    
+    /**
+     * Returns cache statistics
+     */
+open func stats() -> CacheStats  {
+    return try!  FfiConverterTypeCacheStats_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviocachemanager_stats(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNuvioCacheManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = NuvioCacheManager
+
+    public static func lift(_ handle: UInt64) throws -> NuvioCacheManager {
+        return NuvioCacheManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: NuvioCacheManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NuvioCacheManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: NuvioCacheManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNuvioCacheManager_lift(_ handle: UInt64) throws -> NuvioCacheManager {
+    return try FfiConverterTypeNuvioCacheManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNuvioCacheManager_lower(_ value: NuvioCacheManager) -> UInt64 {
+    return FfiConverterTypeNuvioCacheManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * The main Nuvio SDK singleton.
+ *
+ * This struct provides access to SDK functionality and maintains the SDK state.
+ * It should be initialized once at application startup using [`nuvio_initialize`]
+ * or [`nuvio_initialize_with_config`].
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Thread Safety
+ *
+ * The SDK is thread-safe and can be accessed from multiple threads concurrently.
+ */
+public protocol NuvioSdkProtocol: AnyObject, Sendable {
+    
+    /**
+     * Returns the SDK configuration.
+     */
+    func config()  -> SdkConfig
+    
+    /**
+     * Returns the current environment name.
+     */
+    func environmentName()  -> String
+    
+    /**
+     * Returns the timestamp when the SDK was initialized (Unix epoch milliseconds).
+     */
+    func initializedAt()  -> Int64
+    
+    /**
+     * Returns whether the SDK is running in debug mode.
+     */
+    func isDebug()  -> Bool
+    
+    /**
+     * Returns the SDK version.
+     */
+    func version()  -> String
+    
+}
+/**
+ * The main Nuvio SDK singleton.
+ *
+ * This struct provides access to SDK functionality and maintains the SDK state.
+ * It should be initialized once at application startup using [`nuvio_initialize`]
+ * or [`nuvio_initialize_with_config`].
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Thread Safety
+ *
+ * The SDK is thread-safe and can be accessed from multiple threads concurrently.
+ */
+open class NuvioSdk: NuvioSdkProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_nuviosdk(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_nuviosdk(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Returns the SDK configuration.
+     */
+open func config() -> SdkConfig  {
+    return try!  FfiConverterTypeSdkConfig_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviosdk_config(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Returns the current environment name.
+     */
+open func environmentName() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviosdk_environment_name(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Returns the timestamp when the SDK was initialized (Unix epoch milliseconds).
+     */
+open func initializedAt() -> Int64  {
+    return try!  FfiConverterInt64.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviosdk_initialized_at(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Returns whether the SDK is running in debug mode.
+     */
+open func isDebug() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviosdk_is_debug(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+    /**
+     * Returns the SDK version.
+     */
+open func version() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_nuviosdk_version(
+            self.uniffiCloneHandle(),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNuvioSdk: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = NuvioSdk
+
+    public static func lift(_ handle: UInt64) throws -> NuvioSdk {
+        return NuvioSdk(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: NuvioSdk) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NuvioSdk {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: NuvioSdk, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNuvioSdk_lift(_ handle: UInt64) throws -> NuvioSdk {
+    return try FfiConverterTypeNuvioSdk.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNuvioSdk_lower(_ value: NuvioSdk) -> UInt64 {
+    return FfiConverterTypeNuvioSdk.lower(value)
+}
+
+
 
 
 
@@ -794,6 +3485,963 @@ public func FfiConverterTypeProfileManager_lift(_ handle: UInt64) throws -> Prof
 #endif
 public func FfiConverterTypeProfileManager_lower(_ value: ProfileManager) -> UInt64 {
     return FfiConverterTypeProfileManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Recommendations manager for Trakt.tv
+ *
+ * Provides access to personalized content recommendations including:
+ * - Movie recommendations based on viewing history and ratings
+ * - Show recommendations based on viewing history and ratings
+ * - Ability to hide recommendations that aren't of interest
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let recommendations = RecommendationsManager::new(api_client);
+ *
+ * // Get top 10 movie recommendations
+ * // let movies = recommendations.get_movies(10, false).await.unwrap();
+ * ```
+ */
+public protocol RecommendationsManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Get movie recommendations
+     *
+     * Returns personalized movie recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude movies already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of movie recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/movies?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 10 movie recommendations, excluding collected movies
+     * let movies = recommendations.get_movies(10, true).await?;
+     * for rec in movies {
+     * if let Some(movie) = rec.movie {
+     * println!("{} ({})", movie.title, movie.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getMovies(limit: Int32, ignoreCollected: Bool) async throws  -> [TraktRecommendation]
+    
+    /**
+     * Get show recommendations
+     *
+     * Returns personalized show recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude shows already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of show recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/shows?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 20 show recommendations, including collected shows
+     * let shows = recommendations.get_shows(20, false).await?;
+     * for rec in shows {
+     * if let Some(show) = rec.show {
+     * println!("{} ({})", show.title, show.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func getShows(limit: Int32, ignoreCollected: Bool) async throws  -> [TraktRecommendation]
+    
+    /**
+     * Hide a movie recommendation
+     *
+     * Removes a specific movie from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The movie will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the movie to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/movies/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a movie recommendation by Trakt ID
+     * recommendations.hide_movie(12345).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func hideMovie(id: Int64) async throws 
+    
+    /**
+     * Hide a show recommendation
+     *
+     * Removes a specific show from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The show will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the show to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/shows/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a show recommendation by Trakt ID
+     * recommendations.hide_show(67890).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func hideShow(id: Int64) async throws 
+    
+}
+/**
+ * Recommendations manager for Trakt.tv
+ *
+ * Provides access to personalized content recommendations including:
+ * - Movie recommendations based on viewing history and ratings
+ * - Show recommendations based on viewing history and ratings
+ * - Ability to hide recommendations that aren't of interest
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let recommendations = RecommendationsManager::new(api_client);
+ *
+ * // Get top 10 movie recommendations
+ * // let movies = recommendations.get_movies(10, false).await.unwrap();
+ * ```
+ */
+open class RecommendationsManager: RecommendationsManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_recommendationsmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new recommendations manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new RecommendationsManager instance
+     */
+public convenience init(apiClient: ApiClient) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_recommendationsmanager_new(
+        FfiConverterTypeApiClient_lower(apiClient),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_recommendationsmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Get movie recommendations
+     *
+     * Returns personalized movie recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude movies already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of movie recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/movies?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 10 movie recommendations, excluding collected movies
+     * let movies = recommendations.get_movies(10, true).await?;
+     * for rec in movies {
+     * if let Some(movie) = rec.movie {
+     * println!("{} ({})", movie.title, movie.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getMovies(limit: Int32, ignoreCollected: Bool)async throws  -> [TraktRecommendation]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_recommendationsmanager_get_movies(
+                    self.uniffiCloneHandle(),
+                    FfiConverterInt32.lower(limit),FfiConverterBool.lower(ignoreCollected)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktRecommendation.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Get show recommendations
+     *
+     * Returns personalized show recommendations based on the user's
+     * watch history, ratings, and collection. Use the limit parameter
+     * to control how many recommendations are returned.
+     *
+     * # Parameters
+     * - `limit`: Maximum number of recommendations to return (1-100)
+     * - `ignore_collected`: If true, exclude shows already in user's collection
+     *
+     * # Returns
+     * - `Ok(Vec<TraktRecommendation>)`: List of show recommendations
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /recommendations/shows?limit={limit}&ignore_collected={ignore_collected}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Get top 20 show recommendations, including collected shows
+     * let shows = recommendations.get_shows(20, false).await?;
+     * for rec in shows {
+     * if let Some(show) = rec.show {
+     * println!("{} ({})", show.title, show.year.unwrap_or(0));
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func getShows(limit: Int32, ignoreCollected: Bool)async throws  -> [TraktRecommendation]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_recommendationsmanager_get_shows(
+                    self.uniffiCloneHandle(),
+                    FfiConverterInt32.lower(limit),FfiConverterBool.lower(ignoreCollected)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktRecommendation.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Hide a movie recommendation
+     *
+     * Removes a specific movie from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The movie will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the movie to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/movies/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a movie recommendation by Trakt ID
+     * recommendations.hide_movie(12345).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func hideMovie(id: Int64)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_recommendationsmanager_hide_movie(
+                    self.uniffiCloneHandle(),
+                    FfiConverterInt64.lower(id)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_void,
+            completeFunc: ffi_nuvio_core_rust_future_complete_void,
+            freeFunc: ffi_nuvio_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Hide a show recommendation
+     *
+     * Removes a specific show from the recommendations list.
+     * This is useful when the user is not interested in a particular recommendation.
+     * The show will not appear in future recommendation requests.
+     *
+     * # Parameters
+     * - `id`: Trakt ID of the show to hide (must be positive)
+     *
+     * # Returns
+     * - `Ok(())`: Successfully hid the recommendation
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `DELETE /recommendations/shows/{id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, RecommendationsManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let recommendations = RecommendationsManager::new(api_client);
+     *
+     * // Hide a show recommendation by Trakt ID
+     * recommendations.hide_show(67890).await?;
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func hideShow(id: Int64)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_recommendationsmanager_hide_show(
+                    self.uniffiCloneHandle(),
+                    FfiConverterInt64.lower(id)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_void,
+            completeFunc: ffi_nuvio_core_rust_future_complete_void,
+            freeFunc: ffi_nuvio_core_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeRecommendationsManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = RecommendationsManager
+
+    public static func lift(_ handle: UInt64) throws -> RecommendationsManager {
+        return RecommendationsManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: RecommendationsManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> RecommendationsManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: RecommendationsManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRecommendationsManager_lift(_ handle: UInt64) throws -> RecommendationsManager {
+    return try FfiConverterTypeRecommendationsManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeRecommendationsManager_lower(_ value: RecommendationsManager) -> UInt64 {
+    return FfiConverterTypeRecommendationsManager.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Search manager for Trakt.tv
+ *
+ * Provides search functionality including:
+ * - Text search across movies, shows, episodes, people, and lists
+ * - Exact IMDb ID lookup
+ * - TMDB ID search
+ *
+ * # Search Types
+ * Supported search types: `movie`, `show`, `episode`, `person`, `list`
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SearchManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let search = SearchManager::new(api_client);
+ *
+ * // Search for movies matching "inception"
+ * // let results = search.search_text("movie", "inception").await.unwrap();
+ * ```
+ */
+public protocol SearchManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Search by IMDb ID
+     *
+     * Lookup content by exact IMDb ID. This is useful for finding the
+     * Trakt equivalent of content when you have an IMDb identifier.
+     *
+     * # Parameters
+     * - `imdb_id`: IMDb ID (e.g., "tt0133093" for The Matrix)
+     * - `search_type`: Optional type filter (movie, show, episode). If empty, searches all types.
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/imdb/{id}?type={type}` (type parameter is optional)
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by IMDb ID
+     * let results = search.search_by_imdb("tt0133093".to_string(), "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func searchByImdb(imdbId: String, searchType: String) async throws  -> [TraktSearchResult]
+    
+    /**
+     * Search by TMDB ID
+     *
+     * Lookup content by TMDB (The Movie Database) ID. This is useful for
+     * finding the Trakt equivalent when you have a TMDB identifier.
+     *
+     * # Parameters
+     * - `tmdb_id`: TMDB ID (positive integer)
+     * - `search_type`: Type of content (movie or show)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?id_type=tmdb&id={id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by TMDB ID
+     * let results = search.search_by_tmdb(603, "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func searchByTmdb(tmdbId: Int64, searchType: String) async throws  -> [TraktSearchResult]
+    
+    /**
+     * Search by text query
+     *
+     * Search for content by text query. The search will match against
+     * titles, descriptions, and other metadata depending on the type.
+     *
+     * # Parameters
+     * - `search_type`: Type of content to search (movie, show, episode, person, list)
+     * - `query`: Search query text (must not be empty)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of search results with relevance scores
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?query={query}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Search for movies matching "inception"
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * for result in results {
+     * if let Some(movie) = result.movie {
+     * println!("{} (score: {})", movie.title, result.score);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+    func searchText(searchType: String, query: String) async throws  -> [TraktSearchResult]
+    
+}
+/**
+ * Search manager for Trakt.tv
+ *
+ * Provides search functionality including:
+ * - Text search across movies, shows, episodes, people, and lists
+ * - Exact IMDb ID lookup
+ * - TMDB ID search
+ *
+ * # Search Types
+ * Supported search types: `movie`, `show`, `episode`, `person`, `list`
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SearchManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let search = SearchManager::new(api_client);
+ *
+ * // Search for movies matching "inception"
+ * // let results = search.search_text("movie", "inception").await.unwrap();
+ * ```
+ */
+open class SearchManager: SearchManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_searchmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new search manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new SearchManager instance
+     */
+public convenience init(apiClient: ApiClient) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_searchmanager_new(
+        FfiConverterTypeApiClient_lower(apiClient),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_searchmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Search by IMDb ID
+     *
+     * Lookup content by exact IMDb ID. This is useful for finding the
+     * Trakt equivalent of content when you have an IMDb identifier.
+     *
+     * # Parameters
+     * - `imdb_id`: IMDb ID (e.g., "tt0133093" for The Matrix)
+     * - `search_type`: Optional type filter (movie, show, episode). If empty, searches all types.
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/imdb/{id}?type={type}` (type parameter is optional)
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by IMDb ID
+     * let results = search.search_by_imdb("tt0133093".to_string(), "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func searchByImdb(imdbId: String, searchType: String)async throws  -> [TraktSearchResult]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_searchmanager_search_by_imdb(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(imdbId),FfiConverterString.lower(searchType)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktSearchResult.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Search by TMDB ID
+     *
+     * Lookup content by TMDB (The Movie Database) ID. This is useful for
+     * finding the Trakt equivalent when you have a TMDB identifier.
+     *
+     * # Parameters
+     * - `tmdb_id`: TMDB ID (positive integer)
+     * - `search_type`: Type of content (movie or show)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of matching items (typically 0 or 1)
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?id_type=tmdb&id={id}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Find movie by TMDB ID
+     * let results = search.search_by_tmdb(603, "movie".to_string()).await?;
+     * if let Some(result) = results.first() {
+     * if let Some(movie) = &result.movie {
+     * println!("Found: {}", movie.title);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func searchByTmdb(tmdbId: Int64, searchType: String)async throws  -> [TraktSearchResult]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_searchmanager_search_by_tmdb(
+                    self.uniffiCloneHandle(),
+                    FfiConverterInt64.lower(tmdbId),FfiConverterString.lower(searchType)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktSearchResult.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Search by text query
+     *
+     * Search for content by text query. The search will match against
+     * titles, descriptions, and other metadata depending on the type.
+     *
+     * # Parameters
+     * - `search_type`: Type of content to search (movie, show, episode, person, list)
+     * - `query`: Search query text (must not be empty)
+     *
+     * # Returns
+     * - `Ok(Vec<TraktSearchResult>)`: List of search results with relevance scores
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `GET /search/{type}?query={query}`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{ApiClient, SearchManager};
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let search = SearchManager::new(api_client);
+     *
+     * // Search for movies matching "inception"
+     * let results = search.search_text("movie".to_string(), "inception".to_string()).await?;
+     * for result in results {
+     * if let Some(movie) = result.movie {
+     * println!("{} (score: {})", movie.title, result.score);
+     * }
+     * }
+     * # Ok(())
+     * # }
+     * ```
+     */
+open func searchText(searchType: String, query: String)async throws  -> [TraktSearchResult]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_searchmanager_search_text(
+                    self.uniffiCloneHandle(),
+                    FfiConverterString.lower(searchType),FfiConverterString.lower(query)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTraktSearchResult.lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSearchManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = SearchManager
+
+    public static func lift(_ handle: UInt64) throws -> SearchManager {
+        return SearchManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: SearchManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SearchManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SearchManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSearchManager_lift(_ handle: UInt64) throws -> SearchManager {
+    return try FfiConverterTypeSearchManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSearchManager_lower(_ value: SearchManager) -> UInt64 {
+    return FfiConverterTypeSearchManager.lower(value)
 }
 
 
@@ -1482,6 +5130,1083 @@ public func FfiConverterTypeStremioService_lower(_ value: StremioService) -> UIn
 
 
 
+
+
+/**
+ * Sync manager for Trakt.tv
+ *
+ * Provides access to sync operations including:
+ * - Watched history management (add/remove)
+ * - Collection management (add/remove)
+ * - Watchlist management (add/remove)
+ * - Ratings management
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SyncManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let sync = SyncManager::new(api_client);
+ *
+ * // Remove items from history
+ * // let result = sync.remove_from_history(payload).await.unwrap();
+ * ```
+ */
+public protocol SyncManagerProtocol: AnyObject, Sendable {
+    
+    /**
+     * Remove items from collection
+     *
+     * Removes movies, shows, seasons, or episodes from the user's collection.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from collection (movies or shows with optional seasons/episodes)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/collection/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from collection by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_collection(payload).await?;
+     * println!("Removed {} movies, {} episodes from collection",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from collection
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromCollection(payload: payload)
+     * print("Removed \(result.deleted.movies) movies from collection")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from collection
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromCollection(payload)
+     * println("Removed ${result.deleted.episodes} episodes from collection")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    func removeFromCollection(payload: TraktHistoryRemovePayload) async throws  -> TraktHistoryRemoveResponse
+    
+    /**
+     * Remove items from watched history
+     *
+     * Removes movies, shows, seasons, or episodes from the user's watched history.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from history (movies, shows with optional seasons/episodes, or history IDs)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/history/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from history by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_history(payload).await?;
+     * println!("Deleted {} movies, {} episodes",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from history
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromHistory(payload: payload)
+     * print("Deleted \(result.deleted.movies) movies")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from history
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromHistory(payload)
+     * println("Deleted ${result.deleted.episodes} episodes")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+    func removeFromHistory(payload: TraktHistoryRemovePayload) async throws  -> TraktHistoryRemoveResponse
+    
+}
+/**
+ * Sync manager for Trakt.tv
+ *
+ * Provides access to sync operations including:
+ * - Watched history management (add/remove)
+ * - Collection management (add/remove)
+ * - Watchlist management (add/remove)
+ * - Ratings management
+ *
+ * # Example
+ * ```no_run
+ * use std::sync::Arc;
+ * use nuvio_core::trakt::{ApiClient, SyncManager};
+ *
+ * let api_client = Arc::new(ApiClient::new());
+ * let sync = SyncManager::new(api_client);
+ *
+ * // Remove items from history
+ * // let result = sync.remove_from_history(payload).await.unwrap();
+ * ```
+ */
+open class SyncManager: SyncManagerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_syncmanager(self.handle, $0) }
+    }
+    /**
+     * Creates a new sync manager
+     *
+     * # Parameters
+     * - `api_client`: Shared API client with rate limiting
+     *
+     * # Returns
+     * A new SyncManager instance
+     */
+public convenience init(apiClient: ApiClient) {
+    let handle =
+        try! rustCall() {
+    uniffi_nuvio_core_fn_constructor_syncmanager_new(
+        FfiConverterTypeApiClient_lower(apiClient),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_syncmanager(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Remove items from collection
+     *
+     * Removes movies, shows, seasons, or episodes from the user's collection.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from collection (movies or shows with optional seasons/episodes)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/collection/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from collection by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_collection(payload).await?;
+     * println!("Removed {} movies, {} episodes from collection",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from collection
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromCollection(payload: payload)
+     * print("Removed \(result.deleted.movies) movies from collection")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from collection
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromCollection(payload)
+     * println("Removed ${result.deleted.episodes} episodes from collection")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+open func removeFromCollection(payload: TraktHistoryRemovePayload)async throws  -> TraktHistoryRemoveResponse  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_syncmanager_remove_from_collection(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeTraktHistoryRemovePayload_lower(payload)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTraktHistoryRemoveResponse_lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+    /**
+     * Remove items from watched history
+     *
+     * Removes movies, shows, seasons, or episodes from the user's watched history.
+     * This operation requires authentication and will use write rate limiting.
+     *
+     * # Parameters
+     * - `payload`: The items to remove from history (movies, shows with optional seasons/episodes, or history IDs)
+     *
+     * # Returns
+     * - `Ok(TraktHistoryRemoveResponse)`: Response with deleted counts and not_found items
+     * - `Err(String)`: Error message if the request fails
+     *
+     * # API Endpoint
+     * `POST /sync/history/remove`
+     *
+     * # Example
+     * ```no_run
+     * use std::sync::Arc;
+     * use nuvio_core::trakt::{
+     * ApiClient, SyncManager,
+     * TraktHistoryRemovePayload, TraktHistoryMovie, TraktHistoryIds
+     * };
+     *
+     * # async fn example() -> Result<(), nuvio_core::trakt::TraktError> {
+     * let api_client = Arc::new(ApiClient::new());
+     * let sync = SyncManager::new(api_client);
+     *
+     * // Remove a movie from history by IMDb ID
+     * let payload = TraktHistoryRemovePayload {
+     * movies: Some(vec![TraktHistoryMovie {
+     * ids: TraktHistoryIds {
+     * trakt: None,
+     * imdb: Some("tt0133093".to_string()),
+     * tmdb: None,
+     * tvdb: None,
+     * },
+     * title: None,
+     * year: None,
+     * }]),
+     * shows: None,
+     * ids: None,
+     * };
+     *
+     * let result = sync.remove_from_history(payload).await?;
+     * println!("Deleted {} movies, {} episodes",
+     * result.deleted.movies,
+     * result.deleted.episodes
+     * );
+     * # Ok(())
+     * # }
+     * ```
+     *
+     * # Platform Usage
+     *
+     * **iOS (Swift):**
+     * ```swift
+     * let syncManager = trakt.sync()
+     *
+     * // Remove a movie from history
+     * let ids = TraktHistoryIds(
+     * trakt: nil,
+     * imdb: "tt0133093",
+     * tmdb: nil,
+     * tvdb: nil
+     * )
+     * let movie = TraktHistoryMovie(
+     * ids: ids,
+     * title: nil,
+     * year: nil
+     * )
+     * let payload = TraktHistoryRemovePayload(
+     * movies: [movie],
+     * shows: nil,
+     * ids: nil
+     * )
+     *
+     * do {
+     * let result = try await syncManager.removeFromHistory(payload: payload)
+     * print("Deleted \(result.deleted.movies) movies")
+     * } catch {
+     * print("Error: \(error)")
+     * }
+     * ```
+     *
+     * **Android (Kotlin):**
+     * ```kotlin
+     * val syncManager = trakt.sync()
+     *
+     * // Remove a show from history
+     * val ids = TraktHistoryIds(
+     * trakt = null,
+     * imdb = "tt0903747",
+     * tmdb = null,
+     * tvdb = null
+     * )
+     * val show = TraktHistoryShow(
+     * ids = ids,
+     * title = null,
+     * year = null,
+     * seasons = null
+     * )
+     * val payload = TraktHistoryRemovePayload(
+     * movies = null,
+     * shows = listOf(show),
+     * ids = null
+     * )
+     *
+     * GlobalScope.launch {
+     * try {
+     * val result = syncManager.removeFromHistory(payload)
+     * println("Deleted ${result.deleted.episodes} episodes")
+     * } catch (e: Exception) {
+     * println("Error: ${e.message}")
+     * }
+     * }
+     * ```
+     */
+open func removeFromHistory(payload: TraktHistoryRemovePayload)async throws  -> TraktHistoryRemoveResponse  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_nuvio_core_fn_method_syncmanager_remove_from_history(
+                    self.uniffiCloneHandle(),
+                    FfiConverterTypeTraktHistoryRemovePayload_lower(payload)
+                )
+            },
+            pollFunc: ffi_nuvio_core_rust_future_poll_rust_buffer,
+            completeFunc: ffi_nuvio_core_rust_future_complete_rust_buffer,
+            freeFunc: ffi_nuvio_core_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTraktHistoryRemoveResponse_lift,
+            errorHandler: FfiConverterTypeTraktError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSyncManager: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = SyncManager
+
+    public static func lift(_ handle: UInt64) throws -> SyncManager {
+        return SyncManager(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: SyncManager) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SyncManager {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SyncManager, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSyncManager_lift(_ handle: UInt64) throws -> SyncManager {
+    return try FfiConverterTypeSyncManager.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSyncManager_lower(_ value: SyncManager) -> UInt64 {
+    return FfiConverterTypeSyncManager.lower(value)
+}
+
+
+
+
+
+
+public protocol TmdbProtocol: AnyObject, Sendable {
+    
+    func extractTmdbIdFromStremioId(stremioId: String) throws  -> Int32?
+    
+    func findByImdbId(imdbId: String) throws  -> Int32?
+    
+    func getAllEpisodes(tmdbId: Int32) throws  -> [TmdbEpisode]
+    
+    func getCollectionDetails(collectionId: Int32) throws  -> TmdbCollection
+    
+    func getCredits(tmdbId: Int32, type: String) throws  -> Credits
+    
+    func getEpisodeDetails(tmdbId: Int32, seasonNumber: Int32, episodeNumber: Int32) throws  -> TmdbEpisode
+    
+    func getEpisodeExternalIds(tmdbId: Int32, seasonNumber: Int32, episodeNumber: Int32) throws  -> TmdbExternalIds
+    
+    func getEpisodeImageUrl(episode: TmdbEpisode, show: TmdbShow?, size: String)  -> String?
+    
+    func getImageUrl(path: String?, size: String)  -> String?
+    
+    func getImdbRatings(tmdbId: Int32) throws  -> [ImDbRatingSeason]?
+    
+    func getMovieDetails(tmdbId: Int32) throws  -> TmdbMovie
+    
+    func getPersonCombinedCredits(personId: Int32) throws  -> PersonCombinedCredits
+    
+    func getPersonDetails(personId: Int32) throws  -> TmdbPerson
+    
+    func getPopular(type: String) throws  -> [TmdbSearchResult]
+    
+    func getRecommendations(type: String, tmdbId: Int32) throws  -> [TmdbSearchResult]
+    
+    func getSeasonDetails(tmdbId: Int32, seasonNumber: Int32) throws  -> TmdbSeason
+    
+    func getShowExternalIds(tmdbId: Int32) throws  -> TmdbExternalIds
+    
+    func getShowImageHints(tmdbId: Int32) throws  -> [String]
+    
+    func getSimilar(type: String, tmdbId: Int32) throws  -> [TmdbSearchResult]
+    
+    func getTopRated(type: String) throws  -> [TmdbSearchResult]
+    
+    func getTrending(timeWindow: String) throws  -> [TmdbSearchResult]
+    
+    func getTvShowDetails(tmdbId: Int32) throws  -> TmdbShow
+    
+    func searchMovie(query: String) throws  -> [TmdbSearchResult]
+    
+    func searchMulti(query: String) throws  -> [TmdbSearchResult]
+    
+    func searchPerson(query: String) throws  -> [TmdbSearchResult]
+    
+    func searchTvShow(query: String) throws  -> [TmdbSearchResult]
+    
+}
+open class Tmdb: TmdbProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_nuvio_core_fn_clone_tmdb(self.handle, $0) }
+    }
+public convenience init(config: TmdbConfig, storage: TmdbStorage)throws  {
+    let handle =
+        try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_constructor_tmdb_new(
+        FfiConverterTypeTmdbConfig_lower(config),
+        FfiConverterCallbackInterfaceTmdbStorage_lower(storage),$0
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        try! rustCall { uniffi_nuvio_core_fn_free_tmdb(handle, $0) }
+    }
+
+    
+
+    
+open func extractTmdbIdFromStremioId(stremioId: String)throws  -> Int32?  {
+    return try  FfiConverterOptionInt32.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_extract_tmdb_id_from_stremio_id(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(stremioId),$0
+    )
+})
+}
+    
+open func findByImdbId(imdbId: String)throws  -> Int32?  {
+    return try  FfiConverterOptionInt32.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_find_by_imdb_id(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(imdbId),$0
+    )
+})
+}
+    
+open func getAllEpisodes(tmdbId: Int32)throws  -> [TmdbEpisode]  {
+    return try  FfiConverterSequenceTypeTmdbEpisode.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_all_episodes(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getCollectionDetails(collectionId: Int32)throws  -> TmdbCollection  {
+    return try  FfiConverterTypeTmdbCollection_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_collection_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(collectionId),$0
+    )
+})
+}
+    
+open func getCredits(tmdbId: Int32, type: String)throws  -> Credits  {
+    return try  FfiConverterTypeCredits_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_credits(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),
+        FfiConverterString.lower(type),$0
+    )
+})
+}
+    
+open func getEpisodeDetails(tmdbId: Int32, seasonNumber: Int32, episodeNumber: Int32)throws  -> TmdbEpisode  {
+    return try  FfiConverterTypeTmdbEpisode_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_episode_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),
+        FfiConverterInt32.lower(seasonNumber),
+        FfiConverterInt32.lower(episodeNumber),$0
+    )
+})
+}
+    
+open func getEpisodeExternalIds(tmdbId: Int32, seasonNumber: Int32, episodeNumber: Int32)throws  -> TmdbExternalIds  {
+    return try  FfiConverterTypeTmdbExternalIds_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_episode_external_ids(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),
+        FfiConverterInt32.lower(seasonNumber),
+        FfiConverterInt32.lower(episodeNumber),$0
+    )
+})
+}
+    
+open func getEpisodeImageUrl(episode: TmdbEpisode, show: TmdbShow?, size: String) -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_tmdb_get_episode_image_url(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeTmdbEpisode_lower(episode),
+        FfiConverterOptionTypeTmdbShow.lower(show),
+        FfiConverterString.lower(size),$0
+    )
+})
+}
+    
+open func getImageUrl(path: String?, size: String) -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_method_tmdb_get_image_url(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionString.lower(path),
+        FfiConverterString.lower(size),$0
+    )
+})
+}
+    
+open func getImdbRatings(tmdbId: Int32)throws  -> [ImDbRatingSeason]?  {
+    return try  FfiConverterOptionSequenceTypeIMDbRatingSeason.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_imdb_ratings(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getMovieDetails(tmdbId: Int32)throws  -> TmdbMovie  {
+    return try  FfiConverterTypeTmdbMovie_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_movie_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getPersonCombinedCredits(personId: Int32)throws  -> PersonCombinedCredits  {
+    return try  FfiConverterTypePersonCombinedCredits_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_person_combined_credits(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(personId),$0
+    )
+})
+}
+    
+open func getPersonDetails(personId: Int32)throws  -> TmdbPerson  {
+    return try  FfiConverterTypeTmdbPerson_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_person_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(personId),$0
+    )
+})
+}
+    
+open func getPopular(type: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_popular(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(type),$0
+    )
+})
+}
+    
+open func getRecommendations(type: String, tmdbId: Int32)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_recommendations(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(type),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getSeasonDetails(tmdbId: Int32, seasonNumber: Int32)throws  -> TmdbSeason  {
+    return try  FfiConverterTypeTmdbSeason_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_season_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),
+        FfiConverterInt32.lower(seasonNumber),$0
+    )
+})
+}
+    
+open func getShowExternalIds(tmdbId: Int32)throws  -> TmdbExternalIds  {
+    return try  FfiConverterTypeTmdbExternalIds_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_show_external_ids(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getShowImageHints(tmdbId: Int32)throws  -> [String]  {
+    return try  FfiConverterSequenceString.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_show_image_hints(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getSimilar(type: String, tmdbId: Int32)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_similar(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(type),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func getTopRated(type: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_top_rated(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(type),$0
+    )
+})
+}
+    
+open func getTrending(timeWindow: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_trending(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(timeWindow),$0
+    )
+})
+}
+    
+open func getTvShowDetails(tmdbId: Int32)throws  -> TmdbShow  {
+    return try  FfiConverterTypeTmdbShow_lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_get_tv_show_details(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(tmdbId),$0
+    )
+})
+}
+    
+open func searchMovie(query: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_search_movie(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),$0
+    )
+})
+}
+    
+open func searchMulti(query: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_search_multi(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),$0
+    )
+})
+}
+    
+open func searchPerson(query: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_search_person(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),$0
+    )
+})
+}
+    
+open func searchTvShow(query: String)throws  -> [TmdbSearchResult]  {
+    return try  FfiConverterSequenceTypeTmdbSearchResult.lift(try rustCallWithError(FfiConverterTypeTmdbError_lift) {
+    uniffi_nuvio_core_fn_method_tmdb_search_tv_show(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),$0
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdb: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = Tmdb
+
+    public static func lift(_ handle: UInt64) throws -> Tmdb {
+        return Tmdb(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: Tmdb) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Tmdb {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: Tmdb, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdb_lift(_ handle: UInt64) throws -> Tmdb {
+    return try FfiConverterTypeTmdb.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdb_lower(_ value: Tmdb) -> UInt64 {
+    return FfiConverterTypeTmdb.lower(value)
+}
+
+
+
+
 /**
  * Represents a Stremio addon with its configuration and metadata.
  *
@@ -1619,6 +6344,772 @@ public func FfiConverterTypeAddon_lift(_ buf: RustBuffer) throws -> Addon {
 #endif
 public func FfiConverterTypeAddon_lower(_ value: Addon) -> RustBuffer {
     return FfiConverterTypeAddon.lower(value)
+}
+
+
+/**
+ * Backup information (minimal metadata without full data)
+ */
+public struct BackupInfo: Equatable, Hashable {
+    /**
+     * Backup file path
+     */
+    public var filePath: String
+    /**
+     * Backup format version
+     */
+    public var version: String
+    /**
+     * Timestamp when backup was created
+     */
+    public var timestamp: Int64
+    /**
+     * Application version
+     */
+    public var appVersion: String
+    /**
+     * Platform (ios, android)
+     */
+    public var platform: String
+    /**
+     * User scope identifier
+     */
+    public var userScope: String
+    /**
+     * Backup metadata
+     */
+    public var metadata: BackupMetadata
+    /**
+     * File size in bytes (if available)
+     */
+    public var fileSize: UInt64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Backup file path
+         */filePath: String, 
+        /**
+         * Backup format version
+         */version: String, 
+        /**
+         * Timestamp when backup was created
+         */timestamp: Int64, 
+        /**
+         * Application version
+         */appVersion: String, 
+        /**
+         * Platform (ios, android)
+         */platform: String, 
+        /**
+         * User scope identifier
+         */userScope: String, 
+        /**
+         * Backup metadata
+         */metadata: BackupMetadata, 
+        /**
+         * File size in bytes (if available)
+         */fileSize: UInt64?) {
+        self.filePath = filePath
+        self.version = version
+        self.timestamp = timestamp
+        self.appVersion = appVersion
+        self.platform = platform
+        self.userScope = userScope
+        self.metadata = metadata
+        self.fileSize = fileSize
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension BackupInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBackupInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BackupInfo {
+        return
+            try BackupInfo(
+                filePath: FfiConverterString.read(from: &buf), 
+                version: FfiConverterString.read(from: &buf), 
+                timestamp: FfiConverterInt64.read(from: &buf), 
+                appVersion: FfiConverterString.read(from: &buf), 
+                platform: FfiConverterString.read(from: &buf), 
+                userScope: FfiConverterString.read(from: &buf), 
+                metadata: FfiConverterTypeBackupMetadata.read(from: &buf), 
+                fileSize: FfiConverterOptionUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BackupInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.filePath, into: &buf)
+        FfiConverterString.write(value.version, into: &buf)
+        FfiConverterInt64.write(value.timestamp, into: &buf)
+        FfiConverterString.write(value.appVersion, into: &buf)
+        FfiConverterString.write(value.platform, into: &buf)
+        FfiConverterString.write(value.userScope, into: &buf)
+        FfiConverterTypeBackupMetadata.write(value.metadata, into: &buf)
+        FfiConverterOptionUInt64.write(value.fileSize, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupInfo_lift(_ buf: RustBuffer) throws -> BackupInfo {
+    return try FfiConverterTypeBackupInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupInfo_lower(_ value: BackupInfo) -> RustBuffer {
+    return FfiConverterTypeBackupInfo.lower(value)
+}
+
+
+/**
+ * Backup metadata
+ */
+public struct BackupMetadata: Equatable, Hashable {
+    /**
+     * Total number of items in backup
+     */
+    public var totalItems: UInt32
+    /**
+     * Number of library items
+     */
+    public var libraryCount: UInt32
+    /**
+     * Number of watch progress items
+     */
+    public var watchProgressCount: UInt32
+    /**
+     * Number of downloads
+     */
+    public var downloadsCount: UInt32
+    /**
+     * Number of addons
+     */
+    public var addonsCount: UInt32
+    /**
+     * Number of scrapers
+     */
+    public var scrapersCount: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Total number of items in backup
+         */totalItems: UInt32, 
+        /**
+         * Number of library items
+         */libraryCount: UInt32, 
+        /**
+         * Number of watch progress items
+         */watchProgressCount: UInt32, 
+        /**
+         * Number of downloads
+         */downloadsCount: UInt32, 
+        /**
+         * Number of addons
+         */addonsCount: UInt32, 
+        /**
+         * Number of scrapers
+         */scrapersCount: UInt32) {
+        self.totalItems = totalItems
+        self.libraryCount = libraryCount
+        self.watchProgressCount = watchProgressCount
+        self.downloadsCount = downloadsCount
+        self.addonsCount = addonsCount
+        self.scrapersCount = scrapersCount
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension BackupMetadata: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBackupMetadata: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BackupMetadata {
+        return
+            try BackupMetadata(
+                totalItems: FfiConverterUInt32.read(from: &buf), 
+                libraryCount: FfiConverterUInt32.read(from: &buf), 
+                watchProgressCount: FfiConverterUInt32.read(from: &buf), 
+                downloadsCount: FfiConverterUInt32.read(from: &buf), 
+                addonsCount: FfiConverterUInt32.read(from: &buf), 
+                scrapersCount: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BackupMetadata, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.totalItems, into: &buf)
+        FfiConverterUInt32.write(value.libraryCount, into: &buf)
+        FfiConverterUInt32.write(value.watchProgressCount, into: &buf)
+        FfiConverterUInt32.write(value.downloadsCount, into: &buf)
+        FfiConverterUInt32.write(value.addonsCount, into: &buf)
+        FfiConverterUInt32.write(value.scrapersCount, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupMetadata_lift(_ buf: RustBuffer) throws -> BackupMetadata {
+    return try FfiConverterTypeBackupMetadata.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupMetadata_lower(_ value: BackupMetadata) -> RustBuffer {
+    return FfiConverterTypeBackupMetadata.lower(value)
+}
+
+
+/**
+ * Backup options to control what data to include in backup
+ */
+public struct BackupOptions: Equatable, Hashable {
+    /**
+     * Include library data
+     */
+    public var includeLibrary: Bool
+    /**
+     * Include watch progress data
+     */
+    public var includeWatchProgress: Bool
+    /**
+     * Include downloads data
+     */
+    public var includeDownloads: Bool
+    /**
+     * Include addons data
+     */
+    public var includeAddons: Bool
+    /**
+     * Include settings data
+     */
+    public var includeSettings: Bool
+    /**
+     * Include Trakt data
+     */
+    public var includeTraktData: Bool
+    /**
+     * Include local scrapers
+     */
+    public var includeLocalScrapers: Bool
+    /**
+     * Include API keys
+     */
+    public var includeApiKeys: Bool
+    /**
+     * Include catalog settings
+     */
+    public var includeCatalogSettings: Bool
+    /**
+     * Include user preferences
+     */
+    public var includeUserPreferences: Bool
+    /**
+     * Enable compression
+     */
+    public var enableCompression: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Include library data
+         */includeLibrary: Bool, 
+        /**
+         * Include watch progress data
+         */includeWatchProgress: Bool, 
+        /**
+         * Include downloads data
+         */includeDownloads: Bool, 
+        /**
+         * Include addons data
+         */includeAddons: Bool, 
+        /**
+         * Include settings data
+         */includeSettings: Bool, 
+        /**
+         * Include Trakt data
+         */includeTraktData: Bool, 
+        /**
+         * Include local scrapers
+         */includeLocalScrapers: Bool, 
+        /**
+         * Include API keys
+         */includeApiKeys: Bool, 
+        /**
+         * Include catalog settings
+         */includeCatalogSettings: Bool, 
+        /**
+         * Include user preferences
+         */includeUserPreferences: Bool, 
+        /**
+         * Enable compression
+         */enableCompression: Bool) {
+        self.includeLibrary = includeLibrary
+        self.includeWatchProgress = includeWatchProgress
+        self.includeDownloads = includeDownloads
+        self.includeAddons = includeAddons
+        self.includeSettings = includeSettings
+        self.includeTraktData = includeTraktData
+        self.includeLocalScrapers = includeLocalScrapers
+        self.includeApiKeys = includeApiKeys
+        self.includeCatalogSettings = includeCatalogSettings
+        self.includeUserPreferences = includeUserPreferences
+        self.enableCompression = enableCompression
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension BackupOptions: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBackupOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BackupOptions {
+        return
+            try BackupOptions(
+                includeLibrary: FfiConverterBool.read(from: &buf), 
+                includeWatchProgress: FfiConverterBool.read(from: &buf), 
+                includeDownloads: FfiConverterBool.read(from: &buf), 
+                includeAddons: FfiConverterBool.read(from: &buf), 
+                includeSettings: FfiConverterBool.read(from: &buf), 
+                includeTraktData: FfiConverterBool.read(from: &buf), 
+                includeLocalScrapers: FfiConverterBool.read(from: &buf), 
+                includeApiKeys: FfiConverterBool.read(from: &buf), 
+                includeCatalogSettings: FfiConverterBool.read(from: &buf), 
+                includeUserPreferences: FfiConverterBool.read(from: &buf), 
+                enableCompression: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BackupOptions, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.includeLibrary, into: &buf)
+        FfiConverterBool.write(value.includeWatchProgress, into: &buf)
+        FfiConverterBool.write(value.includeDownloads, into: &buf)
+        FfiConverterBool.write(value.includeAddons, into: &buf)
+        FfiConverterBool.write(value.includeSettings, into: &buf)
+        FfiConverterBool.write(value.includeTraktData, into: &buf)
+        FfiConverterBool.write(value.includeLocalScrapers, into: &buf)
+        FfiConverterBool.write(value.includeApiKeys, into: &buf)
+        FfiConverterBool.write(value.includeCatalogSettings, into: &buf)
+        FfiConverterBool.write(value.includeUserPreferences, into: &buf)
+        FfiConverterBool.write(value.enableCompression, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupOptions_lift(_ buf: RustBuffer) throws -> BackupOptions {
+    return try FfiConverterTypeBackupOptions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupOptions_lower(_ value: BackupOptions) -> RustBuffer {
+    return FfiConverterTypeBackupOptions.lower(value)
+}
+
+
+/**
+ * Backup preview (counts without creating backup)
+ */
+public struct BackupPreview: Equatable, Hashable {
+    /**
+     * Number of library items
+     */
+    public var library: UInt32
+    /**
+     * Number of watch progress items
+     */
+    public var watchProgress: UInt32
+    /**
+     * Number of addons
+     */
+    public var addons: UInt32
+    /**
+     * Number of downloads
+     */
+    public var downloads: UInt32
+    /**
+     * Number of scrapers
+     */
+    public var scrapers: UInt32
+    /**
+     * Number of watched status items
+     */
+    public var watchedStatus: UInt32
+    /**
+     * Total number of items
+     */
+    public var total: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Number of library items
+         */library: UInt32, 
+        /**
+         * Number of watch progress items
+         */watchProgress: UInt32, 
+        /**
+         * Number of addons
+         */addons: UInt32, 
+        /**
+         * Number of downloads
+         */downloads: UInt32, 
+        /**
+         * Number of scrapers
+         */scrapers: UInt32, 
+        /**
+         * Number of watched status items
+         */watchedStatus: UInt32, 
+        /**
+         * Total number of items
+         */total: UInt32) {
+        self.library = library
+        self.watchProgress = watchProgress
+        self.addons = addons
+        self.downloads = downloads
+        self.scrapers = scrapers
+        self.watchedStatus = watchedStatus
+        self.total = total
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension BackupPreview: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBackupPreview: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BackupPreview {
+        return
+            try BackupPreview(
+                library: FfiConverterUInt32.read(from: &buf), 
+                watchProgress: FfiConverterUInt32.read(from: &buf), 
+                addons: FfiConverterUInt32.read(from: &buf), 
+                downloads: FfiConverterUInt32.read(from: &buf), 
+                scrapers: FfiConverterUInt32.read(from: &buf), 
+                watchedStatus: FfiConverterUInt32.read(from: &buf), 
+                total: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BackupPreview, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.library, into: &buf)
+        FfiConverterUInt32.write(value.watchProgress, into: &buf)
+        FfiConverterUInt32.write(value.addons, into: &buf)
+        FfiConverterUInt32.write(value.downloads, into: &buf)
+        FfiConverterUInt32.write(value.scrapers, into: &buf)
+        FfiConverterUInt32.write(value.watchedStatus, into: &buf)
+        FfiConverterUInt32.write(value.total, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupPreview_lift(_ buf: RustBuffer) throws -> BackupPreview {
+    return try FfiConverterTypeBackupPreview.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupPreview_lower(_ value: BackupPreview) -> RustBuffer {
+    return FfiConverterTypeBackupPreview.lower(value)
+}
+
+
+/**
+ * Configuration for initializing the cache manager
+ */
+public struct CacheConfiguration: Equatable, Hashable {
+    /**
+     * Maximum number of items in memory cache
+     */
+    public var memoryMaxItems: UInt64
+    /**
+     * TTL for memory cache in seconds
+     */
+    public var memoryTtlSeconds: UInt64
+    /**
+     * Maximum disk cache size in bytes
+     */
+    public var diskMaxBytes: UInt64
+    /**
+     * Path to disk cache directory
+     */
+    public var diskPath: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Maximum number of items in memory cache
+         */memoryMaxItems: UInt64, 
+        /**
+         * TTL for memory cache in seconds
+         */memoryTtlSeconds: UInt64, 
+        /**
+         * Maximum disk cache size in bytes
+         */diskMaxBytes: UInt64, 
+        /**
+         * Path to disk cache directory
+         */diskPath: String) {
+        self.memoryMaxItems = memoryMaxItems
+        self.memoryTtlSeconds = memoryTtlSeconds
+        self.diskMaxBytes = diskMaxBytes
+        self.diskPath = diskPath
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension CacheConfiguration: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCacheConfiguration: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CacheConfiguration {
+        return
+            try CacheConfiguration(
+                memoryMaxItems: FfiConverterUInt64.read(from: &buf), 
+                memoryTtlSeconds: FfiConverterUInt64.read(from: &buf), 
+                diskMaxBytes: FfiConverterUInt64.read(from: &buf), 
+                diskPath: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CacheConfiguration, into buf: inout [UInt8]) {
+        FfiConverterUInt64.write(value.memoryMaxItems, into: &buf)
+        FfiConverterUInt64.write(value.memoryTtlSeconds, into: &buf)
+        FfiConverterUInt64.write(value.diskMaxBytes, into: &buf)
+        FfiConverterString.write(value.diskPath, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCacheConfiguration_lift(_ buf: RustBuffer) throws -> CacheConfiguration {
+    return try FfiConverterTypeCacheConfiguration.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCacheConfiguration_lower(_ value: CacheConfiguration) -> RustBuffer {
+    return FfiConverterTypeCacheConfiguration.lower(value)
+}
+
+
+/**
+ * Cache statistics for monitoring cache performance
+ */
+public struct CacheStats: Equatable, Hashable {
+    /**
+     * Total number of cache hits across all tiers
+     */
+    public var hits: UInt64
+    /**
+     * Total number of cache misses
+     */
+    public var misses: UInt64
+    /**
+     * Current number of items in memory cache
+     */
+    public var memoryItems: UInt64
+    /**
+     * Current number of items in disk cache
+     */
+    public var diskItems: UInt64
+    /**
+     * Total memory used by memory cache (bytes)
+     */
+    public var memoryBytes: UInt64
+    /**
+     * Total disk used by disk cache (bytes)
+     */
+    public var diskBytes: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Total number of cache hits across all tiers
+         */hits: UInt64, 
+        /**
+         * Total number of cache misses
+         */misses: UInt64, 
+        /**
+         * Current number of items in memory cache
+         */memoryItems: UInt64, 
+        /**
+         * Current number of items in disk cache
+         */diskItems: UInt64, 
+        /**
+         * Total memory used by memory cache (bytes)
+         */memoryBytes: UInt64, 
+        /**
+         * Total disk used by disk cache (bytes)
+         */diskBytes: UInt64) {
+        self.hits = hits
+        self.misses = misses
+        self.memoryItems = memoryItems
+        self.diskItems = diskItems
+        self.memoryBytes = memoryBytes
+        self.diskBytes = diskBytes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension CacheStats: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCacheStats: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CacheStats {
+        return
+            try CacheStats(
+                hits: FfiConverterUInt64.read(from: &buf), 
+                misses: FfiConverterUInt64.read(from: &buf), 
+                memoryItems: FfiConverterUInt64.read(from: &buf), 
+                diskItems: FfiConverterUInt64.read(from: &buf), 
+                memoryBytes: FfiConverterUInt64.read(from: &buf), 
+                diskBytes: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CacheStats, into buf: inout [UInt8]) {
+        FfiConverterUInt64.write(value.hits, into: &buf)
+        FfiConverterUInt64.write(value.misses, into: &buf)
+        FfiConverterUInt64.write(value.memoryItems, into: &buf)
+        FfiConverterUInt64.write(value.diskItems, into: &buf)
+        FfiConverterUInt64.write(value.memoryBytes, into: &buf)
+        FfiConverterUInt64.write(value.diskBytes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCacheStats_lift(_ buf: RustBuffer) throws -> CacheStats {
+    return try FfiConverterTypeCacheStats.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCacheStats_lower(_ value: CacheStats) -> RustBuffer {
+    return FfiConverterTypeCacheStats.lower(value)
+}
+
+
+public struct CastMember: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var character: String
+    public var profilePath: String?
+    public var order: Int32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, character: String, profilePath: String?, order: Int32) {
+        self.id = id
+        self.name = name
+        self.character = character
+        self.profilePath = profilePath
+        self.order = order
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension CastMember: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCastMember: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CastMember {
+        return
+            try CastMember(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                character: FfiConverterString.read(from: &buf), 
+                profilePath: FfiConverterOptionString.read(from: &buf), 
+                order: FfiConverterInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CastMember, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.character, into: &buf)
+        FfiConverterOptionString.write(value.profilePath, into: &buf)
+        FfiConverterInt32.write(value.order, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCastMember_lift(_ buf: RustBuffer) throws -> CastMember {
+    return try FfiConverterTypeCastMember.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCastMember_lower(_ value: CastMember) -> RustBuffer {
+    return FfiConverterTypeCastMember.lower(value)
 }
 
 
@@ -1885,6 +7376,634 @@ public func FfiConverterTypeCreateProfileInput_lift(_ buf: RustBuffer) throws ->
 #endif
 public func FfiConverterTypeCreateProfileInput_lower(_ value: CreateProfileInput) -> RustBuffer {
     return FfiConverterTypeCreateProfileInput.lower(value)
+}
+
+
+public struct Credits: Equatable, Hashable {
+    public var cast: [CastMember]
+    public var crew: [CrewMember]
+    public var guestStars: [CastMember]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(cast: [CastMember], crew: [CrewMember], guestStars: [CastMember]?) {
+        self.cast = cast
+        self.crew = crew
+        self.guestStars = guestStars
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension Credits: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCredits: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Credits {
+        return
+            try Credits(
+                cast: FfiConverterSequenceTypeCastMember.read(from: &buf), 
+                crew: FfiConverterSequenceTypeCrewMember.read(from: &buf), 
+                guestStars: FfiConverterOptionSequenceTypeCastMember.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Credits, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeCastMember.write(value.cast, into: &buf)
+        FfiConverterSequenceTypeCrewMember.write(value.crew, into: &buf)
+        FfiConverterOptionSequenceTypeCastMember.write(value.guestStars, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredits_lift(_ buf: RustBuffer) throws -> Credits {
+    return try FfiConverterTypeCredits.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCredits_lower(_ value: Credits) -> RustBuffer {
+    return FfiConverterTypeCredits.lower(value)
+}
+
+
+public struct CrewMember: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var job: String
+    public var department: String
+    public var profilePath: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, job: String, department: String, profilePath: String?) {
+        self.id = id
+        self.name = name
+        self.job = job
+        self.department = department
+        self.profilePath = profilePath
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension CrewMember: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCrewMember: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CrewMember {
+        return
+            try CrewMember(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                job: FfiConverterString.read(from: &buf), 
+                department: FfiConverterString.read(from: &buf), 
+                profilePath: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CrewMember, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.job, into: &buf)
+        FfiConverterString.write(value.department, into: &buf)
+        FfiConverterOptionString.write(value.profilePath, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCrewMember_lift(_ buf: RustBuffer) throws -> CrewMember {
+    return try FfiConverterTypeCrewMember.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCrewMember_lower(_ value: CrewMember) -> RustBuffer {
+    return FfiConverterTypeCrewMember.lower(value)
+}
+
+
+/**
+ * HTTP request configuration for FFI functions
+ *
+ * This is a simplified, FFI-safe representation of an HTTP request.
+ * All fields are simple types that can cross language boundaries easily.
+ */
+public struct HttpRequest: Equatable, Hashable {
+    /**
+     * Request URL
+     */
+    public var url: String
+    /**
+     * Request body (for POST, PUT, etc.)
+     */
+    public var body: String?
+    /**
+     * Request headers as key-value pairs
+     */
+    public var headers: [String: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Request URL
+         */url: String, 
+        /**
+         * Request body (for POST, PUT, etc.)
+         */body: String?, 
+        /**
+         * Request headers as key-value pairs
+         */headers: [String: String]) {
+        self.url = url
+        self.body = body
+        self.headers = headers
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension HttpRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHttpRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HttpRequest {
+        return
+            try HttpRequest(
+                url: FfiConverterString.read(from: &buf), 
+                body: FfiConverterOptionString.read(from: &buf), 
+                headers: FfiConverterDictionaryStringString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: HttpRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterOptionString.write(value.body, into: &buf)
+        FfiConverterDictionaryStringString.write(value.headers, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpRequest_lift(_ buf: RustBuffer) throws -> HttpRequest {
+    return try FfiConverterTypeHttpRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpRequest_lower(_ value: HttpRequest) -> RustBuffer {
+    return FfiConverterTypeHttpRequest.lower(value)
+}
+
+
+/**
+ * HTTP response returned from FFI functions
+ *
+ * This is a simplified, FFI-safe representation of an HTTP response.
+ * All fields are simple types that can cross language boundaries easily.
+ */
+public struct HttpResponse: Equatable, Hashable {
+    /**
+     * HTTP status code (e.g., 200, 404, 500)
+     */
+    public var statusCode: UInt16
+    /**
+     * Response body as a UTF-8 string
+     */
+    public var body: String
+    /**
+     * Response headers as key-value pairs
+     */
+    public var headers: [String: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * HTTP status code (e.g., 200, 404, 500)
+         */statusCode: UInt16, 
+        /**
+         * Response body as a UTF-8 string
+         */body: String, 
+        /**
+         * Response headers as key-value pairs
+         */headers: [String: String]) {
+        self.statusCode = statusCode
+        self.body = body
+        self.headers = headers
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension HttpResponse: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHttpResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HttpResponse {
+        return
+            try HttpResponse(
+                statusCode: FfiConverterUInt16.read(from: &buf), 
+                body: FfiConverterString.read(from: &buf), 
+                headers: FfiConverterDictionaryStringString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: HttpResponse, into buf: inout [UInt8]) {
+        FfiConverterUInt16.write(value.statusCode, into: &buf)
+        FfiConverterString.write(value.body, into: &buf)
+        FfiConverterDictionaryStringString.write(value.headers, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpResponse_lift(_ buf: RustBuffer) throws -> HttpResponse {
+    return try FfiConverterTypeHttpResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpResponse_lower(_ value: HttpResponse) -> RustBuffer {
+    return FfiConverterTypeHttpResponse.lower(value)
+}
+
+
+public struct ImDbRatingEpisode: Equatable, Hashable {
+    public var voteAverage: Double?
+    public var episodeNumber: Int32
+    public var name: String
+    public var seasonNumber: Int32
+    public var tconst: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(voteAverage: Double?, episodeNumber: Int32, name: String, seasonNumber: Int32, tconst: String) {
+        self.voteAverage = voteAverage
+        self.episodeNumber = episodeNumber
+        self.name = name
+        self.seasonNumber = seasonNumber
+        self.tconst = tconst
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension ImDbRatingEpisode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeIMDbRatingEpisode: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImDbRatingEpisode {
+        return
+            try ImDbRatingEpisode(
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                episodeNumber: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                seasonNumber: FfiConverterInt32.read(from: &buf), 
+                tconst: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImDbRatingEpisode, into buf: inout [UInt8]) {
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterInt32.write(value.episodeNumber, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterInt32.write(value.seasonNumber, into: &buf)
+        FfiConverterString.write(value.tconst, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeIMDbRatingEpisode_lift(_ buf: RustBuffer) throws -> ImDbRatingEpisode {
+    return try FfiConverterTypeIMDbRatingEpisode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeIMDbRatingEpisode_lower(_ value: ImDbRatingEpisode) -> RustBuffer {
+    return FfiConverterTypeIMDbRatingEpisode.lower(value)
+}
+
+
+public struct ImDbRatingSeason: Equatable, Hashable {
+    public var episodes: [ImDbRatingEpisode]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(episodes: [ImDbRatingEpisode]) {
+        self.episodes = episodes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension ImDbRatingSeason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeIMDbRatingSeason: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImDbRatingSeason {
+        return
+            try ImDbRatingSeason(
+                episodes: FfiConverterSequenceTypeIMDbRatingEpisode.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImDbRatingSeason, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeIMDbRatingEpisode.write(value.episodes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeIMDbRatingSeason_lift(_ buf: RustBuffer) throws -> ImDbRatingSeason {
+    return try FfiConverterTypeIMDbRatingSeason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeIMDbRatingSeason_lower(_ value: ImDbRatingSeason) -> RustBuffer {
+    return FfiConverterTypeIMDbRatingSeason.lower(value)
+}
+
+
+/**
+ * Represents a media file found on the local file system
+ */
+public struct LocalMediaFile: Equatable, Hashable {
+    /**
+     * Absolute path to the file
+     */
+    public var path: String
+    /**
+     * File name
+     */
+    public var name: String
+    /**
+     * File size in bytes
+     */
+    public var size: Int64
+    /**
+     * MIME type (e.g., "video/mp4", "audio/mpeg")
+     */
+    public var mimeType: String?
+    /**
+     * Last modification timestamp (seconds since epoch)
+     */
+    public var modifiedAt: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Absolute path to the file
+         */path: String, 
+        /**
+         * File name
+         */name: String, 
+        /**
+         * File size in bytes
+         */size: Int64, 
+        /**
+         * MIME type (e.g., "video/mp4", "audio/mpeg")
+         */mimeType: String?, 
+        /**
+         * Last modification timestamp (seconds since epoch)
+         */modifiedAt: Int64) {
+        self.path = path
+        self.name = name
+        self.size = size
+        self.mimeType = mimeType
+        self.modifiedAt = modifiedAt
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension LocalMediaFile: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLocalMediaFile: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocalMediaFile {
+        return
+            try LocalMediaFile(
+                path: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                size: FfiConverterInt64.read(from: &buf), 
+                mimeType: FfiConverterOptionString.read(from: &buf), 
+                modifiedAt: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LocalMediaFile, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.path, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterInt64.write(value.size, into: &buf)
+        FfiConverterOptionString.write(value.mimeType, into: &buf)
+        FfiConverterInt64.write(value.modifiedAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalMediaFile_lift(_ buf: RustBuffer) throws -> LocalMediaFile {
+    return try FfiConverterTypeLocalMediaFile.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocalMediaFile_lower(_ value: LocalMediaFile) -> RustBuffer {
+    return FfiConverterTypeLocalMediaFile.lower(value)
+}
+
+
+/**
+ * Configuration for the logging subsystem.
+ *
+ * This struct controls how the SDK outputs log messages including
+ * format, verbosity, and what metadata to include.
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::logging::LoggingConfig;
+ * use nuvio_core::config::LogLevel;
+ *
+ * let config = LoggingConfig::builder()
+ * .level(LogLevel::Debug)
+ * .show_target(true)
+ * .show_file(true)
+ * .build();
+ * ```
+ */
+public struct LoggingConfig: Equatable, Hashable {
+    /**
+     * The minimum log level to output.
+     */
+    public var level: LogLevel
+    /**
+     * Whether to include the log target (module path) in output.
+     */
+    public var showTarget: Bool
+    /**
+     * Whether to include the source file name in output.
+     */
+    public var showFile: Bool
+    /**
+     * Whether to include the line number in output.
+     */
+    public var showLine: Bool
+    /**
+     * Whether to include timestamps in output.
+     */
+    public var showTimestamp: Bool
+    /**
+     * Whether to use ANSI color codes in output.
+     */
+    public var useAnsi: Bool
+    /**
+     * Optional custom filter string (overrides level if set).
+     * Uses the tracing EnvFilter syntax (e.g., "nuvio_core=debug,info").
+     */
+    public var filter: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The minimum log level to output.
+         */level: LogLevel, 
+        /**
+         * Whether to include the log target (module path) in output.
+         */showTarget: Bool, 
+        /**
+         * Whether to include the source file name in output.
+         */showFile: Bool, 
+        /**
+         * Whether to include the line number in output.
+         */showLine: Bool, 
+        /**
+         * Whether to include timestamps in output.
+         */showTimestamp: Bool, 
+        /**
+         * Whether to use ANSI color codes in output.
+         */useAnsi: Bool, 
+        /**
+         * Optional custom filter string (overrides level if set).
+         * Uses the tracing EnvFilter syntax (e.g., "nuvio_core=debug,info").
+         */filter: String?) {
+        self.level = level
+        self.showTarget = showTarget
+        self.showFile = showFile
+        self.showLine = showLine
+        self.showTimestamp = showTimestamp
+        self.useAnsi = useAnsi
+        self.filter = filter
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension LoggingConfig: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLoggingConfig: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoggingConfig {
+        return
+            try LoggingConfig(
+                level: FfiConverterTypeLogLevel.read(from: &buf), 
+                showTarget: FfiConverterBool.read(from: &buf), 
+                showFile: FfiConverterBool.read(from: &buf), 
+                showLine: FfiConverterBool.read(from: &buf), 
+                showTimestamp: FfiConverterBool.read(from: &buf), 
+                useAnsi: FfiConverterBool.read(from: &buf), 
+                filter: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoggingConfig, into buf: inout [UInt8]) {
+        FfiConverterTypeLogLevel.write(value.level, into: &buf)
+        FfiConverterBool.write(value.showTarget, into: &buf)
+        FfiConverterBool.write(value.showFile, into: &buf)
+        FfiConverterBool.write(value.showLine, into: &buf)
+        FfiConverterBool.write(value.showTimestamp, into: &buf)
+        FfiConverterBool.write(value.useAnsi, into: &buf)
+        FfiConverterOptionString.write(value.filter, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoggingConfig_lift(_ buf: RustBuffer) throws -> LoggingConfig {
+    return try FfiConverterTypeLoggingConfig.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoggingConfig_lower(_ value: LoggingConfig) -> RustBuffer {
+    return FfiConverterTypeLoggingConfig.lower(value)
 }
 
 
@@ -2189,21 +8308,852 @@ public func FfiConverterTypeMeta_lower(_ value: Meta) -> RustBuffer {
 }
 
 
-public struct Profile: Equatable, Hashable {
+/**
+ * Notification content to be displayed
+ *
+ * Platform-agnostic notification content structure
+ */
+public struct NotificationContent: Equatable, Hashable {
+    /**
+     * Notification title
+     */
+    public var title: String
+    /**
+     * Notification body text
+     */
+    public var body: String
+    /**
+     * Additional data as key-value pairs
+     */
+    public var data: [String: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Notification title
+         */title: String, 
+        /**
+         * Notification body text
+         */body: String, 
+        /**
+         * Additional data as key-value pairs
+         */data: [String: String]) {
+        self.title = title
+        self.body = body
+        self.data = data
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension NotificationContent: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationContent: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationContent {
+        return
+            try NotificationContent(
+                title: FfiConverterString.read(from: &buf), 
+                body: FfiConverterString.read(from: &buf), 
+                data: FfiConverterDictionaryStringString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NotificationContent, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.body, into: &buf)
+        FfiConverterDictionaryStringString.write(value.data, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationContent_lift(_ buf: RustBuffer) throws -> NotificationContent {
+    return try FfiConverterTypeNotificationContent.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationContent_lower(_ value: NotificationContent) -> RustBuffer {
+    return FfiConverterTypeNotificationContent.lower(value)
+}
+
+
+/**
+ * A scheduled notification item for an episode
+ *
+ * Represents a single notification that will be sent to the user
+ */
+public struct NotificationItem: Equatable, Hashable {
+    /**
+     * Unique identifier for this notification
+     */
     public var id: String
+    /**
+     * Series IMDB or TMDB ID
+     */
+    public var seriesId: String
+    /**
+     * Name of the series
+     */
+    public var seriesName: String
+    /**
+     * Title of the episode
+     */
+    public var episodeTitle: String
+    /**
+     * Season number
+     */
+    public var season: Int32
+    /**
+     * Episode number
+     */
+    public var episode: Int32
+    /**
+     * ISO 8601 release date string
+     */
+    public var releaseDate: String
+    /**
+     * Whether the notification has been sent
+     */
+    public var notified: Bool
+    /**
+     * Optional poster URL
+     */
+    public var poster: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Unique identifier for this notification
+         */id: String, 
+        /**
+         * Series IMDB or TMDB ID
+         */seriesId: String, 
+        /**
+         * Name of the series
+         */seriesName: String, 
+        /**
+         * Title of the episode
+         */episodeTitle: String, 
+        /**
+         * Season number
+         */season: Int32, 
+        /**
+         * Episode number
+         */episode: Int32, 
+        /**
+         * ISO 8601 release date string
+         */releaseDate: String, 
+        /**
+         * Whether the notification has been sent
+         */notified: Bool, 
+        /**
+         * Optional poster URL
+         */poster: String?) {
+        self.id = id
+        self.seriesId = seriesId
+        self.seriesName = seriesName
+        self.episodeTitle = episodeTitle
+        self.season = season
+        self.episode = episode
+        self.releaseDate = releaseDate
+        self.notified = notified
+        self.poster = poster
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension NotificationItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationItem {
+        return
+            try NotificationItem(
+                id: FfiConverterString.read(from: &buf), 
+                seriesId: FfiConverterString.read(from: &buf), 
+                seriesName: FfiConverterString.read(from: &buf), 
+                episodeTitle: FfiConverterString.read(from: &buf), 
+                season: FfiConverterInt32.read(from: &buf), 
+                episode: FfiConverterInt32.read(from: &buf), 
+                releaseDate: FfiConverterString.read(from: &buf), 
+                notified: FfiConverterBool.read(from: &buf), 
+                poster: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NotificationItem, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.seriesId, into: &buf)
+        FfiConverterString.write(value.seriesName, into: &buf)
+        FfiConverterString.write(value.episodeTitle, into: &buf)
+        FfiConverterInt32.write(value.season, into: &buf)
+        FfiConverterInt32.write(value.episode, into: &buf)
+        FfiConverterString.write(value.releaseDate, into: &buf)
+        FfiConverterBool.write(value.notified, into: &buf)
+        FfiConverterOptionString.write(value.poster, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationItem_lift(_ buf: RustBuffer) throws -> NotificationItem {
+    return try FfiConverterTypeNotificationItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationItem_lower(_ value: NotificationItem) -> RustBuffer {
+    return FfiConverterTypeNotificationItem.lower(value)
+}
+
+
+/**
+ * Notification settings for the user
+ *
+ * Controls how and when notifications are delivered
+ */
+public struct NotificationSettings: Equatable, Hashable {
+    /**
+     * Master toggle for all notifications
+     */
+    public var enabled: Bool
+    /**
+     * Enable notifications for new episodes
+     */
+    public var newEpisodeNotifications: Bool
+    /**
+     * Enable reminder notifications
+     */
+    public var reminderNotifications: Bool
+    /**
+     * Enable notifications for upcoming shows
+     */
+    public var upcomingShowsNotifications: Bool
+    /**
+     * How many hours before airing to send notification (default: 24)
+     */
+    public var timeBeforeAiring: Int32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Master toggle for all notifications
+         */enabled: Bool, 
+        /**
+         * Enable notifications for new episodes
+         */newEpisodeNotifications: Bool, 
+        /**
+         * Enable reminder notifications
+         */reminderNotifications: Bool, 
+        /**
+         * Enable notifications for upcoming shows
+         */upcomingShowsNotifications: Bool, 
+        /**
+         * How many hours before airing to send notification (default: 24)
+         */timeBeforeAiring: Int32) {
+        self.enabled = enabled
+        self.newEpisodeNotifications = newEpisodeNotifications
+        self.reminderNotifications = reminderNotifications
+        self.upcomingShowsNotifications = upcomingShowsNotifications
+        self.timeBeforeAiring = timeBeforeAiring
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension NotificationSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationSettings {
+        return
+            try NotificationSettings(
+                enabled: FfiConverterBool.read(from: &buf), 
+                newEpisodeNotifications: FfiConverterBool.read(from: &buf), 
+                reminderNotifications: FfiConverterBool.read(from: &buf), 
+                upcomingShowsNotifications: FfiConverterBool.read(from: &buf), 
+                timeBeforeAiring: FfiConverterInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NotificationSettings, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterBool.write(value.newEpisodeNotifications, into: &buf)
+        FfiConverterBool.write(value.reminderNotifications, into: &buf)
+        FfiConverterBool.write(value.upcomingShowsNotifications, into: &buf)
+        FfiConverterInt32.write(value.timeBeforeAiring, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationSettings_lift(_ buf: RustBuffer) throws -> NotificationSettings {
+    return try FfiConverterTypeNotificationSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationSettings_lower(_ value: NotificationSettings) -> RustBuffer {
+    return FfiConverterTypeNotificationSettings.lower(value)
+}
+
+
+/**
+ * Statistics about scheduled notifications
+ *
+ * Provides a summary of notification counts for the UI
+ */
+public struct NotificationStats: Equatable, Hashable {
+    /**
+     * Total number of scheduled notifications
+     */
+    public var total: Int32
+    /**
+     * Number of upcoming notifications (not yet sent)
+     */
+    public var upcoming: Int32
+    /**
+     * Number of notifications scheduled for this week
+     */
+    public var thisWeek: Int32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Total number of scheduled notifications
+         */total: Int32, 
+        /**
+         * Number of upcoming notifications (not yet sent)
+         */upcoming: Int32, 
+        /**
+         * Number of notifications scheduled for this week
+         */thisWeek: Int32) {
+        self.total = total
+        self.upcoming = upcoming
+        self.thisWeek = thisWeek
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension NotificationStats: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNotificationStats: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NotificationStats {
+        return
+            try NotificationStats(
+                total: FfiConverterInt32.read(from: &buf), 
+                upcoming: FfiConverterInt32.read(from: &buf), 
+                thisWeek: FfiConverterInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NotificationStats, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.total, into: &buf)
+        FfiConverterInt32.write(value.upcoming, into: &buf)
+        FfiConverterInt32.write(value.thisWeek, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationStats_lift(_ buf: RustBuffer) throws -> NotificationStats {
+    return try FfiConverterTypeNotificationStats.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNotificationStats_lower(_ value: NotificationStats) -> RustBuffer {
+    return FfiConverterTypeNotificationStats.lower(value)
+}
+
+
+public struct PersonCombinedCredit: Equatable, Hashable {
+    public var id: Int32
+    public var mediaType: String
+    public var title: String?
+    public var name: String?
+    public var character: String
+    public var posterPath: String?
+    public var releaseDate: String?
+    public var firstAirDate: String?
+    public var voteAverage: Double?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, mediaType: String, title: String?, name: String?, character: String, posterPath: String?, releaseDate: String?, firstAirDate: String?, voteAverage: Double?) {
+        self.id = id
+        self.mediaType = mediaType
+        self.title = title
+        self.name = name
+        self.character = character
+        self.posterPath = posterPath
+        self.releaseDate = releaseDate
+        self.firstAirDate = firstAirDate
+        self.voteAverage = voteAverage
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonCombinedCredit: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonCombinedCredit: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonCombinedCredit {
+        return
+            try PersonCombinedCredit(
+                id: FfiConverterInt32.read(from: &buf), 
+                mediaType: FfiConverterString.read(from: &buf), 
+                title: FfiConverterOptionString.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                character: FfiConverterString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                releaseDate: FfiConverterOptionString.read(from: &buf), 
+                firstAirDate: FfiConverterOptionString.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonCombinedCredit, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.mediaType, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterString.write(value.character, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionString.write(value.firstAirDate, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonCombinedCredit_lift(_ buf: RustBuffer) throws -> PersonCombinedCredit {
+    return try FfiConverterTypePersonCombinedCredit.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonCombinedCredit_lower(_ value: PersonCombinedCredit) -> RustBuffer {
+    return FfiConverterTypePersonCombinedCredit.lower(value)
+}
+
+
+public struct PersonCombinedCredits: Equatable, Hashable {
+    public var cast: [PersonCombinedCredit]
+    public var crew: [PersonCombinedCredit]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(cast: [PersonCombinedCredit], crew: [PersonCombinedCredit]) {
+        self.cast = cast
+        self.crew = crew
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonCombinedCredits: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonCombinedCredits: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonCombinedCredits {
+        return
+            try PersonCombinedCredits(
+                cast: FfiConverterSequenceTypePersonCombinedCredit.read(from: &buf), 
+                crew: FfiConverterSequenceTypePersonCombinedCredit.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonCombinedCredits, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypePersonCombinedCredit.write(value.cast, into: &buf)
+        FfiConverterSequenceTypePersonCombinedCredit.write(value.crew, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonCombinedCredits_lift(_ buf: RustBuffer) throws -> PersonCombinedCredits {
+    return try FfiConverterTypePersonCombinedCredits.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonCombinedCredits_lower(_ value: PersonCombinedCredits) -> RustBuffer {
+    return FfiConverterTypePersonCombinedCredits.lower(value)
+}
+
+
+public struct PersonMovieCredit: Equatable, Hashable {
+    public var id: Int32
+    public var title: String
+    public var character: String
+    public var posterPath: String?
+    public var releaseDate: String?
+    public var voteAverage: Double?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, title: String, character: String, posterPath: String?, releaseDate: String?, voteAverage: Double?) {
+        self.id = id
+        self.title = title
+        self.character = character
+        self.posterPath = posterPath
+        self.releaseDate = releaseDate
+        self.voteAverage = voteAverage
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonMovieCredit: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonMovieCredit: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonMovieCredit {
+        return
+            try PersonMovieCredit(
+                id: FfiConverterInt32.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                character: FfiConverterString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                releaseDate: FfiConverterOptionString.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonMovieCredit, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.character, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonMovieCredit_lift(_ buf: RustBuffer) throws -> PersonMovieCredit {
+    return try FfiConverterTypePersonMovieCredit.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonMovieCredit_lower(_ value: PersonMovieCredit) -> RustBuffer {
+    return FfiConverterTypePersonMovieCredit.lower(value)
+}
+
+
+public struct PersonMovieCredits: Equatable, Hashable {
+    public var cast: [PersonMovieCredit]
+    public var crew: [PersonMovieCredit]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(cast: [PersonMovieCredit], crew: [PersonMovieCredit]) {
+        self.cast = cast
+        self.crew = crew
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonMovieCredits: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonMovieCredits: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonMovieCredits {
+        return
+            try PersonMovieCredits(
+                cast: FfiConverterSequenceTypePersonMovieCredit.read(from: &buf), 
+                crew: FfiConverterSequenceTypePersonMovieCredit.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonMovieCredits, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypePersonMovieCredit.write(value.cast, into: &buf)
+        FfiConverterSequenceTypePersonMovieCredit.write(value.crew, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonMovieCredits_lift(_ buf: RustBuffer) throws -> PersonMovieCredits {
+    return try FfiConverterTypePersonMovieCredits.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonMovieCredits_lower(_ value: PersonMovieCredits) -> RustBuffer {
+    return FfiConverterTypePersonMovieCredits.lower(value)
+}
+
+
+public struct PersonTvCredit: Equatable, Hashable {
+    public var id: Int32
     public var name: String
+    public var character: String
+    public var posterPath: String?
+    public var firstAirDate: String?
+    public var voteAverage: Double?
+    public var episodeCount: Int32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, character: String, posterPath: String?, firstAirDate: String?, voteAverage: Double?, episodeCount: Int32?) {
+        self.id = id
+        self.name = name
+        self.character = character
+        self.posterPath = posterPath
+        self.firstAirDate = firstAirDate
+        self.voteAverage = voteAverage
+        self.episodeCount = episodeCount
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonTvCredit: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonTvCredit: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonTvCredit {
+        return
+            try PersonTvCredit(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                character: FfiConverterString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                firstAirDate: FfiConverterOptionString.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                episodeCount: FfiConverterOptionInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonTvCredit, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.character, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.firstAirDate, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterOptionInt32.write(value.episodeCount, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonTvCredit_lift(_ buf: RustBuffer) throws -> PersonTvCredit {
+    return try FfiConverterTypePersonTvCredit.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonTvCredit_lower(_ value: PersonTvCredit) -> RustBuffer {
+    return FfiConverterTypePersonTvCredit.lower(value)
+}
+
+
+public struct PersonTvCredits: Equatable, Hashable {
+    public var cast: [PersonTvCredit]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(cast: [PersonTvCredit]) {
+        self.cast = cast
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension PersonTvCredits: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePersonTvCredits: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PersonTvCredits {
+        return
+            try PersonTvCredits(
+                cast: FfiConverterSequenceTypePersonTvCredit.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PersonTvCredits, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypePersonTvCredit.write(value.cast, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonTvCredits_lift(_ buf: RustBuffer) throws -> PersonTvCredits {
+    return try FfiConverterTypePersonTvCredits.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePersonTvCredits_lower(_ value: PersonTvCredits) -> RustBuffer {
+    return FfiConverterTypePersonTvCredits.lower(value)
+}
+
+
+/**
+ * A user profile with personalization settings
+ */
+public struct Profile: Equatable, Hashable {
+    /**
+     * Unique identifier for this profile
+     */
+    public var id: String
+    /**
+     * Display name of the profile
+     */
+    public var name: String
+    /**
+     * Type of profile (Admin, Standard, Kids)
+     */
     public var profileType: ProfileType
+    /**
+     * Avatar identifier
+     */
     public var avatarId: String
+    /**
+     * Maximum age rating (e.g., "G", "PG", "PG-13", "R")
+     */
     public var maxAgeRating: String
+    /**
+     * Whether the profile is protected by a PIN
+     */
     public var isPinProtected: Bool
+    /**
+     * Whether the profile has admin privileges
+     */
     public var isAdmin: Bool
+    /**
+     * Profile preferences
+     */
     public var preferences: ProfilePreferences
+    /**
+     * Creation timestamp
+     */
     public var createdAt: Int64
+    /**
+     * Last update timestamp
+     */
     public var updatedAt: Int64
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, name: String, profileType: ProfileType, avatarId: String, maxAgeRating: String, isPinProtected: Bool, isAdmin: Bool, preferences: ProfilePreferences, createdAt: Int64, updatedAt: Int64) {
+    public init(
+        /**
+         * Unique identifier for this profile
+         */id: String, 
+        /**
+         * Display name of the profile
+         */name: String, 
+        /**
+         * Type of profile (Admin, Standard, Kids)
+         */profileType: ProfileType, 
+        /**
+         * Avatar identifier
+         */avatarId: String, 
+        /**
+         * Maximum age rating (e.g., "G", "PG", "PG-13", "R")
+         */maxAgeRating: String, 
+        /**
+         * Whether the profile is protected by a PIN
+         */isPinProtected: Bool, 
+        /**
+         * Whether the profile has admin privileges
+         */isAdmin: Bool, 
+        /**
+         * Profile preferences
+         */preferences: ProfilePreferences, 
+        /**
+         * Creation timestamp
+         */createdAt: Int64, 
+        /**
+         * Last update timestamp
+         */updatedAt: Int64) {
         self.id = id
         self.name = name
         self.profileType = profileType
@@ -2423,6 +9373,280 @@ public func FfiConverterTypeResourceObject_lift(_ buf: RustBuffer) throws -> Res
 #endif
 public func FfiConverterTypeResourceObject_lower(_ value: ResourceObject) -> RustBuffer {
     return FfiConverterTypeResourceObject.lower(value)
+}
+
+
+/**
+ * Parameters for scheduling an episode notification
+ *
+ * Used when creating new notifications from external data
+ */
+public struct ScheduleNotificationParams: Equatable, Hashable {
+    /**
+     * Series ID
+     */
+    public var seriesId: String
+    /**
+     * Series name
+     */
+    public var seriesName: String
+    /**
+     * Episode title
+     */
+    public var episodeTitle: String
+    /**
+     * Season number
+     */
+    public var season: Int32
+    /**
+     * Episode number
+     */
+    public var episode: Int32
+    /**
+     * ISO 8601 release date
+     */
+    public var releaseDate: String
+    /**
+     * Optional poster URL
+     */
+    public var poster: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Series ID
+         */seriesId: String, 
+        /**
+         * Series name
+         */seriesName: String, 
+        /**
+         * Episode title
+         */episodeTitle: String, 
+        /**
+         * Season number
+         */season: Int32, 
+        /**
+         * Episode number
+         */episode: Int32, 
+        /**
+         * ISO 8601 release date
+         */releaseDate: String, 
+        /**
+         * Optional poster URL
+         */poster: String?) {
+        self.seriesId = seriesId
+        self.seriesName = seriesName
+        self.episodeTitle = episodeTitle
+        self.season = season
+        self.episode = episode
+        self.releaseDate = releaseDate
+        self.poster = poster
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension ScheduleNotificationParams: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeScheduleNotificationParams: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ScheduleNotificationParams {
+        return
+            try ScheduleNotificationParams(
+                seriesId: FfiConverterString.read(from: &buf), 
+                seriesName: FfiConverterString.read(from: &buf), 
+                episodeTitle: FfiConverterString.read(from: &buf), 
+                season: FfiConverterInt32.read(from: &buf), 
+                episode: FfiConverterInt32.read(from: &buf), 
+                releaseDate: FfiConverterString.read(from: &buf), 
+                poster: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ScheduleNotificationParams, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.seriesId, into: &buf)
+        FfiConverterString.write(value.seriesName, into: &buf)
+        FfiConverterString.write(value.episodeTitle, into: &buf)
+        FfiConverterInt32.write(value.season, into: &buf)
+        FfiConverterInt32.write(value.episode, into: &buf)
+        FfiConverterString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionString.write(value.poster, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScheduleNotificationParams_lift(_ buf: RustBuffer) throws -> ScheduleNotificationParams {
+    return try FfiConverterTypeScheduleNotificationParams.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScheduleNotificationParams_lower(_ value: ScheduleNotificationParams) -> RustBuffer {
+    return FfiConverterTypeScheduleNotificationParams.lower(value)
+}
+
+
+/**
+ * SDK Configuration.
+ *
+ * This struct holds all configuration parameters for the Nuvio SDK including
+ * environment settings, logging configuration, and application metadata.
+ *
+ * Use [`SdkConfigBuilder`] to construct instances of this struct.
+ *
+ * # FFI Safety
+ *
+ * This struct is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::config::{SdkConfig, Environment, LogLevel};
+ *
+ * // Default configuration
+ * let config = SdkConfig::default();
+ *
+ * // Custom configuration
+ * let config = SdkConfig::builder()
+ * .environment(Environment::Development)
+ * .log_level(LogLevel::Debug)
+ * .app_name("MyApp")
+ * .app_version("1.0.0")
+ * .build();
+ * ```
+ */
+public struct SdkConfig: Equatable, Hashable {
+    /**
+     * The runtime environment (Development, Staging, Production).
+     */
+    public var environment: Environment
+    /**
+     * The log level for SDK logging.
+     */
+    public var logLevel: LogLevel
+    /**
+     * Application name for logging and identification.
+     */
+    public var appName: String
+    /**
+     * Application version for logging and identification.
+     */
+    public var appVersion: String
+    /**
+     * User agent string to use for HTTP requests.
+     */
+    public var userAgent: String
+    /**
+     * Whether to enable debug assertions and additional validation.
+     */
+    public var debugMode: Bool
+    /**
+     * Optional custom data directory path for SDK storage.
+     * If not set, the SDK will use platform-specific defaults.
+     */
+    public var dataDirectory: String?
+    /**
+     * Whether to collect anonymous usage analytics.
+     */
+    public var analyticsEnabled: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The runtime environment (Development, Staging, Production).
+         */environment: Environment, 
+        /**
+         * The log level for SDK logging.
+         */logLevel: LogLevel, 
+        /**
+         * Application name for logging and identification.
+         */appName: String, 
+        /**
+         * Application version for logging and identification.
+         */appVersion: String, 
+        /**
+         * User agent string to use for HTTP requests.
+         */userAgent: String, 
+        /**
+         * Whether to enable debug assertions and additional validation.
+         */debugMode: Bool, 
+        /**
+         * Optional custom data directory path for SDK storage.
+         * If not set, the SDK will use platform-specific defaults.
+         */dataDirectory: String?, 
+        /**
+         * Whether to collect anonymous usage analytics.
+         */analyticsEnabled: Bool) {
+        self.environment = environment
+        self.logLevel = logLevel
+        self.appName = appName
+        self.appVersion = appVersion
+        self.userAgent = userAgent
+        self.debugMode = debugMode
+        self.dataDirectory = dataDirectory
+        self.analyticsEnabled = analyticsEnabled
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension SdkConfig: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSdkConfig: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SdkConfig {
+        return
+            try SdkConfig(
+                environment: FfiConverterTypeEnvironment.read(from: &buf), 
+                logLevel: FfiConverterTypeLogLevel.read(from: &buf), 
+                appName: FfiConverterString.read(from: &buf), 
+                appVersion: FfiConverterString.read(from: &buf), 
+                userAgent: FfiConverterString.read(from: &buf), 
+                debugMode: FfiConverterBool.read(from: &buf), 
+                dataDirectory: FfiConverterOptionString.read(from: &buf), 
+                analyticsEnabled: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SdkConfig, into buf: inout [UInt8]) {
+        FfiConverterTypeEnvironment.write(value.environment, into: &buf)
+        FfiConverterTypeLogLevel.write(value.logLevel, into: &buf)
+        FfiConverterString.write(value.appName, into: &buf)
+        FfiConverterString.write(value.appVersion, into: &buf)
+        FfiConverterString.write(value.userAgent, into: &buf)
+        FfiConverterBool.write(value.debugMode, into: &buf)
+        FfiConverterOptionString.write(value.dataDirectory, into: &buf)
+        FfiConverterBool.write(value.analyticsEnabled, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSdkConfig_lift(_ buf: RustBuffer) throws -> SdkConfig {
+    return try FfiConverterTypeSdkConfig.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSdkConfig_lower(_ value: SdkConfig) -> RustBuffer {
+    return FfiConverterTypeSdkConfig.lower(value)
 }
 
 
@@ -3598,6 +10822,2950 @@ public func FfiConverterTypeSubtitle_lower(_ value: Subtitle) -> RustBuffer {
 }
 
 
+public struct TmdbCollection: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var overview: String?
+    public var posterPath: String?
+    public var backdropPath: String?
+    public var parts: [TmdbCollectionPart]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, overview: String?, posterPath: String?, backdropPath: String?, parts: [TmdbCollectionPart]) {
+        self.id = id
+        self.name = name
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.parts = parts
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbCollection: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbCollection: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbCollection {
+        return
+            try TmdbCollection(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                backdropPath: FfiConverterOptionString.read(from: &buf), 
+                parts: FfiConverterSequenceTypeTmdbCollectionPart.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbCollection, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.backdropPath, into: &buf)
+        FfiConverterSequenceTypeTmdbCollectionPart.write(value.parts, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCollection_lift(_ buf: RustBuffer) throws -> TmdbCollection {
+    return try FfiConverterTypeTmdbCollection.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCollection_lower(_ value: TmdbCollection) -> RustBuffer {
+    return FfiConverterTypeTmdbCollection.lower(value)
+}
+
+
+public struct TmdbCollectionPart: Equatable, Hashable {
+    public var id: Int32
+    public var title: String
+    public var overview: String?
+    public var posterPath: String?
+    public var backdropPath: String?
+    public var releaseDate: String?
+    public var voteAverage: Double?
+    public var voteCount: Int32?
+    public var genreIds: [Int32]
+    public var originalLanguage: String
+    public var originalTitle: String
+    public var popularity: Double?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, title: String, overview: String?, posterPath: String?, backdropPath: String?, releaseDate: String?, voteAverage: Double?, voteCount: Int32?, genreIds: [Int32], originalLanguage: String, originalTitle: String, popularity: Double?) {
+        self.id = id
+        self.title = title
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.releaseDate = releaseDate
+        self.voteAverage = voteAverage
+        self.voteCount = voteCount
+        self.genreIds = genreIds
+        self.originalLanguage = originalLanguage
+        self.originalTitle = originalTitle
+        self.popularity = popularity
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbCollectionPart: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbCollectionPart: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbCollectionPart {
+        return
+            try TmdbCollectionPart(
+                id: FfiConverterInt32.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                backdropPath: FfiConverterOptionString.read(from: &buf), 
+                releaseDate: FfiConverterOptionString.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                voteCount: FfiConverterOptionInt32.read(from: &buf), 
+                genreIds: FfiConverterSequenceInt32.read(from: &buf), 
+                originalLanguage: FfiConverterString.read(from: &buf), 
+                originalTitle: FfiConverterString.read(from: &buf), 
+                popularity: FfiConverterOptionDouble.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbCollectionPart, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.backdropPath, into: &buf)
+        FfiConverterOptionString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterOptionInt32.write(value.voteCount, into: &buf)
+        FfiConverterSequenceInt32.write(value.genreIds, into: &buf)
+        FfiConverterString.write(value.originalLanguage, into: &buf)
+        FfiConverterString.write(value.originalTitle, into: &buf)
+        FfiConverterOptionDouble.write(value.popularity, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCollectionPart_lift(_ buf: RustBuffer) throws -> TmdbCollectionPart {
+    return try FfiConverterTypeTmdbCollectionPart.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCollectionPart_lower(_ value: TmdbCollectionPart) -> RustBuffer {
+    return FfiConverterTypeTmdbCollectionPart.lower(value)
+}
+
+
+public struct TmdbConfig: Equatable, Hashable {
+    public var apiKey: String
+    public var baseUrl: String
+    public var imdbRatingsApiBaseUrl: String?
+    public var language: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(apiKey: String, baseUrl: String, imdbRatingsApiBaseUrl: String?, language: String) {
+        self.apiKey = apiKey
+        self.baseUrl = baseUrl
+        self.imdbRatingsApiBaseUrl = imdbRatingsApiBaseUrl
+        self.language = language
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbConfig: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbConfig: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbConfig {
+        return
+            try TmdbConfig(
+                apiKey: FfiConverterString.read(from: &buf), 
+                baseUrl: FfiConverterString.read(from: &buf), 
+                imdbRatingsApiBaseUrl: FfiConverterOptionString.read(from: &buf), 
+                language: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbConfig, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.apiKey, into: &buf)
+        FfiConverterString.write(value.baseUrl, into: &buf)
+        FfiConverterOptionString.write(value.imdbRatingsApiBaseUrl, into: &buf)
+        FfiConverterString.write(value.language, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbConfig_lift(_ buf: RustBuffer) throws -> TmdbConfig {
+    return try FfiConverterTypeTmdbConfig.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbConfig_lower(_ value: TmdbConfig) -> RustBuffer {
+    return FfiConverterTypeTmdbConfig.lower(value)
+}
+
+
+public struct TmdbCreator: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var profilePath: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, profilePath: String?) {
+        self.id = id
+        self.name = name
+        self.profilePath = profilePath
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbCreator: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbCreator: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbCreator {
+        return
+            try TmdbCreator(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                profilePath: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbCreator, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.profilePath, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCreator_lift(_ buf: RustBuffer) throws -> TmdbCreator {
+    return try FfiConverterTypeTmdbCreator.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbCreator_lower(_ value: TmdbCreator) -> RustBuffer {
+    return FfiConverterTypeTmdbCreator.lower(value)
+}
+
+
+public struct TmdbEpisode: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var overview: String
+    public var episodeNumber: Int32
+    public var seasonNumber: Int32
+    public var stillPath: String?
+    public var airDate: String?
+    public var voteAverage: Double?
+    public var imdbId: String?
+    public var seasonPosterPath: String?
+    public var runtime: Int32?
+    public var credits: Credits?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, overview: String, episodeNumber: Int32, seasonNumber: Int32, stillPath: String?, airDate: String?, voteAverage: Double?, imdbId: String?, seasonPosterPath: String?, runtime: Int32?, credits: Credits?) {
+        self.id = id
+        self.name = name
+        self.overview = overview
+        self.episodeNumber = episodeNumber
+        self.seasonNumber = seasonNumber
+        self.stillPath = stillPath
+        self.airDate = airDate
+        self.voteAverage = voteAverage
+        self.imdbId = imdbId
+        self.seasonPosterPath = seasonPosterPath
+        self.runtime = runtime
+        self.credits = credits
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbEpisode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbEpisode: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbEpisode {
+        return
+            try TmdbEpisode(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterString.read(from: &buf), 
+                episodeNumber: FfiConverterInt32.read(from: &buf), 
+                seasonNumber: FfiConverterInt32.read(from: &buf), 
+                stillPath: FfiConverterOptionString.read(from: &buf), 
+                airDate: FfiConverterOptionString.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                imdbId: FfiConverterOptionString.read(from: &buf), 
+                seasonPosterPath: FfiConverterOptionString.read(from: &buf), 
+                runtime: FfiConverterOptionInt32.read(from: &buf), 
+                credits: FfiConverterOptionTypeCredits.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbEpisode, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.overview, into: &buf)
+        FfiConverterInt32.write(value.episodeNumber, into: &buf)
+        FfiConverterInt32.write(value.seasonNumber, into: &buf)
+        FfiConverterOptionString.write(value.stillPath, into: &buf)
+        FfiConverterOptionString.write(value.airDate, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterOptionString.write(value.imdbId, into: &buf)
+        FfiConverterOptionString.write(value.seasonPosterPath, into: &buf)
+        FfiConverterOptionInt32.write(value.runtime, into: &buf)
+        FfiConverterOptionTypeCredits.write(value.credits, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbEpisode_lift(_ buf: RustBuffer) throws -> TmdbEpisode {
+    return try FfiConverterTypeTmdbEpisode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbEpisode_lower(_ value: TmdbEpisode) -> RustBuffer {
+    return FfiConverterTypeTmdbEpisode.lower(value)
+}
+
+
+public struct TmdbExternalIds: Equatable, Hashable {
+    public var imdbId: String?
+    public var freebaseMid: String?
+    public var freebaseId: String?
+    public var tvdbId: Int32?
+    public var tvrageId: Int32?
+    public var wikidataId: String?
+    public var facebookId: String?
+    public var instagramId: String?
+    public var twitterId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(imdbId: String?, freebaseMid: String?, freebaseId: String?, tvdbId: Int32?, tvrageId: Int32?, wikidataId: String?, facebookId: String?, instagramId: String?, twitterId: String?) {
+        self.imdbId = imdbId
+        self.freebaseMid = freebaseMid
+        self.freebaseId = freebaseId
+        self.tvdbId = tvdbId
+        self.tvrageId = tvrageId
+        self.wikidataId = wikidataId
+        self.facebookId = facebookId
+        self.instagramId = instagramId
+        self.twitterId = twitterId
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbExternalIds: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbExternalIds: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbExternalIds {
+        return
+            try TmdbExternalIds(
+                imdbId: FfiConverterOptionString.read(from: &buf), 
+                freebaseMid: FfiConverterOptionString.read(from: &buf), 
+                freebaseId: FfiConverterOptionString.read(from: &buf), 
+                tvdbId: FfiConverterOptionInt32.read(from: &buf), 
+                tvrageId: FfiConverterOptionInt32.read(from: &buf), 
+                wikidataId: FfiConverterOptionString.read(from: &buf), 
+                facebookId: FfiConverterOptionString.read(from: &buf), 
+                instagramId: FfiConverterOptionString.read(from: &buf), 
+                twitterId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbExternalIds, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.imdbId, into: &buf)
+        FfiConverterOptionString.write(value.freebaseMid, into: &buf)
+        FfiConverterOptionString.write(value.freebaseId, into: &buf)
+        FfiConverterOptionInt32.write(value.tvdbId, into: &buf)
+        FfiConverterOptionInt32.write(value.tvrageId, into: &buf)
+        FfiConverterOptionString.write(value.wikidataId, into: &buf)
+        FfiConverterOptionString.write(value.facebookId, into: &buf)
+        FfiConverterOptionString.write(value.instagramId, into: &buf)
+        FfiConverterOptionString.write(value.twitterId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbExternalIds_lift(_ buf: RustBuffer) throws -> TmdbExternalIds {
+    return try FfiConverterTypeTmdbExternalIds.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbExternalIds_lower(_ value: TmdbExternalIds) -> RustBuffer {
+    return FfiConverterTypeTmdbExternalIds.lower(value)
+}
+
+
+public struct TmdbGenre: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String) {
+        self.id = id
+        self.name = name
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbGenre: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbGenre: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbGenre {
+        return
+            try TmdbGenre(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbGenre, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbGenre_lift(_ buf: RustBuffer) throws -> TmdbGenre {
+    return try FfiConverterTypeTmdbGenre.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbGenre_lower(_ value: TmdbGenre) -> RustBuffer {
+    return FfiConverterTypeTmdbGenre.lower(value)
+}
+
+
+public struct TmdbMovie: Equatable, Hashable {
+    public var id: Int32
+    public var title: String
+    public var originalTitle: String
+    public var overview: String?
+    public var posterPath: String?
+    public var backdropPath: String?
+    public var releaseDate: String?
+    public var runtime: Int32?
+    public var voteAverage: Double?
+    public var voteCount: Int32?
+    public var status: String?
+    public var tagline: String?
+    public var genres: [TmdbGenre]
+    public var credits: Credits?
+    public var externalIds: TmdbExternalIds?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, title: String, originalTitle: String, overview: String?, posterPath: String?, backdropPath: String?, releaseDate: String?, runtime: Int32?, voteAverage: Double?, voteCount: Int32?, status: String?, tagline: String?, genres: [TmdbGenre], credits: Credits?, externalIds: TmdbExternalIds?) {
+        self.id = id
+        self.title = title
+        self.originalTitle = originalTitle
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.releaseDate = releaseDate
+        self.runtime = runtime
+        self.voteAverage = voteAverage
+        self.voteCount = voteCount
+        self.status = status
+        self.tagline = tagline
+        self.genres = genres
+        self.credits = credits
+        self.externalIds = externalIds
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbMovie: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbMovie: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbMovie {
+        return
+            try TmdbMovie(
+                id: FfiConverterInt32.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                originalTitle: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                backdropPath: FfiConverterOptionString.read(from: &buf), 
+                releaseDate: FfiConverterOptionString.read(from: &buf), 
+                runtime: FfiConverterOptionInt32.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                voteCount: FfiConverterOptionInt32.read(from: &buf), 
+                status: FfiConverterOptionString.read(from: &buf), 
+                tagline: FfiConverterOptionString.read(from: &buf), 
+                genres: FfiConverterSequenceTypeTmdbGenre.read(from: &buf), 
+                credits: FfiConverterOptionTypeCredits.read(from: &buf), 
+                externalIds: FfiConverterOptionTypeTmdbExternalIds.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbMovie, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.originalTitle, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.backdropPath, into: &buf)
+        FfiConverterOptionString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionInt32.write(value.runtime, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterOptionInt32.write(value.voteCount, into: &buf)
+        FfiConverterOptionString.write(value.status, into: &buf)
+        FfiConverterOptionString.write(value.tagline, into: &buf)
+        FfiConverterSequenceTypeTmdbGenre.write(value.genres, into: &buf)
+        FfiConverterOptionTypeCredits.write(value.credits, into: &buf)
+        FfiConverterOptionTypeTmdbExternalIds.write(value.externalIds, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbMovie_lift(_ buf: RustBuffer) throws -> TmdbMovie {
+    return try FfiConverterTypeTmdbMovie.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbMovie_lower(_ value: TmdbMovie) -> RustBuffer {
+    return FfiConverterTypeTmdbMovie.lower(value)
+}
+
+
+public struct TmdbNetwork: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var logoPath: String?
+    public var originCountry: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, logoPath: String?, originCountry: String) {
+        self.id = id
+        self.name = name
+        self.logoPath = logoPath
+        self.originCountry = originCountry
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbNetwork: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbNetwork: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbNetwork {
+        return
+            try TmdbNetwork(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                logoPath: FfiConverterOptionString.read(from: &buf), 
+                originCountry: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbNetwork, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.logoPath, into: &buf)
+        FfiConverterString.write(value.originCountry, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbNetwork_lift(_ buf: RustBuffer) throws -> TmdbNetwork {
+    return try FfiConverterTypeTmdbNetwork.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbNetwork_lower(_ value: TmdbNetwork) -> RustBuffer {
+    return FfiConverterTypeTmdbNetwork.lower(value)
+}
+
+
+public struct TmdbPerson: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var biography: String
+    public var birthday: String?
+    public var deathday: String?
+    public var placeOfBirth: String?
+    public var profilePath: String?
+    public var knownForDepartment: String
+    public var externalIds: TmdbExternalIds?
+    public var combinedCredits: PersonCombinedCredits?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, biography: String, birthday: String?, deathday: String?, placeOfBirth: String?, profilePath: String?, knownForDepartment: String, externalIds: TmdbExternalIds?, combinedCredits: PersonCombinedCredits?) {
+        self.id = id
+        self.name = name
+        self.biography = biography
+        self.birthday = birthday
+        self.deathday = deathday
+        self.placeOfBirth = placeOfBirth
+        self.profilePath = profilePath
+        self.knownForDepartment = knownForDepartment
+        self.externalIds = externalIds
+        self.combinedCredits = combinedCredits
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbPerson: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbPerson: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbPerson {
+        return
+            try TmdbPerson(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                biography: FfiConverterString.read(from: &buf), 
+                birthday: FfiConverterOptionString.read(from: &buf), 
+                deathday: FfiConverterOptionString.read(from: &buf), 
+                placeOfBirth: FfiConverterOptionString.read(from: &buf), 
+                profilePath: FfiConverterOptionString.read(from: &buf), 
+                knownForDepartment: FfiConverterString.read(from: &buf), 
+                externalIds: FfiConverterOptionTypeTmdbExternalIds.read(from: &buf), 
+                combinedCredits: FfiConverterOptionTypePersonCombinedCredits.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbPerson, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.biography, into: &buf)
+        FfiConverterOptionString.write(value.birthday, into: &buf)
+        FfiConverterOptionString.write(value.deathday, into: &buf)
+        FfiConverterOptionString.write(value.placeOfBirth, into: &buf)
+        FfiConverterOptionString.write(value.profilePath, into: &buf)
+        FfiConverterString.write(value.knownForDepartment, into: &buf)
+        FfiConverterOptionTypeTmdbExternalIds.write(value.externalIds, into: &buf)
+        FfiConverterOptionTypePersonCombinedCredits.write(value.combinedCredits, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbPerson_lift(_ buf: RustBuffer) throws -> TmdbPerson {
+    return try FfiConverterTypeTmdbPerson.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbPerson_lower(_ value: TmdbPerson) -> RustBuffer {
+    return FfiConverterTypeTmdbPerson.lower(value)
+}
+
+
+public struct TmdbSearchResult: Equatable, Hashable {
+    public var id: Int32
+    public var mediaType: String?
+    public var title: String?
+    public var name: String?
+    public var overview: String?
+    public var posterPath: String?
+    public var backdropPath: String?
+    public var releaseDate: String?
+    public var firstAirDate: String?
+    public var genreIds: [Int32]
+    public var popularity: Double
+    public var voteAverage: Double?
+    public var voteCount: Int32?
+    public var profilePath: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, mediaType: String?, title: String?, name: String?, overview: String?, posterPath: String?, backdropPath: String?, releaseDate: String?, firstAirDate: String?, genreIds: [Int32], popularity: Double, voteAverage: Double?, voteCount: Int32?, profilePath: String?) {
+        self.id = id
+        self.mediaType = mediaType
+        self.title = title
+        self.name = name
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.releaseDate = releaseDate
+        self.firstAirDate = firstAirDate
+        self.genreIds = genreIds
+        self.popularity = popularity
+        self.voteAverage = voteAverage
+        self.voteCount = voteCount
+        self.profilePath = profilePath
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbSearchResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbSearchResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbSearchResult {
+        return
+            try TmdbSearchResult(
+                id: FfiConverterInt32.read(from: &buf), 
+                mediaType: FfiConverterOptionString.read(from: &buf), 
+                title: FfiConverterOptionString.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                backdropPath: FfiConverterOptionString.read(from: &buf), 
+                releaseDate: FfiConverterOptionString.read(from: &buf), 
+                firstAirDate: FfiConverterOptionString.read(from: &buf), 
+                genreIds: FfiConverterSequenceInt32.read(from: &buf), 
+                popularity: FfiConverterDouble.read(from: &buf), 
+                voteAverage: FfiConverterOptionDouble.read(from: &buf), 
+                voteCount: FfiConverterOptionInt32.read(from: &buf), 
+                profilePath: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbSearchResult, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterOptionString.write(value.mediaType, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.backdropPath, into: &buf)
+        FfiConverterOptionString.write(value.releaseDate, into: &buf)
+        FfiConverterOptionString.write(value.firstAirDate, into: &buf)
+        FfiConverterSequenceInt32.write(value.genreIds, into: &buf)
+        FfiConverterDouble.write(value.popularity, into: &buf)
+        FfiConverterOptionDouble.write(value.voteAverage, into: &buf)
+        FfiConverterOptionInt32.write(value.voteCount, into: &buf)
+        FfiConverterOptionString.write(value.profilePath, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSearchResult_lift(_ buf: RustBuffer) throws -> TmdbSearchResult {
+    return try FfiConverterTypeTmdbSearchResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSearchResult_lower(_ value: TmdbSearchResult) -> RustBuffer {
+    return FfiConverterTypeTmdbSearchResult.lower(value)
+}
+
+
+public struct TmdbSeason: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var overview: String
+    public var seasonNumber: Int32
+    public var episodes: [TmdbEpisode]
+    public var posterPath: String?
+    public var airDate: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, overview: String, seasonNumber: Int32, episodes: [TmdbEpisode], posterPath: String?, airDate: String?) {
+        self.id = id
+        self.name = name
+        self.overview = overview
+        self.seasonNumber = seasonNumber
+        self.episodes = episodes
+        self.posterPath = posterPath
+        self.airDate = airDate
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbSeason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbSeason: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbSeason {
+        return
+            try TmdbSeason(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterString.read(from: &buf), 
+                seasonNumber: FfiConverterInt32.read(from: &buf), 
+                episodes: FfiConverterSequenceTypeTmdbEpisode.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                airDate: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbSeason, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.overview, into: &buf)
+        FfiConverterInt32.write(value.seasonNumber, into: &buf)
+        FfiConverterSequenceTypeTmdbEpisode.write(value.episodes, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.airDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSeason_lift(_ buf: RustBuffer) throws -> TmdbSeason {
+    return try FfiConverterTypeTmdbSeason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSeason_lower(_ value: TmdbSeason) -> RustBuffer {
+    return FfiConverterTypeTmdbSeason.lower(value)
+}
+
+
+public struct TmdbSeasonSummary: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var seasonNumber: Int32
+    public var episodeCount: Int32
+    public var posterPath: String?
+    public var airDate: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, seasonNumber: Int32, episodeCount: Int32, posterPath: String?, airDate: String?) {
+        self.id = id
+        self.name = name
+        self.seasonNumber = seasonNumber
+        self.episodeCount = episodeCount
+        self.posterPath = posterPath
+        self.airDate = airDate
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbSeasonSummary: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbSeasonSummary: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbSeasonSummary {
+        return
+            try TmdbSeasonSummary(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                seasonNumber: FfiConverterInt32.read(from: &buf), 
+                episodeCount: FfiConverterInt32.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                airDate: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbSeasonSummary, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterInt32.write(value.seasonNumber, into: &buf)
+        FfiConverterInt32.write(value.episodeCount, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.airDate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSeasonSummary_lift(_ buf: RustBuffer) throws -> TmdbSeasonSummary {
+    return try FfiConverterTypeTmdbSeasonSummary.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbSeasonSummary_lower(_ value: TmdbSeasonSummary) -> RustBuffer {
+    return FfiConverterTypeTmdbSeasonSummary.lower(value)
+}
+
+
+public struct TmdbShow: Equatable, Hashable {
+    public var id: Int32
+    public var name: String
+    public var overview: String
+    public var posterPath: String?
+    public var backdropPath: String?
+    public var firstAirDate: String?
+    public var lastAirDate: String?
+    public var numberOfSeasons: Int32
+    public var numberOfEpisodes: Int32
+    public var genres: [TmdbGenre]
+    public var seasons: [TmdbSeasonSummary]
+    public var status: String
+    public var typeField: String
+    public var originalLanguage: String
+    public var createdBy: [TmdbCreator]
+    public var networks: [TmdbNetwork]
+    public var credits: Credits?
+    public var externalIds: TmdbExternalIds?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int32, name: String, overview: String, posterPath: String?, backdropPath: String?, firstAirDate: String?, lastAirDate: String?, numberOfSeasons: Int32, numberOfEpisodes: Int32, genres: [TmdbGenre], seasons: [TmdbSeasonSummary], status: String, typeField: String, originalLanguage: String, createdBy: [TmdbCreator], networks: [TmdbNetwork], credits: Credits?, externalIds: TmdbExternalIds?) {
+        self.id = id
+        self.name = name
+        self.overview = overview
+        self.posterPath = posterPath
+        self.backdropPath = backdropPath
+        self.firstAirDate = firstAirDate
+        self.lastAirDate = lastAirDate
+        self.numberOfSeasons = numberOfSeasons
+        self.numberOfEpisodes = numberOfEpisodes
+        self.genres = genres
+        self.seasons = seasons
+        self.status = status
+        self.typeField = typeField
+        self.originalLanguage = originalLanguage
+        self.createdBy = createdBy
+        self.networks = networks
+        self.credits = credits
+        self.externalIds = externalIds
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TmdbShow: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbShow: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbShow {
+        return
+            try TmdbShow(
+                id: FfiConverterInt32.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                overview: FfiConverterString.read(from: &buf), 
+                posterPath: FfiConverterOptionString.read(from: &buf), 
+                backdropPath: FfiConverterOptionString.read(from: &buf), 
+                firstAirDate: FfiConverterOptionString.read(from: &buf), 
+                lastAirDate: FfiConverterOptionString.read(from: &buf), 
+                numberOfSeasons: FfiConverterInt32.read(from: &buf), 
+                numberOfEpisodes: FfiConverterInt32.read(from: &buf), 
+                genres: FfiConverterSequenceTypeTmdbGenre.read(from: &buf), 
+                seasons: FfiConverterSequenceTypeTmdbSeasonSummary.read(from: &buf), 
+                status: FfiConverterString.read(from: &buf), 
+                typeField: FfiConverterString.read(from: &buf), 
+                originalLanguage: FfiConverterString.read(from: &buf), 
+                createdBy: FfiConverterSequenceTypeTmdbCreator.read(from: &buf), 
+                networks: FfiConverterSequenceTypeTmdbNetwork.read(from: &buf), 
+                credits: FfiConverterOptionTypeCredits.read(from: &buf), 
+                externalIds: FfiConverterOptionTypeTmdbExternalIds.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TmdbShow, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.posterPath, into: &buf)
+        FfiConverterOptionString.write(value.backdropPath, into: &buf)
+        FfiConverterOptionString.write(value.firstAirDate, into: &buf)
+        FfiConverterOptionString.write(value.lastAirDate, into: &buf)
+        FfiConverterInt32.write(value.numberOfSeasons, into: &buf)
+        FfiConverterInt32.write(value.numberOfEpisodes, into: &buf)
+        FfiConverterSequenceTypeTmdbGenre.write(value.genres, into: &buf)
+        FfiConverterSequenceTypeTmdbSeasonSummary.write(value.seasons, into: &buf)
+        FfiConverterString.write(value.status, into: &buf)
+        FfiConverterString.write(value.typeField, into: &buf)
+        FfiConverterString.write(value.originalLanguage, into: &buf)
+        FfiConverterSequenceTypeTmdbCreator.write(value.createdBy, into: &buf)
+        FfiConverterSequenceTypeTmdbNetwork.write(value.networks, into: &buf)
+        FfiConverterOptionTypeCredits.write(value.credits, into: &buf)
+        FfiConverterOptionTypeTmdbExternalIds.write(value.externalIds, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbShow_lift(_ buf: RustBuffer) throws -> TmdbShow {
+    return try FfiConverterTypeTmdbShow.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbShow_lower(_ value: TmdbShow) -> RustBuffer {
+    return FfiConverterTypeTmdbShow.lower(value)
+}
+
+
+/**
+ * Calendar item for movies - represents a movie releasing on a specific date
+ */
+public struct TraktCalendarMovie: Equatable, Hashable {
+    /**
+     * When the movie was/will be released (ISO 8601 date format)
+     */
+    public var released: String
+    /**
+     * The movie details
+     */
+    public var movie: TraktMovie
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * When the movie was/will be released (ISO 8601 date format)
+         */released: String, 
+        /**
+         * The movie details
+         */movie: TraktMovie) {
+        self.released = released
+        self.movie = movie
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktCalendarMovie: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktCalendarMovie: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktCalendarMovie {
+        return
+            try TraktCalendarMovie(
+                released: FfiConverterString.read(from: &buf), 
+                movie: FfiConverterTypeTraktMovie.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktCalendarMovie, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.released, into: &buf)
+        FfiConverterTypeTraktMovie.write(value.movie, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCalendarMovie_lift(_ buf: RustBuffer) throws -> TraktCalendarMovie {
+    return try FfiConverterTypeTraktCalendarMovie.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCalendarMovie_lower(_ value: TraktCalendarMovie) -> RustBuffer {
+    return FfiConverterTypeTraktCalendarMovie.lower(value)
+}
+
+
+/**
+ * Calendar item for TV shows - represents an episode airing on a specific date
+ */
+public struct TraktCalendarShow: Equatable, Hashable {
+    /**
+     * When the episode first aired (ISO 8601 format)
+     */
+    public var firstAired: String
+    /**
+     * The episode details
+     */
+    public var episode: TraktEpisode
+    /**
+     * The show details
+     */
+    public var show: TraktShow
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * When the episode first aired (ISO 8601 format)
+         */firstAired: String, 
+        /**
+         * The episode details
+         */episode: TraktEpisode, 
+        /**
+         * The show details
+         */show: TraktShow) {
+        self.firstAired = firstAired
+        self.episode = episode
+        self.show = show
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktCalendarShow: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktCalendarShow: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktCalendarShow {
+        return
+            try TraktCalendarShow(
+                firstAired: FfiConverterString.read(from: &buf), 
+                episode: FfiConverterTypeTraktEpisode.read(from: &buf), 
+                show: FfiConverterTypeTraktShow.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktCalendarShow, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.firstAired, into: &buf)
+        FfiConverterTypeTraktEpisode.write(value.episode, into: &buf)
+        FfiConverterTypeTraktShow.write(value.show, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCalendarShow_lift(_ buf: RustBuffer) throws -> TraktCalendarShow {
+    return try FfiConverterTypeTraktCalendarShow.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCalendarShow_lower(_ value: TraktCalendarShow) -> RustBuffer {
+    return FfiConverterTypeTraktCalendarShow.lower(value)
+}
+
+
+/**
+ * Comment data from Trakt API
+ */
+public struct TraktComment: Equatable, Hashable {
+    public var id: Int64
+    public var comment: String
+    public var spoiler: Bool
+    public var review: Bool
+    public var parentId: Int64
+    public var createdAt: String
+    public var updatedAt: String
+    public var replies: Int32
+    public var likes: Int32
+    public var language: String
+    public var user: TraktCommentUser
+    public var userRating: Int32?
+    public var userStats: TraktCommentUserStats?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: Int64, comment: String, spoiler: Bool, review: Bool, parentId: Int64, createdAt: String, updatedAt: String, replies: Int32, likes: Int32, language: String, user: TraktCommentUser, userRating: Int32?, userStats: TraktCommentUserStats?) {
+        self.id = id
+        self.comment = comment
+        self.spoiler = spoiler
+        self.review = review
+        self.parentId = parentId
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.replies = replies
+        self.likes = likes
+        self.language = language
+        self.user = user
+        self.userRating = userRating
+        self.userStats = userStats
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktComment: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktComment: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktComment {
+        return
+            try TraktComment(
+                id: FfiConverterInt64.read(from: &buf), 
+                comment: FfiConverterString.read(from: &buf), 
+                spoiler: FfiConverterBool.read(from: &buf), 
+                review: FfiConverterBool.read(from: &buf), 
+                parentId: FfiConverterInt64.read(from: &buf), 
+                createdAt: FfiConverterString.read(from: &buf), 
+                updatedAt: FfiConverterString.read(from: &buf), 
+                replies: FfiConverterInt32.read(from: &buf), 
+                likes: FfiConverterInt32.read(from: &buf), 
+                language: FfiConverterString.read(from: &buf), 
+                user: FfiConverterTypeTraktCommentUser.read(from: &buf), 
+                userRating: FfiConverterOptionInt32.read(from: &buf), 
+                userStats: FfiConverterOptionTypeTraktCommentUserStats.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktComment, into buf: inout [UInt8]) {
+        FfiConverterInt64.write(value.id, into: &buf)
+        FfiConverterString.write(value.comment, into: &buf)
+        FfiConverterBool.write(value.spoiler, into: &buf)
+        FfiConverterBool.write(value.review, into: &buf)
+        FfiConverterInt64.write(value.parentId, into: &buf)
+        FfiConverterString.write(value.createdAt, into: &buf)
+        FfiConverterString.write(value.updatedAt, into: &buf)
+        FfiConverterInt32.write(value.replies, into: &buf)
+        FfiConverterInt32.write(value.likes, into: &buf)
+        FfiConverterString.write(value.language, into: &buf)
+        FfiConverterTypeTraktCommentUser.write(value.user, into: &buf)
+        FfiConverterOptionInt32.write(value.userRating, into: &buf)
+        FfiConverterOptionTypeTraktCommentUserStats.write(value.userStats, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktComment_lift(_ buf: RustBuffer) throws -> TraktComment {
+    return try FfiConverterTypeTraktComment.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktComment_lower(_ value: TraktComment) -> RustBuffer {
+    return FfiConverterTypeTraktComment.lower(value)
+}
+
+
+/**
+ * User information for comment authors
+ */
+public struct TraktCommentUser: Equatable, Hashable {
+    public var username: String
+    public var `private`: Bool
+    public var vip: Bool
+    public var vipEp: Bool
+    public var ids: TraktCommentUserIds
+    public var deleted: Bool?
+    public var name: String?
+    public var director: Bool?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(username: String, `private`: Bool, vip: Bool, vipEp: Bool, ids: TraktCommentUserIds, deleted: Bool?, name: String?, director: Bool?) {
+        self.username = username
+        self.`private` = `private`
+        self.vip = vip
+        self.vipEp = vipEp
+        self.ids = ids
+        self.deleted = deleted
+        self.name = name
+        self.director = director
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktCommentUser: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktCommentUser: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktCommentUser {
+        return
+            try TraktCommentUser(
+                username: FfiConverterString.read(from: &buf), 
+                private: FfiConverterBool.read(from: &buf), 
+                vip: FfiConverterBool.read(from: &buf), 
+                vipEp: FfiConverterBool.read(from: &buf), 
+                ids: FfiConverterTypeTraktCommentUserIds.read(from: &buf), 
+                deleted: FfiConverterOptionBool.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                director: FfiConverterOptionBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktCommentUser, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterBool.write(value.`private`, into: &buf)
+        FfiConverterBool.write(value.vip, into: &buf)
+        FfiConverterBool.write(value.vipEp, into: &buf)
+        FfiConverterTypeTraktCommentUserIds.write(value.ids, into: &buf)
+        FfiConverterOptionBool.write(value.deleted, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionBool.write(value.director, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUser_lift(_ buf: RustBuffer) throws -> TraktCommentUser {
+    return try FfiConverterTypeTraktCommentUser.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUser_lower(_ value: TraktCommentUser) -> RustBuffer {
+    return FfiConverterTypeTraktCommentUser.lower(value)
+}
+
+
+/**
+ * User IDs for comment authors
+ */
+public struct TraktCommentUserIds: Equatable, Hashable {
+    public var slug: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(slug: String) {
+        self.slug = slug
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktCommentUserIds: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktCommentUserIds: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktCommentUserIds {
+        return
+            try TraktCommentUserIds(
+                slug: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktCommentUserIds, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.slug, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUserIds_lift(_ buf: RustBuffer) throws -> TraktCommentUserIds {
+    return try FfiConverterTypeTraktCommentUserIds.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUserIds_lower(_ value: TraktCommentUserIds) -> RustBuffer {
+    return FfiConverterTypeTraktCommentUserIds.lower(value)
+}
+
+
+/**
+ * User statistics for comment authors
+ */
+public struct TraktCommentUserStats: Equatable, Hashable {
+    public var rating: Int32?
+    public var playCount: Int32?
+    public var completedCount: Int32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(rating: Int32?, playCount: Int32?, completedCount: Int32?) {
+        self.rating = rating
+        self.playCount = playCount
+        self.completedCount = completedCount
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktCommentUserStats: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktCommentUserStats: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktCommentUserStats {
+        return
+            try TraktCommentUserStats(
+                rating: FfiConverterOptionInt32.read(from: &buf), 
+                playCount: FfiConverterOptionInt32.read(from: &buf), 
+                completedCount: FfiConverterOptionInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktCommentUserStats, into buf: inout [UInt8]) {
+        FfiConverterOptionInt32.write(value.rating, into: &buf)
+        FfiConverterOptionInt32.write(value.playCount, into: &buf)
+        FfiConverterOptionInt32.write(value.completedCount, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUserStats_lift(_ buf: RustBuffer) throws -> TraktCommentUserStats {
+    return try FfiConverterTypeTraktCommentUserStats.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktCommentUserStats_lower(_ value: TraktCommentUserStats) -> RustBuffer {
+    return FfiConverterTypeTraktCommentUserStats.lower(value)
+}
+
+
+/**
+ * Trakt episode metadata
+ */
+public struct TraktEpisode: Equatable, Hashable {
+    public var season: Int32
+    public var number: Int32
+    public var title: String
+    public var ids: TraktIds
+    public var overview: String?
+    public var firstAired: String?
+    public var runtime: Int32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(season: Int32, number: Int32, title: String, ids: TraktIds, overview: String?, firstAired: String?, runtime: Int32?) {
+        self.season = season
+        self.number = number
+        self.title = title
+        self.ids = ids
+        self.overview = overview
+        self.firstAired = firstAired
+        self.runtime = runtime
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktEpisode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktEpisode: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktEpisode {
+        return
+            try TraktEpisode(
+                season: FfiConverterInt32.read(from: &buf), 
+                number: FfiConverterInt32.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                ids: FfiConverterTypeTraktIds.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                firstAired: FfiConverterOptionString.read(from: &buf), 
+                runtime: FfiConverterOptionInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktEpisode, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.season, into: &buf)
+        FfiConverterInt32.write(value.number, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterTypeTraktIds.write(value.ids, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.firstAired, into: &buf)
+        FfiConverterOptionInt32.write(value.runtime, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktEpisode_lift(_ buf: RustBuffer) throws -> TraktEpisode {
+    return try FfiConverterTypeTraktEpisode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktEpisode_lower(_ value: TraktEpisode) -> RustBuffer {
+    return FfiConverterTypeTraktEpisode.lower(value)
+}
+
+
+/**
+ * Count of deleted items
+ */
+public struct TraktHistoryDeletedCount: Equatable, Hashable {
+    public var movies: Int32
+    public var episodes: Int32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(movies: Int32, episodes: Int32) {
+        self.movies = movies
+        self.episodes = episodes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryDeletedCount: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryDeletedCount: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryDeletedCount {
+        return
+            try TraktHistoryDeletedCount(
+                movies: FfiConverterInt32.read(from: &buf), 
+                episodes: FfiConverterInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryDeletedCount, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.movies, into: &buf)
+        FfiConverterInt32.write(value.episodes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryDeletedCount_lift(_ buf: RustBuffer) throws -> TraktHistoryDeletedCount {
+    return try FfiConverterTypeTraktHistoryDeletedCount.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryDeletedCount_lower(_ value: TraktHistoryDeletedCount) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryDeletedCount.lower(value)
+}
+
+
+/**
+ * Episode information for history removal
+ */
+public struct TraktHistoryEpisode: Equatable, Hashable {
+    public var number: Int32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(number: Int32) {
+        self.number = number
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryEpisode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryEpisode: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryEpisode {
+        return
+            try TraktHistoryEpisode(
+                number: FfiConverterInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryEpisode, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.number, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryEpisode_lift(_ buf: RustBuffer) throws -> TraktHistoryEpisode {
+    return try FfiConverterTypeTraktHistoryEpisode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryEpisode_lower(_ value: TraktHistoryEpisode) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryEpisode.lower(value)
+}
+
+
+/**
+ * Partial IDs for history removal requests
+ */
+public struct TraktHistoryIds: Equatable, Hashable {
+    public var trakt: Int64?
+    public var imdb: String?
+    public var tmdb: Int64?
+    public var tvdb: Int64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(trakt: Int64?, imdb: String?, tmdb: Int64?, tvdb: Int64?) {
+        self.trakt = trakt
+        self.imdb = imdb
+        self.tmdb = tmdb
+        self.tvdb = tvdb
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryIds: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryIds: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryIds {
+        return
+            try TraktHistoryIds(
+                trakt: FfiConverterOptionInt64.read(from: &buf), 
+                imdb: FfiConverterOptionString.read(from: &buf), 
+                tmdb: FfiConverterOptionInt64.read(from: &buf), 
+                tvdb: FfiConverterOptionInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryIds, into buf: inout [UInt8]) {
+        FfiConverterOptionInt64.write(value.trakt, into: &buf)
+        FfiConverterOptionString.write(value.imdb, into: &buf)
+        FfiConverterOptionInt64.write(value.tmdb, into: &buf)
+        FfiConverterOptionInt64.write(value.tvdb, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryIds_lift(_ buf: RustBuffer) throws -> TraktHistoryIds {
+    return try FfiConverterTypeTraktHistoryIds.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryIds_lower(_ value: TraktHistoryIds) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryIds.lower(value)
+}
+
+
+/**
+ * Movie item for history removal
+ */
+public struct TraktHistoryMovie: Equatable, Hashable {
+    public var ids: TraktHistoryIds
+    public var title: String?
+    public var year: Int32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ids: TraktHistoryIds, title: String?, year: Int32?) {
+        self.ids = ids
+        self.title = title
+        self.year = year
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryMovie: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryMovie: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryMovie {
+        return
+            try TraktHistoryMovie(
+                ids: FfiConverterTypeTraktHistoryIds.read(from: &buf), 
+                title: FfiConverterOptionString.read(from: &buf), 
+                year: FfiConverterOptionInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryMovie, into buf: inout [UInt8]) {
+        FfiConverterTypeTraktHistoryIds.write(value.ids, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionInt32.write(value.year, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryMovie_lift(_ buf: RustBuffer) throws -> TraktHistoryMovie {
+    return try FfiConverterTypeTraktHistoryMovie.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryMovie_lower(_ value: TraktHistoryMovie) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryMovie.lower(value)
+}
+
+
+/**
+ * Not found items
+ */
+public struct TraktHistoryNotFound: Equatable, Hashable {
+    public var movies: [TraktHistoryNotFoundItem]
+    public var shows: [TraktHistoryNotFoundItem]
+    public var episodes: [TraktHistoryNotFoundItem]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(movies: [TraktHistoryNotFoundItem], shows: [TraktHistoryNotFoundItem], episodes: [TraktHistoryNotFoundItem]) {
+        self.movies = movies
+        self.shows = shows
+        self.episodes = episodes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryNotFound: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryNotFound: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryNotFound {
+        return
+            try TraktHistoryNotFound(
+                movies: FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(from: &buf), 
+                shows: FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(from: &buf), 
+                episodes: FfiConverterSequenceTypeTraktHistoryNotFoundItem.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryNotFound, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.movies, into: &buf)
+        FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.shows, into: &buf)
+        FfiConverterSequenceTypeTraktHistoryNotFoundItem.write(value.episodes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryNotFound_lift(_ buf: RustBuffer) throws -> TraktHistoryNotFound {
+    return try FfiConverterTypeTraktHistoryNotFound.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryNotFound_lower(_ value: TraktHistoryNotFound) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryNotFound.lower(value)
+}
+
+
+/**
+ * Not found item in history removal response
+ */
+public struct TraktHistoryNotFoundItem: Equatable, Hashable {
+    public var ids: TraktHistoryIds
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ids: TraktHistoryIds) {
+        self.ids = ids
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryNotFoundItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryNotFoundItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryNotFoundItem {
+        return
+            try TraktHistoryNotFoundItem(
+                ids: FfiConverterTypeTraktHistoryIds.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryNotFoundItem, into buf: inout [UInt8]) {
+        FfiConverterTypeTraktHistoryIds.write(value.ids, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryNotFoundItem_lift(_ buf: RustBuffer) throws -> TraktHistoryNotFoundItem {
+    return try FfiConverterTypeTraktHistoryNotFoundItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryNotFoundItem_lower(_ value: TraktHistoryNotFoundItem) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryNotFoundItem.lower(value)
+}
+
+
+/**
+ * Payload for removing items from watched history
+ */
+public struct TraktHistoryRemovePayload: Equatable, Hashable {
+    public var movies: [TraktHistoryMovie]?
+    public var shows: [TraktHistoryShow]?
+    public var ids: [Int64]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(movies: [TraktHistoryMovie]?, shows: [TraktHistoryShow]?, ids: [Int64]?) {
+        self.movies = movies
+        self.shows = shows
+        self.ids = ids
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryRemovePayload: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryRemovePayload: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryRemovePayload {
+        return
+            try TraktHistoryRemovePayload(
+                movies: FfiConverterOptionSequenceTypeTraktHistoryMovie.read(from: &buf), 
+                shows: FfiConverterOptionSequenceTypeTraktHistoryShow.read(from: &buf), 
+                ids: FfiConverterOptionSequenceInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryRemovePayload, into buf: inout [UInt8]) {
+        FfiConverterOptionSequenceTypeTraktHistoryMovie.write(value.movies, into: &buf)
+        FfiConverterOptionSequenceTypeTraktHistoryShow.write(value.shows, into: &buf)
+        FfiConverterOptionSequenceInt64.write(value.ids, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryRemovePayload_lift(_ buf: RustBuffer) throws -> TraktHistoryRemovePayload {
+    return try FfiConverterTypeTraktHistoryRemovePayload.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryRemovePayload_lower(_ value: TraktHistoryRemovePayload) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryRemovePayload.lower(value)
+}
+
+
+/**
+ * Response from history removal API
+ */
+public struct TraktHistoryRemoveResponse: Equatable, Hashable {
+    public var deleted: TraktHistoryDeletedCount
+    public var notFound: TraktHistoryNotFound
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(deleted: TraktHistoryDeletedCount, notFound: TraktHistoryNotFound) {
+        self.deleted = deleted
+        self.notFound = notFound
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryRemoveResponse: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryRemoveResponse: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryRemoveResponse {
+        return
+            try TraktHistoryRemoveResponse(
+                deleted: FfiConverterTypeTraktHistoryDeletedCount.read(from: &buf), 
+                notFound: FfiConverterTypeTraktHistoryNotFound.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryRemoveResponse, into buf: inout [UInt8]) {
+        FfiConverterTypeTraktHistoryDeletedCount.write(value.deleted, into: &buf)
+        FfiConverterTypeTraktHistoryNotFound.write(value.notFound, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryRemoveResponse_lift(_ buf: RustBuffer) throws -> TraktHistoryRemoveResponse {
+    return try FfiConverterTypeTraktHistoryRemoveResponse.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryRemoveResponse_lower(_ value: TraktHistoryRemoveResponse) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryRemoveResponse.lower(value)
+}
+
+
+/**
+ * Season information for history removal
+ */
+public struct TraktHistorySeason: Equatable, Hashable {
+    public var number: Int32
+    public var episodes: [TraktHistoryEpisode]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(number: Int32, episodes: [TraktHistoryEpisode]?) {
+        self.number = number
+        self.episodes = episodes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistorySeason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistorySeason: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistorySeason {
+        return
+            try TraktHistorySeason(
+                number: FfiConverterInt32.read(from: &buf), 
+                episodes: FfiConverterOptionSequenceTypeTraktHistoryEpisode.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistorySeason, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.number, into: &buf)
+        FfiConverterOptionSequenceTypeTraktHistoryEpisode.write(value.episodes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistorySeason_lift(_ buf: RustBuffer) throws -> TraktHistorySeason {
+    return try FfiConverterTypeTraktHistorySeason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistorySeason_lower(_ value: TraktHistorySeason) -> RustBuffer {
+    return FfiConverterTypeTraktHistorySeason.lower(value)
+}
+
+
+/**
+ * Show item for history removal
+ */
+public struct TraktHistoryShow: Equatable, Hashable {
+    public var ids: TraktHistoryIds
+    public var title: String?
+    public var year: Int32?
+    public var seasons: [TraktHistorySeason]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ids: TraktHistoryIds, title: String?, year: Int32?, seasons: [TraktHistorySeason]?) {
+        self.ids = ids
+        self.title = title
+        self.year = year
+        self.seasons = seasons
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktHistoryShow: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktHistoryShow: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktHistoryShow {
+        return
+            try TraktHistoryShow(
+                ids: FfiConverterTypeTraktHistoryIds.read(from: &buf), 
+                title: FfiConverterOptionString.read(from: &buf), 
+                year: FfiConverterOptionInt32.read(from: &buf), 
+                seasons: FfiConverterOptionSequenceTypeTraktHistorySeason.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktHistoryShow, into buf: inout [UInt8]) {
+        FfiConverterTypeTraktHistoryIds.write(value.ids, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionInt32.write(value.year, into: &buf)
+        FfiConverterOptionSequenceTypeTraktHistorySeason.write(value.seasons, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryShow_lift(_ buf: RustBuffer) throws -> TraktHistoryShow {
+    return try FfiConverterTypeTraktHistoryShow.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktHistoryShow_lower(_ value: TraktHistoryShow) -> RustBuffer {
+    return FfiConverterTypeTraktHistoryShow.lower(value)
+}
+
+
+/**
+ * Trakt IDs for content items (movies, shows, episodes)
+ */
+public struct TraktIds: Equatable, Hashable {
+    public var trakt: Int64
+    public var slug: String
+    public var imdb: String?
+    public var tmdb: Int64?
+    public var tvdb: Int64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(trakt: Int64, slug: String, imdb: String?, tmdb: Int64?, tvdb: Int64?) {
+        self.trakt = trakt
+        self.slug = slug
+        self.imdb = imdb
+        self.tmdb = tmdb
+        self.tvdb = tvdb
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktIds: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktIds: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktIds {
+        return
+            try TraktIds(
+                trakt: FfiConverterInt64.read(from: &buf), 
+                slug: FfiConverterString.read(from: &buf), 
+                imdb: FfiConverterOptionString.read(from: &buf), 
+                tmdb: FfiConverterOptionInt64.read(from: &buf), 
+                tvdb: FfiConverterOptionInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktIds, into buf: inout [UInt8]) {
+        FfiConverterInt64.write(value.trakt, into: &buf)
+        FfiConverterString.write(value.slug, into: &buf)
+        FfiConverterOptionString.write(value.imdb, into: &buf)
+        FfiConverterOptionInt64.write(value.tmdb, into: &buf)
+        FfiConverterOptionInt64.write(value.tvdb, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktIds_lift(_ buf: RustBuffer) throws -> TraktIds {
+    return try FfiConverterTypeTraktIds.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktIds_lower(_ value: TraktIds) -> RustBuffer {
+    return FfiConverterTypeTraktIds.lower(value)
+}
+
+
+/**
+ * Trakt movie metadata
+ */
+public struct TraktMovie: Equatable, Hashable {
+    public var title: String
+    public var year: Int32?
+    public var ids: TraktIds
+    public var tagline: String?
+    public var overview: String?
+    public var released: String?
+    public var runtime: Int32?
+    public var language: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(title: String, year: Int32?, ids: TraktIds, tagline: String?, overview: String?, released: String?, runtime: Int32?, language: String?) {
+        self.title = title
+        self.year = year
+        self.ids = ids
+        self.tagline = tagline
+        self.overview = overview
+        self.released = released
+        self.runtime = runtime
+        self.language = language
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktMovie: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktMovie: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktMovie {
+        return
+            try TraktMovie(
+                title: FfiConverterString.read(from: &buf), 
+                year: FfiConverterOptionInt32.read(from: &buf), 
+                ids: FfiConverterTypeTraktIds.read(from: &buf), 
+                tagline: FfiConverterOptionString.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                released: FfiConverterOptionString.read(from: &buf), 
+                runtime: FfiConverterOptionInt32.read(from: &buf), 
+                language: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktMovie, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterOptionInt32.write(value.year, into: &buf)
+        FfiConverterTypeTraktIds.write(value.ids, into: &buf)
+        FfiConverterOptionString.write(value.tagline, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.released, into: &buf)
+        FfiConverterOptionInt32.write(value.runtime, into: &buf)
+        FfiConverterOptionString.write(value.language, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktMovie_lift(_ buf: RustBuffer) throws -> TraktMovie {
+    return try FfiConverterTypeTraktMovie.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktMovie_lower(_ value: TraktMovie) -> RustBuffer {
+    return FfiConverterTypeTraktMovie.lower(value)
+}
+
+
+/**
+ * Recommendation item - can be either a movie or show recommendation
+ */
+public struct TraktRecommendation: Equatable, Hashable {
+    public var movie: TraktMovie?
+    public var show: TraktShow?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(movie: TraktMovie?, show: TraktShow?) {
+        self.movie = movie
+        self.show = show
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktRecommendation: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktRecommendation: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktRecommendation {
+        return
+            try TraktRecommendation(
+                movie: FfiConverterOptionTypeTraktMovie.read(from: &buf), 
+                show: FfiConverterOptionTypeTraktShow.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktRecommendation, into buf: inout [UInt8]) {
+        FfiConverterOptionTypeTraktMovie.write(value.movie, into: &buf)
+        FfiConverterOptionTypeTraktShow.write(value.show, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktRecommendation_lift(_ buf: RustBuffer) throws -> TraktRecommendation {
+    return try FfiConverterTypeTraktRecommendation.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktRecommendation_lower(_ value: TraktRecommendation) -> RustBuffer {
+    return FfiConverterTypeTraktRecommendation.lower(value)
+}
+
+
+/**
+ * Search result item containing the search score and the matched content
+ */
+public struct TraktSearchResult: Equatable, Hashable {
+    /**
+     * Type of the search result (movie, show, episode, person, list)
+     */
+    public var resultType: String
+    /**
+     * Search relevance score
+     */
+    public var score: Double
+    /**
+     * Movie data if this is a movie result
+     */
+    public var movie: TraktMovie?
+    /**
+     * Show data if this is a show result
+     */
+    public var show: TraktShow?
+    /**
+     * Episode data if this is an episode result
+     */
+    public var episode: TraktEpisode?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Type of the search result (movie, show, episode, person, list)
+         */resultType: String, 
+        /**
+         * Search relevance score
+         */score: Double, 
+        /**
+         * Movie data if this is a movie result
+         */movie: TraktMovie?, 
+        /**
+         * Show data if this is a show result
+         */show: TraktShow?, 
+        /**
+         * Episode data if this is an episode result
+         */episode: TraktEpisode?) {
+        self.resultType = resultType
+        self.score = score
+        self.movie = movie
+        self.show = show
+        self.episode = episode
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktSearchResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktSearchResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktSearchResult {
+        return
+            try TraktSearchResult(
+                resultType: FfiConverterString.read(from: &buf), 
+                score: FfiConverterDouble.read(from: &buf), 
+                movie: FfiConverterOptionTypeTraktMovie.read(from: &buf), 
+                show: FfiConverterOptionTypeTraktShow.read(from: &buf), 
+                episode: FfiConverterOptionTypeTraktEpisode.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktSearchResult, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.resultType, into: &buf)
+        FfiConverterDouble.write(value.score, into: &buf)
+        FfiConverterOptionTypeTraktMovie.write(value.movie, into: &buf)
+        FfiConverterOptionTypeTraktShow.write(value.show, into: &buf)
+        FfiConverterOptionTypeTraktEpisode.write(value.episode, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktSearchResult_lift(_ buf: RustBuffer) throws -> TraktSearchResult {
+    return try FfiConverterTypeTraktSearchResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktSearchResult_lower(_ value: TraktSearchResult) -> RustBuffer {
+    return FfiConverterTypeTraktSearchResult.lower(value)
+}
+
+
+/**
+ * Trakt show metadata
+ */
+public struct TraktShow: Equatable, Hashable {
+    public var title: String
+    public var year: Int32?
+    public var ids: TraktIds
+    public var overview: String?
+    public var firstAired: String?
+    public var runtime: Int32?
+    public var network: String?
+    public var status: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(title: String, year: Int32?, ids: TraktIds, overview: String?, firstAired: String?, runtime: Int32?, network: String?, status: String?) {
+        self.title = title
+        self.year = year
+        self.ids = ids
+        self.overview = overview
+        self.firstAired = firstAired
+        self.runtime = runtime
+        self.network = network
+        self.status = status
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktShow: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktShow: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktShow {
+        return
+            try TraktShow(
+                title: FfiConverterString.read(from: &buf), 
+                year: FfiConverterOptionInt32.read(from: &buf), 
+                ids: FfiConverterTypeTraktIds.read(from: &buf), 
+                overview: FfiConverterOptionString.read(from: &buf), 
+                firstAired: FfiConverterOptionString.read(from: &buf), 
+                runtime: FfiConverterOptionInt32.read(from: &buf), 
+                network: FfiConverterOptionString.read(from: &buf), 
+                status: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktShow, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterOptionInt32.write(value.year, into: &buf)
+        FfiConverterTypeTraktIds.write(value.ids, into: &buf)
+        FfiConverterOptionString.write(value.overview, into: &buf)
+        FfiConverterOptionString.write(value.firstAired, into: &buf)
+        FfiConverterOptionInt32.write(value.runtime, into: &buf)
+        FfiConverterOptionString.write(value.network, into: &buf)
+        FfiConverterOptionString.write(value.status, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktShow_lift(_ buf: RustBuffer) throws -> TraktShow {
+    return try FfiConverterTypeTraktShow.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktShow_lower(_ value: TraktShow) -> RustBuffer {
+    return FfiConverterTypeTraktShow.lower(value)
+}
+
+
+/**
+ * User settings from /users/settings endpoint
+ */
+public struct TraktUserSettings: Equatable, Hashable {
+    /**
+     * User profile information
+     */
+    public var user: TraktUserSettingsUser
+    /**
+     * Account information including VIP status
+     */
+    public var account: TraktUserSettingsAccount
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * User profile information
+         */user: TraktUserSettingsUser, 
+        /**
+         * Account information including VIP status
+         */account: TraktUserSettingsAccount) {
+        self.user = user
+        self.account = account
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktUserSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktUserSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktUserSettings {
+        return
+            try TraktUserSettings(
+                user: FfiConverterTypeTraktUserSettingsUser.read(from: &buf), 
+                account: FfiConverterTypeTraktUserSettingsAccount.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktUserSettings, into buf: inout [UInt8]) {
+        FfiConverterTypeTraktUserSettingsUser.write(value.user, into: &buf)
+        FfiConverterTypeTraktUserSettingsAccount.write(value.account, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettings_lift(_ buf: RustBuffer) throws -> TraktUserSettings {
+    return try FfiConverterTypeTraktUserSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettings_lower(_ value: TraktUserSettings) -> RustBuffer {
+    return FfiConverterTypeTraktUserSettings.lower(value)
+}
+
+
+/**
+ * Account information from settings
+ */
+public struct TraktUserSettingsAccount: Equatable, Hashable {
+    public var timezone: String?
+    public var dateFormat: String?
+    public var time24hr: Bool?
+    public var coverImage: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(timezone: String?, dateFormat: String?, time24hr: Bool?, coverImage: String?) {
+        self.timezone = timezone
+        self.dateFormat = dateFormat
+        self.time24hr = time24hr
+        self.coverImage = coverImage
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktUserSettingsAccount: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktUserSettingsAccount: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktUserSettingsAccount {
+        return
+            try TraktUserSettingsAccount(
+                timezone: FfiConverterOptionString.read(from: &buf), 
+                dateFormat: FfiConverterOptionString.read(from: &buf), 
+                time24hr: FfiConverterOptionBool.read(from: &buf), 
+                coverImage: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktUserSettingsAccount, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.timezone, into: &buf)
+        FfiConverterOptionString.write(value.dateFormat, into: &buf)
+        FfiConverterOptionBool.write(value.time24hr, into: &buf)
+        FfiConverterOptionString.write(value.coverImage, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettingsAccount_lift(_ buf: RustBuffer) throws -> TraktUserSettingsAccount {
+    return try FfiConverterTypeTraktUserSettingsAccount.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettingsAccount_lower(_ value: TraktUserSettingsAccount) -> RustBuffer {
+    return FfiConverterTypeTraktUserSettingsAccount.lower(value)
+}
+
+
+/**
+ * User profile information from settings
+ */
+public struct TraktUserSettingsUser: Equatable, Hashable {
+    public var username: String
+    public var `private`: Bool?
+    public var name: String?
+    public var vip: Bool?
+    public var vipEp: Bool?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(username: String, `private`: Bool?, name: String?, vip: Bool?, vipEp: Bool?) {
+        self.username = username
+        self.`private` = `private`
+        self.name = name
+        self.vip = vip
+        self.vipEp = vipEp
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktUserSettingsUser: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktUserSettingsUser: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktUserSettingsUser {
+        return
+            try TraktUserSettingsUser(
+                username: FfiConverterString.read(from: &buf), 
+                private: FfiConverterOptionBool.read(from: &buf), 
+                name: FfiConverterOptionString.read(from: &buf), 
+                vip: FfiConverterOptionBool.read(from: &buf), 
+                vipEp: FfiConverterOptionBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktUserSettingsUser, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterOptionBool.write(value.`private`, into: &buf)
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionBool.write(value.vip, into: &buf)
+        FfiConverterOptionBool.write(value.vipEp, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettingsUser_lift(_ buf: RustBuffer) throws -> TraktUserSettingsUser {
+    return try FfiConverterTypeTraktUserSettingsUser.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktUserSettingsUser_lower(_ value: TraktUserSettingsUser) -> RustBuffer {
+    return FfiConverterTypeTraktUserSettingsUser.lower(value)
+}
+
+
+/**
+ * Episode data in watched history
+ */
+public struct TraktWatchedEpisode: Equatable, Hashable {
+    public var number: Int32
+    public var plays: Int32
+    public var lastWatchedAt: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(number: Int32, plays: Int32, lastWatchedAt: String) {
+        self.number = number
+        self.plays = plays
+        self.lastWatchedAt = lastWatchedAt
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktWatchedEpisode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktWatchedEpisode: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktWatchedEpisode {
+        return
+            try TraktWatchedEpisode(
+                number: FfiConverterInt32.read(from: &buf), 
+                plays: FfiConverterInt32.read(from: &buf), 
+                lastWatchedAt: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktWatchedEpisode, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.number, into: &buf)
+        FfiConverterInt32.write(value.plays, into: &buf)
+        FfiConverterString.write(value.lastWatchedAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedEpisode_lift(_ buf: RustBuffer) throws -> TraktWatchedEpisode {
+    return try FfiConverterTypeTraktWatchedEpisode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedEpisode_lower(_ value: TraktWatchedEpisode) -> RustBuffer {
+    return FfiConverterTypeTraktWatchedEpisode.lower(value)
+}
+
+
+/**
+ * Watched item from sync history
+ */
+public struct TraktWatchedItem: Equatable, Hashable {
+    public var plays: Int32
+    public var lastWatchedAt: String
+    public var lastUpdatedAt: String?
+    public var resetAt: String?
+    public var movie: TraktMovie?
+    public var show: TraktShow?
+    public var seasons: [TraktWatchedSeason]?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(plays: Int32, lastWatchedAt: String, lastUpdatedAt: String?, resetAt: String?, movie: TraktMovie?, show: TraktShow?, seasons: [TraktWatchedSeason]?) {
+        self.plays = plays
+        self.lastWatchedAt = lastWatchedAt
+        self.lastUpdatedAt = lastUpdatedAt
+        self.resetAt = resetAt
+        self.movie = movie
+        self.show = show
+        self.seasons = seasons
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktWatchedItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktWatchedItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktWatchedItem {
+        return
+            try TraktWatchedItem(
+                plays: FfiConverterInt32.read(from: &buf), 
+                lastWatchedAt: FfiConverterString.read(from: &buf), 
+                lastUpdatedAt: FfiConverterOptionString.read(from: &buf), 
+                resetAt: FfiConverterOptionString.read(from: &buf), 
+                movie: FfiConverterOptionTypeTraktMovie.read(from: &buf), 
+                show: FfiConverterOptionTypeTraktShow.read(from: &buf), 
+                seasons: FfiConverterOptionSequenceTypeTraktWatchedSeason.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktWatchedItem, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.plays, into: &buf)
+        FfiConverterString.write(value.lastWatchedAt, into: &buf)
+        FfiConverterOptionString.write(value.lastUpdatedAt, into: &buf)
+        FfiConverterOptionString.write(value.resetAt, into: &buf)
+        FfiConverterOptionTypeTraktMovie.write(value.movie, into: &buf)
+        FfiConverterOptionTypeTraktShow.write(value.show, into: &buf)
+        FfiConverterOptionSequenceTypeTraktWatchedSeason.write(value.seasons, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedItem_lift(_ buf: RustBuffer) throws -> TraktWatchedItem {
+    return try FfiConverterTypeTraktWatchedItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedItem_lower(_ value: TraktWatchedItem) -> RustBuffer {
+    return FfiConverterTypeTraktWatchedItem.lower(value)
+}
+
+
+/**
+ * Season data in watched history
+ */
+public struct TraktWatchedSeason: Equatable, Hashable {
+    public var number: Int32
+    public var episodes: [TraktWatchedEpisode]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(number: Int32, episodes: [TraktWatchedEpisode]) {
+        self.number = number
+        self.episodes = episodes
+    }
+
+    
+}
+
+#if compiler(>=6)
+extension TraktWatchedSeason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktWatchedSeason: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktWatchedSeason {
+        return
+            try TraktWatchedSeason(
+                number: FfiConverterInt32.read(from: &buf), 
+                episodes: FfiConverterSequenceTypeTraktWatchedEpisode.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TraktWatchedSeason, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.number, into: &buf)
+        FfiConverterSequenceTypeTraktWatchedEpisode.write(value.episodes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedSeason_lift(_ buf: RustBuffer) throws -> TraktWatchedSeason {
+    return try FfiConverterTypeTraktWatchedSeason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktWatchedSeason_lower(_ value: TraktWatchedSeason) -> RustBuffer {
+    return FfiConverterTypeTraktWatchedSeason.lower(value)
+}
+
+
 public struct UpdateProfileInput: Equatable, Hashable {
     public var name: String?
     public var avatarId: String?
@@ -3727,6 +13895,647 @@ public func FfiConverterTypeWatchedItem_lower(_ value: WatchedItem) -> RustBuffe
 
 
 /**
+ * Errors that can occur during backup and restore operations
+ */
+public enum BackupError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Error occurred during serialization or deserialization
+     */
+    case SerializationError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Error occurred during compression or decompression
+     */
+    case CompressionError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Error occurred during file I/O operations
+     */
+    case IoError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Error occurred during data validation
+     */
+    case ValidationError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Backup file not found
+     */
+    case BackupNotFound(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Unsupported backup version
+     */
+    case UnsupportedVersion(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Cloud backup operation failed
+     */
+    case CloudBackupError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Storage error
+     */
+    case StorageError(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+    /**
+     * Unknown error
+     */
+    case Unknown(
+        /**
+         * Detailed error message
+         */msg: String
+    )
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension BackupError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBackupError: FfiConverterRustBuffer {
+    typealias SwiftType = BackupError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BackupError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .SerializationError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .CompressionError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 3: return .IoError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 4: return .ValidationError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 5: return .BackupNotFound(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 6: return .UnsupportedVersion(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 7: return .CloudBackupError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 8: return .StorageError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 9: return .Unknown(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: BackupError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .SerializationError(msg):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .CompressionError(msg):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .IoError(msg):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .ValidationError(msg):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .BackupNotFound(msg):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .UnsupportedVersion(msg):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .CloudBackupError(msg):
+            writeInt(&buf, Int32(7))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .StorageError(msg):
+            writeInt(&buf, Int32(8))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .Unknown(msg):
+            writeInt(&buf, Int32(9))
+            FfiConverterString.write(msg, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupError_lift(_ buf: RustBuffer) throws -> BackupError {
+    return try FfiConverterTypeBackupError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBackupError_lower(_ value: BackupError) -> RustBuffer {
+    return FfiConverterTypeBackupError.lower(value)
+}
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The runtime environment for the SDK.
+ *
+ * This affects various SDK behaviors including:
+ * - Logging verbosity and format
+ * - Debug features enablement
+ * - API endpoint selection (if applicable)
+ * - Error detail level in responses
+ *
+ * # FFI Safety
+ *
+ * This enum is exported via UniFFI and can be used from Kotlin and Swift.
+ */
+
+public enum Environment: Equatable, Hashable {
+    
+    /**
+     * Development environment with verbose logging and debug features.
+     * Use this during local development.
+     */
+    case development
+    /**
+     * Staging environment for testing before production.
+     * Similar to production but with additional logging.
+     */
+    case staging
+    /**
+     * Production environment with optimized logging and error handling.
+     * This is the default environment.
+     */
+    case production
+
+
+
+}
+
+#if compiler(>=6)
+extension Environment: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeEnvironment: FfiConverterRustBuffer {
+    typealias SwiftType = Environment
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Environment {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .development
+        
+        case 2: return .staging
+        
+        case 3: return .production
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: Environment, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .development:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .staging:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .production:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnvironment_lift(_ buf: RustBuffer) throws -> Environment {
+    return try FfiConverterTypeEnvironment.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeEnvironment_lower(_ value: Environment) -> RustBuffer {
+    return FfiConverterTypeEnvironment.lower(value)
+}
+
+
+
+/**
+ * Error types that can occur during HTTP operations.
+ *
+ * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
+ * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ *
+ * Error codes for NetworkError:
+ * - 0: General network error
+ * - 1: DNS resolution failure
+ * - 2: Connection refused
+ * - 3: Connection reset
+ * - 4: Other connection error
+ */
+public enum HttpError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * Network-level error (DNS, connection, etc.)
+     */
+    case NetworkError(
+        /**
+         * Error code indicating the type of network failure
+         */code: Int32, 
+        /**
+         * Detailed error message describing what went wrong
+         */msg: String
+    )
+    /**
+     * Request or connection timeout
+     */
+    case TimeoutError(
+        /**
+         * Detailed error message describing the timeout
+         */msg: String
+    )
+    /**
+     * HTTP status code error (4xx or 5xx)
+     */
+    case HttpStatusError(
+        /**
+         * HTTP status code (e.g., 404, 500)
+         */statusCode: UInt16, 
+        /**
+         * Detailed error message or response body
+         */msg: String
+    )
+    /**
+     * TLS/SSL certificate validation error
+     */
+    case TlsError(
+        /**
+         * Detailed error message describing the TLS error
+         */msg: String
+    )
+    /**
+     * Request was cancelled by the user
+     */
+    case CancellationError(
+        /**
+         * Detailed error message about the cancellation
+         */msg: String
+    )
+    /**
+     * Invalid HTTP client configuration
+     */
+    case ConfigurationError(
+        /**
+         * Detailed error message describing the configuration issue
+         */msg: String
+    )
+    /**
+     * Unknown or unexpected error
+     */
+    case Unknown(
+        /**
+         * Detailed error message describing the error
+         */msg: String
+    )
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension HttpError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHttpError: FfiConverterRustBuffer {
+    typealias SwiftType = HttpError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HttpError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NetworkError(
+            code: try FfiConverterInt32.read(from: &buf), 
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .TimeoutError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 3: return .HttpStatusError(
+            statusCode: try FfiConverterUInt16.read(from: &buf), 
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 4: return .TlsError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 5: return .CancellationError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 6: return .ConfigurationError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 7: return .Unknown(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: HttpError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .NetworkError(code,msg):
+            writeInt(&buf, Int32(1))
+            FfiConverterInt32.write(code, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .TimeoutError(msg):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .HttpStatusError(statusCode,msg):
+            writeInt(&buf, Int32(3))
+            FfiConverterUInt16.write(statusCode, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .TlsError(msg):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .CancellationError(msg):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .ConfigurationError(msg):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(msg, into: &buf)
+            
+        
+        case let .Unknown(msg):
+            writeInt(&buf, Int32(7))
+            FfiConverterString.write(msg, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpError_lift(_ buf: RustBuffer) throws -> HttpError {
+    return try FfiConverterTypeHttpError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHttpError_lower(_ value: HttpError) -> RustBuffer {
+    return FfiConverterTypeHttpError.lower(value)
+}
+
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+/**
+ * The log level for SDK logging.
+ *
+ * Controls the verbosity of logs emitted by the SDK. Log levels are hierarchical:
+ * - `Trace` includes all log levels
+ * - `Debug` includes Debug, Info, Warn, and Error
+ * - `Info` includes Info, Warn, and Error
+ * - `Warn` includes Warn and Error
+ * - `Error` includes only Error
+ * - `Off` disables all logging
+ *
+ * # FFI Safety
+ *
+ * This enum is exported via UniFFI and can be used from Kotlin and Swift.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::config::LogLevel;
+ *
+ * let level = LogLevel::Info;
+ * assert!(level.is_enabled_for(&LogLevel::Warn));
+ * assert!(level.is_enabled_for(&LogLevel::Error));
+ * assert!(!level.is_enabled_for(&LogLevel::Debug));
+ * ```
+ */
+
+public enum LogLevel: Equatable, Hashable {
+    
+    /**
+     * Most verbose logging level. Includes fine-grained diagnostic information.
+     * Use sparingly as it can generate a lot of output.
+     */
+    case trace
+    /**
+     * Debug-level logging. Useful during development for debugging.
+     */
+    case debug
+    /**
+     * Informational messages. Default logging level for production.
+     */
+    case info
+    /**
+     * Warning messages indicating potential issues.
+     */
+    case warn
+    /**
+     * Error messages for actual failures.
+     */
+    case error
+    /**
+     * Disable all logging.
+     */
+    case off
+
+
+
+}
+
+#if compiler(>=6)
+extension LogLevel: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLogLevel: FfiConverterRustBuffer {
+    typealias SwiftType = LogLevel
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LogLevel {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .trace
+        
+        case 2: return .debug
+        
+        case 3: return .info
+        
+        case 4: return .warn
+        
+        case 5: return .error
+        
+        case 6: return .off
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: LogLevel, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .trace:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .debug:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .info:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .warn:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .error:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .off:
+            writeInt(&buf, Int32(6))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogLevel_lift(_ buf: RustBuffer) throws -> LogLevel {
+    return try FfiConverterTypeLogLevel.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLogLevel_lower(_ value: LogLevel) -> RustBuffer {
+    return FfiConverterTypeLogLevel.lower(value)
+}
+
+
+
+/**
  * Error types that can occur in the Nuvio Core SDK.
  *
  * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
@@ -3736,30 +14545,6 @@ public enum NuvioError: Swift.Error, Equatable, Hashable, Foundation.LocalizedEr
 
     
     
-    /**
-     * Error occurred during security operations (hashing, verification)
-     */
-    case SecurityError(
-        /**
-         * Detailed error message describing what went wrong
-         */msg: String
-    )
-    /**
-     * Error occurred during profile operations
-     */
-    case ProfileError(
-        /**
-         * Detailed error message describing what went wrong
-         */msg: String
-    )
-    /**
-     * Error occurred during storage operations
-     */
-    case StorageError(
-        /**
-         * Detailed error message describing what went wrong
-         */msg: String
-    )
     /**
      * Error occurred during serialization or deserialization
      */
@@ -3777,54 +14562,75 @@ public enum NuvioError: Swift.Error, Equatable, Hashable, Foundation.LocalizedEr
          */msg: String
     )
     /**
+     * Error occurred in cache operations
+     */
+    case CacheError(
+        /**
+         * Detailed error message describing the cache error
+         */msg: String
+    )
+    /**
+     * Network-level error (DNS, connection, etc.)
+     */
+    case NetworkError(
+        /**
+         * Detailed error message describing the network failure
+         */msg: String
+    )
+    /**
+     * Request or connection timeout
+     */
+    case TimeoutError(
+        /**
+         * Detailed error message describing the timeout
+         */msg: String
+    )
+    /**
+     * Storage/IO error
+     */
+    case StorageError(
+        /**
+         * Detailed error message describing the storage failure
+         */msg: String
+    )
+    /**
+     * Security-related error (encryption, authentication, etc.)
+     */
+    case SecurityError(
+        /**
+         * Detailed error message describing the security failure
+         */msg: String
+    )
+    /**
+     * Profile-related error (management, authentication, etc.)
+     */
+    case ProfileError(
+        /**
+         * Detailed error message describing the profile error
+         */msg: String
+    )
+    /**
+     * Addon not found error
+     */
+    case AddonNotFoundError(
+        /**
+         * Detailed error message describing which addon was not found
+         */msg: String
+    )
+    /**
+     * Response too large error
+     */
+    case ResponseTooLargeError(
+        /**
+         * Detailed error message describing the size limit exceeded
+         */msg: String
+    )
+    /**
      * Unknown or unexpected error occurred
      */
     case Unknown(
         /**
          * Detailed error message describing the error
-         */msg: String
-    )
-    /**
-     * Network error occurred
-     */
-    case NetworkError(
-        /**
-         * Detailed error message
-         */msg: String
-    )
-    /**
-     * Request timed out
-     */
-    case Timeout(
-        /**
-         * Timeout details
-         */msg: String
-    )
-    /**
-     * Response size invalid
-     */
-    case ResponseTooLarge(
-        /**
-         * Actual size
-         */size: UInt64, 
-        /**
-         * Size limit
-         */limit: UInt64
-    )
-    /**
-     * Invalid manifest format
-     */
-    case InvalidManifest(
-        /**
-         * Validation message
-         */msg: String
-    )
-    /**
-     * Addon not found
-     */
-    case AddonNotFound(
-        /**
-         * Error message
          */msg: String
     )
 
@@ -3854,38 +14660,37 @@ public struct FfiConverterTypeNuvioError: FfiConverterRustBuffer {
         
 
         
-        case 1: return .SecurityError(
+        case 1: return .SerializationError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 2: return .ProfileError(
+        case 2: return .ValidationError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 3: return .StorageError(
+        case 3: return .CacheError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 4: return .SerializationError(
+        case 4: return .NetworkError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 5: return .ValidationError(
+        case 5: return .TimeoutError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 6: return .Unknown(
+        case 6: return .StorageError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 7: return .NetworkError(
+        case 7: return .SecurityError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 8: return .Timeout(
+        case 8: return .ProfileError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 9: return .ResponseTooLarge(
-            size: try FfiConverterUInt64.read(from: &buf), 
-            limit: try FfiConverterUInt64.read(from: &buf)
-            )
-        case 10: return .InvalidManifest(
+        case 9: return .AddonNotFoundError(
             msg: try FfiConverterString.read(from: &buf)
             )
-        case 11: return .AddonNotFound(
+        case 10: return .ResponseTooLargeError(
+            msg: try FfiConverterString.read(from: &buf)
+            )
+        case 11: return .Unknown(
             msg: try FfiConverterString.read(from: &buf)
             )
 
@@ -3900,58 +14705,57 @@ public struct FfiConverterTypeNuvioError: FfiConverterRustBuffer {
 
         
         
-        case let .SecurityError(msg):
+        case let .SerializationError(msg):
             writeInt(&buf, Int32(1))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .ProfileError(msg):
+        case let .ValidationError(msg):
             writeInt(&buf, Int32(2))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .StorageError(msg):
+        case let .CacheError(msg):
             writeInt(&buf, Int32(3))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .SerializationError(msg):
+        case let .NetworkError(msg):
             writeInt(&buf, Int32(4))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .ValidationError(msg):
+        case let .TimeoutError(msg):
             writeInt(&buf, Int32(5))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .Unknown(msg):
+        case let .StorageError(msg):
             writeInt(&buf, Int32(6))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .NetworkError(msg):
+        case let .SecurityError(msg):
             writeInt(&buf, Int32(7))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .Timeout(msg):
+        case let .ProfileError(msg):
             writeInt(&buf, Int32(8))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .ResponseTooLarge(size,limit):
+        case let .AddonNotFoundError(msg):
             writeInt(&buf, Int32(9))
-            FfiConverterUInt64.write(size, into: &buf)
-            FfiConverterUInt64.write(limit, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .InvalidManifest(msg):
+        case let .ResponseTooLargeError(msg):
             writeInt(&buf, Int32(10))
             FfiConverterString.write(msg, into: &buf)
             
         
-        case let .AddonNotFound(msg):
+        case let .Unknown(msg):
             writeInt(&buf, Int32(11))
             FfiConverterString.write(msg, into: &buf)
             
@@ -3980,8 +14784,7 @@ public func FfiConverterTypeNuvioError_lower(_ value: NuvioError) -> RustBuffer 
 public enum ProfileType: Equatable, Hashable {
     
     case admin
-    case adult
-    case teen
+    case standard
     case kids
 
 
@@ -4004,11 +14807,9 @@ public struct FfiConverterTypeProfileType: FfiConverterRustBuffer {
         
         case 1: return .admin
         
-        case 2: return .adult
+        case 2: return .standard
         
-        case 3: return .teen
-        
-        case 4: return .kids
+        case 3: return .kids
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -4022,16 +14823,12 @@ public struct FfiConverterTypeProfileType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         
         
-        case .adult:
+        case .standard:
             writeInt(&buf, Int32(2))
         
         
-        case .teen:
-            writeInt(&buf, Int32(3))
-        
-        
         case .kids:
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
         
         }
     }
@@ -4053,6 +14850,1099 @@ public func FfiConverterTypeProfileType_lower(_ value: ProfileType) -> RustBuffe
 }
 
 
+
+public enum TmdbError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Network(String
+    )
+    case Serialization(String
+    )
+    case Storage(String
+    )
+    case Config(String
+    )
+    case NotFound
+    case Generic(String
+    )
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension TmdbError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTmdbError: FfiConverterRustBuffer {
+    typealias SwiftType = TmdbError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TmdbError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Network(
+            try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .Serialization(
+            try FfiConverterString.read(from: &buf)
+            )
+        case 3: return .Storage(
+            try FfiConverterString.read(from: &buf)
+            )
+        case 4: return .Config(
+            try FfiConverterString.read(from: &buf)
+            )
+        case 5: return .NotFound
+        case 6: return .Generic(
+            try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TmdbError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .Network(v1):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(v1, into: &buf)
+            
+        
+        case let .Serialization(v1):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(v1, into: &buf)
+            
+        
+        case let .Storage(v1):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(v1, into: &buf)
+            
+        
+        case let .Config(v1):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(v1, into: &buf)
+            
+        
+        case .NotFound:
+            writeInt(&buf, Int32(5))
+        
+        
+        case let .Generic(v1):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbError_lift(_ buf: RustBuffer) throws -> TmdbError {
+    return try FfiConverterTypeTmdbError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTmdbError_lower(_ value: TmdbError) -> RustBuffer {
+    return FfiConverterTypeTmdbError.lower(value)
+}
+
+
+/**
+ * Error types that can occur during Trakt API operations.
+ *
+ * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
+ * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ */
+public enum TraktError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * OAuth2 authentication error
+     */
+    case OAuth2Error(message: String
+    )
+    /**
+     * Network or HTTP error
+     */
+    case NetworkError(message: String
+    )
+    /**
+     * Storage/persistence error
+     */
+    case StorageError(message: String
+    )
+    /**
+     * Invalid token error
+     */
+    case InvalidToken(message: String
+    )
+    /**
+     * API error from Trakt service
+     */
+    case ApiError(message: String
+    )
+    /**
+     * Input validation error
+     */
+    case ValidationError(message: String
+    )
+    /**
+     * Rate limit exceeded
+     */
+    case RateLimitExceeded(message: String
+    )
+    /**
+     * Resource not found (404)
+     */
+    case NotFound(message: String
+    )
+    /**
+     * Unknown or unexpected error
+     */
+    case Unknown(message: String
+    )
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension TraktError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTraktError: FfiConverterRustBuffer {
+    typealias SwiftType = TraktError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TraktError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .OAuth2Error(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .NetworkError(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 3: return .StorageError(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 4: return .InvalidToken(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 5: return .ApiError(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 6: return .ValidationError(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 7: return .RateLimitExceeded(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 8: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 9: return .Unknown(
+            message: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TraktError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .OAuth2Error(message):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .NetworkError(message):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .StorageError(message):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .InvalidToken(message):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .ApiError(message):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .ValidationError(message):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .RateLimitExceeded(message):
+            writeInt(&buf, Int32(7))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .NotFound(message):
+            writeInt(&buf, Int32(8))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Unknown(message):
+            writeInt(&buf, Int32(9))
+            FfiConverterString.write(message, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktError_lift(_ buf: RustBuffer) throws -> TraktError {
+    return try FfiConverterTypeTraktError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTraktError_lower(_ value: TraktError) -> RustBuffer {
+    return FfiConverterTypeTraktError.lower(value)
+}
+
+
+
+
+public protocol TmdbStorage: AnyObject, Sendable {
+    
+    func saveItem(key: String, value: String, timestamp: Int64) throws 
+    
+    func readItem(key: String) throws  -> String?
+    
+    func removeItem(key: String) throws 
+    
+}
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceTmdbStorage {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceTmdbStorage] = [UniffiVTableCallbackInterfaceTmdbStorage(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterCallbackInterfaceTmdbStorage.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface TmdbStorage: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterCallbackInterfaceTmdbStorage.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface TmdbStorage: handle missing in uniffiClone")
+            }
+        },
+        saveItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            value: RustBuffer,
+            timestamp: Int64,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTmdbStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.saveItem(
+                     key: try FfiConverterString.lift(key),
+                     value: try FfiConverterString.lift(value),
+                     timestamp: try FfiConverterInt64.lift(timestamp)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTmdbError_lower
+            )
+        },
+        readItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> String? in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTmdbStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.readItem(
+                     key: try FfiConverterString.lift(key)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterOptionString.lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTmdbError_lower
+            )
+        },
+        removeItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTmdbStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.removeItem(
+                     key: try FfiConverterString.lift(key)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTmdbError_lower
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitTmdbStorage() {
+    uniffi_nuvio_core_fn_init_callback_vtable_tmdbstorage(UniffiCallbackInterfaceTmdbStorage.vtable)
+}
+
+// FfiConverter protocol for callback interfaces
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterCallbackInterfaceTmdbStorage {
+    fileprivate static let handleMap = UniffiHandleMap<TmdbStorage>()
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+extension FfiConverterCallbackInterfaceTmdbStorage : FfiConverter {
+    typealias SwiftType = TmdbStorage
+    typealias FfiType = UInt64
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lift(_ handle: UInt64) throws -> SwiftType {
+        try handleMap.get(handle: handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lower(_ v: SwiftType) -> UInt64 {
+        return handleMap.insert(obj: v)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func write(_ v: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(v))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTmdbStorage_lift(_ handle: UInt64) throws -> TmdbStorage {
+    return try FfiConverterCallbackInterfaceTmdbStorage.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTmdbStorage_lower(_ v: TmdbStorage) -> UInt64 {
+    return FfiConverterCallbackInterfaceTmdbStorage.lower(v)
+}
+
+
+
+
+/**
+ * Platform-agnostic storage interface for Trakt data
+ *
+ * This trait must be implemented by native platforms (iOS/Android) to provide
+ * secure storage for OAuth tokens, offline queue data, and other Trakt-related
+ * information. Implementations should use platform-specific secure storage mechanisms.
+ *
+ * # Security Considerations
+ *
+ * - **OAuth Tokens**: Must be stored securely (iOS Keychain, Android KeyStore)
+ * - **Encryption**: All sensitive data should be encrypted at rest
+ * - **Access Control**: Storage should be protected by device authentication
+ * - **Data Isolation**: Trakt data should be isolated from other app data
+ *
+ * # GDPR Compliance
+ *
+ * This trait includes methods for GDPR compliance:
+ * - `delete_all_user_data()`: Complete removal of all user data (Right to Erasure)
+ * - `export_user_data()`: Export all user data in JSON format (Right to Data Portability)
+ *
+ * # Error Handling
+ *
+ * All methods return `Result<T, TraktError>` where the error should contain
+ * a human-readable description of what went wrong. This allows native platforms
+ * to provide context-specific error messages.
+ */
+public protocol TraktStorage: AnyObject, Sendable {
+    
+    /**
+     * Save a key-value pair to storage
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data (e.g., "oauth_tokens", "offline_queue")
+     * - `value`: Data to store (typically JSON-serialized string)
+     *
+     * # Returns
+     * - `Ok(())`: Data successfully saved
+     * - `Err(TraktError)`: Error if save failed
+     *
+     * # Example
+     * ```ignore
+     * storage.save_item("oauth_tokens".to_string(), tokens_json)?;
+     * ```
+     */
+    func saveItem(key: String, value: String) throws 
+    
+    /**
+     * Read a value from storage by key
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data
+     *
+     * # Returns
+     * - `Ok(Some(value))`: Data found and returned
+     * - `Ok(None)`: No data found for this key
+     * - `Err(TraktError)`: Error if read failed
+     *
+     * # Example
+     * ```ignore
+     * if let Some(tokens_json) = storage.read_item("oauth_tokens"))? {
+     * // Parse and use tokens
+     * }
+     * ```
+     */
+    func readItem(key: String) throws  -> String?
+    
+    /**
+     * Remove a key-value pair from storage
+     *
+     * # Parameters
+     * - `key`: Unique identifier for the data to remove
+     *
+     * # Returns
+     * - `Ok(())`: Data successfully removed (or didn't exist)
+     * - `Err(TraktError)`: Error if removal failed
+     *
+     * # Example
+     * ```ignore
+     * storage.remove_item("oauth_tokens"))?;
+     * ```
+     */
+    func removeItem(key: String) throws 
+    
+    /**
+     * Delete all user data from storage (GDPR Right to Erasure)
+     *
+     * This method implements the GDPR "Right to Erasure" (Article 17).
+     * It must completely and irreversibly delete all Trakt-related user data,
+     * including but not limited to:
+     * - OAuth access tokens and refresh tokens
+     * - Offline queue data
+     * - Cached API responses
+     * - User preferences and settings
+     * - Any other user-specific data
+     *
+     * # Returns
+     * - `Ok(())`: All data successfully deleted
+     * - `Err(TraktError)`: Error if deletion failed
+     *
+     * # Implementation Notes
+     * - This operation is irreversible - there is no undo
+     * - Platform implementations should clear all Trakt-prefixed keys
+     * - Consider logging this action for audit purposes
+     * - User should be logged out after this operation
+     *
+     * # Security
+     * - Ensure cryptographic erasure where possible
+     * - On iOS: Remove all items from Keychain with Trakt-related keys
+     * - On Android: Clear EncryptedSharedPreferences completely
+     *
+     * # Example (Rust caller)
+     * ```ignore
+     * // User requested account deletion
+     * storage.delete_all_user_data()?;
+     * // User is now logged out with no local data remaining
+     * ```
+     */
+    func deleteAllUserData() throws 
+    
+    /**
+     * Export all user data as JSON (GDPR Right to Data Portability)
+     *
+     * This method implements the GDPR "Right to Data Portability" (Article 20).
+     * It must export all Trakt-related user data in a structured, commonly used,
+     * machine-readable format (JSON).
+     *
+     * # Returns
+     * - `Ok(String)`: JSON string containing all user data
+     * - `Err(TraktError)`: Error if export failed
+     *
+     * # JSON Format
+     * The returned JSON should be a single object with all stored keys:
+     * ```json
+     * {
+     * "oauth_tokens": "{\"access_token\":\"...\",\"refresh_token\":\"...\"}",
+     * "offline_queue": "[...]",
+     * "user_settings": "{...}"
+     * }
+     * ```
+     *
+     * # Implementation Notes
+     * - Include all Trakt-related keys and their values
+     * - Values are typically JSON strings themselves (nested JSON)
+     * - If no data exists, return an empty object: `"{}"`
+     * - Sensitive tokens should be included (user requested export)
+     *
+     * # Privacy
+     * - The exported data contains sensitive information (OAuth tokens)
+     * - Platform should warn user before exporting
+     * - Consider encrypting the export or requiring authentication
+     *
+     * # Example (Rust caller)
+     * ```ignore
+     * // User requested data export
+     * let user_data_json = storage.export_user_data()?;
+     * // Save to file or send to user via email
+     * ```
+     */
+    func exportUserData() throws  -> String
+    
+}
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceTraktStorage {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceTraktStorage] = [UniffiVTableCallbackInterfaceTraktStorage(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterCallbackInterfaceTraktStorage.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface TraktStorage: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterCallbackInterfaceTraktStorage.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface TraktStorage: handle missing in uniffiClone")
+            }
+        },
+        saveItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            value: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.saveItem(
+                     key: try FfiConverterString.lift(key),
+                     value: try FfiConverterString.lift(value)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTraktError_lower
+            )
+        },
+        readItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> String? in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.readItem(
+                     key: try FfiConverterString.lift(key)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterOptionString.lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTraktError_lower
+            )
+        },
+        removeItem: { (
+            uniffiHandle: UInt64,
+            key: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.removeItem(
+                     key: try FfiConverterString.lift(key)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTraktError_lower
+            )
+        },
+        deleteAllUserData: { (
+            uniffiHandle: UInt64,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.deleteAllUserData(
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTraktError_lower
+            )
+        },
+        exportUserData: { (
+            uniffiHandle: UInt64,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> String in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktStorage.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.exportUserData(
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterString.lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeTraktError_lower
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitTraktStorage() {
+    uniffi_nuvio_core_fn_init_callback_vtable_traktstorage(UniffiCallbackInterfaceTraktStorage.vtable)
+}
+
+// FfiConverter protocol for callback interfaces
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterCallbackInterfaceTraktStorage {
+    fileprivate static let handleMap = UniffiHandleMap<TraktStorage>()
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+extension FfiConverterCallbackInterfaceTraktStorage : FfiConverter {
+    typealias SwiftType = TraktStorage
+    typealias FfiType = UInt64
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lift(_ handle: UInt64) throws -> SwiftType {
+        try handleMap.get(handle: handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lower(_ v: SwiftType) -> UInt64 {
+        return handleMap.insert(obj: v)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func write(_ v: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(v))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTraktStorage_lift(_ handle: UInt64) throws -> TraktStorage {
+    return try FfiConverterCallbackInterfaceTraktStorage.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTraktStorage_lower(_ v: TraktStorage) -> UInt64 {
+    return FfiConverterCallbackInterfaceTraktStorage.lower(v)
+}
+
+
+
+
+/**
+ * Callback trait for token refresh events
+ *
+ * Implement this trait in your native platform code (iOS/Android) to receive
+ * notifications when OAuth tokens are refreshed or when refresh fails.
+ * This allows native code to update UI, persist tokens, or handle errors.
+ *
+ * # Example (Kotlin)
+ * ```kotlin
+ * class TraktTokenHandler : TraktTokenCallback {
+ * override fun onTokenRefreshed(accessToken: String, expiresAt: Long) {
+ * // Update local storage
+ * secureStorage.saveToken(accessToken, expiresAt)
+ * // Update UI if needed
+ * notifyUserTokenRefreshed()
+ * }
+ *
+ * override fun onTokenRefreshFailed(error: String) {
+ * // Log the error
+ * Log.e("Trakt", "Token refresh failed: $error")
+ * // Notify user to re-authenticate
+ * promptUserReAuthentication()
+ * }
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ * ```swift
+ * class TraktTokenHandler: TraktTokenCallback {
+ * func onTokenRefreshed(accessToken: String, expiresAt: Int64) {
+ * // Update keychain
+ * KeychainHelper.save(token: accessToken, expiresAt: expiresAt)
+ * // Post notification
+ * NotificationCenter.default.post(name: .traktTokenRefreshed, object: nil)
+ * }
+ *
+ * func onTokenRefreshFailed(error: String) {
+ * // Log the error
+ * print("Token refresh failed: \(error)")
+ * // Show alert to user
+ * showReAuthenticationAlert()
+ * }
+ * }
+ * ```
+ */
+public protocol TraktTokenCallback: AnyObject, Sendable {
+    
+    /**
+     * Called when an OAuth token is successfully refreshed
+     *
+     * # Parameters
+     * - `access_token`: The new access token to use for API requests
+     * - `expires_at`: Unix timestamp (seconds since epoch) when the token expires
+     *
+     * # Platform Implementation Notes
+     * - **iOS**: Store the token securely in Keychain
+     * - **Android**: Store the token securely in KeyStore or EncryptedSharedPreferences
+     * - Update any in-memory caches or UI state as needed
+     * - Consider posting a notification event for other parts of the app
+     */
+    func onTokenRefreshed(accessToken: String, expiresAt: Int64) 
+    
+    /**
+     * Called when token refresh fails
+     *
+     * # Parameters
+     * - `error`: Human-readable error message describing why the refresh failed
+     *
+     * # Common Failure Scenarios
+     * - Network connectivity issues
+     * - Invalid or expired refresh token (user needs to re-authenticate)
+     * - Trakt.tv API service downtime
+     * - Rate limiting (429 responses)
+     *
+     * # Platform Implementation Notes
+     * - Log the error for debugging
+     * - If the error indicates an invalid refresh token, prompt user to re-authenticate
+     * - Consider implementing exponential backoff for retries
+     * - Update UI to reflect authentication state
+     */
+    func onTokenRefreshFailed(error: String) 
+    
+}
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceTraktTokenCallback {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [UniffiVTableCallbackInterfaceTraktTokenCallback] = [UniffiVTableCallbackInterfaceTraktTokenCallback(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterCallbackInterfaceTraktTokenCallback.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface TraktTokenCallback: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterCallbackInterfaceTraktTokenCallback.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface TraktTokenCallback: handle missing in uniffiClone")
+            }
+        },
+        onTokenRefreshed: { (
+            uniffiHandle: UInt64,
+            accessToken: RustBuffer,
+            expiresAt: Int64,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktTokenCallback.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return uniffiObj.onTokenRefreshed(
+                     accessToken: try FfiConverterString.lift(accessToken),
+                     expiresAt: try FfiConverterInt64.lift(expiresAt)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCall(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn
+            )
+        },
+        onTokenRefreshFailed: { (
+            uniffiHandle: UInt64,
+            error: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterCallbackInterfaceTraktTokenCallback.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return uniffiObj.onTokenRefreshFailed(
+                     error: try FfiConverterString.lift(error)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCall(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn
+            )
+        }
+    )]
+}
+
+private func uniffiCallbackInitTraktTokenCallback() {
+    uniffi_nuvio_core_fn_init_callback_vtable_trakttokencallback(UniffiCallbackInterfaceTraktTokenCallback.vtable)
+}
+
+// FfiConverter protocol for callback interfaces
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterCallbackInterfaceTraktTokenCallback {
+    fileprivate static let handleMap = UniffiHandleMap<TraktTokenCallback>()
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+extension FfiConverterCallbackInterfaceTraktTokenCallback : FfiConverter {
+    typealias SwiftType = TraktTokenCallback
+    typealias FfiType = UInt64
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lift(_ handle: UInt64) throws -> SwiftType {
+        try handleMap.get(handle: handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func lower(_ v: SwiftType) -> UInt64 {
+        return handleMap.insert(obj: v)
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public static func write(_ v: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(v))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTraktTokenCallback_lift(_ handle: UInt64) throws -> TraktTokenCallback {
+    return try FfiConverterCallbackInterfaceTraktTokenCallback.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterCallbackInterfaceTraktTokenCallback_lower(_ v: TraktTokenCallback) -> UInt64 {
+    return FfiConverterCallbackInterfaceTraktTokenCallback.lower(v)
+}
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -4072,6 +15962,30 @@ fileprivate struct FfiConverterOptionInt32: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionUInt64: FfiConverterRustBuffer {
+    typealias SwiftType = UInt64?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterUInt64.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterUInt64.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -4176,6 +16090,150 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
+    typealias SwiftType = Data?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterData.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeNuvioSdk: FfiConverterRustBuffer {
+    typealias SwiftType = NuvioSdk?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeNuvioSdk.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeNuvioSdk.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeCredits: FfiConverterRustBuffer {
+    typealias SwiftType = Credits?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCredits.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCredits.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeLoggingConfig: FfiConverterRustBuffer {
+    typealias SwiftType = LoggingConfig?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLoggingConfig.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLoggingConfig.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeNotificationItem: FfiConverterRustBuffer {
+    typealias SwiftType = NotificationItem?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeNotificationItem.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeNotificationItem.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypePersonCombinedCredits: FfiConverterRustBuffer {
+    typealias SwiftType = PersonCombinedCredits?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypePersonCombinedCredits.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypePersonCombinedCredits.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeProfile: FfiConverterRustBuffer {
     typealias SwiftType = Profile?
 
@@ -4248,6 +16306,174 @@ fileprivate struct FfiConverterOptionTypeStremioMeta: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeTmdbExternalIds: FfiConverterRustBuffer {
+    typealias SwiftType = TmdbExternalIds?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTmdbExternalIds.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTmdbExternalIds.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTmdbShow: FfiConverterRustBuffer {
+    typealias SwiftType = TmdbShow?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTmdbShow.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTmdbShow.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTraktCommentUserStats: FfiConverterRustBuffer {
+    typealias SwiftType = TraktCommentUserStats?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTraktCommentUserStats.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTraktCommentUserStats.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTraktEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = TraktEpisode?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTraktEpisode.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTraktEpisode.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTraktMovie: FfiConverterRustBuffer {
+    typealias SwiftType = TraktMovie?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTraktMovie.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTraktMovie.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTraktShow: FfiConverterRustBuffer {
+    typealias SwiftType = TraktShow?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTraktShow.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTraktShow.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceInt64: FfiConverterRustBuffer {
+    typealias SwiftType = [Int64]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceInt64.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceInt64.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
     typealias SwiftType = [String]?
 
@@ -4272,6 +16498,30 @@ fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionSequenceTypeCastMember: FfiConverterRustBuffer {
+    typealias SwiftType = [CastMember]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeCastMember.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeCastMember.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionSequenceTypeCatalogExtra: FfiConverterRustBuffer {
     typealias SwiftType = [CatalogExtra]?
 
@@ -4288,6 +16538,30 @@ fileprivate struct FfiConverterOptionSequenceTypeCatalogExtra: FfiConverterRustB
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterSequenceTypeCatalogExtra.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeIMDbRatingSeason: FfiConverterRustBuffer {
+    typealias SwiftType = [ImDbRatingSeason]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeIMDbRatingSeason.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeIMDbRatingSeason.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -4392,6 +16666,126 @@ fileprivate struct FfiConverterOptionSequenceTypeSubtitle: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionSequenceTypeTraktHistoryEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryEpisode]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeTraktHistoryEpisode.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeTraktHistoryEpisode.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeTraktHistoryMovie: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryMovie]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeTraktHistoryMovie.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeTraktHistoryMovie.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeTraktHistorySeason: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistorySeason]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeTraktHistorySeason.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeTraktHistorySeason.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeTraktHistoryShow: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryShow]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeTraktHistoryShow.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeTraktHistoryShow.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionSequenceTypeTraktWatchedSeason: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktWatchedSeason]?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterSequenceTypeTraktWatchedSeason.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterSequenceTypeTraktWatchedSeason.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionDictionaryStringString: FfiConverterRustBuffer {
     typealias SwiftType = [String: String]?
 
@@ -4410,6 +16804,56 @@ fileprivate struct FfiConverterOptionDictionaryStringString: FfiConverterRustBuf
         case 1: return try FfiConverterDictionaryStringString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceInt32: FfiConverterRustBuffer {
+    typealias SwiftType = [Int32]
+
+    public static func write(_ value: [Int32], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterInt32.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Int32] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Int32]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterInt32.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceInt64: FfiConverterRustBuffer {
+    typealias SwiftType = [Int64]
+
+    public static func write(_ value: [Int64], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterInt64.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Int64] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [Int64]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterInt64.read(from: &buf))
+        }
+        return seq
     }
 }
 
@@ -4466,6 +16910,31 @@ fileprivate struct FfiConverterSequenceTypeAddon: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeCastMember: FfiConverterRustBuffer {
+    typealias SwiftType = [CastMember]
+
+    public static func write(_ value: [CastMember], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCastMember.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CastMember] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CastMember]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCastMember.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeCatalogExtra: FfiConverterRustBuffer {
     typealias SwiftType = [CatalogExtra]
 
@@ -4483,6 +16952,206 @@ fileprivate struct FfiConverterSequenceTypeCatalogExtra: FfiConverterRustBuffer 
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCatalogExtra.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCrewMember: FfiConverterRustBuffer {
+    typealias SwiftType = [CrewMember]
+
+    public static func write(_ value: [CrewMember], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCrewMember.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CrewMember] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CrewMember]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCrewMember.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeIMDbRatingEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = [ImDbRatingEpisode]
+
+    public static func write(_ value: [ImDbRatingEpisode], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeIMDbRatingEpisode.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ImDbRatingEpisode] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ImDbRatingEpisode]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeIMDbRatingEpisode.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeIMDbRatingSeason: FfiConverterRustBuffer {
+    typealias SwiftType = [ImDbRatingSeason]
+
+    public static func write(_ value: [ImDbRatingSeason], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeIMDbRatingSeason.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ImDbRatingSeason] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ImDbRatingSeason]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeIMDbRatingSeason.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeLocalMediaFile: FfiConverterRustBuffer {
+    typealias SwiftType = [LocalMediaFile]
+
+    public static func write(_ value: [LocalMediaFile], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLocalMediaFile.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [LocalMediaFile] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [LocalMediaFile]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeLocalMediaFile.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeNotificationItem: FfiConverterRustBuffer {
+    typealias SwiftType = [NotificationItem]
+
+    public static func write(_ value: [NotificationItem], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeNotificationItem.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [NotificationItem] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [NotificationItem]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeNotificationItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePersonCombinedCredit: FfiConverterRustBuffer {
+    typealias SwiftType = [PersonCombinedCredit]
+
+    public static func write(_ value: [PersonCombinedCredit], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePersonCombinedCredit.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PersonCombinedCredit] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PersonCombinedCredit]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePersonCombinedCredit.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePersonMovieCredit: FfiConverterRustBuffer {
+    typealias SwiftType = [PersonMovieCredit]
+
+    public static func write(_ value: [PersonMovieCredit], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePersonMovieCredit.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PersonMovieCredit] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PersonMovieCredit]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePersonMovieCredit.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePersonTvCredit: FfiConverterRustBuffer {
+    typealias SwiftType = [PersonTvCredit]
+
+    public static func write(_ value: [PersonTvCredit], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePersonTvCredit.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PersonTvCredit] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PersonTvCredit]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePersonTvCredit.read(from: &buf))
         }
         return seq
     }
@@ -4533,6 +17202,31 @@ fileprivate struct FfiConverterSequenceTypeResourceObject: FfiConverterRustBuffe
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeResourceObject.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeScheduleNotificationParams: FfiConverterRustBuffer {
+    typealias SwiftType = [ScheduleNotificationParams]
+
+    public static func write(_ value: [ScheduleNotificationParams], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeScheduleNotificationParams.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ScheduleNotificationParams] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ScheduleNotificationParams]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeScheduleNotificationParams.read(from: &buf))
         }
         return seq
     }
@@ -4666,6 +17360,481 @@ fileprivate struct FfiConverterSequenceTypeSubtitle: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeTmdbCollectionPart: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbCollectionPart]
+
+    public static func write(_ value: [TmdbCollectionPart], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbCollectionPart.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbCollectionPart] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbCollectionPart]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbCollectionPart.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbCreator: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbCreator]
+
+    public static func write(_ value: [TmdbCreator], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbCreator.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbCreator] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbCreator]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbCreator.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbEpisode]
+
+    public static func write(_ value: [TmdbEpisode], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbEpisode.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbEpisode] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbEpisode]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbEpisode.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbGenre: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbGenre]
+
+    public static func write(_ value: [TmdbGenre], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbGenre.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbGenre] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbGenre]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbGenre.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbNetwork: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbNetwork]
+
+    public static func write(_ value: [TmdbNetwork], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbNetwork.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbNetwork] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbNetwork]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbNetwork.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbSearchResult: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbSearchResult]
+
+    public static func write(_ value: [TmdbSearchResult], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbSearchResult.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbSearchResult] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbSearchResult]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbSearchResult.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTmdbSeasonSummary: FfiConverterRustBuffer {
+    typealias SwiftType = [TmdbSeasonSummary]
+
+    public static func write(_ value: [TmdbSeasonSummary], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTmdbSeasonSummary.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TmdbSeasonSummary] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TmdbSeasonSummary]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTmdbSeasonSummary.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktCalendarMovie: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktCalendarMovie]
+
+    public static func write(_ value: [TraktCalendarMovie], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktCalendarMovie.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktCalendarMovie] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktCalendarMovie]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktCalendarMovie.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktCalendarShow: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktCalendarShow]
+
+    public static func write(_ value: [TraktCalendarShow], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktCalendarShow.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktCalendarShow] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktCalendarShow]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktCalendarShow.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktComment: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktComment]
+
+    public static func write(_ value: [TraktComment], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktComment.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktComment] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktComment]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktComment.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktHistoryEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryEpisode]
+
+    public static func write(_ value: [TraktHistoryEpisode], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktHistoryEpisode.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktHistoryEpisode] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktHistoryEpisode]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktHistoryEpisode.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktHistoryMovie: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryMovie]
+
+    public static func write(_ value: [TraktHistoryMovie], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktHistoryMovie.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktHistoryMovie] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktHistoryMovie]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktHistoryMovie.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktHistoryNotFoundItem: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryNotFoundItem]
+
+    public static func write(_ value: [TraktHistoryNotFoundItem], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktHistoryNotFoundItem.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktHistoryNotFoundItem] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktHistoryNotFoundItem]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktHistoryNotFoundItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktHistorySeason: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistorySeason]
+
+    public static func write(_ value: [TraktHistorySeason], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktHistorySeason.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktHistorySeason] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktHistorySeason]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktHistorySeason.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktHistoryShow: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktHistoryShow]
+
+    public static func write(_ value: [TraktHistoryShow], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktHistoryShow.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktHistoryShow] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktHistoryShow]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktHistoryShow.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktRecommendation: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktRecommendation]
+
+    public static func write(_ value: [TraktRecommendation], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktRecommendation.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktRecommendation] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktRecommendation]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktRecommendation.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktSearchResult: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktSearchResult]
+
+    public static func write(_ value: [TraktSearchResult], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktSearchResult.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktSearchResult] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktSearchResult]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktSearchResult.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktWatchedEpisode: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktWatchedEpisode]
+
+    public static func write(_ value: [TraktWatchedEpisode], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktWatchedEpisode.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktWatchedEpisode] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktWatchedEpisode]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktWatchedEpisode.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTraktWatchedSeason: FfiConverterRustBuffer {
+    typealias SwiftType = [TraktWatchedSeason]
+
+    public static func write(_ value: [TraktWatchedSeason], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTraktWatchedSeason.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TraktWatchedSeason] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TraktWatchedSeason]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTraktWatchedSeason.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeWatchedItem: FfiConverterRustBuffer {
     typealias SwiftType = [WatchedItem]
 
@@ -4761,6 +17930,577 @@ fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: In
         print("uniffiFutureContinuationCallback invalid handle")
     }
 }
+/**
+ * Abort a request by its handle ID
+ *
+ * This function cancels a request that was started with `http_get_cancellable()` or
+ * `http_post_cancellable()`. The request will be stopped and any associated resources
+ * will be released.
+ *
+ * **Note**: Calling abort on an already finished request is safe and has no effect.
+ * Calling abort on an invalid handle ID will return an error.
+ *
+ * # Parameters
+ *
+ * - `handle_id`: The handle ID returned from a cancellable request function
+ *
+ * # Returns
+ *
+ * - `Ok(())`: Request was aborted successfully
+ * - `Err(HttpError)`: Invalid handle ID
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * val handleId = httpGetCancellable("https://api.example.com/data")
+ * // ... later ...
+ * abortRequest(handleId)
+ * ```
+ *
+ * # Example (Swift)
+ *
+ * ```swift
+ * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+ * // ... later ...
+ * try abortRequest(handleId: handleId)
+ * ```
+ */
+public func abortRequest(handleId: UInt64)throws   {try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_abort_request(
+        FfiConverterUInt64.lower(handleId),$0
+    )
+}
+}
+/**
+ * Creates a cache key for cast information
+ *
+ * # Arguments
+ *
+ * * `content_id` - Unique identifier for the content
+ */
+public func cacheKeyForCast(contentId: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_cache_key_for_cast(
+        FfiConverterString.lower(contentId),$0
+    )
+})
+}
+/**
+ * Creates a cache key for episode lists
+ *
+ * # Arguments
+ *
+ * * `series_id` - Unique identifier for the series
+ * * `season` - Season number
+ */
+public func cacheKeyForEpisodes(seriesId: String, season: UInt32) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_cache_key_for_episodes(
+        FfiConverterString.lower(seriesId),
+        FfiConverterUInt32.lower(season),$0
+    )
+})
+}
+/**
+ * Convenience functions for common cache operations
+ * Creates a cache key for metadata caching
+ *
+ * # Arguments
+ *
+ * * `content_type` - Type of content (e.g., "movie", "series")
+ * * `content_id` - Unique identifier for the content
+ */
+public func cacheKeyForMetadata(contentType: String, contentId: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_cache_key_for_metadata(
+        FfiConverterString.lower(contentType),
+        FfiConverterString.lower(contentId),$0
+    )
+})
+}
+/**
+ * Creates a cache key for stream data caching
+ *
+ * # Arguments
+ *
+ * * `content_id` - Unique identifier for the content
+ * * `episode_id` - Optional episode identifier for series
+ */
+public func cacheKeyForStreams(contentId: String, episodeId: String?) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_cache_key_for_streams(
+        FfiConverterString.lower(contentId),
+        FfiConverterOptionString.lower(episodeId),$0
+    )
+})
+}
+/**
+ * Perform an HTTP DELETE request (blocking adapter for FFI)
+ *
+ * This function performs a synchronous HTTP DELETE request by blocking on the
+ * async reqwest operation using the global tokio runtime.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ *
+ * # Returns
+ *
+ * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+ * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+ */
+public func httpDelete(url: String)throws  -> HttpResponse  {
+    return try  FfiConverterTypeHttpResponse_lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_http_delete(
+        FfiConverterString.lower(url),$0
+    )
+})
+}
+/**
+ * Perform an HTTP GET request (blocking adapter for FFI)
+ *
+ * This function performs a synchronous HTTP GET request by blocking on the
+ * async reqwest operation using the global tokio runtime. This is the
+ * recommended pattern for FFI exports with async operations.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ *
+ * # Returns
+ *
+ * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+ * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * suspend fun fetchData(url: String): HttpResponse = withContext(Dispatchers.IO) {
+ * httpGet(url)
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ *
+ * ```swift
+ * func fetchData(url: String) async throws -> HttpResponse {
+ * return try await Task {
+ * try httpGet(url: url)
+ * }.value
+ * }
+ * ```
+ */
+public func httpGet(url: String)throws  -> HttpResponse  {
+    return try  FfiConverterTypeHttpResponse_lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_http_get(
+        FfiConverterString.lower(url),$0
+    )
+})
+}
+/**
+ * Perform a cancellable HTTP GET request (non-blocking, returns handle ID)
+ *
+ * This function spawns an HTTP GET request in the background and returns a handle ID
+ * that can be used to cancel the request via `abort_request()` or check its status
+ * via `is_request_finished()`.
+ *
+ * Unlike `http_get()`, this function returns immediately without waiting for the
+ * request to complete. The handle ID can be used to manage the request's lifecycle.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ *
+ * # Returns
+ *
+ * - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * val handleId = httpGetCancellable("https://api.example.com/data")
+ * // ... do other work ...
+ * if (needsCancel) {
+ * abortRequest(handleId)
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ *
+ * ```swift
+ * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+ * // ... do other work ...
+ * if needsCancel {
+ * abortRequest(handleId: handleId)
+ * }
+ * ```
+ */
+public func httpGetCancellable(url: String) -> UInt64  {
+    return try!  FfiConverterUInt64.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_http_get_cancellable(
+        FfiConverterString.lower(url),$0
+    )
+})
+}
+/**
+ * Perform an HTTP POST request (blocking adapter for FFI)
+ *
+ * This function performs a synchronous HTTP POST request by blocking on the
+ * async reqwest operation using the global tokio runtime.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ * - `body`: The request body as a string (usually JSON)
+ * - `content_type`: The Content-Type header value (e.g., "application/json")
+ *
+ * # Returns
+ *
+ * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+ * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * suspend fun postData(url: String, json: String): HttpResponse = withContext(Dispatchers.IO) {
+ * httpPost(url, json, "application/json")
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ *
+ * ```swift
+ * func postData(url: String, json: String) async throws -> HttpResponse {
+ * return try await Task {
+ * try httpPost(url: url, body: json, contentType: "application/json")
+ * }.value
+ * }
+ * ```
+ */
+public func httpPost(url: String, body: String, contentType: String)throws  -> HttpResponse  {
+    return try  FfiConverterTypeHttpResponse_lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_http_post(
+        FfiConverterString.lower(url),
+        FfiConverterString.lower(body),
+        FfiConverterString.lower(contentType),$0
+    )
+})
+}
+/**
+ * Perform a cancellable HTTP POST request (non-blocking, returns handle ID)
+ *
+ * This function spawns an HTTP POST request in the background and returns a handle ID
+ * that can be used to cancel the request via `abort_request()` or check its status
+ * via `is_request_finished()`.
+ *
+ * Unlike `http_post()`, this function returns immediately without waiting for the
+ * request to complete. The handle ID can be used to manage the request's lifecycle.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ * - `body`: The request body as a string (usually JSON)
+ * - `content_type`: The Content-Type header value (e.g., "application/json")
+ *
+ * # Returns
+ *
+ * - Handle ID (u64) that can be used with `abort_request()` and `is_request_finished()`
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * val handleId = httpPostCancellable(
+ * "https://api.example.com/data",
+ * """{"key": "value"}""",
+ * "application/json"
+ * )
+ * // ... do other work ...
+ * if (needsCancel) {
+ * abortRequest(handleId)
+ * }
+ * ```
+ */
+public func httpPostCancellable(url: String, body: String, contentType: String) -> UInt64  {
+    return try!  FfiConverterUInt64.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_http_post_cancellable(
+        FfiConverterString.lower(url),
+        FfiConverterString.lower(body),
+        FfiConverterString.lower(contentType),$0
+    )
+})
+}
+/**
+ * Perform an HTTP PUT request (blocking adapter for FFI)
+ *
+ * This function performs a synchronous HTTP PUT request by blocking on the
+ * async reqwest operation using the global tokio runtime.
+ *
+ * # Parameters
+ *
+ * - `url`: The URL to request
+ * - `body`: The request body as a string (usually JSON)
+ * - `content_type`: The Content-Type header value (e.g., "application/json")
+ *
+ * # Returns
+ *
+ * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+ * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+ */
+public func httpPut(url: String, body: String, contentType: String)throws  -> HttpResponse  {
+    return try  FfiConverterTypeHttpResponse_lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_http_put(
+        FfiConverterString.lower(url),
+        FfiConverterString.lower(body),
+        FfiConverterString.lower(contentType),$0
+    )
+})
+}
+/**
+ * Perform an HTTP request with custom configuration (blocking adapter for FFI)
+ *
+ * This function provides full control over the HTTP request, allowing custom
+ * headers, body, and method. It uses the blocking adapter pattern for FFI.
+ *
+ * # Parameters
+ *
+ * - `method`: HTTP method (GET, POST, PUT, DELETE, etc.)
+ * - `request`: Request configuration (url, body, headers)
+ *
+ * # Returns
+ *
+ * - `Ok(HttpResponse)`: Successful response with status, body, and headers
+ * - `Err(HttpError)`: Network error, timeout, or HTTP status error
+ */
+public func httpRequest(method: String, request: HttpRequest)throws  -> HttpResponse  {
+    return try  FfiConverterTypeHttpResponse_lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_http_request(
+        FfiConverterString.lower(method),
+        FfiConverterTypeHttpRequest_lower(request),$0
+    )
+})
+}
+/**
+ * Initializes the logging subsystem with optional configuration.
+ *
+ * This function should be called once at application startup. If called
+ * multiple times, subsequent calls are ignored.
+ *
+ * # Arguments
+ *
+ * * `config` - Optional logging configuration. If None, uses defaults.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::logging::{init_logging, LoggingConfig};
+ * use nuvio_core::config::LogLevel;
+ *
+ * // Initialize with defaults
+ * init_logging(None);
+ *
+ * // Or with custom config
+ * let config = LoggingConfig::builder()
+ * .level(LogLevel::Debug)
+ * .build();
+ * init_logging(Some(config));
+ * ```
+ *
+ * # FFI Note
+ *
+ * This function is exported via UniFFI and can be called from Kotlin and Swift.
+ */
+public func initLogging(config: LoggingConfig?)  {try! rustCall() {
+    uniffi_nuvio_core_fn_func_init_logging(
+        FfiConverterOptionTypeLoggingConfig.lower(config),$0
+    )
+}
+}
+/**
+ * Check if a request is finished
+ *
+ * This function checks whether a request started with `http_get_cancellable()` or
+ * `http_post_cancellable()` has completed (either successfully, with an error, or
+ * was cancelled).
+ *
+ * # Parameters
+ *
+ * - `handle_id`: The handle ID returned from a cancellable request function
+ *
+ * # Returns
+ *
+ * - `Ok(true)`: Request is finished
+ * - `Ok(false)`: Request is still running
+ * - `Err(HttpError)`: Invalid handle ID
+ *
+ * # Example (Kotlin)
+ *
+ * ```kotlin
+ * val handleId = httpGetCancellable("https://api.example.com/data")
+ * while (!isRequestFinished(handleId)) {
+ * // ... do other work ...
+ * Thread.sleep(100)
+ * }
+ * ```
+ *
+ * # Example (Swift)
+ *
+ * ```swift
+ * let handleId = httpGetCancellable(url: "https://api.example.com/data")
+ * while try !isRequestFinished(handleId: handleId) {
+ * // ... do other work ...
+ * try await Task.sleep(nanoseconds: 100_000_000)
+ * }
+ * ```
+ */
+public func isRequestFinished(handleId: UInt64)throws  -> Bool  {
+    return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_is_request_finished(
+        FfiConverterUInt64.lower(handleId),$0
+    )
+})
+}
+/**
+ * Returns the global SDK instance.
+ *
+ * This function returns the SDK instance if it has been initialized,
+ * or None if [`nuvio_initialize`] has not been called yet.
+ *
+ * # Returns
+ *
+ * The SDK instance, or None if not initialized.
+ *
+ * # Example
+ *
+ * ```rust
+ * use nuvio_core::ffi::{nuvio_get_instance, nuvio_initialize};
+ *
+ * // Before initialization
+ * assert!(nuvio_get_instance().is_none());
+ *
+ * // After initialization
+ * nuvio_initialize();
+ * assert!(nuvio_get_instance().is_some());
+ * ```
+ *
+ * # FFI Note
+ *
+ * This function is exported via UniFFI and can be called from Kotlin and Swift.
+ */
+public func nuvioGetInstance() -> NuvioSdk?  {
+    return try!  FfiConverterOptionTypeNuvioSdk.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_nuvio_get_instance($0
+    )
+})
+}
+/**
+ * Initializes the Nuvio SDK with default configuration.
+ *
+ * This function should be called once at application startup. If called
+ * multiple times, subsequent calls are ignored and the existing instance
+ * is returned.
+ *
+ * # Returns
+ *
+ * The initialized SDK instance.
+ *
+ * # Example (Rust)
+ *
+ * ```rust
+ * use nuvio_core::ffi::nuvio_initialize;
+ *
+ * let sdk = nuvio_initialize();
+ * println!("SDK version: {}", sdk.version());
+ * ```
+ *
+ * # FFI Note
+ *
+ * This function is exported via UniFFI and can be called from Kotlin and Swift.
+ */
+public func nuvioInitialize() -> NuvioSdk  {
+    return try!  FfiConverterTypeNuvioSdk_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_nuvio_initialize($0
+    )
+})
+}
+/**
+ * Initializes the Nuvio SDK with custom configuration.
+ *
+ * This function should be called once at application startup. If called
+ * multiple times, subsequent calls are ignored and the existing instance
+ * is returned.
+ *
+ * # Arguments
+ *
+ * * `config` - The SDK configuration to use.
+ *
+ * # Returns
+ *
+ * The initialized SDK instance.
+ *
+ * # Example (Rust)
+ *
+ * ```rust
+ * use nuvio_core::config::{SdkConfig, Environment, LogLevel};
+ * use nuvio_core::ffi::nuvio_initialize_with_config;
+ *
+ * let config = SdkConfig::builder()
+ * .environment(Environment::Development)
+ * .log_level(LogLevel::Debug)
+ * .build();
+ *
+ * let sdk = nuvio_initialize_with_config(config);
+ * println!("SDK initialized in {} mode", sdk.environment_name());
+ * ```
+ *
+ * # FFI Note
+ *
+ * This function is exported via UniFFI and can be called from Kotlin and Swift.
+ */
+public func nuvioInitializeWithConfig(config: SdkConfig) -> NuvioSdk  {
+    return try!  FfiConverterTypeNuvioSdk_lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_nuvio_initialize_with_config(
+        FfiConverterTypeSdkConfig_lower(config),$0
+    )
+})
+}
+/**
+ * Checks if the SDK has been initialized.
+ *
+ * # Returns
+ *
+ * True if the SDK has been initialized, false otherwise.
+ *
+ * # FFI Note
+ *
+ * This function is exported via UniFFI and can be called from Kotlin and Swift.
+ */
+public func nuvioIsInitialized() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+    uniffi_nuvio_core_fn_func_nuvio_is_initialized($0
+    )
+})
+}
+/**
+ * Remove a finished request handle from the registry
+ *
+ * This function cleans up a request handle after the request is finished.
+ * It's recommended to call this after a request completes to free resources.
+ *
+ * # Parameters
+ *
+ * - `handle_id`: The handle ID to remove
+ *
+ * # Returns
+ *
+ * - `Ok(())`: Handle removed successfully
+ * - `Err(HttpError)`: Invalid handle ID
+ */
+public func removeRequestHandle(handleId: UInt64)throws   {try rustCallWithError(FfiConverterTypeHttpError_lift) {
+    uniffi_nuvio_core_fn_func_remove_request_handle(
+        FfiConverterUInt64.lower(handleId),$0
+    )
+}
+}
 
 private enum InitializationResult {
     case ok
@@ -4776,6 +18516,210 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_nuvio_core_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_abort_request() != 51701) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_cache_key_for_cast() != 55470) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_cache_key_for_episodes() != 34468) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_cache_key_for_metadata() != 10351) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_cache_key_for_streams() != 64830) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_delete() != 18025) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_get() != 59286) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_get_cancellable() != 13335) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_post() != 50774) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_post_cancellable() != 37045) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_put() != 4733) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_http_request() != 14073) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_init_logging() != 51341) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_is_request_finished() != 3110) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_nuvio_get_instance() != 14201) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_nuvio_initialize() != 46238) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_nuvio_initialize_with_config() != 51404) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_nuvio_is_initialized() != 42811) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_func_remove_request_handle() != 8799) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_calendarmanager_get_my_movies() != 47909) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_calendarmanager_get_my_new_shows() != 40241) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_calendarmanager_get_my_premieres() != 37736) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_calendarmanager_get_my_shows() != 15253) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_get_episode_comments() != 47918) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_get_movie_comments() != 29546) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_get_season_comments() != 64477) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_get_show_comments() != 19826) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_validate_pagination() != 63877) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_commentsmanager_validate_sort() != 21082) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_localmediascanner_scan_directory() != 37932) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_build_episode_notification_content() != 61839) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_cancel_all_notifications() != 5000) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notification() != 49163) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_cancel_notifications_for_series() != 11961) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_cleanup_old_notifications() != 3137) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_get_notification_stats() != 24685) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_get_scheduled_notifications() != 52391) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_get_settings() != 2486) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_mark_synced() != 3940) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_complete() != 2925) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_notify_download_progress() != 29773) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_schedule_episode_notification() != 64926) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_schedule_multiple_notifications() != 21684) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_should_sync() != 12137) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationmanager_update_settings() != 3065) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_add_scheduled() != 27662) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_clear_download_notification() != 51019) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_clear_scheduled() != 14848) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_get_scheduled() != 65136) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_get_settings() != 16880) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_load_scheduled() != 51242) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_load_settings() != 57751) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_mark_download_notified() != 30760) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_remove_scheduled() != 25757) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_save_scheduled() != 53157) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_save_settings() != 59099) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_update_settings() != 10375) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_notificationstorage_was_download_notified() != 54845) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviocachemanager_clear() != 60790) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviocachemanager_get() != 7467) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviocachemanager_remove() != 53961) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviocachemanager_set() != 40150) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviocachemanager_stats() != 21271) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviosdk_config() != 2828) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviosdk_environment_name() != 52186) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviosdk_initialized_at() != 20915) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviosdk_is_debug() != 51098) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_nuviosdk_version() != 21658) {
+        return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_nuvio_core_checksum_method_profilemanager_create_profile() != 39401) {
         return InitializationResult.apiChecksumMismatch
@@ -4813,6 +18757,27 @@ private let initializationResult: InitializationResult = {
     if (uniffi_nuvio_core_checksum_method_profilemanager_verify_pin() != 16828) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_nuvio_core_checksum_method_recommendationsmanager_get_movies() != 31055) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_recommendationsmanager_get_shows() != 8125) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_movie() != 23105) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_recommendationsmanager_hide_show() != 62444) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_searchmanager_search_by_imdb() != 45626) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_searchmanager_search_by_tmdb() != 59331) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_searchmanager_search_text() != 10579) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_nuvio_core_checksum_method_stremioservice_add_addon() != 51111) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -4837,7 +18802,118 @@ private let initializationResult: InitializationResult = {
     if (uniffi_nuvio_core_checksum_method_stremioservice_resolve_streams() != 10100) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_nuvio_core_checksum_method_syncmanager_remove_from_collection() != 35378) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_syncmanager_remove_from_history() != 24344) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_extract_tmdb_id_from_stremio_id() != 38285) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_find_by_imdb_id() != 64710) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_all_episodes() != 1061) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_collection_details() != 9301) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_credits() != 27017) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_episode_details() != 2021) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_episode_external_ids() != 45250) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_episode_image_url() != 5887) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_image_url() != 38478) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_imdb_ratings() != 25743) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_movie_details() != 41113) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_person_combined_credits() != 24376) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_person_details() != 42909) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_popular() != 5509) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_recommendations() != 46428) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_season_details() != 19079) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_show_external_ids() != 6807) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_show_image_hints() != 28395) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_similar() != 2252) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_top_rated() != 47674) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_trending() != 58836) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_get_tv_show_details() != 14710) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_search_movie() != 54656) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_search_multi() != 7743) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_search_person() != 18104) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdb_search_tv_show() != 12668) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_calendarmanager_new() != 25968) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_commentsmanager_new() != 14245) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_localmediascanner_new() != 48151) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_notificationmanager_new() != 48661) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_notificationstorage_new() != 19227) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_nuviocachemanager_new() != 6054) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_nuviocachemanager_with_defaults() != 32049) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_nuvio_core_checksum_constructor_profilemanager_new() != 22705) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_recommendationsmanager_new() != 52096) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_searchmanager_new() != 20671) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_nuvio_core_checksum_constructor_stremioservice_new() != 26971) {
@@ -4846,7 +18922,46 @@ private let initializationResult: InitializationResult = {
     if (uniffi_nuvio_core_checksum_constructor_stremioservice_with_config() != 6632) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_nuvio_core_checksum_constructor_syncmanager_new() != 29465) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_constructor_tmdb_new() != 39821) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdbstorage_save_item() != 16676) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdbstorage_read_item() != 19381) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_tmdbstorage_remove_item() != 42856) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_traktstorage_save_item() != 15173) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_traktstorage_read_item() != 12176) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_traktstorage_remove_item() != 29047) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_traktstorage_delete_all_user_data() != 4378) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_traktstorage_export_user_data() != 24942) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refreshed() != 59384) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_nuvio_core_checksum_method_trakttokencallback_on_token_refresh_failed() != 54548) {
+        return InitializationResult.apiChecksumMismatch
+    }
 
+    uniffiCallbackInitTmdbStorage()
+    uniffiCallbackInitTraktStorage()
+    uniffiCallbackInitTraktTokenCallback()
     return InitializationResult.ok
 }()
 

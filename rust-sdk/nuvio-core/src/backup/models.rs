@@ -70,7 +70,7 @@ impl BackupOptions {
 }
 
 /// Backup metadata
-#[derive(uniffi::Record, Serialize, Deserialize, Debug, Clone)]
+#[derive(uniffi::Record, Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BackupMetadata {
     /// Total number of items in backup
     pub total_items: u32,
@@ -89,19 +89,6 @@ pub struct BackupMetadata {
 
     /// Number of scrapers
     pub scrapers_count: u32,
-}
-
-impl Default for BackupMetadata {
-    fn default() -> Self {
-        Self {
-            total_items: 0,
-            library_count: 0,
-            watch_progress_count: 0,
-            downloads_count: 0,
-            addons_count: 0,
-            scrapers_count: 0,
-        }
-    }
 }
 
 /// Subtitle settings

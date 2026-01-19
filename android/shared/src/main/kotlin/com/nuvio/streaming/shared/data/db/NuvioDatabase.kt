@@ -1,7 +1,10 @@
 package com.nuvio.streaming.shared.data.db
 
 import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 
 /**
@@ -21,10 +24,9 @@ import androidx.room.TypeConverters
  *
  * ## Database Schema
  *
- * Currently, this is a minimal setup with no entities defined. Entities will be added
+ * Currently contains a minimal WatchHistoryEntity. Additional entities will be added
  * as the data layer is expanded to include:
  * - Content metadata (movies, shows, episodes)
- * - User watch history
  * - Downloaded content metadata
  * - Cached API responses
  *
@@ -52,7 +54,7 @@ import androidx.room.TypeConverters
  * @see androidx.room.RoomDatabase
  */
 @Database(
-    entities = [],  // Entities will be added in future phases (e.g., ContentEntity, WatchHistoryEntity)
+    entities = [WatchHistoryEntity::class],
     version = 1,
     exportSchema = true  // Export schema for version control and migration testing
 )
@@ -84,6 +86,24 @@ abstract class NuvioDatabase : RoomDatabase() {
 }
 
 /**
+ * Entity for storing watch history entries.
+ *
+ * Tracks content that the user has watched, including playback position
+ * for resume functionality.
+ */
+@Entity(tableName = "watch_history")
+data class WatchHistoryEntity(
+    @PrimaryKey
+    val contentId: String,
+    val contentType: String, // "movie", "episode", etc.
+    val title: String,
+    val playbackPositionMs: Long = 0L,
+    val durationMs: Long = 0L,
+    val lastWatchedTimestamp: Long = System.currentTimeMillis(),
+    val isCompleted: Boolean = false
+)
+
+/**
  * Type converters for Room database.
  *
  * Room requires type converters for non-primitive types that need to be stored
@@ -92,33 +112,26 @@ abstract class NuvioDatabase : RoomDatabase() {
  *
  * ## Supported Conversions
  *
- * Currently, this is a placeholder for future type converters. Common converters
- * that may be added include:
+ * Currently includes basic converters. Additional converters will be added as needed:
  * - Date/Timestamp conversions (Long <-> Date)
  * - List conversions (String <-> List<T>)
  * - Enum conversions (String <-> Enum)
  * - JSON conversions (String <-> Complex objects)
- *
- * ## Usage Example
- *
- * ```kotlin
- * @TypeConverter
- * fun fromTimestamp(value: Long?): Date? {
- *     return value?.let { Date(it) }
- * }
- *
- * @TypeConverter
- * fun dateToTimestamp(date: Date?): Long? {
- *     return date?.time
- * }
- * ```
  */
 class DatabaseConverters {
-    // Type converters will be added here as needed
-    // Example for future implementation:
-    // @TypeConverter
-    // fun fromStringList(value: String): List<String> = value.split(",")
-    //
-    // @TypeConverter
-    // fun toStringList(list: List<String>): String = list.joinToString(",")
+    /**
+     * Converts a list of strings to a comma-separated string for storage.
+     */
+    @TypeConverter
+    fun fromStringList(value: List<String>?): String? {
+        return value?.joinToString(",")
+    }
+
+    /**
+     * Converts a comma-separated string back to a list of strings.
+     */
+    @TypeConverter
+    fun toStringList(value: String?): List<String>? {
+        return value?.split(",")?.filter { it.isNotEmpty() }
+    }
 }

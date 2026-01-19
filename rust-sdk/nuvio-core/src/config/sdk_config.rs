@@ -129,12 +129,12 @@ impl SdkConfig {
         if let Ok(env_str) = std::env::var("NUVIO_ENV")
             .or_else(|_| std::env::var("NUVIO_ENVIRONMENT"))
         {
-            builder = builder.environment(Environment::from_str(&env_str));
+            builder = builder.environment(Environment::parse(&env_str));
         }
         
         // Log level
         if let Ok(level_str) = std::env::var("NUVIO_LOG_LEVEL") {
-            builder = builder.log_level(LogLevel::from_str(&level_str));
+            builder = builder.log_level(LogLevel::parse(&level_str));
         }
         
         // App name

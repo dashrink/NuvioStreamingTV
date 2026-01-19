@@ -73,11 +73,7 @@ impl Tmdb {
     }
     
     pub fn get_image_url(&self, path: Option<String>, size: String) -> Option<String> {
-       if let Some(p) = path {
-           Some(format!("https://image.tmdb.org/t/p/{}{}", size, p))
-       } else {
-           None
-       }
+        path.map(|p| format!("https://image.tmdb.org/t/p/{}{}", size, p))
     }
 
     pub fn get_credits(&self, tmdb_id: i32, type_: String) -> Result<Credits, TmdbError> {

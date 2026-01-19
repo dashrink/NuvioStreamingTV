@@ -4,7 +4,6 @@
 //! Platform-specific storage implementations should be provided via callbacks.
 
 use super::models::{NotificationItem, NotificationSettings};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tracing::{debug, error, info};
@@ -206,7 +205,7 @@ impl NotificationStorage {
         let downloads = self.download_notifications.read()
             .map_err(|e| crate::error::NuvioError::unknown(format!("Failed to read download notifications: {}", e)))?;
 
-        Ok(downloads.get(&title).map_or(false, |&p| p >= progress))
+        Ok(downloads.get(&title).is_some_and(|&p| p >= progress))
     }
 
     /// Clear download notification tracking for a title

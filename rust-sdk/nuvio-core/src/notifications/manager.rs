@@ -10,7 +10,7 @@ use super::storage::NotificationStorage;
 use chrono::{DateTime, Duration, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info};
 
 /// Platform notification bridge trait
 ///
@@ -331,8 +331,8 @@ impl NotificationManager {
         &self,
         title: String,
         progress: i32,
-        downloaded_bytes: Option<i64>,
-        total_bytes: Option<i64>,
+        _downloaded_bytes: Option<i64>,
+        _total_bytes: Option<i64>,
     ) -> Result<bool, crate::error::NuvioError> {
         debug!("Download progress notification requested: {} at {}%", title, progress);
 

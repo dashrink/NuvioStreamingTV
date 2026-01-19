@@ -122,7 +122,6 @@ impl NuvioCacheManager {
 }
 
 /// Convenience functions for common cache operations
-
 /// Creates a cache key for metadata caching
 ///
 /// # Arguments

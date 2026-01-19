@@ -31,7 +31,7 @@ pub struct LocalMediaFile {
 }
 
 /// Scanner for local media files
-#[derive(uniffi::Object)]
+#[derive(uniffi::Object, Default)]
 pub struct LocalMediaScanner {}
 
 #[uniffi::export]
@@ -39,7 +39,7 @@ impl LocalMediaScanner {
     /// Creates a new LocalMediaScanner
     #[uniffi::constructor]
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 
     /// Scans a directory for media files

@@ -8,7 +8,7 @@ use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info};
 
 /// Callback trait for storage operations
 pub trait StorageCallback: Send + Sync {
@@ -683,7 +683,7 @@ impl BackupManager {
         let value = serde_json::to_string(settings)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Settings restored");
         Ok(())
     }
@@ -698,7 +698,7 @@ impl BackupManager {
         let value = serde_json::to_string(library)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Library restored");
         Ok(())
     }
@@ -715,7 +715,7 @@ impl BackupManager {
 
         callback
             .multi_set(pairs)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Watch progress restored");
         Ok(())
     }
@@ -730,7 +730,7 @@ impl BackupManager {
         let value = serde_json::to_string(addons)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Addons restored");
         Ok(())
     }
@@ -743,7 +743,7 @@ impl BackupManager {
         let value = serde_json::to_string(downloads)?;
         callback
             .set_item("downloads_state_v1".to_string(), value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Downloads restored");
         Ok(())
     }
@@ -758,7 +758,7 @@ impl BackupManager {
         let value = serde_json::to_string(subtitles)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Subtitle settings restored");
         Ok(())
     }
@@ -773,7 +773,7 @@ impl BackupManager {
         let value = serde_json::to_string(tombstones)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Tombstones restored");
         Ok(())
     }
@@ -788,7 +788,7 @@ impl BackupManager {
         let value = serde_json::to_string(removed)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Continue watching removed restored");
         Ok(())
     }
@@ -805,7 +805,7 @@ impl BackupManager {
 
         callback
             .multi_set(pairs)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Content duration restored");
         Ok(())
     }
@@ -818,7 +818,7 @@ impl BackupManager {
         let value = serde_json::to_string(sync_queue)?;
         callback
             .set_item("@sync_queue".to_string(), value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Sync queue restored");
         Ok(())
     }
@@ -831,7 +831,7 @@ impl BackupManager {
         let value = serde_json::to_string(trakt_settings)?;
         callback
             .set_item("trakt_settings".to_string(), value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Trakt settings restored");
         Ok(())
     }
@@ -872,7 +872,7 @@ impl BackupManager {
 
         callback
             .multi_set(pairs)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Local scrapers restored");
         Ok(())
     }
@@ -895,7 +895,7 @@ impl BackupManager {
         if !pairs.is_empty() {
             callback
                 .multi_set(pairs)
-                .map_err(|e| BackupError::storage(e))?;
+                .map_err(BackupError::storage)?;
         }
 
         info!("API keys restored");
@@ -910,7 +910,7 @@ impl BackupManager {
         let value = serde_json::to_string(catalog_settings)?;
         callback
             .set_item("catalog_settings".to_string(), value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Catalog settings restored");
         Ok(())
     }
@@ -925,7 +925,7 @@ impl BackupManager {
         let value = serde_json::to_string(addon_order)?;
         callback
             .set_item(key, value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Addon order restored");
         Ok(())
     }
@@ -938,7 +938,7 @@ impl BackupManager {
         let value = serde_json::to_string(removed_addons)?;
         callback
             .set_item("user_removed_addons".to_string(), value)
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Removed addons restored");
         Ok(())
     }
@@ -950,7 +950,7 @@ impl BackupManager {
     ) -> Result<(), BackupError> {
         callback
             .set_item("global_season_view_mode".to_string(), view_mode.to_string())
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Global season view mode restored");
         Ok(())
     }
@@ -965,7 +965,7 @@ impl BackupManager {
                 "hasCompletedOnboarding".to_string(),
                 value.to_string(),
             )
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Has completed onboarding restored");
         Ok(())
     }
@@ -980,7 +980,7 @@ impl BackupManager {
                 "showLoginHintToastOnce".to_string(),
                 value.to_string(),
             )
-            .map_err(|e| BackupError::storage(e))?;
+            .map_err(BackupError::storage)?;
         info!("Show login hint toast once restored");
         Ok(())
     }
@@ -998,7 +998,7 @@ impl BackupManager {
         if !pairs.is_empty() {
             callback
                 .multi_set(pairs)
-                .map_err(|e| BackupError::storage(e))?;
+                .map_err(BackupError::storage)?;
         }
 
         info!("Watched status restored");
@@ -1023,7 +1023,7 @@ impl BackupManager {
         if !pairs.is_empty() {
             callback
                 .multi_set(pairs)
-                .map_err(|e| BackupError::storage(e))?;
+                .map_err(BackupError::storage)?;
         }
 
         info!("Catalog UI preferences restored");

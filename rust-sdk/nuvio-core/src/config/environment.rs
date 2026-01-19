@@ -76,12 +76,12 @@ impl Environment {
     /// ```rust
     /// use nuvio_core::config::Environment;
     ///
-    /// assert_eq!(Environment::from_str("development"), Environment::Development);
-    /// assert_eq!(Environment::from_str("dev"), Environment::Development);
-    /// assert_eq!(Environment::from_str("prod"), Environment::Production);
-    /// assert_eq!(Environment::from_str("unknown"), Environment::Production);
+    /// assert_eq!(Environment::parse("development"), Environment::Development);
+    /// assert_eq!(Environment::parse("dev"), Environment::Development);
+    /// assert_eq!(Environment::parse("prod"), Environment::Production);
+    /// assert_eq!(Environment::parse("unknown"), Environment::Production);
     /// ```
-    pub fn from_str(s: &str) -> Self {
+    pub fn parse(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "development" | "dev" | "local" => Environment::Development,
             "staging" | "stage" | "test" => Environment::Staging,
@@ -121,26 +121,26 @@ mod tests {
     }
 
     #[test]
-    fn test_environment_from_str() {
+    fn test_environment_parse() {
         // Development variants
-        assert_eq!(Environment::from_str("development"), Environment::Development);
-        assert_eq!(Environment::from_str("dev"), Environment::Development);
-        assert_eq!(Environment::from_str("local"), Environment::Development);
-        assert_eq!(Environment::from_str("DEV"), Environment::Development);
-        
+        assert_eq!(Environment::parse("development"), Environment::Development);
+        assert_eq!(Environment::parse("dev"), Environment::Development);
+        assert_eq!(Environment::parse("local"), Environment::Development);
+        assert_eq!(Environment::parse("DEV"), Environment::Development);
+
         // Staging variants
-        assert_eq!(Environment::from_str("staging"), Environment::Staging);
-        assert_eq!(Environment::from_str("stage"), Environment::Staging);
-        assert_eq!(Environment::from_str("test"), Environment::Staging);
-        
+        assert_eq!(Environment::parse("staging"), Environment::Staging);
+        assert_eq!(Environment::parse("stage"), Environment::Staging);
+        assert_eq!(Environment::parse("test"), Environment::Staging);
+
         // Production variants
-        assert_eq!(Environment::from_str("production"), Environment::Production);
-        assert_eq!(Environment::from_str("prod"), Environment::Production);
-        assert_eq!(Environment::from_str("live"), Environment::Production);
-        
+        assert_eq!(Environment::parse("production"), Environment::Production);
+        assert_eq!(Environment::parse("prod"), Environment::Production);
+        assert_eq!(Environment::parse("live"), Environment::Production);
+
         // Unknown defaults to Production
-        assert_eq!(Environment::from_str("unknown"), Environment::Production);
-        assert_eq!(Environment::from_str(""), Environment::Production);
+        assert_eq!(Environment::parse("unknown"), Environment::Production);
+        assert_eq!(Environment::parse(""), Environment::Production);
     }
 
     #[test]

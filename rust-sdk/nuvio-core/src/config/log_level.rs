@@ -103,11 +103,11 @@ impl LogLevel {
     /// ```rust
     /// use nuvio_core::config::LogLevel;
     ///
-    /// assert_eq!(LogLevel::from_str("debug"), LogLevel::Debug);
-    /// assert_eq!(LogLevel::from_str("INFO"), LogLevel::Info);
-    /// assert_eq!(LogLevel::from_str("unknown"), LogLevel::Info);
+    /// assert_eq!(LogLevel::parse("debug"), LogLevel::Debug);
+    /// assert_eq!(LogLevel::parse("INFO"), LogLevel::Info);
+    /// assert_eq!(LogLevel::parse("unknown"), LogLevel::Info);
     /// ```
-    pub fn from_str(s: &str) -> Self {
+    pub fn parse(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "trace" | "verbose" => LogLevel::Trace,
             "debug" => LogLevel::Debug,
@@ -165,30 +165,30 @@ mod tests {
     }
 
     #[test]
-    fn test_log_level_from_str() {
+    fn test_log_level_parse() {
         // Standard names
-        assert_eq!(LogLevel::from_str("trace"), LogLevel::Trace);
-        assert_eq!(LogLevel::from_str("debug"), LogLevel::Debug);
-        assert_eq!(LogLevel::from_str("info"), LogLevel::Info);
-        assert_eq!(LogLevel::from_str("warn"), LogLevel::Warn);
-        assert_eq!(LogLevel::from_str("error"), LogLevel::Error);
-        assert_eq!(LogLevel::from_str("off"), LogLevel::Off);
-        
+        assert_eq!(LogLevel::parse("trace"), LogLevel::Trace);
+        assert_eq!(LogLevel::parse("debug"), LogLevel::Debug);
+        assert_eq!(LogLevel::parse("info"), LogLevel::Info);
+        assert_eq!(LogLevel::parse("warn"), LogLevel::Warn);
+        assert_eq!(LogLevel::parse("error"), LogLevel::Error);
+        assert_eq!(LogLevel::parse("off"), LogLevel::Off);
+
         // Case insensitivity
-        assert_eq!(LogLevel::from_str("DEBUG"), LogLevel::Debug);
-        assert_eq!(LogLevel::from_str("INFO"), LogLevel::Info);
-        
+        assert_eq!(LogLevel::parse("DEBUG"), LogLevel::Debug);
+        assert_eq!(LogLevel::parse("INFO"), LogLevel::Info);
+
         // Aliases
-        assert_eq!(LogLevel::from_str("verbose"), LogLevel::Trace);
-        assert_eq!(LogLevel::from_str("information"), LogLevel::Info);
-        assert_eq!(LogLevel::from_str("warning"), LogLevel::Warn);
-        assert_eq!(LogLevel::from_str("err"), LogLevel::Error);
-        assert_eq!(LogLevel::from_str("none"), LogLevel::Off);
-        assert_eq!(LogLevel::from_str("disabled"), LogLevel::Off);
-        
+        assert_eq!(LogLevel::parse("verbose"), LogLevel::Trace);
+        assert_eq!(LogLevel::parse("information"), LogLevel::Info);
+        assert_eq!(LogLevel::parse("warning"), LogLevel::Warn);
+        assert_eq!(LogLevel::parse("err"), LogLevel::Error);
+        assert_eq!(LogLevel::parse("none"), LogLevel::Off);
+        assert_eq!(LogLevel::parse("disabled"), LogLevel::Off);
+
         // Unknown defaults to Info
-        assert_eq!(LogLevel::from_str("unknown"), LogLevel::Info);
-        assert_eq!(LogLevel::from_str(""), LogLevel::Info);
+        assert_eq!(LogLevel::parse("unknown"), LogLevel::Info);
+        assert_eq!(LogLevel::parse(""), LogLevel::Info);
     }
 
     #[test]
