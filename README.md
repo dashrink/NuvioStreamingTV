@@ -39,7 +39,12 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#major-architectural-transformation-2024-2025">Major Architectural Transformation</a></li>
+        <li><a href="#key-highlights">Key Highlights</a></li>
+      </ul>
+    </li>
     <li><a href="#architecture">Architecture</a>
       <ul>
         <li><a href="#system-overview">System Overview</a></li>
@@ -52,14 +57,16 @@
     <li><a href="#installation">Installation</a></li>
     <li><a href="#getting-started">Getting Started</a>
       <ul>
+        <li><a href="#quick-start-guide">Quick Start Guide</a></li>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#building-the-rust-sdk">Building the Rust SDK</a></li>
         <li><a href="#building-android">Building Android</a></li>
-        <li><a href="#building-ios">Building iOS</a></li>
+        <li><a href="#building-iostvos">Building iOS/tvOS</a></li>
       </ul>
     </li>
     <li><a href="#project-structure">Project Structure</a></li>
     <li><a href="#key-features">Key Features</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#support">Support</a></li>
     <li><a href="#license">License</a></li>
@@ -74,10 +81,34 @@
 
 Nuvio Media Hub is a production-grade, cross-platform media streaming application that combines the performance of **Rust** with native **Kotlin** (Android) and **Swift** (iOS/tvOS) implementations. The architecture enables a shared, high-performance core while delivering native user experiences on each platform.
 
+### Major Architectural Transformation (2024-2025)
+
+Nuvio underwent a **complete rewrite** from a React Native/Expo-based application to a **native-first architecture** with a shared Rust core:
+
+#### What Changed
+
+| Aspect | Old Stack | New Stack |
+|--------|-----------|-----------|
+| **Android UI** | React Native | **Jetpack Compose** + Kotlin |
+| **iOS UI** | React Native | **SwiftUI** + Swift |
+| **Core Logic** | JavaScript/TypeScript | **Rust** with UniFFI bindings |
+| **Performance** | JavaScript bridge overhead | **Zero-cost FFI** abstractions |
+| **Type Safety** | Runtime type checking | **Compile-time guarantees** across all layers |
+| **Platform Integration** | Limited native APIs | **Full native platform access** |
+
+#### Why the Migration?
+
+1. **Performance**: Rust provides near-native performance for compute-intensive operations (catalog parsing, stream resolution, caching)
+2. **Code Sharing**: Single Rust codebase powers both Android and iOS, reducing duplication
+3. **Native UX**: Jetpack Compose and SwiftUI enable platform-specific, fluid user experiences
+4. **Type Safety**: Compile-time guarantees from Rust to Kotlin/Swift via UniFFI
+5. **Maintainability**: Clear separation between business logic (Rust) and UI (Kotlin/Swift)
+
 ### Key Highlights
 
 - **High-Performance Core**: Rust SDK provides blazing-fast catalog management, stream resolution, and data processing
 - **Native UIs**: Jetpack Compose (Android) and SwiftUI (iOS/tvOS) for fluid, platform-specific experiences
+- **Zero-Cost FFI**: UniFFI-generated bindings with no runtime overhead
 - **Stremio Integration**: Full addon ecosystem support for discovering and streaming content
 - **Trakt.tv Sync**: Watch history, ratings, and personalized recommendations
 - **Multi-Profile Support**: Separate profiles with PIN protection and isolated watch histories
@@ -540,6 +571,64 @@ Download the latest APK from [GitHub Releases](https://github.com/tapframe/Nuvio
 
 ## Getting Started
 
+### Quick Start Guide
+
+Want to jump straight into running the apps? Follow these streamlined steps:
+
+#### For Android Development
+
+```bash
+# 1. Ensure you have the prerequisites installed
+# - Android Studio with SDK 35
+# - JDK 17+
+# - Android NDK 27.0.12077973
+
+# 2. Clone and setup
+git clone https://github.com/tapframe/NuvioStreaming.git
+cd NuvioStreaming
+
+# 3. Build the Rust SDK for Android
+npm run rust:build:android
+
+# 4. Generate FFI bindings
+npm run rust:bindings
+
+# 5. Build and run the Android app
+npm run android:build
+npm run android:install
+
+# OR open in Android Studio
+# File > Open > Select 'android' folder
+# Select :app (TV) or :app-mobile (phone/tablet)
+# Click Run
+```
+
+#### For iOS/tvOS Development
+
+```bash
+# 1. Ensure you have the prerequisites installed (macOS only)
+# - Xcode 15+
+# - macOS Ventura or later
+
+# 2. Clone and setup
+git clone https://github.com/tapframe/NuvioStreaming.git
+cd NuvioStreaming
+
+# 3. Build the Rust SDK for iOS
+npm run rust:build:ios
+
+# 4. Generate FFI bindings
+npm run rust:bindings
+
+# 5. Open in Xcode and run
+open ios/NuvioTV.xcodeproj
+# Select NuvioTV scheme
+# Choose Apple TV simulator or device
+# Press Cmd+R to run
+```
+
+---
+
 ### Prerequisites
 
 #### Rust Toolchain
@@ -593,26 +682,102 @@ npm run rust:fmt
 
 ### Building Android
 
-```bash
-# Using Gradle
-cd android
-./gradlew assembleDebug        # Debug build
-./gradlew assembleRelease      # Release build
+#### Option 1: Using NPM Scripts (Recommended)
 
-# Or using npm scripts
+```bash
+# Build debug APK
 npm run android:build
+
+# Build release APK
+npm run android:build:release
+
+# Install debug APK on connected device
+npm run android:install
+
+# Run tests
+npm run android:test
+
+# Clean build
+npm run android:clean
 ```
 
-### Building iOS
+#### Option 2: Using Gradle Directly
 
 ```bash
-# Open in Xcode
-open ios/NuvioTV/NuvioTV.xcodeproj
+cd android
 
-# Or build from command line
-cd ios/NuvioTV
-xcodebuild -scheme NuvioTV -configuration Debug -sdk appletvsimulator build
+# Build Android TV app (debug)
+./gradlew :app:assembleDebug
+
+# Build mobile app (debug)
+./gradlew :app-mobile:assembleDebug
+
+# Build release versions
+./gradlew :app:assembleRelease
+./gradlew :app-mobile:assembleRelease
+
+# Install on connected device
+./gradlew :app:installDebug
 ```
+
+#### Running on Device/Emulator
+
+1. **Android TV**: Open in Android Studio and select the `:app` configuration
+2. **Mobile/Tablet**: Open in Android Studio and select the `:app-mobile` configuration
+3. **Via ADB**:
+   ```bash
+   adb install android/app/build/outputs/apk/debug/app-debug.apk
+   adb install android/app-mobile/build/outputs/apk/debug/app-mobile-debug.apk
+   ```
+
+### Building iOS/tvOS
+
+#### Option 1: Using Xcode (Recommended)
+
+```bash
+# Open project in Xcode
+open ios/NuvioTV.xcodeproj
+
+# Then:
+# 1. Select the NuvioTV scheme
+# 2. Choose target device (Apple TV simulator or real device)
+# 3. Press Cmd+R to build and run
+```
+
+#### Option 2: Command Line Build
+
+```bash
+# Build for tvOS Simulator (debug)
+npm run ios:build
+
+# Build for tvOS Device (release/archive)
+npm run ios:build:release
+
+# Run tests
+npm run ios:test
+
+# Clean build
+npm run ios:clean
+```
+
+#### Running on Device/Simulator
+
+1. **tvOS Simulator**:
+   ```bash
+   cd ios
+   xcodebuild -project NuvioTV.xcodeproj -scheme NuvioTV -sdk appletvsimulator -destination 'platform=tvOS Simulator,name=Apple TV' build
+   ```
+
+2. **Physical Apple TV**:
+   - Open in Xcode
+   - Connect Apple TV via network or USB-C
+   - Select your Apple TV as the target device
+   - Build and run (Cmd+R)
+
+3. **iOS Device** (if you create an iOS target):
+   - Open in Xcode
+   - Select iOS device as target
+   - Build and run
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -684,6 +849,117 @@ NuvioStreaming/
 - Integrity verification
 - Local and cloud storage options
 - Cross-device restore
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### Rust Build Failures
+
+**Problem**: `cargo build` fails with linker errors
+
+**Solution**:
+```bash
+# Ensure you have the correct Rust version
+rustup update stable
+
+# Install required targets
+rustup target add aarch64-linux-android aarch64-apple-ios
+
+# Clean and rebuild
+cd rust-sdk
+cargo clean
+cargo build --release
+```
+
+#### Android Build Issues
+
+**Problem**: "NDK not found" error
+
+**Solution**:
+```bash
+# Install NDK via Android Studio:
+# Tools > SDK Manager > SDK Tools > NDK (27.0.12077973)
+
+# Or set NDK path in local.properties:
+echo "ndk.dir=/path/to/android-sdk/ndk/27.0.12077973" >> android/local.properties
+```
+
+**Problem**: "Cannot find Rust library (.so files)"
+
+**Solution**:
+```bash
+# Rebuild Rust SDK and copy to Android jniLibs
+npm run rust:build:android
+npm run rust:bindings
+
+# Manually copy if needed:
+cp rust-sdk/target/aarch64-linux-android/release/libnuvio_core.so \
+   android/shared/src/main/jniLibs/arm64-v8a/
+```
+
+#### iOS Build Issues
+
+**Problem**: "Library not found for -lnuvio_core"
+
+**Solution**:
+```bash
+# Rebuild Rust SDK for iOS
+npm run rust:build:ios
+npm run rust:bindings
+
+# Ensure the library is linked in Xcode:
+# Project > Build Phases > Link Binary With Libraries
+# Add libnuvio_core.a or .dylib
+```
+
+**Problem**: "Module 'NuvioCore' not found"
+
+**Solution**:
+```bash
+# Ensure Swift Package is properly resolved
+cd ios
+xcodebuild -resolvePackageDependencies -project NuvioTV.xcodeproj
+
+# Or in Xcode: File > Packages > Reset Package Caches
+```
+
+#### UniFFI Binding Issues
+
+**Problem**: "uniffi-bindgen: command not found"
+
+**Solution**:
+```bash
+cargo install uniffi-bindgen --version 0.30.0
+```
+
+**Problem**: Generated bindings are out of sync with Rust code
+
+**Solution**:
+```bash
+# Regenerate bindings after Rust changes
+npm run rust:bindings
+
+# Or manually:
+cd rust-sdk
+./scripts/generate-bindings.sh
+```
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check existing issues**: [GitHub Issues](https://github.com/tapframe/NuvioStreaming/issues)
+2. **Create a new issue**: Include:
+   - OS and version
+   - Build logs
+   - Steps to reproduce
+   - Expected vs actual behavior
+3. **Join discussions**: [GitHub Discussions](https://github.com/tapframe/NuvioStreaming/discussions)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
