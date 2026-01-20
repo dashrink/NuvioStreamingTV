@@ -39,7 +39,7 @@
     }
   ],
   "startedAt": "2026-01-19T09:07:00.280Z",
-  "updatedAt": "2026-01-19T09:31:41.453Z",
+  "updatedAt": "2026-01-19T09:40:30.839Z",
   "planSpec": {
     "status": "approved",
     "version": 1,
@@ -91,7 +91,7 @@
       }
     ],
     "tasksTotal": 7,
-    "tasksCompleted": 6,
+    "tasksCompleted": 7,
     "approvedAt": "2026-01-19T09:09:23.496Z",
     "currentTaskId": "T007"
   }

@@ -418,7 +418,7 @@ private fun SearchResultCard(
 
         meta.year?.let { year ->
             Text(
-                text = year,
+                text = year.toString(),
                 style = MaterialTheme.typography.labelSmall,
                 color = OnSurfaceVariant.copy(alpha = 0.7f)
             )

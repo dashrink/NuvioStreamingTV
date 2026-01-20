@@ -29,7 +29,7 @@
   "dependencies": [],
   "workMode": "auto",
   "titleGenerating": false,
-  "status": "in_progress",
+  "status": "verified",
   "id": "feature-1768813620149-0t5evv9gu",
   "descriptionHistory": [
     {
@@ -39,7 +39,7 @@
     }
   ],
   "startedAt": "2026-01-19T09:07:00.280Z",
-  "updatedAt": "2026-01-19T09:40:30.839Z",
+  "updatedAt": "2026-01-19T09:40:30.841Z",
   "planSpec": {
     "status": "approved",
     "version": 1,

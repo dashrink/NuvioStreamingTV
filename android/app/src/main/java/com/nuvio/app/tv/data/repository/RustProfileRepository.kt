@@ -1,11 +1,11 @@
 package com.nuvio.app.tv.data.repository
 
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.NuvioException
-import com.nuvio.sdk.core.Profile
-import com.nuvio.sdk.core.ProfileManager
-import com.nuvio.sdk.core.UpdateProfileInput
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.NuvioException
+import uniffi.nuvio_core.Profile
+import uniffi.nuvio_core.ProfileManager
+import uniffi.nuvio_core.UpdateProfileInput
+import uniffi.nuvio_core.WatchedItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

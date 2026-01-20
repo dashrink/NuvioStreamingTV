@@ -15999,6 +15999,7 @@ public func FfiConverterTypeTmdbError_lower(_ value: TmdbError) -> RustBuffer {
  *
  * All variants use named fields to ensure compatibility with UniFFI's FFI layer.
  * These errors can be safely propagated across language boundaries to Kotlin and Swift.
+ * Note: Field is named `msg` (not `message`) to avoid conflict with Kotlin Exception.message
  */
 public enum TraktError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -16007,47 +16008,47 @@ public enum TraktError: Swift.Error, Equatable, Hashable, Foundation.LocalizedEr
     /**
      * OAuth2 authentication error
      */
-    case OAuth2Error(message: String
+    case OAuth2Error(msg: String
     )
     /**
      * Network or HTTP error
      */
-    case NetworkError(message: String
+    case NetworkError(msg: String
     )
     /**
      * Storage/persistence error
      */
-    case StorageError(message: String
+    case StorageError(msg: String
     )
     /**
      * Invalid token error
      */
-    case InvalidToken(message: String
+    case InvalidToken(msg: String
     )
     /**
      * API error from Trakt service
      */
-    case ApiError(message: String
+    case ApiError(msg: String
     )
     /**
      * Input validation error
      */
-    case ValidationError(message: String
+    case ValidationError(msg: String
     )
     /**
      * Rate limit exceeded
      */
-    case RateLimitExceeded(message: String
+    case RateLimitExceeded(msg: String
     )
     /**
      * Resource not found (404)
      */
-    case NotFound(message: String
+    case NotFound(msg: String
     )
     /**
      * Unknown or unexpected error
      */
-    case Unknown(message: String
+    case Unknown(msg: String
     )
 
     
@@ -16077,31 +16078,31 @@ public struct FfiConverterTypeTraktError: FfiConverterRustBuffer {
 
         
         case 1: return .OAuth2Error(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 2: return .NetworkError(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 3: return .StorageError(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 4: return .InvalidToken(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 5: return .ApiError(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 6: return .ValidationError(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 7: return .RateLimitExceeded(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 8: return .NotFound(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
         case 9: return .Unknown(
-            message: try FfiConverterString.read(from: &buf)
+            msg: try FfiConverterString.read(from: &buf)
             )
 
          default: throw UniffiInternalError.unexpectedEnumCase
@@ -16115,49 +16116,49 @@ public struct FfiConverterTypeTraktError: FfiConverterRustBuffer {
 
         
         
-        case let .OAuth2Error(message):
+        case let .OAuth2Error(msg):
             writeInt(&buf, Int32(1))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .NetworkError(message):
+        case let .NetworkError(msg):
             writeInt(&buf, Int32(2))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .StorageError(message):
+        case let .StorageError(msg):
             writeInt(&buf, Int32(3))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .InvalidToken(message):
+        case let .InvalidToken(msg):
             writeInt(&buf, Int32(4))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .ApiError(message):
+        case let .ApiError(msg):
             writeInt(&buf, Int32(5))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .ValidationError(message):
+        case let .ValidationError(msg):
             writeInt(&buf, Int32(6))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .RateLimitExceeded(message):
+        case let .RateLimitExceeded(msg):
             writeInt(&buf, Int32(7))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .NotFound(message):
+        case let .NotFound(msg):
             writeInt(&buf, Int32(8))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         
-        case let .Unknown(message):
+        case let .Unknown(msg):
             writeInt(&buf, Int32(9))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(msg, into: &buf)
             
         }
     }

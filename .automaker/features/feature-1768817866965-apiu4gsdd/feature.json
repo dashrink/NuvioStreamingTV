@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Implement swipe-to-delete and swipe-to-mark-watched gestures on watchlist items, similar to iOS Mail. Support both left and right swipe directions with customizable actions (remove, mark watched/unwatched, share). Include undo toast notifications for accidental deletions.\n\n**Rationale:** Managing watchlists currently requires multiple taps through menus. Swipe gestures provide instant, muscle-memory-friendly actions that significantly speed up content curation and reduce interaction friction.",
+  "title": "Swipe Gestures for Watchlist Management",
+  "status": "backlog",
+  "id": "feature-1768817866965-apiu4gsdd",
+  "descriptionHistory": [
+    {
+      "description": "Implement swipe-to-delete and swipe-to-mark-watched gestures on watchlist items, similar to iOS Mail. Support both left and right swipe directions with customizable actions (remove, mark watched/unwatched, share). Include undo toast notifications for accidental deletions.\n\n**Rationale:** Managing watchlists currently requires multiple taps through menus. Swipe gestures provide instant, muscle-memory-friendly actions that significantly speed up content curation and reduce interaction friction.",
+      "timestamp": "2026-01-19T10:17:46.966Z",
+      "source": "initial"
+    }
+  ]
+}

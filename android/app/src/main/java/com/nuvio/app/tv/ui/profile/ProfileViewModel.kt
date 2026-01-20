@@ -3,10 +3,10 @@ package com.nuvio.app.tv.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nuvio.app.tv.data.repository.ProfileRepository
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.Profile
-import com.nuvio.sdk.core.UpdateProfileInput
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.Profile
+import uniffi.nuvio_core.UpdateProfileInput
+import uniffi.nuvio_core.WatchedItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

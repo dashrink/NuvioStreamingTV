@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.nuvio.app.tv.data.repository.ProfileRepository
 import com.nuvio.app.tv.data.repository.WatchlistItem
 import com.nuvio.app.tv.data.repository.WatchlistRepository
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.WatchedItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

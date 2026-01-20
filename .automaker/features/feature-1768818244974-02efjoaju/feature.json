@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Redesign layouts to support modern edge-to-edge displays with proper safe area insets, avoiding conflict with system gestures (back swipe, home indicator). Add custom back swipe handling on Android that mirrors iOS navigation patterns for consistency.\n\n**Rationale:** Modern Android and iOS devices use gesture navigation. Apps that don't respect edge gestures create frustrating conflicts where users accidentally navigate away or trigger unintended actions. Proper safe area handling looks more modern and professional.",
+  "title": "Edge-to-Edge Gesture-Friendly Layout",
+  "status": "backlog",
+  "id": "feature-1768818244974-02efjoaju",
+  "descriptionHistory": [
+    {
+      "description": "Redesign layouts to support modern edge-to-edge displays with proper safe area insets, avoiding conflict with system gestures (back swipe, home indicator). Add custom back swipe handling on Android that mirrors iOS navigation patterns for consistency.\n\n**Rationale:** Modern Android and iOS devices use gesture navigation. Apps that don't respect edge gestures create frustrating conflicts where users accidentally navigate away or trigger unintended actions. Proper safe area handling looks more modern and professional.",
+      "timestamp": "2026-01-19T10:24:04.975Z",
+      "source": "initial"
+    }
+  ]
+}

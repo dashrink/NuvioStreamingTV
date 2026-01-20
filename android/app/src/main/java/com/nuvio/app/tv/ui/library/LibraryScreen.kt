@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ import coil.compose.AsyncImage
 import com.nuvio.app.tv.data.repository.WatchlistItem
 import com.nuvio.app.tv.ui.theme.OnSurfaceVariant
 import com.nuvio.app.tv.ui.theme.SurfaceVariant
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.WatchedItem
 
 @Composable
 fun LibraryScreen(
@@ -330,13 +331,13 @@ private fun WatchlistItemCard(
             }
 
             // More options (on focus for TV)
-            AnimatedVisibility(
-                visible = isFocused,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Box {
+            Box(modifier = Modifier.align(Alignment.TopEnd)) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = isFocused,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box {
                     IconButton(
                         onClick = { showMenu = true },
                         modifier = Modifier
@@ -373,6 +374,7 @@ private fun WatchlistItemCard(
                                 )
                             }
                         )
+                    }
                     }
                 }
             }

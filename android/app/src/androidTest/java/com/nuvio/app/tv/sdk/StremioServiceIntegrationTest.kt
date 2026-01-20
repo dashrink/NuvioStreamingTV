@@ -2,7 +2,7 @@ package com.nuvio.app.tv.sdk
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.nuvio.sdk.core.StremioService
+import uniffi.nuvio_core.StremioService
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before

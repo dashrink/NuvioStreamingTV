@@ -1,9 +1,9 @@
 package com.nuvio.app.tv.data.repository
 
 import com.nuvio.app.tv.util.MainDispatcherRule
-import com.nuvio.sdk.core.CatalogEntry
-import com.nuvio.sdk.core.StremioMeta
-import com.nuvio.sdk.core.StremioService
+import uniffi.nuvio_core.CatalogEntry
+import uniffi.nuvio_core.StremioMeta
+import uniffi.nuvio_core.StremioService
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi

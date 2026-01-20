@@ -1,7 +1,7 @@
 package com.nuvio.app.tv.player.data
 
 import com.nuvio.app.tv.data.repository.ProfileRepository
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.WatchedItem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers

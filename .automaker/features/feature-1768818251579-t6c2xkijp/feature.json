@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Create adaptive catalog grids that intelligently adjust column counts based on screen width, orientation, and device type (phone/tablet). Maintain scroll position during rotation. Use different layouts for portrait (2-3 columns) vs landscape (4-6 columns) with smooth transitions.\n\n**Rationale:** Many users switch between portrait and landscape, especially on tablets or when using phone stands. Static layouts waste screen space or create cramped interfaces. Responsive grids maximize content density while maintaining usability across orientations.",
+  "title": "Responsive Grid Layouts with Orientation Handling",
+  "status": "backlog",
+  "id": "feature-1768818251579-t6c2xkijp",
+  "descriptionHistory": [
+    {
+      "description": "Create adaptive catalog grids that intelligently adjust column counts based on screen width, orientation, and device type (phone/tablet). Maintain scroll position during rotation. Use different layouts for portrait (2-3 columns) vs landscape (4-6 columns) with smooth transitions.\n\n**Rationale:** Many users switch between portrait and landscape, especially on tablets or when using phone stands. Static layouts waste screen space or create cramped interfaces. Responsive grids maximize content density while maintaining usability across orientations.",
+      "timestamp": "2026-01-19T10:24:11.580Z",
+      "source": "initial"
+    }
+  ]
+}

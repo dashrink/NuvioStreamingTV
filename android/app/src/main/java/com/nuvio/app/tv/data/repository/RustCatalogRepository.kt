@@ -1,7 +1,7 @@
 package com.nuvio.app.tv.data.repository
 
-import com.nuvio.sdk.core.StremioMeta
-import com.nuvio.sdk.core.StremioService
+import uniffi.nuvio_core.StremioMeta
+import uniffi.nuvio_core.StremioService
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -189,7 +189,7 @@ class RustCatalogRepository @Inject constructor(
 
         // Filter by year if specified
         val filteredMetas = if (year != null) {
-            metas.filter { it.year == year.toString() }
+            metas.filter { it.year == year }
         } else {
             metas
         }

@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Add native pull-to-refresh gesture to catalog, home, and watchlist screens that triggers content synchronization and cache invalidation. Include haptic feedback on iOS and visual loading indicators that match platform conventions. Cache refresh timestamps to prevent excessive API calls.\n\n**Rationale:** Users expect this standard mobile pattern for refreshing content. Currently there's no intuitive way to manually update catalog data without restarting the app, leading to stale content and poor user experience.",
+  "title": "Pull-to-Refresh Catalog Updates",
+  "status": "backlog",
+  "id": "feature-1768817857677-71oo72mw9",
+  "descriptionHistory": [
+    {
+      "description": "Add native pull-to-refresh gesture to catalog, home, and watchlist screens that triggers content synchronization and cache invalidation. Include haptic feedback on iOS and visual loading indicators that match platform conventions. Cache refresh timestamps to prevent excessive API calls.\n\n**Rationale:** Users expect this standard mobile pattern for refreshing content. Currently there's no intuitive way to manually update catalog data without restarting the app, leading to stale content and poor user experience.",
+      "timestamp": "2026-01-19T10:17:37.678Z",
+      "source": "initial"
+    }
+  ]
+}

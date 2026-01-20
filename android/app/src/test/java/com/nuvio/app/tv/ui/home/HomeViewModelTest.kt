@@ -5,11 +5,11 @@ import com.nuvio.app.tv.data.repository.CatalogRepository
 import com.nuvio.app.tv.data.repository.ProfileRepository
 import com.nuvio.app.tv.util.MainDispatcherRule
 import com.nuvio.app.tv.util.TestFixtures
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.Profile
-import com.nuvio.sdk.core.ProfileType
-import com.nuvio.sdk.core.UpdateProfileInput
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.Profile
+import uniffi.nuvio_core.ProfileType
+import uniffi.nuvio_core.UpdateProfileInput
+import uniffi.nuvio_core.WatchedItem
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

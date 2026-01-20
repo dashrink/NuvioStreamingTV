@@ -14,6 +14,7 @@ class MockCatalogRepository @Inject constructor() : CatalogRepository {
             description = "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
             posterUrl = "https://image.tmdb.org/t/p/w500/f89U3Y9L9uwpXec9yvXpZQK13h.jpg",
             backgroundUrl = "https://image.tmdb.org/t/p/original/dXNAPw34MIn7p9uGfPaIhpj7uXX.jpg",
+            logoUrl = null,
             imdbId = "tt0133093",
             tmdbId = 603,
             type = "movie"
@@ -24,6 +25,7 @@ class MockCatalogRepository @Inject constructor() : CatalogRepository {
             description = "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
             posterUrl = "https://image.tmdb.org/t/p/w500/ljsZTbVjYfwzHTpZslS36vSwmkm.jpg",
             backgroundUrl = "https://image.tmdb.org/t/p/original/s3TmtjS7UKEu0ZAmSve4Standard.jpg",
+            logoUrl = null,
             imdbId = "tt1375666",
             tmdbId = 27205,
             type = "movie"
@@ -34,6 +36,7 @@ class MockCatalogRepository @Inject constructor() : CatalogRepository {
             description = "When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans.",
             posterUrl = "https://image.tmdb.org/t/p/w500/gEU2QniE6EwfVnz6z2YbpjciZoa.jpg",
             backgroundUrl = "https://image.tmdb.org/t/p/original/rAiY_pUm6vCWSbah1096stSGaFL.jpg",
+            logoUrl = null,
             imdbId = "tt0816692",
             tmdbId = 157336,
             type = "movie"

@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Implement mobile-specific video player gestures: double-tap left/right edges to skip 10s, vertical swipe on left for brightness, vertical swipe on right for volume, pinch-to-zoom for aspect ratio, and long-press for playback speed menu. Add visual overlays showing gesture effects.\n\n**Rationale:** Mobile video players require different interaction paradigms than TV or desktop. Gesture controls allow quick adjustments without obscuring content with persistent UI elements. This is standard in popular mobile video apps and users expect these patterns.",
+  "title": "Video Player Gesture Controls Enhancement",
+  "status": "backlog",
+  "id": "feature-1768818233785-4mif2lmnk",
+  "descriptionHistory": [
+    {
+      "description": "Implement mobile-specific video player gestures: double-tap left/right edges to skip 10s, vertical swipe on left for brightness, vertical swipe on right for volume, pinch-to-zoom for aspect ratio, and long-press for playback speed menu. Add visual overlays showing gesture effects.\n\n**Rationale:** Mobile video players require different interaction paradigms than TV or desktop. Gesture controls allow quick adjustments without obscuring content with persistent UI elements. This is standard in popular mobile video apps and users expect these patterns.",
+      "timestamp": "2026-01-19T10:23:53.785Z",
+      "source": "initial"
+    }
+  ]
+}

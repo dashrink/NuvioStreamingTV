@@ -2,11 +2,11 @@ package com.nuvio.app.tv.sdk
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.ProfileManager
-import com.nuvio.sdk.core.ProfileType
-import com.nuvio.sdk.core.UpdateProfileInput
-import com.nuvio.sdk.core.WatchedItem
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.ProfileManager
+import uniffi.nuvio_core.ProfileType
+import uniffi.nuvio_core.UpdateProfileInput
+import uniffi.nuvio_core.WatchedItem
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before

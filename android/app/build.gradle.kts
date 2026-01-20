@@ -119,6 +119,9 @@ dependencies {
     // Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")
 
+    // Gson for JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+
     // Testing dependencies
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

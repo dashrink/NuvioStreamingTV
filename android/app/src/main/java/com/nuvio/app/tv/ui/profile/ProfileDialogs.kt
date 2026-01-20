@@ -30,11 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.Profile
-import com.nuvio.sdk.core.ProfilePreferences
-import com.nuvio.sdk.core.ProfileType
-import com.nuvio.sdk.core.UpdateProfileInput
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.Profile
+import uniffi.nuvio_core.ProfilePreferences
+import uniffi.nuvio_core.ProfileType
+import uniffi.nuvio_core.UpdateProfileInput
 
 @Composable
 fun CreateProfileDialog(

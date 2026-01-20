@@ -1,0 +1,14 @@
+{
+  "category": "enhancement",
+  "description": "Replace traditional modals with native bottom sheets (Material Bottom Sheet on Android, UISheetPresentationController on iOS) for content actions like adding to watchlist, selecting stream sources, or viewing episode lists. Support drag-to-dismiss and multiple detents on iOS.\n\n**Rationale:** Bottom sheets are more ergonomic on modern large-screen phones, keeping interactive elements within thumb reach. They feel more native than full-screen modals and allow users to maintain context of the underlying content.",
+  "title": "Bottom Sheet Navigation for Content Actions",
+  "status": "backlog",
+  "id": "feature-1768817872642-28lharzq6",
+  "descriptionHistory": [
+    {
+      "description": "Replace traditional modals with native bottom sheets (Material Bottom Sheet on Android, UISheetPresentationController on iOS) for content actions like adding to watchlist, selecting stream sources, or viewing episode lists. Support drag-to-dismiss and multiple detents on iOS.\n\n**Rationale:** Bottom sheets are more ergonomic on modern large-screen phones, keeping interactive elements within thumb reach. They feel more native than full-screen modals and allow users to maintain context of the underlying content.",
+      "timestamp": "2026-01-19T10:17:52.651Z",
+      "source": "initial"
+    }
+  ]
+}

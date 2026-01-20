@@ -9,7 +9,7 @@
   "model": "opus",
   "thinkingLevel": "ultrathink",
   "reasoningEffort": "none",
-  "branchName": "feature/main-1768807247701-hdms",
+  "branchName": null,
   "priority": 1,
   "planningMode": "full",
   "requirePlanApproval": true,

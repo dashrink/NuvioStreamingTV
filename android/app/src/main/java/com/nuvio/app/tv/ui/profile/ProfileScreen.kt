@@ -32,9 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.nuvio.sdk.core.CreateProfileInput
-import com.nuvio.sdk.core.Profile
-import com.nuvio.sdk.core.ProfileType
+import uniffi.nuvio_core.CreateProfileInput
+import uniffi.nuvio_core.Profile
+import uniffi.nuvio_core.ProfileType
 
 @Composable
 fun ProfileScreen(
