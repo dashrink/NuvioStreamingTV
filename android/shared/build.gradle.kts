@@ -48,6 +48,42 @@ android {
     }
 }
 
+// Task to copy Rust SDK native libraries
+tasks.register("copyRustLibs") {
+    doLast {
+        val rustSdkPath = file("../../rust-sdk/target")
+        val jniLibsPath = file("src/main/jniLibs")
+
+        // Architecture mappings: Rust target -> Android ABI
+        val architectures = mapOf(
+            "aarch64-linux-android" to "arm64-v8a",
+            "armv7-linux-androideabi" to "armeabi-v7a",
+            "x86_64-linux-android" to "x86_64",
+            "i686-linux-android" to "x86"
+        )
+
+        architectures.forEach { (rustTarget, androidAbi) ->
+            val libFile = file("$rustSdkPath/$rustTarget/release/libnuvio_core.so")
+            if (libFile.exists()) {
+                val destDir = file("$jniLibsPath/$androidAbi")
+                destDir.mkdirs()
+                copy {
+                    from(libFile)
+                    into(destDir)
+                }
+                println("Copied libnuvio_core.so for $androidAbi")
+            } else {
+                println("Warning: $libFile not found, skipping $androidAbi")
+            }
+        }
+    }
+}
+
+// Run copyRustLibs before preBuild
+tasks.named("preBuild") {
+    dependsOn("copyRustLibs")
+}
+
 dependencies {
     // Kotlin Standard Library
     implementation(libs.kotlin.stdlib)
