@@ -120,21 +120,24 @@ class TvMainActivity : FragmentActivity() {
      * @see BrowseSupportFragment for detailed API documentation
      */
     private fun setupBrowseFragment() {
-        // Create and configure BrowseSupportFragment
-        browseSupportFragment = BrowseSupportFragment().apply {
+        // Create BrowseSupportFragment
+        browseSupportFragment = BrowseSupportFragment()
+
+        // Add the fragment to the activity first
+        supportFragmentManager.beginTransaction()
+            .replace(android.R.id.content, browseSupportFragment!!)
+            .commit()
+
+        // Configure the fragment after it's attached
+        browseSupportFragment?.apply {
             // Set the title that appears in the browse header
-            title = getString(R.string.browse_title)
+            title = this@TvMainActivity.getString(R.string.browse_title)
             headersState = BrowseSupportFragment.HEADERS_ENABLED
             isHeadersTransitionOnBackEnabled = true
 
             // Brand color will be set from resources once theme is properly configured
             // brandColor = resources.getColor(R.color.primary, theme)
         }
-
-        // Add the fragment to the activity
-        supportFragmentManager.beginTransaction()
-            .replace(android.R.id.content, browseSupportFragment!!)
-            .commit()
 
         Log.i(TAG, "BrowseSupportFragment initialized")
 
